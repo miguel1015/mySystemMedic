@@ -1,5 +1,5 @@
-import Image from 'next/image'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import Image from "next/image";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowDown,
   faArrowUp,
@@ -9,7 +9,7 @@ import {
   faSearch,
   faUsers,
   faVenus,
-} from '@fortawesome/free-solid-svg-icons'
+} from "@fortawesome/free-solid-svg-icons";
 import {
   Button,
   ButtonGroup,
@@ -22,7 +22,7 @@ import {
   DropdownMenu,
   DropdownToggle,
   ProgressBar,
-} from 'react-bootstrap'
+} from "react-bootstrap";
 import {
   faCcAmex,
   faCcApplePay,
@@ -32,17 +32,17 @@ import {
   faFacebookF,
   faLinkedinIn,
   faTwitter,
-} from '@fortawesome/free-brands-svg-icons'
-import React from 'react'
-import UserChart from '@/components/Page/Dashboard/UserChart'
-import IncomeChart from '@/components/Page/Dashboard/IncomeChart'
-import ConversionChart from '@/components/Page/Dashboard/ConversionChart'
-import SessionChart from '@/components/Page/Dashboard/SessionChart'
-import TrafficChart from '@/components/Page/Dashboard/TrafficChart'
-import { getDictionary } from '@/locales/dictionary'
+} from "@fortawesome/free-brands-svg-icons";
+import React from "react";
+import UserChart from "@/components/Page/Dashboard/UserChart";
+import IncomeChart from "@/components/Page/Dashboard/IncomeChart";
+import ConversionChart from "@/components/Page/Dashboard/ConversionChart";
+import SessionChart from "@/components/Page/Dashboard/SessionChart";
+import TrafficChart from "@/components/Page/Dashboard/TrafficChart";
+import { getDictionary } from "@/locales/dictionary";
 
 export default async function Page() {
-  const dict = await getDictionary()
+  const dict = await getDictionary();
 
   return (
     <div>
@@ -55,8 +55,7 @@ export default async function Page() {
                   26K
                   <span className="fs-6 ms-2 fw-normal">
                     (-12.4%
-                    <FontAwesomeIcon icon={faArrowDown} fixedWidth />
-                    )
+                    <FontAwesomeIcon icon={faArrowDown} fixedWidth />)
                   </span>
                 </div>
                 <div>{dict.dashboard.featured.user}</div>
@@ -72,13 +71,19 @@ export default async function Page() {
                 </DropdownToggle>
 
                 <DropdownMenu>
-                  <DropdownItem href="#/action-1">{dict.dashboard.featured.action.action1}</DropdownItem>
-                  <DropdownItem href="#/action-2">{dict.dashboard.featured.action.action2}</DropdownItem>
-                  <DropdownItem href="#/action-3">{dict.dashboard.featured.action.action3}</DropdownItem>
+                  <DropdownItem href="#/action-1">
+                    {dict.dashboard.featured.action.action1}
+                  </DropdownItem>
+                  <DropdownItem href="#/action-2">
+                    {dict.dashboard.featured.action.action2}
+                  </DropdownItem>
+                  <DropdownItem href="#/action-3">
+                    {dict.dashboard.featured.action.action3}
+                  </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             </CardBody>
-            <div className="mt-3 mx-3" style={{ height: '70px' }}>
+            <div className="mt-3 mx-3" style={{ height: "70px" }}>
               <UserChart />
             </div>
           </Card>
@@ -92,8 +97,7 @@ export default async function Page() {
                   $6.200
                   <span className="fs-6 ms-2 fw-normal">
                     (40.9%
-                    <FontAwesomeIcon icon={faArrowUp} fixedWidth />
-                    )
+                    <FontAwesomeIcon icon={faArrowUp} fixedWidth />)
                   </span>
                 </div>
                 <div>{dict.dashboard.featured.income}</div>
@@ -109,13 +113,19 @@ export default async function Page() {
                 </DropdownToggle>
 
                 <DropdownMenu>
-                  <DropdownItem href="#/action-1">{dict.dashboard.featured.action.action1}</DropdownItem>
-                  <DropdownItem href="#/action-2">{dict.dashboard.featured.action.action2}</DropdownItem>
-                  <DropdownItem href="#/action-3">{dict.dashboard.featured.action.action3}</DropdownItem>
+                  <DropdownItem href="#/action-1">
+                    {dict.dashboard.featured.action.action1}
+                  </DropdownItem>
+                  <DropdownItem href="#/action-2">
+                    {dict.dashboard.featured.action.action2}
+                  </DropdownItem>
+                  <DropdownItem href="#/action-3">
+                    {dict.dashboard.featured.action.action3}
+                  </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             </CardBody>
-            <div className="mt-3 mx-3" style={{ height: '70px' }}>
+            <div className="mt-3 mx-3" style={{ height: "70px" }}>
               <IncomeChart />
             </div>
           </Card>
@@ -129,8 +139,7 @@ export default async function Page() {
                   2.49%
                   <span className="fs-6 ms-2 fw-normal">
                     (84.7%
-                    <FontAwesomeIcon icon={faArrowUp} fixedWidth />
-                    )
+                    <FontAwesomeIcon icon={faArrowUp} fixedWidth />)
                   </span>
                 </div>
                 <div>{dict.dashboard.featured.conversion_rate}</div>
@@ -146,13 +155,19 @@ export default async function Page() {
                 </DropdownToggle>
 
                 <DropdownMenu>
-                  <DropdownItem href="#/action-1">{dict.dashboard.featured.action.action1}</DropdownItem>
-                  <DropdownItem href="#/action-2">{dict.dashboard.featured.action.action2}</DropdownItem>
-                  <DropdownItem href="#/action-3">{dict.dashboard.featured.action.action3}</DropdownItem>
+                  <DropdownItem href="#/action-1">
+                    {dict.dashboard.featured.action.action1}
+                  </DropdownItem>
+                  <DropdownItem href="#/action-2">
+                    {dict.dashboard.featured.action.action2}
+                  </DropdownItem>
+                  <DropdownItem href="#/action-3">
+                    {dict.dashboard.featured.action.action3}
+                  </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             </CardBody>
-            <div className="mt-3 mx-3" style={{ height: '70px' }}>
+            <div className="mt-3 mx-3" style={{ height: "70px" }}>
               <ConversionChart />
             </div>
           </Card>
@@ -166,8 +181,7 @@ export default async function Page() {
                   44K
                   <span className="fs-6 ms-2 fw-normal">
                     (-23.6%
-                    <FontAwesomeIcon icon={faArrowDown} fixedWidth />
-                    )
+                    <FontAwesomeIcon icon={faArrowDown} fixedWidth />)
                   </span>
                 </div>
                 <div>{dict.dashboard.featured.sessions}</div>
@@ -183,13 +197,19 @@ export default async function Page() {
                 </DropdownToggle>
 
                 <DropdownMenu>
-                  <DropdownItem href="#/action-1">{dict.dashboard.featured.action.action1}</DropdownItem>
-                  <DropdownItem href="#/action-2">{dict.dashboard.featured.action.action2}</DropdownItem>
-                  <DropdownItem href="#/action-3">{dict.dashboard.featured.action.action3}</DropdownItem>
+                  <DropdownItem href="#/action-1">
+                    {dict.dashboard.featured.action.action1}
+                  </DropdownItem>
+                  <DropdownItem href="#/action-2">
+                    {dict.dashboard.featured.action.action2}
+                  </DropdownItem>
+                  <DropdownItem href="#/action-3">
+                    {dict.dashboard.featured.action.action3}
+                  </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             </CardBody>
-            <div className="mt-3 mx-3" style={{ height: '70px' }}>
+            <div className="mt-3 mx-3" style={{ height: "70px" }}>
               <SessionChart />
             </div>
           </Card>
@@ -201,7 +221,9 @@ export default async function Page() {
           <div className="d-flex justify-content-between">
             <div>
               <h4 className="mb-0">{dict.dashboard.traffic.title}</h4>
-              <div className="small text-black-50 dark:text-gray-500">{dict.dashboard.traffic.duration}</div>
+              <div className="small text-black-50 dark:text-gray-500">
+                {dict.dashboard.traffic.duration}
+              </div>
             </div>
             <div className="d-none d-md-block">
               <ButtonGroup aria-label="Toolbar with buttons" className="mx-3">
@@ -212,10 +234,7 @@ export default async function Page() {
                   name="options"
                   autoComplete="off"
                 />
-                <label
-                  className="btn btn-outline-secondary"
-                  htmlFor="option1"
-                >
+                <label className="btn btn-outline-secondary" htmlFor="option1">
                   {dict.dashboard.traffic.option.day}
                 </label>
                 <input
@@ -239,10 +258,7 @@ export default async function Page() {
                   name="options"
                   autoComplete="off"
                 />
-                <label
-                  className="btn btn-outline-secondary"
-                  htmlFor="option3"
-                >
+                <label className="btn btn-outline-secondary" htmlFor="option3">
                   {dict.dashboard.traffic.option.year}
                 </label>
               </ButtonGroup>
@@ -253,8 +269,8 @@ export default async function Page() {
           </div>
           <div
             style={{
-              height: '300px',
-              marginTop: '40px',
+              height: "300px",
+              marginTop: "40px",
             }}
           >
             <TrafficChart />
@@ -263,12 +279,12 @@ export default async function Page() {
         <CardFooter>
           <div className="row row-cols-1 row-cols-md-5 text-center">
             <div className="col mb-sm-2 mb-0">
-              <div className="text-black-50 dark:text-gray-500">{dict.dashboard.traffic.category1}</div>
+              <div className="text-black-50 dark:text-gray-500">
+                {dict.dashboard.traffic.category1}
+              </div>
               <div className="fw-semibold">
                 29.703
-                {dict.dashboard.traffic.users}
-                {' '}
-                (40%)
+                {dict.dashboard.traffic.users} (40%)
               </div>
               <ProgressBar
                 className="progress-thin mt-2"
@@ -277,12 +293,12 @@ export default async function Page() {
               />
             </div>
             <div className="col mb-sm-2 mb-0">
-              <div className="text-black-50 dark:text-gray-500">{dict.dashboard.traffic.category2}</div>
+              <div className="text-black-50 dark:text-gray-500">
+                {dict.dashboard.traffic.category2}
+              </div>
               <div className="fw-semibold">
                 24.093
-                {dict.dashboard.traffic.users}
-                {' '}
-                (20%)
+                {dict.dashboard.traffic.users} (20%)
               </div>
               <ProgressBar
                 className="progress-thin mt-2"
@@ -291,12 +307,12 @@ export default async function Page() {
               />
             </div>
             <div className="col mb-sm-2 mb-0">
-              <div className="text-black-50 dark:text-gray-500">{dict.dashboard.traffic.category3}</div>
+              <div className="text-black-50 dark:text-gray-500">
+                {dict.dashboard.traffic.category3}
+              </div>
               <div className="fw-semibold">
                 78.706
-                {dict.dashboard.traffic.views}
-                {' '}
-                (60%)
+                {dict.dashboard.traffic.views} (60%)
               </div>
               <ProgressBar
                 className="progress-thin mt-2"
@@ -305,12 +321,12 @@ export default async function Page() {
               />
             </div>
             <div className="col mb-sm-2 mb-0">
-              <div className="text-black-50 dark:text-gray-500">{dict.dashboard.traffic.category4}</div>
+              <div className="text-black-50 dark:text-gray-500">
+                {dict.dashboard.traffic.category4}
+              </div>
               <div className="fw-semibold">
                 22.123
-                {dict.dashboard.traffic.users}
-                {' '}
-                (80%)
+                {dict.dashboard.traffic.users} (80%)
               </div>
               <ProgressBar
                 className="progress-thin mt-2"
@@ -319,7 +335,9 @@ export default async function Page() {
               />
             </div>
             <div className="col mb-sm-2 mb-0">
-              <div className="text-black-50 dark:text-gray-500">{dict.dashboard.traffic.category5}</div>
+              <div className="text-black-50 dark:text-gray-500">
+                {dict.dashboard.traffic.category5}
+              </div>
               <div className="fw-semibold">40.15%</div>
               <ProgressBar
                 className="progress-thin mt-2"
@@ -335,7 +353,7 @@ export default async function Page() {
         <div className="col-sm-6 col-lg-4">
           <Card
             className="mb-4"
-            style={{ '--bs-card-cap-bg': '#3b5998' } as React.CSSProperties}
+            style={{ "--bs-card-cap-bg": "#3b5998" } as React.CSSProperties}
           >
             <CardHeader className="d-flex justify-content-center align-items-center">
               <FontAwesomeIcon
@@ -368,7 +386,7 @@ export default async function Page() {
         <div className="col-sm-6 col-lg-4">
           <Card
             className="mb-4"
-            style={{ '--bs-card-cap-bg': '#00aced' } as React.CSSProperties}
+            style={{ "--bs-card-cap-bg": "#00aced" } as React.CSSProperties}
           >
             <CardHeader className="d-flex justify-content-center align-items-center">
               <FontAwesomeIcon
@@ -401,7 +419,7 @@ export default async function Page() {
         <div className="col-sm-6 col-lg-4">
           <Card
             className="mb-4"
-            style={{ '--bs-card-cap-bg': '#4875b4' } as React.CSSProperties}
+            style={{ "--bs-card-cap-bg": "#4875b4" } as React.CSSProperties}
           >
             <CardHeader className="d-flex justify-content-center align-items-center">
               <FontAwesomeIcon
@@ -430,15 +448,12 @@ export default async function Page() {
             </CardBody>
           </Card>
         </div>
-
       </div>
 
       <div className="row">
         <div className="col-md-12">
           <Card>
-            <CardHeader>
-              {dict.dashboard.sales.title}
-            </CardHeader>
+            <CardHeader>{dict.dashboard.sales.title}</CardHeader>
             <CardBody>
               <div className="row">
                 <div className="col-sm-6">
@@ -460,7 +475,6 @@ export default async function Page() {
                         <div className="fs-5 fw-semibold">22,643</div>
                       </div>
                     </div>
-
                   </div>
 
                   <hr className="mt-0" />
@@ -625,7 +639,6 @@ export default async function Page() {
                         <div className="fs-5 fw-semibold">49,123</div>
                       </div>
                     </div>
-
                   </div>
 
                   <hr className="mt-0" />
@@ -634,7 +647,11 @@ export default async function Page() {
                     <div className="mb-3">
                       <div className="d-flex mb-1">
                         <div>
-                          <FontAwesomeIcon className="me-2" icon={faMars} fixedWidth />
+                          <FontAwesomeIcon
+                            className="me-2"
+                            icon={faMars}
+                            fixedWidth
+                          />
                           {dict.dashboard.sales.male}
                         </div>
                         <div className="ms-auto fw-semibold">43%</div>
@@ -649,7 +666,11 @@ export default async function Page() {
                     <div className="mb-3">
                       <div className="d-flex mb-1">
                         <div>
-                          <FontAwesomeIcon className="me-2" icon={faVenus} fixedWidth />
+                          <FontAwesomeIcon
+                            className="me-2"
+                            icon={faVenus}
+                            fixedWidth
+                          />
                           {dict.dashboard.sales.female}
                         </div>
                         <div className="ms-auto fw-semibold">37%</div>
@@ -665,11 +686,17 @@ export default async function Page() {
                   <div className="mb-3">
                     <div className="d-flex mb-1">
                       <div>
-                        <FontAwesomeIcon className="me-2" icon={faSearch} fixedWidth />
+                        <FontAwesomeIcon
+                          className="me-2"
+                          icon={faSearch}
+                          fixedWidth
+                        />
                         {dict.dashboard.sales.organic}
                       </div>
                       <div className="ms-auto fw-semibold me-2">191.235</div>
-                      <div className="text-black-50 dark:text-gray-500 small">(56%)</div>
+                      <div className="text-black-50 dark:text-gray-500 small">
+                        (56%)
+                      </div>
                     </div>
                     <ProgressBar
                       className="progress-thin"
@@ -681,11 +708,17 @@ export default async function Page() {
                   <div className="mb-3">
                     <div className="d-flex mb-1">
                       <div>
-                        <FontAwesomeIcon className="me-2" icon={faFacebookF} fixedWidth />
+                        <FontAwesomeIcon
+                          className="me-2"
+                          icon={faFacebookF}
+                          fixedWidth
+                        />
                         {dict.dashboard.sales.facebook}
                       </div>
                       <div className="ms-auto fw-semibold me-2">51.223</div>
-                      <div className="text-black-50 dark:text-gray-500 small">(15%)</div>
+                      <div className="text-black-50 dark:text-gray-500 small">
+                        (15%)
+                      </div>
                     </div>
                     <ProgressBar
                       className="progress-thin"
@@ -697,11 +730,17 @@ export default async function Page() {
                   <div className="mb-3">
                     <div className="d-flex mb-1">
                       <div>
-                        <FontAwesomeIcon className="me-2" icon={faTwitter} fixedWidth />
+                        <FontAwesomeIcon
+                          className="me-2"
+                          icon={faTwitter}
+                          fixedWidth
+                        />
                         {dict.dashboard.sales.twitter}
                       </div>
                       <div className="ms-auto fw-semibold me-2">37.564</div>
-                      <div className="text-black-50 dark:text-gray-500 small">(11%)</div>
+                      <div className="text-black-50 dark:text-gray-500 small">
+                        (11%)
+                      </div>
                     </div>
                     <ProgressBar
                       className="progress-thin"
@@ -713,11 +752,17 @@ export default async function Page() {
                   <div className="mb-3">
                     <div className="d-flex mb-1">
                       <div>
-                        <FontAwesomeIcon className="me-2" icon={faLinkedinIn} fixedWidth />
+                        <FontAwesomeIcon
+                          className="me-2"
+                          icon={faLinkedinIn}
+                          fixedWidth
+                        />
                         {dict.dashboard.sales.linkedin}
                       </div>
                       <div className="ms-auto fw-semibold me-2">27.319</div>
-                      <div className="text-black-50 dark:text-gray-500 small">(8%)</div>
+                      <div className="text-black-50 dark:text-gray-500 small">
+                        (8%)
+                      </div>
                     </div>
                     <ProgressBar
                       className="progress-thin"
@@ -739,7 +784,9 @@ export default async function Page() {
                       </th>
                       <th>{dict.dashboard.listing.headers.header1}</th>
                       <th>{dict.dashboard.listing.headers.header2}</th>
-                      <th className="text-center">{dict.dashboard.listing.headers.header3}</th>
+                      <th className="text-center">
+                        {dict.dashboard.listing.headers.header3}
+                      </th>
                       <th>{dict.dashboard.listing.headers.header4}</th>
                       <th aria-label="Action" />
                     </tr>
@@ -755,21 +802,14 @@ export default async function Page() {
                             src="/assets/img/avatars/1.jpg"
                             alt="user@email.com"
                           />
-                          <span
-                            className="avatar-status position-absolute d-block bottom-0 end-0 bg-success rounded-circle border border-white"
-                          />
+                          <span className="avatar-status position-absolute d-block bottom-0 end-0 bg-success rounded-circle border border-white" />
                         </div>
                       </td>
                       <td>
                         <div>{dict.dashboard.listing.items.item1.name}</div>
                         <div className="small text-black-50 dark:text-gray-500">
-                          <span>{dict.dashboard.listing.user_status.new}</span>
-                          {' '}
-                          |
-                          {' '}
-                          {dict.dashboard.listing.registered}
-                          :
-                          {' '}
+                          <span>{dict.dashboard.listing.user_status.new}</span>{" "}
+                          | {dict.dashboard.listing.registered}:{" "}
                           {dict.dashboard.listing.registered_at}
                         </div>
                       </td>
@@ -784,14 +824,22 @@ export default async function Page() {
                             </small>
                           </div>
                         </div>
-                        <ProgressBar className="progress-thin" variant="success" now={50} />
+                        <ProgressBar
+                          className="progress-thin"
+                          variant="success"
+                          now={50}
+                        />
                       </td>
                       <td className="text-center" aria-label="icon">
                         <FontAwesomeIcon icon={faCcAmex} size="lg" fixedWidth />
                       </td>
                       <td>
-                        <div className="small text-black-50 dark:text-gray-500">{dict.dashboard.listing.last_login}</div>
-                        <div className="fw-semibold">{dict.dashboard.listing.items.item1.login_at}</div>
+                        <div className="small text-black-50 dark:text-gray-500">
+                          {dict.dashboard.listing.last_login}
+                        </div>
+                        <div className="fw-semibold">
+                          {dict.dashboard.listing.items.item1.login_at}
+                        </div>
                       </td>
                       <td>
                         <Dropdown align="end">
@@ -801,12 +849,19 @@ export default async function Page() {
                             className="btn-link rounded-0 text-black-50 dark:text-gray-500 shadow-none p-0"
                             id="action-user1"
                           >
-                            <FontAwesomeIcon fixedWidth icon={faEllipsisVertical} />
+                            <FontAwesomeIcon
+                              fixedWidth
+                              icon={faEllipsisVertical}
+                            />
                           </DropdownToggle>
 
                           <DropdownMenu>
-                            <DropdownItem href="#/action-1">{dict.action.info}</DropdownItem>
-                            <DropdownItem href="#/action-2">{dict.action.edit}</DropdownItem>
+                            <DropdownItem href="#/action-1">
+                              {dict.action.info}
+                            </DropdownItem>
+                            <DropdownItem href="#/action-2">
+                              {dict.action.edit}
+                            </DropdownItem>
                             <DropdownItem
                               className="text-danger"
                               href="#/action-3"
@@ -827,21 +882,16 @@ export default async function Page() {
                             src="/assets/img/avatars/2.jpg"
                             alt="user@email.com"
                           />
-                          <span
-                            className="avatar-status position-absolute d-block bottom-0 end-0 bg-danger rounded-circle border border-white"
-                          />
+                          <span className="avatar-status position-absolute d-block bottom-0 end-0 bg-danger rounded-circle border border-white" />
                         </div>
                       </td>
                       <td>
                         <div>{dict.dashboard.listing.items.item2.name}</div>
                         <div className="small text-black-50 dark:text-gray-500">
-                          <span>{dict.dashboard.listing.user_status.recurring}</span>
-                          {' '}
-                          |
-                          {' '}
-                          {dict.dashboard.listing.registered}
-                          :
-                          {' '}
+                          <span>
+                            {dict.dashboard.listing.user_status.recurring}
+                          </span>{" "}
+                          | {dict.dashboard.listing.registered}:{" "}
                           {dict.dashboard.listing.registered_at}
                         </div>
                       </td>
@@ -856,14 +906,22 @@ export default async function Page() {
                             </small>
                           </div>
                         </div>
-                        <ProgressBar className="progress-thin" variant="info" now={10} />
+                        <ProgressBar
+                          className="progress-thin"
+                          variant="info"
+                          now={10}
+                        />
                       </td>
                       <td className="text-center" aria-label="icon">
                         <FontAwesomeIcon icon={faCcVisa} size="lg" fixedWidth />
                       </td>
                       <td>
-                        <div className="small text-black-50 dark:text-gray-500">{dict.dashboard.listing.last_login}</div>
-                        <div className="fw-semibold">{dict.dashboard.listing.items.item2.login_at}</div>
+                        <div className="small text-black-50 dark:text-gray-500">
+                          {dict.dashboard.listing.last_login}
+                        </div>
+                        <div className="fw-semibold">
+                          {dict.dashboard.listing.items.item2.login_at}
+                        </div>
                       </td>
                       <td>
                         <Dropdown align="end">
@@ -873,12 +931,19 @@ export default async function Page() {
                             className="btn-link rounded-0 text-black-50 dark:text-gray-500 shadow-none p-0"
                             id="action-user2"
                           >
-                            <FontAwesomeIcon fixedWidth icon={faEllipsisVertical} />
+                            <FontAwesomeIcon
+                              fixedWidth
+                              icon={faEllipsisVertical}
+                            />
                           </DropdownToggle>
 
                           <DropdownMenu>
-                            <DropdownItem href="#/action-1">{dict.action.info}</DropdownItem>
-                            <DropdownItem href="#/action-2">{dict.action.edit}</DropdownItem>
+                            <DropdownItem href="#/action-1">
+                              {dict.action.info}
+                            </DropdownItem>
+                            <DropdownItem href="#/action-2">
+                              {dict.action.edit}
+                            </DropdownItem>
                             <DropdownItem
                               className="text-danger"
                               href="#/action-3"
@@ -899,21 +964,14 @@ export default async function Page() {
                             src="/assets/img/avatars/3.jpg"
                             alt="user@email.com"
                           />
-                          <span
-                            className="avatar-status position-absolute d-block bottom-0 end-0 bg-warning rounded-circle border border-white"
-                          />
+                          <span className="avatar-status position-absolute d-block bottom-0 end-0 bg-warning rounded-circle border border-white" />
                         </div>
                       </td>
                       <td>
                         <div>{dict.dashboard.listing.items.item3.name}</div>
                         <div className="small text-black-50 dark:text-gray-500">
-                          <span>{dict.dashboard.listing.user_status.new}</span>
-                          {' '}
-                          |
-                          {' '}
-                          {dict.dashboard.listing.registered}
-                          :
-                          {' '}
+                          <span>{dict.dashboard.listing.user_status.new}</span>{" "}
+                          | {dict.dashboard.listing.registered}:{" "}
                           {dict.dashboard.listing.registered_at}
                         </div>
                       </td>
@@ -928,14 +986,26 @@ export default async function Page() {
                             </small>
                           </div>
                         </div>
-                        <ProgressBar className="progress-thin" variant="warning" now={74} />
+                        <ProgressBar
+                          className="progress-thin"
+                          variant="warning"
+                          now={74}
+                        />
                       </td>
                       <td className="text-center" aria-label="icon">
-                        <FontAwesomeIcon icon={faCcStripe} size="lg" fixedWidth />
+                        <FontAwesomeIcon
+                          icon={faCcStripe}
+                          size="lg"
+                          fixedWidth
+                        />
                       </td>
                       <td>
-                        <div className="small text-black-50 dark:text-gray-500">{dict.dashboard.listing.last_login}</div>
-                        <div className="fw-semibold">{dict.dashboard.listing.items.item3.login_at}</div>
+                        <div className="small text-black-50 dark:text-gray-500">
+                          {dict.dashboard.listing.last_login}
+                        </div>
+                        <div className="fw-semibold">
+                          {dict.dashboard.listing.items.item3.login_at}
+                        </div>
                       </td>
                       <td>
                         <Dropdown align="end">
@@ -945,12 +1015,19 @@ export default async function Page() {
                             className="btn-link rounded-0 text-black-50 dark:text-gray-500 shadow-none p-0"
                             id="action-user3"
                           >
-                            <FontAwesomeIcon fixedWidth icon={faEllipsisVertical} />
+                            <FontAwesomeIcon
+                              fixedWidth
+                              icon={faEllipsisVertical}
+                            />
                           </DropdownToggle>
 
                           <DropdownMenu>
-                            <DropdownItem href="#/action-1">{dict.action.info}</DropdownItem>
-                            <DropdownItem href="#/action-2">{dict.action.edit}</DropdownItem>
+                            <DropdownItem href="#/action-1">
+                              {dict.action.info}
+                            </DropdownItem>
+                            <DropdownItem href="#/action-2">
+                              {dict.action.edit}
+                            </DropdownItem>
                             <DropdownItem
                               className="text-danger"
                               href="#/action-3"
@@ -971,21 +1048,14 @@ export default async function Page() {
                             src="/assets/img/avatars/4.jpg"
                             alt="user@email.com"
                           />
-                          <span
-                            className="avatar-status position-absolute d-block bottom-0 end-0 bg-secondary rounded-circle border border-white"
-                          />
+                          <span className="avatar-status position-absolute d-block bottom-0 end-0 bg-secondary rounded-circle border border-white" />
                         </div>
                       </td>
                       <td>
                         <div>{dict.dashboard.listing.items.item4.name}</div>
                         <div className="small text-black-50 dark:text-gray-500">
-                          <span>{dict.dashboard.listing.user_status.new}</span>
-                          {' '}
-                          |
-                          {' '}
-                          {dict.dashboard.listing.registered}
-                          :
-                          {' '}
+                          <span>{dict.dashboard.listing.user_status.new}</span>{" "}
+                          | {dict.dashboard.listing.registered}:{" "}
                           {dict.dashboard.listing.registered_at}
                         </div>
                       </td>
@@ -1000,14 +1070,26 @@ export default async function Page() {
                             </small>
                           </div>
                         </div>
-                        <ProgressBar className="progress-thin" variant="danger" now={98} />
+                        <ProgressBar
+                          className="progress-thin"
+                          variant="danger"
+                          now={98}
+                        />
                       </td>
                       <td className="text-center" aria-label="icon">
-                        <FontAwesomeIcon icon={faCcPaypal} size="lg" fixedWidth />
+                        <FontAwesomeIcon
+                          icon={faCcPaypal}
+                          size="lg"
+                          fixedWidth
+                        />
                       </td>
                       <td>
-                        <div className="small text-black-50 dark:text-gray-500">{dict.dashboard.listing.last_login}</div>
-                        <div className="fw-semibold">{dict.dashboard.listing.items.item4.login_at}</div>
+                        <div className="small text-black-50 dark:text-gray-500">
+                          {dict.dashboard.listing.last_login}
+                        </div>
+                        <div className="fw-semibold">
+                          {dict.dashboard.listing.items.item4.login_at}
+                        </div>
                       </td>
                       <td>
                         <Dropdown align="end">
@@ -1017,12 +1099,19 @@ export default async function Page() {
                             className="btn-link rounded-0 text-black-50 dark:text-gray-500 shadow-none p-0"
                             id="action-user4"
                           >
-                            <FontAwesomeIcon fixedWidth icon={faEllipsisVertical} />
+                            <FontAwesomeIcon
+                              fixedWidth
+                              icon={faEllipsisVertical}
+                            />
                           </DropdownToggle>
 
                           <DropdownMenu>
-                            <DropdownItem href="#/action-1">{dict.action.info}</DropdownItem>
-                            <DropdownItem href="#/action-2">{dict.action.edit}</DropdownItem>
+                            <DropdownItem href="#/action-1">
+                              {dict.action.info}
+                            </DropdownItem>
+                            <DropdownItem href="#/action-2">
+                              {dict.action.edit}
+                            </DropdownItem>
                             <DropdownItem
                               className="text-danger"
                               href="#/action-3"
@@ -1043,21 +1132,14 @@ export default async function Page() {
                             src="/assets/img/avatars/5.jpg"
                             alt="user@email.com"
                           />
-                          <span
-                            className="avatar-status position-absolute d-block bottom-0 end-0 bg-success rounded-circle border border-white"
-                          />
+                          <span className="avatar-status position-absolute d-block bottom-0 end-0 bg-success rounded-circle border border-white" />
                         </div>
                       </td>
                       <td>
                         <div>{dict.dashboard.listing.items.item5.name}</div>
                         <div className="small text-black-50 dark:text-gray-500">
-                          <span>{dict.dashboard.listing.user_status.new}</span>
-                          {' '}
-                          |
-                          {' '}
-                          {dict.dashboard.listing.registered}
-                          :
-                          {' '}
+                          <span>{dict.dashboard.listing.user_status.new}</span>{" "}
+                          | {dict.dashboard.listing.registered}:{" "}
                           {dict.dashboard.listing.registered_at}
                         </div>
                       </td>
@@ -1072,14 +1154,26 @@ export default async function Page() {
                             </small>
                           </div>
                         </div>
-                        <ProgressBar className="progress-thin" variant="info" now={22} />
+                        <ProgressBar
+                          className="progress-thin"
+                          variant="info"
+                          now={22}
+                        />
                       </td>
                       <td className="text-center" aria-label="icon">
-                        <FontAwesomeIcon icon={faCcApplePay} size="lg" fixedWidth />
+                        <FontAwesomeIcon
+                          icon={faCcApplePay}
+                          size="lg"
+                          fixedWidth
+                        />
                       </td>
                       <td>
-                        <div className="small text-black-50 dark:text-gray-500">{dict.dashboard.listing.last_login}</div>
-                        <div className="fw-semibold">{dict.dashboard.listing.items.item5.login_at}</div>
+                        <div className="small text-black-50 dark:text-gray-500">
+                          {dict.dashboard.listing.last_login}
+                        </div>
+                        <div className="fw-semibold">
+                          {dict.dashboard.listing.items.item5.login_at}
+                        </div>
                       </td>
                       <td>
                         <Dropdown align="end">
@@ -1089,12 +1183,19 @@ export default async function Page() {
                             className="btn-link rounded-0 text-black-50 dark:text-gray-500 shadow-none p-0"
                             id="action-user5"
                           >
-                            <FontAwesomeIcon fixedWidth icon={faEllipsisVertical} />
+                            <FontAwesomeIcon
+                              fixedWidth
+                              icon={faEllipsisVertical}
+                            />
                           </DropdownToggle>
 
                           <DropdownMenu>
-                            <DropdownItem href="#/action-1">{dict.action.info}</DropdownItem>
-                            <DropdownItem href="#/action-2">{dict.action.edit}</DropdownItem>
+                            <DropdownItem href="#/action-1">
+                              {dict.action.info}
+                            </DropdownItem>
+                            <DropdownItem href="#/action-2">
+                              {dict.action.edit}
+                            </DropdownItem>
                             <DropdownItem
                               className="text-danger"
                               href="#/action-3"
@@ -1115,21 +1216,14 @@ export default async function Page() {
                             src="/assets/img/avatars/6.jpg"
                             alt="user@email.com"
                           />
-                          <span
-                            className="avatar-status position-absolute d-block bottom-0 end-0 bg-danger rounded-circle border border-white"
-                          />
+                          <span className="avatar-status position-absolute d-block bottom-0 end-0 bg-danger rounded-circle border border-white" />
                         </div>
                       </td>
                       <td>
                         <div>{dict.dashboard.listing.items.item6.name}</div>
                         <div className="small text-black-50 dark:text-gray-500">
-                          <span>{dict.dashboard.listing.user_status.new}</span>
-                          {' '}
-                          |
-                          {' '}
-                          {dict.dashboard.listing.registered}
-                          :
-                          {' '}
+                          <span>{dict.dashboard.listing.user_status.new}</span>{" "}
+                          | {dict.dashboard.listing.registered}:{" "}
                           {dict.dashboard.listing.registered_at}
                         </div>
                       </td>
@@ -1144,14 +1238,22 @@ export default async function Page() {
                             </small>
                           </div>
                         </div>
-                        <ProgressBar className="progress-thin" variant="success" now={43} />
+                        <ProgressBar
+                          className="progress-thin"
+                          variant="success"
+                          now={43}
+                        />
                       </td>
                       <td className="text-center" aria-label="icon">
                         <FontAwesomeIcon icon={faCcAmex} size="lg" fixedWidth />
                       </td>
                       <td>
-                        <div className="small text-black-50 dark:text-gray-500">{dict.dashboard.listing.last_login}</div>
-                        <div className="fw-semibold">{dict.dashboard.listing.items.item6.login_at}</div>
+                        <div className="small text-black-50 dark:text-gray-500">
+                          {dict.dashboard.listing.last_login}
+                        </div>
+                        <div className="fw-semibold">
+                          {dict.dashboard.listing.items.item6.login_at}
+                        </div>
                       </td>
                       <td>
                         <Dropdown align="end">
@@ -1161,12 +1263,19 @@ export default async function Page() {
                             className="btn-link rounded-0 text-black-50 dark:text-gray-500 shadow-none p-0"
                             id="action-user6"
                           >
-                            <FontAwesomeIcon fixedWidth icon={faEllipsisVertical} />
+                            <FontAwesomeIcon
+                              fixedWidth
+                              icon={faEllipsisVertical}
+                            />
                           </DropdownToggle>
 
                           <DropdownMenu>
-                            <DropdownItem href="#/action-1">{dict.action.info}</DropdownItem>
-                            <DropdownItem href="#/action-2">{dict.action.edit}</DropdownItem>
+                            <DropdownItem href="#/action-1">
+                              {dict.action.info}
+                            </DropdownItem>
+                            <DropdownItem href="#/action-2">
+                              {dict.action.edit}
+                            </DropdownItem>
                             <DropdownItem
                               className="text-danger"
                               href="#/action-3"
@@ -1185,5 +1294,5 @@ export default async function Page() {
         </div>
       </div>
     </div>
-  )
+  );
 }

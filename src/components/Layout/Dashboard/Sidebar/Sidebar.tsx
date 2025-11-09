@@ -1,60 +1,54 @@
-'use client'
+"use client";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleLeft } from '@fortawesome/free-solid-svg-icons'
-import React, { useEffect, useState } from 'react'
-import classNames from 'classnames'
-import { Button } from 'react-bootstrap'
-import { useSidebar } from '@/components/Layout/Dashboard/SidebarProvider'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+import React, { useEffect, useState } from "react";
+import classNames from "classnames";
+import { Button } from "react-bootstrap";
+import { useSidebar } from "@/components/Layout/Dashboard/SidebarProvider";
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
-  const [isNarrow, setIsNarrow] = useState(false)
+  const [isNarrow, setIsNarrow] = useState(false);
 
-  const { showSidebarState: [isShowSidebar] } = useSidebar()
+  const {
+    showSidebarState: [isShowSidebar],
+  } = useSidebar();
 
   const toggleIsNarrow = () => {
-    const newValue = !isNarrow
-    localStorage.setItem('isNarrow', newValue ? 'true' : 'false')
-    setIsNarrow(newValue)
-  }
+    const newValue = !isNarrow;
+    localStorage.setItem("isNarrow", newValue ? "true" : "false");
+    setIsNarrow(newValue);
+  };
 
   // On first time load only
   useEffect(() => {
-    if (localStorage.getItem('isNarrow')) {
-      setIsNarrow(localStorage.getItem('isNarrow') === 'true')
+    if (localStorage.getItem("isNarrow")) {
+      setIsNarrow(localStorage.getItem("isNarrow") === "true");
     }
-  }, [setIsNarrow])
+  }, [setIsNarrow]);
 
   return (
     <div
-      className={classNames('sidebar d-flex flex-column position-fixed h-100 border-end', {
-        'sidebar-narrow': isNarrow,
-        show: isShowSidebar,
-      })}
+      className={classNames(
+        "sidebar d-flex flex-column position-fixed h-100 border-end",
+        {
+          "sidebar-narrow": isNarrow,
+          show: isShowSidebar,
+        }
+      )}
       id="sidebar"
     >
       <div className="sidebar-brand d-none d-md-flex align-items-center justify-content-center">
-        <svg
-          className="sidebar-brand-full"
-          width="118"
-          height="46"
-        >
-          <title>CoreUI Logo</title>
-          <use xlinkHref="/assets/brand/coreui.svg#full" />
-        </svg>
-        <svg
-          className="sidebar-brand-narrow d-none"
-          width="46"
-          height="46"
-        >
-          <title>CoreUI Logo</title>
-          <use xlinkHref="/assets/brand/coreui.svg#signet" />
-        </svg>
+        <div className="mySystemMedic-logo">
+          <span className="mySystemMedic-text">
+            <span className="mySystemMedic-part1">my</span>
+            <span className="mySystemMedic-part2">System</span>
+            <span className="mySystemMedic-part3">Medic</span>
+          </span>
+        </div>
       </div>
 
-      <div className="sidebar-nav flex-fill border-top">
-        {children}
-      </div>
+      <div className="sidebar-nav flex-fill border-top">{children}</div>
 
       <Button
         variant="link"
@@ -63,8 +57,12 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
         type="button"
         aria-label="sidebar toggler"
       >
-        <FontAwesomeIcon className="sidebar-toggler-chevron" icon={faAngleLeft} fontSize={24} />
+        <FontAwesomeIcon
+          className="sidebar-toggler-chevron"
+          icon={faAngleLeft}
+          fontSize={24}
+        />
       </Button>
     </div>
-  )
+  );
 }

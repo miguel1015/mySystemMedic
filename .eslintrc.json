@@ -1,54 +1,59 @@
 {
+  // 🔧 Configuración base y plugins comunes
   "extends": [
     "eslint:recommended",
-    "plugin:eslint-comments/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
+    "plugin:jsx-a11y/recommended",
+    "plugin:eslint-comments/recommended",
     "airbnb",
     "airbnb-typescript",
-    "next/core-web-vitals"
+    "next/core-web-vitals",
+    "plugin:prettier/recommended" // ✅ Integra Prettier con ESLint
   ],
+
+  // 🧠 Parser de TypeScript
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": "./tsconfig.json"
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": "."
   },
-  // https://github.com/iamturns/eslint-config-airbnb-typescript/issues/239
-  // https://www.npmjs.com/package/eslint-plugin-import
+
+  // ⚙️ Resolver de imports para TypeScript
   "settings": {
+    "react": {
+      "version": "detect"
+    },
     "import/resolver": {
       "typescript": true
     }
   },
+
+  // 🚫 Reglas personalizadas
   "rules": {
-    "import/prefer-default-export": 0,
-    // https://stackoverflow.com/questions/69928061/struggling-with-typescript-react-eslint-and-simple-arrow-functions-components
+    // -----------------------------
+    // 🧩 Estilo general
+    // -----------------------------
+    "quotes": ["error", "double"], // ✅ Comillas dobles permitidas
+    "semi": ["error", "never"], // ✅ Sin punto y coma
+    "no-console": ["warn", { "allow": ["warn", "error"] }], // ⚠️ Permite console.warn/error
+    "no-unused-vars": "off", // 🚫 Desactiva regla JS nativa
+    "@typescript-eslint/no-unused-vars": ["warn"], // ✅ Usa la de TS, más precisa
+
+    // -----------------------------
+    // ⚛️ React
+    // -----------------------------
+    "react/react-in-jsx-scope": "off", // ✅ Next.js importa React automáticamente
+    "react/jsx-filename-extension": ["warn", { "extensions": [".tsx"] }], // ⚛️ Solo TSX
+    "react/require-default-props": "off", // ✅ No necesario con TS
+    "react/prop-types": "off", // ✅ TS ya valida tipos
     "react/function-component-definition": [
-      2,
-      {
-        "namedComponents": [
-          "function-declaration",
-          "arrow-function"
-        ]
-      }
+      "error",
+      { "namedComponents": ["function-declaration", "arrow-function"] }
     ],
-    // https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/main/docs/rules/anchor-is-valid.md#case-i-use-nextjs-and-im-getting-this-error-inside-of-links
-    "jsx-a11y/anchor-is-valid": 0,
-    // airbnb config configures stricter rules, change assert to "either".
-    // https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/718
-    "jsx-a11y/label-has-associated-control": [
-      2,
-      {
-        "assert": "either"
-      }
-    ],
-    // Since we do not use prop-types
-    "react/require-default-props": 0,
-    // Use semicolon as member delimiter for interfaces and type
-    "@typescript-eslint/member-delimiter-style": 2,
-    "@typescript-eslint/semi": 0,
     "react/jsx-props-no-spreading": [
-      2,
+      "warn",
       {
         "exceptions": [
           "input",
@@ -56,20 +61,51 @@
           "select",
           "Form.Control",
           "Form.Check",
-          "Form.Check.Input",
           "Form.Select",
           "Form.Switch"
         ]
       }
     ],
-    "quotes": [
-      2,
-      "single"
+
+    // -----------------------------
+    // 🧱 Importaciones
+    // -----------------------------
+    "import/prefer-default-export": "off", // ✅ Permite exportaciones nombradas
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "ts": "never",
+        "tsx": "never"
+      }
     ],
-    "semi": [
-      2,
-      "never"
+    "import/no-extraneous-dependencies": [
+      "error",
+      { "devDependencies": ["**/*.test.tsx", "**/*.spec.ts", "**/setupTests.ts"] }
     ],
-    "eslint-comments/no-unused-disable": 2
+
+    // -----------------------------
+    // 🦺 TypeScript
+    // -----------------------------
+    "@typescript-eslint/explicit-module-boundary-types": "off", // 🔧 Menos ruido
+    "@typescript-eslint/semi": "off",
+    "@typescript-eslint/member-delimiter-style": [
+      "error",
+      {
+        "multiline": {
+          "delimiter": "semi",
+          "requireLast": true
+        },
+        "singleline": {
+          "delimiter": "semi",
+          "requireLast": false
+        }
+      }
+    ],
+
+    // -----------------------------
+    // 🗣️ Comentarios y etiquetas
+    // -----------------------------
+    "eslint-comments/no-unused-disable": "error"
   }
 }
