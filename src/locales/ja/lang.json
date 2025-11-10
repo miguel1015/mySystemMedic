@@ -5,7 +5,8 @@
     "form": {
       "username": "ユーザー名",
       "password": "パスワード",
-      "submit": "ログイン"
+      "submit": "ログイン",
+      "loading": "読み込み中..."
     },
     "forgot_password": "パスワードを忘れましたか？",
     "signup": {
@@ -29,7 +30,8 @@
       "email": "メール",
       "password": "パスワード",
       "confirm_password": "パスワードの確認",
-      "submit": "登録"
+      "submit": "登録",
+      "loading": "登録"
     }
   },
   "action": {
@@ -37,6 +39,7 @@
     "edit": "編集",
     "delete": "削除",
     "submit": "送信",
+    "loading": "送信",
     "submitting": "送信中...",
     "reset": "リセット"
   },
@@ -277,7 +280,7 @@
       "colors": "色",
       "typography": "タイポグラフィ",
       "components": "コンポーネント",
-      "accordion": "アコーディオン",
+      "contracts": "契約",
       "breadcrumb": "パンくずリスト",
       "cards": "カード",
       "carousel": "カルーセル",
@@ -292,7 +295,7 @@
       "tables": "テーブル",
       "tabs": "タブ",
       "tooltips": "ツールチップ",
-      "buttons": "ボタン",
+      "wallet": "財布",
       "buttons_group": "ボタングループ",
       "dropdowns": "ドロップダウン",
       "charts": "チャート",
@@ -318,12 +321,16 @@
       "error500": "エラー 500",
       "docs": "ドキュメント",
       "try_core_ui_pro": "CoreUI PRO を試す",
-      "base": "ベース",
-      "forms": "フォーム",
-      "icons": "アイコン",
-      "notifications": "通知",
+      "configuration": "設定",
+      "billing": "請求",
+      "careManagement": "ケア管理",
+      "clinicalLaboratory": "臨床検査室",
       "extras": "エクストラ",
-      "pages": "ページ"
+      "patients": "患者",
+      "filing": "提出",
+      "radiology": "放射線科",
+      "institutionalReports": "機関レポート",
+      "user": "ユーザー"
     }
   }
 }

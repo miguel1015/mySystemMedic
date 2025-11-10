@@ -41,7 +41,7 @@ export const authOptions: NextAuthOptions = {
           name: 'Name',
           username: 'Username',
           email: 'user@email.com',
-          avatar: '/assets/img/avatars/8.jpg',
+          avatar: '/assets/img/avatars/narutico.jpg',
         }
       },
     }),

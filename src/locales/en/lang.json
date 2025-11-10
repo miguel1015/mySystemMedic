@@ -5,7 +5,8 @@
     "form": {
       "username": "Username",
       "password": "Password",
-      "submit": "Login"
+      "submit": "Login",
+      "loading": "loading..."
     },
     "forgot_password": "Forgot password?",
     "signup": {
@@ -271,13 +272,13 @@
   },
   "sidebar": {
     "items": {
-      "dashboard": "Dashboard",
+      "dashboard": "Home",
       "sample": "Sample",
       "theme": "Theme",
       "colors": "Colors",
       "typography": "Typography",
       "components": "Components",
-      "accordion": "Accordion",
+      "contracts": "Contracts",
       "breadcrumb": "Breadcrumb",
       "cards": "Cards",
       "carousel": "Carousel",
@@ -292,7 +293,7 @@
       "tables": "Tables",
       "tabs": "Tabs",
       "tooltips": "Tooltips",
-      "buttons": "Buttons",
+      "wallet": "wallet",
       "buttons_group": "Buttons Group",
       "dropdowns": "Dropdowns",
       "charts": "Charts",
@@ -318,12 +319,16 @@
       "error500": "Error 500",
       "docs": "Docs",
       "try_core_ui_pro": "Try CoreUI PRO",
-      "base": "Base",
-      "forms": "Forms",
-      "icons": "Icons",
-      "notifications": "Notifications",
+      "configuration": "Configuration",
+      "billing": "billing",
+      "careManagement": "careManagement",
+      "clinicalLaboratory": "clinical Laboratory",
       "extras": "Extras",
-      "pages": "Pages"
+      "patients": "Patients",
+      "filing": "Filing",
+      "radiology": "Radiology",
+      "institutionalReports": "Institutional Reports",
+      "user": "User"
     }
   }
 }

@@ -1,128 +1,179 @@
-'use client'
+"use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
-  Alert, Button, Col, Form, FormControl, InputGroup, Row,
-} from 'react-bootstrap'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser } from '@fortawesome/free-regular-svg-icons'
-import { faLock } from '@fortawesome/free-solid-svg-icons'
-import { useState } from 'react'
-import Link from 'next/link'
-import InputGroupText from 'react-bootstrap/InputGroupText'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import useDictionary from '@/locales/dictionary-hook'
+  Form,
+  Button,
+  Row,
+  Col,
+  Alert,
+  Container,
+  Spinner,
+} from "react-bootstrap";
 
-export default function Login({ callbackUrl }: { callbackUrl: string }) {
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
-  const router = useRouter()
-  const dict = useDictionary()
+// Zod schema
+const loginSchema = z.object({
+  username: z.string().min(1, "Campo requerido"),
+  password: z.string().min(1, "Contraseña requerida"),
+});
 
-  const login = async (formData: FormData) => {
-    setSubmitting(true)
+type LoginFormValues = z.infer<typeof loginSchema>;
+
+interface LoginProps {
+  callbackUrl: string;
+}
+
+export default function Login({ callbackUrl }: LoginProps) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormValues) => {
+    setLoading(true);
+    setServerError("");
 
     try {
-      const res = await signIn('credentials', {
-        username: formData.get('username'),
-        password: formData.get('password'),
+      const res = await signIn("credentials", {
+        username: data.username,
+        password: data.password,
         redirect: false,
         callbackUrl,
-      })
+      });
 
       if (!res) {
-        setError('Login failed')
-        return
+        setServerError("Login fallido");
+        return;
       }
 
-      const { ok, url, error: err } = res
+      const { ok, error: err, url } = res;
 
       if (!ok) {
-        if (err) {
-          setError(err)
-          return
-        }
-
-        setError('Login failed')
-        return
+        setServerError(err || "Login fallido");
+        return;
       }
 
       if (url) {
-        router.push(url)
+        router.push(url);
       }
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message)
-      }
+    } catch (error: unknown) {
+      const err = error as { message: string };
+      setServerError(err.message || "Error inesperado");
     } finally {
-      setSubmitting(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <>
-      <Alert
-        variant="danger"
-        show={error !== ''}
-        onClose={() => setError('')}
-        dismissible
+    <Container fluid className="vh-80 d-flex p-0">
+      <div
+        className="d-flex flex-column justify-content-center align-items-start bg-dark text-light p-5"
+        style={{ flex: 1, animation: "fadeInLeft 1s" }}
       >
-        {error}
-      </Alert>
-      <Form action={login}>
-        <InputGroup className="mb-3">
-          <InputGroupText>
-            <FontAwesomeIcon
-              icon={faUser}
-              fixedWidth
-            />
-          </InputGroupText>
-          <FormControl
-            name="username"
-            required
-            disabled={submitting}
-            placeholder={dict.login.form.username}
-            aria-label="Username"
-            defaultValue="Username"
-          />
-        </InputGroup>
+        <h2 className="mb-2">Bienvenido</h2>
+        <h4 className="mb-4">Ingresa con tu cuenta</h4>
 
-        <InputGroup className="mb-3">
-          <InputGroupText>
-            <FontAwesomeIcon
-              icon={faLock}
-              fixedWidth
-            />
-          </InputGroupText>
-          <FormControl
-            type="password"
-            name="password"
-            required
-            disabled={submitting}
-            placeholder={dict.login.form.password}
-            aria-label="Password"
-            defaultValue="Password"
-          />
-        </InputGroup>
+        {serverError && <Alert variant="danger">{serverError}</Alert>}
 
-        <Row className="align-items-center">
-          <Col xs={6}>
-            <Button
-              className="px-4"
-              variant="primary"
-              type="submit"
-              disabled={submitting}
-            >
-              {dict.login.form.submit}
-            </Button>
-          </Col>
-          <Col xs={6} className="text-end">
-            <Link className="px-0" href="#">
-              {dict.login.forgot_password}
+        <Form onSubmit={handleSubmit(onSubmit)} className="w-100">
+          <Form.Group className="mb-3" controlId="username">
+            <Form.Label>Usuario</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Usuario"
+              isInvalid={!!errors.username}
+              {...register("username")}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.username?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group className="mb-3" controlId="password">
+            <Form.Label>Contraseña</Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="Contraseña"
+              isInvalid={!!errors.password}
+              {...register("password")}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.password?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Row className="mb-3">
+            <Col className="text-end">
+              <Link href="#" className="text-decoration-none text-info">
+                Olvidé mi contraseña
+              </Link>
+            </Col>
+          </Row>
+
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-100"
+            disabled={loading}
+          >
+            {loading ? <Spinner animation="border" size="sm" /> : "LOGIN"}
+          </Button>
+
+          <div className="mt-3 d-flex justify-content-between">
+            <Link href="/register" className="text-decoration-none text-light">
+              Crear cuenta
             </Link>
-          </Col>
-        </Row>
-      </Form>
-    </>
-  )
+          </div>
+        </Form>
+      </div>
+
+      {/* Right Panel */}
+      <div
+        style={{
+          flex: 1,
+          backgroundImage:
+            "url('https://cloudfront-us-east-1.images.arcpublishing.com/copesa/RDH5EPH2TNENPI73NBWUWWMLPA.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          animation: "fadeInRight 1s",
+        }}
+      />
+
+      <style jsx>{`
+        @keyframes fadeInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      `}</style>
+    </Container>
+  );
 }

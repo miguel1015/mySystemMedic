@@ -5,7 +5,8 @@
     "form": {
       "username": "用户名",
       "password": "密码",
-      "submit": "登录"
+      "submit": "登录",
+      "loading": "正在加载"
     },
     "forgot_password": "忘记密码?",
     "signup": {
@@ -277,7 +278,7 @@
       "colors": "颜色",
       "typography": "排版",
       "components": "组件",
-      "accordion": "手风琴",
+      "contracts": "合同",
       "breadcrumb": "面包屑",
       "cards": "卡片",
       "carousel": "旋转木马",
@@ -292,7 +293,7 @@
       "tables": "表格",
       "tabs": "弹出框",
       "tooltips": "提示信息",
-      "buttons": "按钮",
+      "wallet": "钱包",
       "buttons_group": "按钮组",
       "dropdowns": "下拉",
       "charts": "表格",
@@ -318,12 +319,16 @@
       "error500": "500错误页面",
       "docs": "文档",
       "try_core_ui_pro": "试用 CoreUI PRO",
-      "base": "基础",
-      "forms": "表单",
-      "icons": "图标",
-      "notifications": "提醒",
+      "configuration": "设置",
+      "billing": "账单",
+      "careManagement": "护理管理",
+      "clinicalLaboratory": "临床实验室",
       "extras": "更多组件",
-      "pages": "页面"
+      "patients": "患者",
+      "filing": "提交",
+      "radiology": "放射科",
+      "institutionalReports": "机构报告",
+      "user": "用户"
     }
   }
 }

@@ -16,8 +16,10 @@
   // 🧠 Parser de TypeScript
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": "./tsconfig.json",
-    "tsconfigRootDir": "."
+    "project": ["./tsconfig.json"],
+    "tsconfigRootDir": ".",
+    "sourceType": "module",
+    "ecmaVersion": 2021
   },
 
   // ⚙️ Resolver de imports para TypeScript
@@ -26,7 +28,9 @@
       "version": "detect"
     },
     "import/resolver": {
-      "typescript": true
+      "typescript": {
+        "alwaysTryTypes": true
+      }
     }
   },
 
@@ -35,19 +39,19 @@
     // -----------------------------
     // 🧩 Estilo general
     // -----------------------------
-    "quotes": ["error", "double"], // ✅ Comillas dobles permitidas
-    "semi": ["error", "never"], // ✅ Sin punto y coma
-    "no-console": ["warn", { "allow": ["warn", "error"] }], // ⚠️ Permite console.warn/error
-    "no-unused-vars": "off", // 🚫 Desactiva regla JS nativa
-    "@typescript-eslint/no-unused-vars": ["warn"], // ✅ Usa la de TS, más precisa
+    "quotes": ["error", "double"],
+    "semi": ["error", "never"],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["warn"],
 
     // -----------------------------
     // ⚛️ React
     // -----------------------------
-    "react/react-in-jsx-scope": "off", // ✅ Next.js importa React automáticamente
-    "react/jsx-filename-extension": ["warn", { "extensions": [".tsx"] }], // ⚛️ Solo TSX
-    "react/require-default-props": "off", // ✅ No necesario con TS
-    "react/prop-types": "off", // ✅ TS ya valida tipos
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-filename-extension": ["warn", { "extensions": [".tsx"] }],
+    "react/require-default-props": "off",
+    "react/prop-types": "off",
     "react/function-component-definition": [
       "error",
       { "namedComponents": ["function-declaration", "arrow-function"] }
@@ -70,7 +74,7 @@
     // -----------------------------
     // 🧱 Importaciones
     // -----------------------------
-    "import/prefer-default-export": "off", // ✅ Permite exportaciones nombradas
+    "import/prefer-default-export": "off",
     "import/extensions": [
       "error",
       "ignorePackages",
@@ -81,13 +85,15 @@
     ],
     "import/no-extraneous-dependencies": [
       "error",
-      { "devDependencies": ["**/*.test.tsx", "**/*.spec.ts", "**/setupTests.ts"] }
+      {
+        "devDependencies": ["**/*.test.tsx", "**/*.spec.ts", "**/setupTests.ts"]
+      }
     ],
 
     // -----------------------------
     // 🦺 TypeScript
     // -----------------------------
-    "@typescript-eslint/explicit-module-boundary-types": "off", // 🔧 Menos ruido
+    "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/semi": "off",
     "@typescript-eslint/member-delimiter-style": [
       "error",
@@ -104,7 +110,23 @@
     ],
 
     // -----------------------------
-    // 🗣️ Comentarios y etiquetas
+    // 🧹 Prettier
+    // -----------------------------
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto",
+        "semi": false,
+        "singleQuote": false,
+        "printWidth": 100,
+        "trailingComma": "es5",
+        "tabWidth": 2,
+        "useTabs": false
+      }
+    ],
+
+    // -----------------------------
+    // 🗣️ Comentarios
     // -----------------------------
     "eslint-comments/no-unused-disable": "error"
   }
