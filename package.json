@@ -18,6 +18,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@hookform/resolvers": "3.3.4",
     "@next/third-parties": "^15.2.1",
     "@popperjs/core": "^2.11.8",
     "@tanstack/react-query": "^5.90.7",
@@ -39,10 +40,10 @@
     "react-paginate": "^8.3.0",
     "react-responsive": "^10.0.1",
     "swr": "^2.3.3",
-    "zod-i18n-map": "^2.27.0"
+    "zod": "3.22.4",
+    "zod-i18n-map": "2.2.1"
   },
   "devDependencies": {
-    "@hookform/resolvers": "^5.2.2",
     "@types/js-cookie": "^3.0.6",
     "@types/negotiator": "^0.6.3",
     "@types/node": "^20.17.23",
@@ -53,7 +54,6 @@
     "json-server": "^0.17.4",
     "sass": "^1.85.1",
     "start-server-and-test": "^2.0.10",
-    "typescript": "^5.8.2",
-    "zod": "^4.1.12"
+    "typescript": "^5.8.2"
   }
 }
