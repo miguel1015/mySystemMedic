@@ -1,10 +1,10 @@
-import Link from 'next/link'
-import { Container } from 'react-bootstrap'
-import HeaderSidebarToggler from '@/components/Layout/Dashboard/Header/HeaderSidebarToggler'
-import HeaderFeaturedNav from '@/components/Layout/Dashboard/Header/HeaderFeaturedNav'
-import HeaderNotificationNav from '@/components/Layout/Dashboard/Header/HeaderNotificationNav'
-import HeaderProfileNav from '@/components/Layout/Dashboard/Header/HeaderProfileNav'
-import Breadcrumb from '@/components/Layout/Dashboard/Breadcrumb/Breadcrumb'
+import Link from "next/link";
+import { Container } from "react-bootstrap";
+import HeaderSidebarToggler from "@/components/Layout/Dashboard/Header/HeaderSidebarToggler";
+import HeaderFeaturedNav from "@/components/Layout/Dashboard/Header/HeaderFeaturedNav";
+import HeaderNotificationNav from "@/components/Layout/Dashboard/Header/HeaderNotificationNav";
+import HeaderProfileNav from "@/components/Layout/Dashboard/Header/HeaderProfileNav";
+import Breadcrumb from "@/components/Layout/Dashboard/Breadcrumb/Breadcrumb";
 
 export default function Header() {
   return (
@@ -17,9 +17,9 @@ export default function Header() {
             <use xlinkHref="/assets/brand/coreui.svg#full" />
           </svg>
         </Link>
-        <div className="header-nav d-none d-md-flex">
+        {/* <div className="header-nav d-none d-md-flex">
           <HeaderFeaturedNav />
-        </div>
+        </div> */}
         <div className="header-nav ms-auto">
           <HeaderNotificationNav />
         </div>
@@ -32,5 +32,5 @@ export default function Header() {
         <Breadcrumb />
       </Container>
     </header>
-  )
+  );
 }

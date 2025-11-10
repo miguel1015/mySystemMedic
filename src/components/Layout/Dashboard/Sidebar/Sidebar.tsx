@@ -2,45 +2,66 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import classNames from "classnames";
 import { Button } from "react-bootstrap";
 import { useSidebar } from "@/components/Layout/Dashboard/SidebarProvider";
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
-  const [isNarrow, setIsNarrow] = useState(false);
-
   const {
     showSidebarState: [isShowSidebar],
+    sidebarType,
   } = useSidebar();
 
-  const toggleIsNarrow = () => {
-    const newValue = !isNarrow;
-    localStorage.setItem("isNarrow", newValue ? "true" : "false");
-    setIsNarrow(newValue);
-  };
-
-  // On first time load only
-  useEffect(() => {
-    if (localStorage.getItem("isNarrow")) {
-      setIsNarrow(localStorage.getItem("isNarrow") === "true");
+  // 🔹 Determinar estilos según el tipo
+  const getSidebarStyles = () => {
+    switch (sidebarType) {
+      case "dark":
+        return {
+          backgroundColor: "#212529",
+          color: "#f8f9fa",
+          borderRight: "1px solid rgba(255,255,255,0.1)",
+          boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+        };
+      case "white":
+        return {
+          backgroundColor: "#ffffff",
+          color: "#212529",
+          borderRight: "1px solid rgba(0,0,0,0.1)",
+          boxShadow: "0 0 10px rgba(0,0,0,0.05)",
+        };
+      case "transparent":
+        return {
+          backgroundColor: "transparent",
+          color: "#f8f9fa",
+          borderRight: "none",
+          boxShadow: "none",
+        };
+      default:
+        return {
+          backgroundColor: "#212529",
+          color: "#f8f9fa",
+        };
     }
-  }, [setIsNarrow]);
+  };
 
   return (
     <div
       className={classNames(
-        "sidebar d-flex flex-column position-fixed h-100 border-end",
-        {
-          "sidebar-narrow": isNarrow,
-          show: isShowSidebar,
-        }
+        "sidebar d-flex flex-column position-fixed h-100 transition-all",
+        { show: isShowSidebar }
       )}
       id="sidebar"
+      style={{
+        ...getSidebarStyles(),
+        transition:
+          "background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease",
+      }}
     >
-      <div className="sidebar-brand d-none d-md-flex align-items-center justify-content-center">
+      {/* Brand */}
+      <div className="sidebar-brand d-none d-md-flex align-items-center justify-content-center py-3">
         <div className="mySystemMedic-logo">
-          <span className="mySystemMedic-text">
+          <span className="mySystemMedic-text fw-bold fs-5">
             <span className="mySystemMedic-part1">my</span>
             <span className="mySystemMedic-part2">System</span>
             <span className="mySystemMedic-part3">Medic</span>
@@ -48,20 +69,28 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      <div className="sidebar-nav flex-fill border-top">{children}</div>
+      {/* Navegación */}
+      <div className="sidebar-nav flex-fill border-top border-light-subtle">
+        {children}
+      </div>
 
+      {/* Botón Toggler */}
       <Button
         variant="link"
-        className="sidebar-toggler d-none d-md-inline-block rounded-0 text-end pe-4 fw-bold shadow-none border-top"
-        onClick={toggleIsNarrow}
+        className="sidebar-toggler d-none d-md-inline-block rounded-0 text-end pe-4 fw-bold shadow-none border-top border-light-subtle"
         type="button"
         aria-label="sidebar toggler"
+        style={{
+          backgroundColor:
+            sidebarType === "transparent" ? "transparent" : "inherit",
+          color: sidebarType === "transparent" ? "#f8f9fa" : "inherit",
+          borderTop:
+            sidebarType === "transparent"
+              ? "none"
+              : "1px solid rgba(255,255,255,0.1)",
+        }}
       >
-        <FontAwesomeIcon
-          className="sidebar-toggler-chevron"
-          icon={faAngleLeft}
-          fontSize={24}
-        />
+        <FontAwesomeIcon icon={faAngleLeft} fontSize={24} />
       </Button>
     </div>
   );

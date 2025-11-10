@@ -1,34 +1,77 @@
-'use client'
+"use client";
 
 import {
-  createContext, Dispatch, SetStateAction, useContext, useMemo, useState,
-} from 'react'
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
+
+type SidebarType = "dark" | "transparent" | "white";
 
 type SidebarContextType = {
   showSidebarState: [boolean, Dispatch<SetStateAction<boolean>>];
-}
+  sidebarColor: string;
+  setSidebarColor: Dispatch<SetStateAction<string>>;
+  sidebarType: SidebarType;
+  setSidebarType: Dispatch<SetStateAction<SidebarType>>;
+};
 
 export const SidebarContext = createContext<SidebarContextType>({
   showSidebarState: [false, () => {}],
-})
+  sidebarColor: "#0d6efd", // default bootstrap blue
+  setSidebarColor: () => {},
+  sidebarType: "dark",
+  setSidebarType: () => {},
+});
 
-export default function SidebarProvider({ children }: {
+export default function SidebarProvider({
+  children,
+}: {
   children: React.ReactNode;
 }) {
-  const [isShowSidebar, setIsShowSidebar] = useState(false)
+  const [isShowSidebar, setIsShowSidebar] = useState(false);
+  const [sidebarColor, setSidebarColor] = useState("#0d6efd");
+  const [sidebarType, setSidebarType] = useState<SidebarType>("dark");
 
-  const value: SidebarContextType = useMemo(() => ({
-    showSidebarState: [isShowSidebar, setIsShowSidebar],
-  }), [isShowSidebar])
+  // Persistencia
+  useEffect(() => {
+    const storedColor = localStorage.getItem("sidebarColor");
+    const storedType = localStorage.getItem(
+      "sidebarType"
+    ) as SidebarType | null;
+    if (storedColor) setSidebarColor(storedColor);
+    if (storedType) setSidebarType(storedType);
+  }, []);
 
-  return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>
+  useEffect(() => {
+    localStorage.setItem("sidebarColor", sidebarColor);
+    localStorage.setItem("sidebarType", sidebarType);
+  }, [sidebarColor, sidebarType]);
+
+  const value: SidebarContextType = useMemo(
+    () => ({
+      showSidebarState: [isShowSidebar, setIsShowSidebar],
+      sidebarColor,
+      setSidebarColor,
+      sidebarType,
+      setSidebarType,
+    }),
+    [isShowSidebar, sidebarColor, sidebarType]
+  );
+
+  return (
+    <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>
+  );
 }
 
 export const useSidebar = () => {
-  const sidebar = useContext(SidebarContext)
+  const sidebar = useContext(SidebarContext);
   if (sidebar === null) {
-    throw new Error('useSidebar hook must be used within SidebarProvider')
+    throw new Error("useSidebar hook must be used within SidebarProvider");
   }
-
-  return sidebar
-}
+  return sidebar;
+};
