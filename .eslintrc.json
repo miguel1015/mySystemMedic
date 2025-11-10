@@ -1,0 +1,111 @@
+{
+  // 🔧 Configuración base y plugins comunes
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:jsx-a11y/recommended",
+    "plugin:eslint-comments/recommended",
+    "airbnb",
+    "airbnb-typescript",
+    "next/core-web-vitals",
+    "plugin:prettier/recommended" // ✅ Integra Prettier con ESLint
+  ],
+
+  // 🧠 Parser de TypeScript
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": "."
+  },
+
+  // ⚙️ Resolver de imports para TypeScript
+  "settings": {
+    "react": {
+      "version": "detect"
+    },
+    "import/resolver": {
+      "typescript": true
+    }
+  },
+
+  // 🚫 Reglas personalizadas
+  "rules": {
+    // -----------------------------
+    // 🧩 Estilo general
+    // -----------------------------
+    "quotes": ["error", "double"], // ✅ Comillas dobles permitidas
+    "semi": ["error", "never"], // ✅ Sin punto y coma
+    "no-console": ["warn", { "allow": ["warn", "error"] }], // ⚠️ Permite console.warn/error
+    "no-unused-vars": "off", // 🚫 Desactiva regla JS nativa
+    "@typescript-eslint/no-unused-vars": ["warn"], // ✅ Usa la de TS, más precisa
+
+    // -----------------------------
+    // ⚛️ React
+    // -----------------------------
+    "react/react-in-jsx-scope": "off", // ✅ Next.js importa React automáticamente
+    "react/jsx-filename-extension": ["warn", { "extensions": [".tsx"] }], // ⚛️ Solo TSX
+    "react/require-default-props": "off", // ✅ No necesario con TS
+    "react/prop-types": "off", // ✅ TS ya valida tipos
+    "react/function-component-definition": [
+      "error",
+      { "namedComponents": ["function-declaration", "arrow-function"] }
+    ],
+    "react/jsx-props-no-spreading": [
+      "warn",
+      {
+        "exceptions": [
+          "input",
+          "textarea",
+          "select",
+          "Form.Control",
+          "Form.Check",
+          "Form.Select",
+          "Form.Switch"
+        ]
+      }
+    ],
+
+    // -----------------------------
+    // 🧱 Importaciones
+    // -----------------------------
+    "import/prefer-default-export": "off", // ✅ Permite exportaciones nombradas
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "ts": "never",
+        "tsx": "never"
+      }
+    ],
+    "import/no-extraneous-dependencies": [
+      "error",
+      { "devDependencies": ["**/*.test.tsx", "**/*.spec.ts", "**/setupTests.ts"] }
+    ],
+
+    // -----------------------------
+    // 🦺 TypeScript
+    // -----------------------------
+    "@typescript-eslint/explicit-module-boundary-types": "off", // 🔧 Menos ruido
+    "@typescript-eslint/semi": "off",
+    "@typescript-eslint/member-delimiter-style": [
+      "error",
+      {
+        "multiline": {
+          "delimiter": "semi",
+          "requireLast": true
+        },
+        "singleline": {
+          "delimiter": "semi",
+          "requireLast": false
+        }
+      }
+    ],
+
+    // -----------------------------
+    // 🗣️ Comentarios y etiquetas
+    // -----------------------------
+    "eslint-comments/no-unused-disable": "error"
+  }
+}
