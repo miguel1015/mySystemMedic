@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
+import Head from "next/head";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -207,7 +208,7 @@ export default function Login({ callbackUrl }: LoginProps) {
                   lineHeight: 0.95,
                 }}
               >
-                Salud
+                Medic
               </h1>
               <h2
                 style={{
@@ -218,7 +219,7 @@ export default function Login({ callbackUrl }: LoginProps) {
                   lineHeight: 0.95,
                 }}
               >
-                System12
+                System
               </h2>
             </div>
           </div>
@@ -323,26 +324,6 @@ export default function Login({ callbackUrl }: LoginProps) {
             </div>
           </div>
 
-          {/* Campo Centro de costo */}
-          <div>
-            <input
-              type="text"
-              placeholder="Centro de costo"
-              {...register("costCenter")}
-              style={{
-                width: "100%",
-                padding: "14px 25px",
-                background: "white",
-                border: "2px solid #ddd",
-                borderRadius: "50px",
-                fontSize: "15px",
-                color: "#666",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-
           {/* Botón Iniciar */}
           <button
             onClick={handleSubmit(onSubmit)}
@@ -419,7 +400,7 @@ export default function Login({ callbackUrl }: LoginProps) {
         >
           <p style={{ fontSize: "11px", color: "#aaa", margin: 0 }}>
             Product by{" "}
-            <span style={{ fontWeight: "600", color: "#888" }}>INFOTEC</span>
+            <span style={{ fontWeight: "600", color: "#888" }}>CAWIMI</span>
           </p>
         </div>
       </div>
@@ -445,24 +426,26 @@ export default function Login({ callbackUrl }: LoginProps) {
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       />
 
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 768px) {
-          div[style*="maxWidth: '600px'"] {
-            padding: 25px 35px 30px !important;
-          }
-        }
-        
-        @media (max-width: 480px) {
-          div[style*="maxWidth: '600px'"] {
-            padding: 20px 25px 25px !important;
-          }
-        }
-      `}</style>
+      <Head>
+        <style>{`
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      div[style*="maxWidth: '600px'"] {
+        padding: 25px 35px 30px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      div[style*="maxWidth: '600px'"] {
+        padding: 20px 25px 25px !important;
+      }
+    }
+  `}</style>
+      </Head>
     </div>
   );
 }
