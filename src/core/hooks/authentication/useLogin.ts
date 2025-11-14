@@ -6,7 +6,11 @@ import { useMutation } from "@tanstack/react-query";
 const loginRequest = async (
   credentials: LoginRequest
 ): Promise<LoginResponse> => {
-  const { data } = await apiClient.post(ENDPOINTS.AUTH.LOGIN, credentials);
+  const { data } = await apiClient.post(
+    "https://medinexus-api-bja6aha9esfqa5ga.brazilsouth-01.azurewebsites.net/api/auth/login",
+    credentials
+  );
+  console.log("🩵🩵🩵", data);
   return data;
 };
 

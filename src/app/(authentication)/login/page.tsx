@@ -13,7 +13,10 @@ export default async function Page({
 
   return (
     <div>
-      <LoginForm callbackUrl={getCallbackUrl()} />
+      <LoginForm
+        callbackUrl={getCallbackUrl()}
+        hasCallbackParam={!!callbackUrl}
+      />
     </div>
   );
 }

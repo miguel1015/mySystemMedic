@@ -1,15 +1,16 @@
 import "@/styles/globals.scss";
 // Next.js allows you to import CSS directly in .js files.
 // It handles optimization and all the necessary Webpack configuration to make this work.
-import { config } from "@fortawesome/fontawesome-svg-core";
-import "@fortawesome/fontawesome-svg-core/styles.css";
 import ProgressBar from "@/components/ProgressBar/ProgressBar";
 import DictionaryProvider from "@/locales/DictionaryProvider";
 import { getDictionary } from "@/locales/dictionary";
 import getTheme from "@/themes/theme";
+import { config } from "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
+import ReactQueryProvider from "./api/queryClientProvider";
 
 config.autoAddCss = false;
 
@@ -28,9 +29,11 @@ export default async function RootLayout({
     <html lang="en" data-bs-theme={getTheme()}>
       <body>
         <ProgressBar />
-        <DictionaryProvider dictionary={dictionary}>
-          {children}
-        </DictionaryProvider>
+        <ReactQueryProvider>
+          <DictionaryProvider dictionary={dictionary}>
+            {children}
+          </DictionaryProvider>
+        </ReactQueryProvider>
         {vercelAnalytics && <Analytics />}
       </body>
       {gaMeasurementId !== "" && <GoogleAnalytics gaId={gaMeasurementId} />}
