@@ -1,63 +1,75 @@
-import { NextAuthOptions, User } from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { getDictionary } from "@/locales/dictionary";
+import axios from "axios";
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "Username", type: "text" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
+
       async authorize(credentials) {
         if (!credentials) return null;
 
-        const { username, password } = credentials;
-        const dict = await getDictionary();
+        try {
+          const { email, password } = credentials;
 
-        // Ejemplo de autenticación estática
-        const ok = username === "Username" && password === "Password";
+          const { data } = await axios.post(
+            "https://medinexus-api-bja6aha9esfqa5ga.brazilsouth-01.azurewebsites.net/api/auth/login",
+            {
+              Email: email,
+              Password: password,
+            }
+          );
 
-        if (!ok) {
-          throw new Error(dict.login.message.auth_failed);
+          if (!data?.accessToken) return null;
+
+          return {
+            id: email,
+            email,
+            accessToken: data.accessToken,
+            expiresAt: data.expiresAt,
+          };
+        } catch (err) {
+          throw new Error("Usuario o contraseña inválidos");
         }
-
-        return {
-          id: 1,
-          name: "Name",
-          username: "Username",
-          email: "user@email.com",
-          avatar: "/assets/img/avatars/narutico.jpg",
-        };
       },
     }),
   ],
 
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.user = user as User;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      session.user = token.user as User;
-      return session;
-    },
-  },
-
-  // 🔒 Requerido en producción
-  secret: process.env.NEXTAUTH_SECRET,
-
-  // ✅ Recomendado: define el tipo de sesión
   session: {
     strategy: "jwt",
   },
 
-  // ✅ Opcional: define rutas personalizadas
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.accessToken = user.accessToken;
+        token.expiresAt = user.expiresAt;
+        token.email = user.email;
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      session.user = {
+        email: token.email as string,
+        accessToken: token.accessToken as string,
+        expiresAt: token.expiresAt as string,
+      };
+      return session;
+    },
+  },
+
   pages: {
     signIn: "/login",
-    error: "/api/auth/error",
   },
+
+  secret: process.env.NEXTAUTH_SECRET,
 };
+
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };

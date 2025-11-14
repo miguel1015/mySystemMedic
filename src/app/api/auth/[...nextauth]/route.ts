@@ -1,13 +1,16 @@
-import NextAuth, { User } from 'next-auth'
-import { authOptions } from '@/app/api/auth/option'
+import NextAuth, { User } from "next-auth";
+import { authOptions } from "@/app/api/auth/option";
 
-declare module 'next-auth' {
+declare module "next-auth" {
   interface User {
-    id: number;
-    username: string;
-    name: string;
+    id?: string;
+    username?: string;
+    token?: string | unknown;
+    name?: string;
     email: string;
-    avatar: string;
+    accessToken: string;
+    expiresAt: string;
+    avatar?: string;
   }
 
   interface Session {
@@ -15,12 +18,12 @@ declare module 'next-auth' {
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   interface JWT {
     user: User;
   }
 }
 
-const handler = NextAuth(authOptions)
+const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };

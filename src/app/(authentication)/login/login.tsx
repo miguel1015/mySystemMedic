@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { signIn } from "next-auth/react";
+import toast from "react-hot-toast";
 
 // ✅ Zod schema
 const loginSchema = z.object({
@@ -26,7 +28,6 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [serverError, setServerError] = useState("");
 
   const {
     register,
@@ -42,39 +43,24 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
     }
   }, [hasCallbackParam, router]);
 
-  // ✅ URL del backend (puedes cambiarla según tu entorno)
-  // const API_URL = "https://jsonplaceholder.typicode.com/posts";
-  const API_URL =
-    "https://medinexus-api-bja6aha9esfqa5ga.brazilsouth-01.azurewebsites.net/api/auth/login";
-
-  // ✅ Envío del formulario
-  const onSubmit = async (data: LoginFormValues) => {
-    setServerError("");
+  const onSubmit = async (data: { email: string; password: string }) => {
     setLoading(true);
 
-    try {
-      // 🔥 Llamada de prueba con Axios
-      const response = await axios.post(API_URL, {
-        email: data.email,
-        password: data.password,
-      });
+    const res = await signIn("credentials", {
+      redirect: false,
+      email: data.email,
+      password: data.password,
+    });
 
-      console.log("✅ Login exitoso:", response.data);
+    setLoading(false);
 
-      // Ejemplo: guarda token simulado
-      localStorage.setItem("token", "fake-token-12345");
-
-      // Redirige
-      router.push(callbackUrl || "/dashboard");
-    } catch (error: any) {
-      console.error("❌ Error en login:", error);
-      setServerError(
-        error?.response?.data?.message ||
-          "Credenciales inválidas o error del servidor"
-      );
-    } finally {
-      setLoading(false);
+    if (res?.error) {
+      toast.error("Usuario o contraseña inválidos");
+      return;
     }
+
+    toast.success("Bienvenido 👋");
+    router.push("/");
   };
 
   return (
@@ -137,22 +123,6 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
           </h2>
           <h3 style={{ color: "#d0d0d0", fontWeight: 300 }}>Login</h3>
         </div>
-
-        {/* Error del servidor */}
-        {serverError && (
-          <div
-            style={{
-              marginBottom: "15px",
-              background: "#fee",
-              color: "#c33",
-              padding: "10px 14px",
-              borderRadius: "12px",
-              fontSize: "13px",
-            }}
-          >
-            {serverError}
-          </div>
-        )}
 
         {/* Formulario */}
         <form

@@ -11,6 +11,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import ReactQueryProvider from "./api/queryClientProvider";
+import ToasterProvider from "../components/toast/toast";
 
 config.autoAddCss = false;
 
@@ -29,6 +30,7 @@ export default async function RootLayout({
     <html lang="en" data-bs-theme={getTheme()}>
       <body>
         <ProgressBar />
+        <ToasterProvider />
         <ReactQueryProvider>
           <DictionaryProvider dictionary={dictionary}>
             {children}
