@@ -1,0 +1,123 @@
+// ===========================================
+// Typography System
+// Escala completa para toda tu UI
+// ===========================================
+
+// ---------- Font Family ----------
+$font-family-base: "Inter", sans-serif;
+
+// ---------- Font Sizes ----------
+$h1-size: 48px;
+$h2-size: 40px;
+$h3-size: 32px;
+$h4-size: 26px;
+$h5-size: 20px;
+$h6-size: 16px;
+
+$body-lg-size: 18px;
+$body-size: 16px;
+$body-sm-size: 14px;
+
+$eyebrow-size: 12px;
+$caption-size: 12px;
+
+// ---------- Weights ----------
+$weight-regular: 400;
+$weight-medium: 500;
+$weight-semibold: 600;
+$weight-bold: 700;
+
+// ---------- Line Heights ----------
+$lh-tight: 1.1;
+$lh-normal: 1.4;
+$lh-relaxed: 1.6;
+
+// ---------- Eyebrow Uppercase Spacing ----------
+$eyebrow-letter-spacing: 0.5px;
+
+// ===========================================
+// APPLIED CLASSES
+// ===========================================
+
+.h1 {
+  font-size: $h1-size;
+  font-weight: $weight-bold;
+  line-height: $lh-tight;
+  font-family: $font-family-base;
+}
+
+.h2 {
+  font-size: $h2-size;
+  font-weight: $weight-semibold;
+  line-height: $lh-tight;
+  font-family: $font-family-base;
+}
+
+.h3 {
+  font-size: $h3-size;
+  font-weight: $weight-semibold;
+  line-height: $lh-tight;
+  font-family: $font-family-base;
+}
+
+.h4 {
+  font-size: $h4-size;
+  font-weight: $weight-medium;
+  line-height: $lh-normal;
+  font-family: $font-family-base;
+}
+
+.h5 {
+  font-size: $h5-size;
+  font-weight: $weight-medium;
+  line-height: $lh-normal;
+  font-family: $font-family-base;
+}
+
+.h6 {
+  font-size: $h6-size;
+  font-weight: $weight-semibold;
+  line-height: $lh-normal;
+  font-family: $font-family-base;
+}
+
+// ---------- Body ----------
+.body-lg {
+  font-size: $body-lg-size;
+  font-weight: $weight-regular;
+  line-height: $lh-relaxed;
+  font-family: $font-family-base;
+}
+
+.body {
+  font-size: $body-size;
+  font-weight: $weight-regular;
+  line-height: $lh-relaxed;
+  font-family: $font-family-base;
+}
+
+.body-sm {
+  font-size: $body-sm-size;
+  font-weight: $weight-regular;
+  line-height: $lh-relaxed;
+  font-family: $font-family-base;
+}
+
+// ---------- Eyebrow ----------
+.eyebrow {
+  font-size: $eyebrow-size;
+  font-weight: $weight-semibold;
+  text-transform: uppercase;
+  letter-spacing: $eyebrow-letter-spacing;
+  line-height: $lh-normal;
+  font-family: $font-family-base;
+}
+
+// ---------- Caption ----------
+.caption {
+  font-size: $caption-size;
+  font-weight: $weight-regular;
+  color: #6c757d; // sustituye por un token si lo tienes
+  line-height: $lh-normal;
+  font-family: $font-family-base;
+}

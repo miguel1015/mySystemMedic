@@ -238,7 +238,7 @@ export default async function SidebarNav() {
       </SidebarNavGroup>
 
       <SidebarNavGroup toggleIcon={faUser} toggleText={dict.sidebar.items.user}>
-        <SidebarNavItem icon={faUsers} href="login">
+        <SidebarNavItem icon={faUsers} href="/users">
           {dict.sidebar.items.login}
         </SidebarNavItem>
       </SidebarNavGroup>

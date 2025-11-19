@@ -1,0 +1,12 @@
+.input-dark {
+  background-color: #2a2d33 !important;
+  color: #f8f9fa !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.input-dark:focus {
+  background-color: #30333a !important;
+  border-color: #66afe9 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 0.2rem rgba(102, 175, 233, 0.25) !important;
+}

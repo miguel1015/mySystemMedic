@@ -13,38 +13,6 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
     sidebarType,
   } = useSidebar();
 
-  // 🔹 Determinar estilos según el tipo
-  const getSidebarStyles = () => {
-    switch (sidebarType) {
-      case "dark":
-        return {
-          backgroundColor: "#212529",
-          color: "#f8f9fa",
-          borderRight: "1px solid rgba(255,255,255,0.1)",
-          boxShadow: "0 0 10px rgba(0,0,0,0.2)",
-        };
-      case "white":
-        return {
-          backgroundColor: "#ffffff",
-          color: "#212529",
-          borderRight: "1px solid rgba(0,0,0,0.1)",
-          boxShadow: "0 0 10px rgba(0,0,0,0.05)",
-        };
-      case "transparent":
-        return {
-          backgroundColor: "transparent",
-          color: "#f8f9fa",
-          borderRight: "none",
-          boxShadow: "none",
-        };
-      default:
-        return {
-          backgroundColor: "#212529",
-          color: "#f8f9fa",
-        };
-    }
-  };
-
   return (
     <div
       className={classNames(
@@ -53,7 +21,8 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
       )}
       id="sidebar"
       style={{
-        ...getSidebarStyles(),
+        borderRight: "1px solid rgba(255,255,255,0.1)",
+        boxShadow: "0 0 10px rgba(0,0,0,0.2)",
         transition:
           "background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease",
       }}

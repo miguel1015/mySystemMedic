@@ -13,7 +13,6 @@ const fetchPokemons = async (searchParams: SearchParams) => {
     `${process.env.NEXT_PUBLIC_POKEMON_LIST_API_BASE_URL}${locale}_pokemons` ||
     "";
   let page = 1;
-  console.log("❌❌❌", pokemonListURL);
   if (searchParams?.page) {
     page = parseInt(searchParams.page.toString(), 10);
   }
