@@ -1,0 +1,16 @@
+export const users = {
+  users: "ユーザー",
+  newUser: "ユーザーを作成",
+  typeDocument: "書類の種類",
+  numberId: "書類番号",
+  names: "名",
+  lastNames: "姓",
+  userID: "ユーザー名",
+  userProfile: "ユーザープロフィール",
+  rol: "役割",
+  state: "状態",
+  password: "パスワード",
+  confirmPassword: "パスワードを確認",
+  save: "保存",
+  cancel: "キャンセル",
+};

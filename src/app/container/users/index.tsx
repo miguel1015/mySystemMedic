@@ -7,16 +7,18 @@ import { useState } from "react";
 import Modal from "@/components/modal";
 import Title from "@/components/title";
 import UsersTable from "@/components/table";
+import useDictionary from "@/locales/dictionary-hook";
 
 export default function UsersContainer() {
+  const dict = useDictionary();
   const [open, setOpen] = useState(false);
 
   return (
     <Container>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Title children="Usuarios" level={3} />
+        <Title children={dict.users.users} level={3} />
         <CustomButton onClick={() => setOpen(true)} variant="primary" size="lg">
-          Crear usuario
+          {dict.users.newUser}
         </CustomButton>
       </div>
       <Modal

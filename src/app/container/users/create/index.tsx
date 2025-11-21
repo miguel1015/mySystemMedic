@@ -9,8 +9,8 @@ import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import { DocumentType, TCreateUser } from "../types";
 import Select from "@/components/select";
+import useDictionary from "@/locales/dictionary-hook";
 
-// ----- SCHEMA ZOD -----
 const createUserSchema = z
   .object({
     tipoDocumento: z.string().min(1, "Tipo de documento es obligatorio"),
@@ -36,6 +36,8 @@ const createUserSchema = z
 type CreateUserForm = z.infer<typeof createUserSchema>;
 
 export default function CreateUser({ setOpen }: TCreateUser) {
+  const dict = useDictionary();
+
   const {
     control,
     handleSubmit,
@@ -90,69 +92,74 @@ export default function CreateUser({ setOpen }: TCreateUser) {
         <GridContainer gap="g-3">
           <Select
             name="tipoDocumento"
-            label="Tipo de documento"
-            placeholder="Tipo de documento"
+            label={dict.users.typeDocument}
+            placeholder={dict.users.typeDocument}
             control={control}
             options={documentTypes}
           />
           <Input
             name="numeroDocumento"
-            label="Número de documento"
-            placeholder="Número de documento"
+            label={dict.users.numberId}
+            placeholder={dict.users.numberId}
             control={control}
           />
           <Input
             name="nombres"
-            label="Nombres"
-            placeholder="Nombres"
+            label={dict.users.names}
+            placeholder={dict.users.names}
             control={control}
           />
           <Input
             name="apellidos"
-            label="Apellidos"
-            placeholder="Apellidos"
+            label={dict.users.lastNames}
+            placeholder={dict.users.lastNames}
             control={control}
           />
           <Input
             name="usuario"
-            label="Usuario"
-            placeholder="Usuario"
+            label={dict.users.userID}
+            placeholder={dict.users.userID}
             control={control}
           />
           <Input
             name="perfil"
-            label="Perfil de usuario"
-            placeholder="Perfil"
+            label={dict.users.userProfile}
+            placeholder={dict.users.userProfile}
             control={control}
           />
-          <Input name="rol" label="Rol" placeholder="Rol" control={control} />
+          <Input
+            name="rol"
+            label={dict.users.rol}
+            placeholder={dict.users.rol}
+            control={control}
+          />
           <Input
             name="estado"
-            label="Estado"
-            placeholder="Estado"
+            label={dict.users.state}
+            placeholder={dict.users.state}
             control={control}
           />
           <Input
             name="contrasena"
-            label="Contraseña"
-            placeholder="Contraseña"
+            label={dict.users.password}
+            placeholder={dict.users.password}
             type="password"
             control={control}
           />
           <Input
             name="confirmarContrasena"
-            label="Confirmar Contraseña"
-            placeholder="Confirmar Contraseña"
+            label={dict.users.confirmPassword}
+            placeholder={dict.users.confirmPassword}
             type="password"
             control={control}
           />
         </GridContainer>
         <div className="d-flex justify-content-end gap-2 mt-3">
           <CustomButton variant="secondary" onClick={() => setOpen(false)}>
-            Cancelar
+            {dict.users.cancel}
           </CustomButton>
           <CustomButton variant="primary" loading={isSubmitting}>
-            Guardar
+            {dict.users.save}
           </CustomButton>
         </div>
       </form>

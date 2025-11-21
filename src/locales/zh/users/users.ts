@@ -1,0 +1,16 @@
+export const users = {
+  users: "用户",
+  newUser: "创建用户",
+  typeDocument: "证件类型",
+  numberId: "证件号码",
+  names: "名字",
+  lastNames: "姓氏",
+  userID: "用户名",
+  userProfile: "用户资料",
+  rol: "角色",
+  state: "状态",
+  password: "密码",
+  confirmPassword: "确认密码",
+  save: "保存",
+  cancel: "取消",
+};

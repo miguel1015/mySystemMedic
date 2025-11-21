@@ -1,0 +1,16 @@
+export const users = {
+  users: "Users",
+  newUser: "Create User",
+  typeDocument: "Document Type",
+  numberId: "Document Number",
+  names: "First Name(s)",
+  lastNames: "Last Name(s)",
+  userID: "Username",
+  userProfile: "User Profile",
+  rol: "Role",
+  state: "Status",
+  password: "Password",
+  confirmPassword: "Confirm Password",
+  save: "Save",
+  cancel: "Cancel",
+};
