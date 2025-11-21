@@ -15,9 +15,6 @@ export default function Header() {
             <use xlinkHref="/assets/brand/coreui.svg#full" />
           </svg>
         </Link>
-        {/* <div className="header-nav d-none d-md-flex">
-          <HeaderFeaturedNav />
-        </div> */}
         <div className="header-nav ms-auto">
           <HeaderNotificationNav />
         </div>
@@ -25,10 +22,6 @@ export default function Header() {
           <HeaderProfileNav />
         </div>
       </Container>
-      {/* <div className="header-divider border-top my-2 mx-sm-n2" /> */}
-      {/* <Container fluid>
-        <Breadcrumb />
-      </Container> */}
     </header>
   );
 }

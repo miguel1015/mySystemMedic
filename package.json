@@ -26,6 +26,7 @@
     "@vercel/analytics": "^1.5.0",
     "axios": "^1.13.2",
     "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.13.1",
     "chart.js": "^4.4.8",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
@@ -45,6 +46,7 @@
     "react-hot-toast": "^2.6.0",
     "react-paginate": "^8.3.0",
     "react-responsive": "^10.0.1",
+    "react-select": "^5.10.2",
     "swr": "^2.3.3",
     "zod": "3.22.4",
     "zod-i18n-map": "2.2.1"

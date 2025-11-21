@@ -1,46 +1,37 @@
 import SidebarNavGroup from "@/components/Layout/Dashboard/Sidebar/SidebarNavGroup";
 import SidebarNavItem from "@/components/Layout/Dashboard/Sidebar/SidebarNavItem";
 import { getDictionary } from "@/locales/dictionary";
+import { faStackOverflow } from "@fortawesome/free-brands-svg-icons";
 import {
-  faAddressCard,
-  faBell,
   faFileLines,
-  faStar,
+  faHospital,
+  faSave,
+  faSquareCheck,
   faUser,
 } from "@fortawesome/free-regular-svg-icons";
 import {
+  faBacteria,
+  faBox,
   faBug,
-  faCalculator,
-  faChartPie,
-  faDroplet,
+  faCodeFork,
+  faDollar,
+  faDownload,
   faFileArrowUp,
-  faFileContract,
   faFileInvoice,
+  faFirstAid,
   faFlask,
   faGear,
   faHome,
-  faLayerGroup,
-  faLocationArrow,
-  faPencil,
-  faPuzzlePiece,
-  faRightToBracket,
+  faRotate,
+  faStethoscope,
+  faSuitcase,
+  faUserDoctor,
   faUserNurse,
+  faUserPlus,
   faUsers,
   faWallet,
   faXRay,
 } from "@fortawesome/free-solid-svg-icons";
-import { PropsWithChildren } from "react";
-import { Badge } from "react-bootstrap";
-
-const SidebarNavTitle = (props: PropsWithChildren) => {
-  const { children } = props;
-
-  return (
-    <li className="nav-title px-3 py-2 mt-3 text-uppercase fw-bold">
-      {children}
-    </li>
-  );
-};
 
 export default async function SidebarNav() {
   const dict = await getDictionary();
@@ -48,86 +39,94 @@ export default async function SidebarNav() {
     <ul className="list-unstyled">
       <SidebarNavItem icon={faHome} href="/">
         {dict.sidebar.items.dashboard}
-        {/* <small className="ms-auto">
-          <Badge bg="info" className="ms-auto">
-            NEW
-          </Badge>
-        </small> */}
       </SidebarNavItem>
-      {/* <SidebarNavItem icon={faCode} href="/pokemons">
-        {dict.sidebar.items.sample}
-        <small className="ms-auto"><Badge bg="danger" className="ms-auto">DEMO</Badge></small>
-      </SidebarNavItem> */}
-      {/* <SidebarNavTitle>{dict.sidebar.items.theme}</SidebarNavTitle> */}
-      {/* <SidebarNavItem icon={faDroplet} href="#">
-        {dict.sidebar.items.colors}
-      </SidebarNavItem>
-      <SidebarNavItem icon={faPencil} href="#">
-        {dict.sidebar.items.typography}
-      </SidebarNavItem>
-      <SidebarNavTitle>{dict.sidebar.items.components}</SidebarNavTitle> */}
-
       <SidebarNavGroup
         toggleIcon={faGear}
         toggleText={dict.sidebar.items.configuration}
       >
-        <SidebarNavItem href="#" icon={faFileContract}>
-          {dict.sidebar.items.contracts}
+        <SidebarNavItem href="#" icon={faSuitcase}>
+          {dict.sidebar.configuration.contracts}
         </SidebarNavItem>
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.breadcrumb}
+        <SidebarNavItem href="#" icon={faBox}>
+          {dict.sidebar.configuration.services}
         </SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.cards}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.carousel}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.collapse}</SidebarNavItem>
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.list_group}
+        <SidebarNavItem href="#" icon={faHospital}>
+          {dict.sidebar.configuration.eps}
         </SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.navs}</SidebarNavItem>
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.pagination}
+        <SidebarNavItem href="#" icon={faSuitcase}>
+          {dict.sidebar.configuration.surgical}
         </SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.popovers}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.progress}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.scrollspy}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.spinners}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.tables}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.tabs}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.tooltips}</SidebarNavItem>
+        <SidebarNavItem href="#" icon={faFirstAid}>
+          {dict.sidebar.configuration.Pricing}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faFirstAid}>
+          {dict.sidebar.configuration.generalPortfolio}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faBacteria}>
+          {dict.sidebar.configuration.laboratory}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faHospital}>
+          {dict.sidebar.configuration.templatesHc}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faFirstAid}>
+          {dict.sidebar.configuration.medications}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faStethoscope}>
+          {dict.sidebar.configuration.supplies}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faSave}>
+          {dict.sidebar.configuration.security}
+        </SidebarNavItem>
       </SidebarNavGroup>
 
       <SidebarNavGroup
         toggleIcon={faWallet}
         toggleText={dict.sidebar.items.wallet}
       >
-        <SidebarNavItem href="#">{dict.sidebar.items.wallet}</SidebarNavItem>
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.buttons_group}
+        <SidebarNavItem href="#" icon={faDollar}>
+          {dict.sidebar.wallet.invoicePayment}
         </SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.dropdowns}</SidebarNavItem>
+        <SidebarNavItem href="#" icon={faFileInvoice}>
+          {dict.sidebar.wallet.billingObjections}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faDollar}>
+          {dict.sidebar.wallet.accountingNote}
+        </SidebarNavItem>
       </SidebarNavGroup>
 
       <SidebarNavGroup
         toggleIcon={faFileInvoice}
         toggleText={dict.sidebar.items.billing}
       >
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.form_control}
+        <SidebarNavItem href="#" icon={faStackOverflow}>
+          {dict.sidebar.billing.admissionOpenIntegral}
         </SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.select}</SidebarNavItem>
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.checks_and_radios}
+        <SidebarNavItem href="#" icon={faCodeFork}>
+          {dict.sidebar.billing.surgeryUpload}
         </SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.range}</SidebarNavItem>
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.input_group}
+        <SidebarNavItem href="#" icon={faStackOverflow}>
+          {dict.sidebar.billing.admissionClosedIntegral}
         </SidebarNavItem>
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.floating_labels}
+        <SidebarNavItem href="#" icon={faDollar}>
+          {dict.sidebar.billing.invoiceVisualization}
         </SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.layout}</SidebarNavItem>
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.validation}
+        <SidebarNavItem href="#" icon={faStackOverflow}>
+          {dict.sidebar.billing.invoiceAttachment}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faStackOverflow}>
+          {dict.sidebar.billing.billingReport}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faStackOverflow}>
+          {dict.sidebar.billing.electronicDocuments}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faStackOverflow}>
+          {dict.sidebar.billing.admissionReport}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faStackOverflow}>
+          {dict.sidebar.billing.servicesReport}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faStackOverflow}>
+          {dict.sidebar.billing.eDocNotSent}
         </SidebarNavItem>
       </SidebarNavGroup>
 
@@ -135,14 +134,20 @@ export default async function SidebarNav() {
         toggleIcon={faUserNurse}
         toggleText={dict.sidebar.items.careManagement}
       >
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.core_ui_icons}
+        <SidebarNavItem href="#" icon={faFileLines}>
+          {dict.sidebar.careManagement.hcConsultation}
         </SidebarNavItem>
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.core_ui_icons_brand}
+        <SidebarNavItem href="#" icon={faUserDoctor}>
+          {dict.sidebar.careManagement.hcEvolution}
         </SidebarNavItem>
-        <SidebarNavItem href="#">
-          {dict.sidebar.items.core_ui_icons_flag}
+        <SidebarNavItem href="#" icon={faUserDoctor}>
+          {dict.sidebar.careManagement.patientsAttendedToday}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faUserDoctor}>
+          {dict.sidebar.careManagement.ambulatory}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faUserDoctor}>
+          {dict.sidebar.careManagement.operatingRoomReport}
         </SidebarNavItem>
       </SidebarNavGroup>
 
@@ -150,36 +155,17 @@ export default async function SidebarNav() {
         toggleIcon={faFlask}
         toggleText={dict.sidebar.items.clinicalLaboratory}
       >
-        <SidebarNavItem href="#">{dict.sidebar.items.alerts}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.badge}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.modals}</SidebarNavItem>
-        <SidebarNavItem href="#">{dict.sidebar.items.toasts}</SidebarNavItem>
+        <SidebarNavItem href="#" icon={faFileInvoice}>
+          {dict.sidebar.items.deliveryResults}
+        </SidebarNavItem>
       </SidebarNavGroup>
-      {/*
-      <SidebarNavItem icon={faCalculator} href="#">
-        {dict.sidebar.items.widgets}
-        <small className="ms-auto">
-          <Badge bg="info">NEW</Badge>
-        </small>
-      </SidebarNavItem> */}
-
-      {/* <SidebarNavTitle>{dict.sidebar.items.extras}</SidebarNavTitle> */}
 
       <SidebarNavGroup
         toggleIcon={faUser}
         toggleText={dict.sidebar.items.patients}
       >
-        <SidebarNavItem icon={faRightToBracket} href="login">
-          {dict.sidebar.items.login}
-        </SidebarNavItem>
-        <SidebarNavItem icon={faAddressCard} href="register">
-          {dict.sidebar.items.register}
-        </SidebarNavItem>
-        <SidebarNavItem icon={faBug} href="#">
-          {dict.sidebar.items.error404}
-        </SidebarNavItem>
-        <SidebarNavItem icon={faBug} href="#">
-          {dict.sidebar.items.error500}
+        <SidebarNavItem icon={faUserPlus} href="#">
+          {dict.sidebar.items.patients}
         </SidebarNavItem>
       </SidebarNavGroup>
 
@@ -187,17 +173,32 @@ export default async function SidebarNav() {
         toggleIcon={faFileArrowUp}
         toggleText={dict.sidebar.items.filing}
       >
-        <SidebarNavItem icon={faRightToBracket} href="login">
-          {dict.sidebar.items.login}
+        <SidebarNavItem icon={faRotate} href="#">
+          {dict.sidebar.filing.invoiceReview}
         </SidebarNavItem>
-        <SidebarNavItem icon={faAddressCard} href="register">
-          {dict.sidebar.items.register}
+        <SidebarNavItem icon={faSquareCheck} href="#">
+          {dict.sidebar.filing.filingProcess}
+        </SidebarNavItem>
+        <SidebarNavItem icon={faFileLines} href="#">
+          {dict.sidebar.filing.filingUpdate}
+        </SidebarNavItem>
+        <SidebarNavItem icon={faFileLines} href="#">
+          {dict.sidebar.filing.glossResponse}
+        </SidebarNavItem>
+        <SidebarNavItem icon={faFileLines} href="#">
+          {dict.sidebar.filing.furipsFlatFiles}
+        </SidebarNavItem>
+        <SidebarNavItem icon={faFileLines} href="#">
+          {dict.sidebar.filing.ripsFlatFiles}
+        </SidebarNavItem>
+        <SidebarNavItem icon={faFileLines} href="#">
+          {dict.sidebar.filing.filingReport}
         </SidebarNavItem>
         <SidebarNavItem icon={faBug} href="#">
-          {dict.sidebar.items.error404}
+          {dict.sidebar.filing.flatFilesPerInvoice}
         </SidebarNavItem>
-        <SidebarNavItem icon={faBug} href="#">
-          {dict.sidebar.items.error500}
+        <SidebarNavItem icon={faFileLines} href="#">
+          {dict.sidebar.filing.glossReport}
         </SidebarNavItem>
       </SidebarNavGroup>
 
@@ -205,17 +206,11 @@ export default async function SidebarNav() {
         toggleIcon={faXRay}
         toggleText={dict.sidebar.items.radiology}
       >
-        <SidebarNavItem icon={faRightToBracket} href="login">
-          {dict.sidebar.items.login}
+        <SidebarNavItem icon={faFileLines} href="#">
+          {dict.sidebar.radiology.radiologyManagement}
         </SidebarNavItem>
-        <SidebarNavItem icon={faAddressCard} href="register">
-          {dict.sidebar.items.register}
-        </SidebarNavItem>
-        <SidebarNavItem icon={faBug} href="#">
-          {dict.sidebar.items.error404}
-        </SidebarNavItem>
-        <SidebarNavItem icon={faBug} href="#">
-          {dict.sidebar.items.error500}
+        <SidebarNavItem icon={faFileLines} href="#">
+          {dict.sidebar.radiology.radiologyInformation}
         </SidebarNavItem>
       </SidebarNavGroup>
 
@@ -223,32 +218,22 @@ export default async function SidebarNav() {
         toggleIcon={faFileLines}
         toggleText={dict.sidebar.items.institutionalReports}
       >
-        <SidebarNavItem icon={faRightToBracket} href="login">
-          {dict.sidebar.items.login}
+        <SidebarNavItem icon={faDownload} href="#">
+          {dict.sidebar.institutionalReports.resolution256}
         </SidebarNavItem>
-        <SidebarNavItem icon={faAddressCard} href="register">
-          {dict.sidebar.items.register}
+        <SidebarNavItem icon={faDownload} href="#">
+          {dict.sidebar.institutionalReports.circular030}
         </SidebarNavItem>
-        <SidebarNavItem icon={faBug} href="#">
-          {dict.sidebar.items.error404}
-        </SidebarNavItem>
-        <SidebarNavItem icon={faBug} href="#">
-          {dict.sidebar.items.error500}
+        <SidebarNavItem icon={faDownload} href="#">
+          {dict.sidebar.institutionalReports.st006Information}
         </SidebarNavItem>
       </SidebarNavGroup>
 
       <SidebarNavGroup toggleIcon={faUser} toggleText={dict.sidebar.items.user}>
         <SidebarNavItem icon={faUsers} href="/users">
-          {dict.sidebar.items.login}
+          {dict.sidebar.items.users}
         </SidebarNavItem>
       </SidebarNavGroup>
-      {/*
-      <SidebarNavItem icon={faFileLines} href="#">
-        {dict.sidebar.items.docs}
-      </SidebarNavItem>
-      <SidebarNavItem icon={faLayerGroup} href="https://coreui.io/pro/">
-        {dict.sidebar.items.try_core_ui_pro}
-      </SidebarNavItem> */}
     </ul>
   );
 }

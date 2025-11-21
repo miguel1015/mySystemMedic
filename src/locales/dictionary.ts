@@ -3,10 +3,10 @@ import { cookies } from "next/headers";
 import { defaultLocale } from "@/locales/config";
 
 const dictionaries = {
-  es: () => import("./es/lang.json").then((module) => module.default),
-  en: () => import("./en/lang.json").then((module) => module.default),
-  ja: () => import("./ja/lang.json").then((module) => module.default),
-  zh: () => import("./zh/lang.json").then((module) => module.default),
+  es: () => import("./es"),
+  en: () => import("./en"),
+  ja: () => import("./ja"),
+  zh: () => import("./zh"),
 };
 
 type Locale = keyof typeof dictionaries;
@@ -14,16 +14,14 @@ type Locale = keyof typeof dictionaries;
 export const getLocales = () => Object.keys(dictionaries) as Array<Locale>;
 
 export const getLocale = (): Locale => {
-  const localeCookies = cookies().get("locale")?.value ?? defaultLocale;
-
-  if (!getLocales().includes(localeCookies as Locale)) {
-    return defaultLocale;
-  }
-
-  return localeCookies as Locale;
+  const localeCookie = cookies().get("locale")?.value ?? defaultLocale;
+  return getLocales().includes(localeCookie as Locale)
+    ? (localeCookie as Locale)
+    : defaultLocale;
 };
 
 export const getDictionary = async () => {
   const locale = getLocale();
-  return dictionaries[locale]();
+  const mod = await dictionaries[locale]();
+  return mod.default;
 };

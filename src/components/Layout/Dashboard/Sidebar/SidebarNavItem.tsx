@@ -35,14 +35,17 @@ export default function SidebarNavItem(props: Props) {
         <NavLink
           onClick={() => setIsShowSidebar(false)}
           className={classNames(
-            "rounded-0 nav-link px-3 py-2 d-flex align-items-center flex-fill w-100",
-            "transition-all", // animación suave
+            "rounded-1 nav-link px-3 py-2 d-flex align-items-center flex-fill w-100",
+            "transition-all",
+            "sidebar-nav-item",
             { "shadow-sm": isActive }
           )}
           style={{
+            marginLeft: "12px",
+            borderRadius: "10px",
             color: isActive ? activeTextColor : inactiveTextColor,
             backgroundColor: isActive ? sidebarColor : "transparent",
-            transition: "all 0.3s ease",
+            transition: "all 0.25s ease-in-out",
           }}
           onMouseEnter={(e) => {
             if (!isActive) {

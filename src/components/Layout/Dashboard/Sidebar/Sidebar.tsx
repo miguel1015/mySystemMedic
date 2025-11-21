@@ -1,16 +1,12 @@
 "use client";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
-import React from "react";
-import classNames from "classnames";
-import { Button } from "react-bootstrap";
 import { useSidebar } from "@/components/Layout/Dashboard/SidebarProvider";
+import classNames from "classnames";
+import React from "react";
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
   const {
     showSidebarState: [isShowSidebar],
-    sidebarType,
   } = useSidebar();
 
   return (
@@ -42,25 +38,6 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
       <div className="sidebar-nav flex-fill border-top border-light-subtle">
         {children}
       </div>
-
-      {/* Botón Toggler */}
-      <Button
-        variant="link"
-        className="sidebar-toggler d-none d-md-inline-block rounded-0 text-end pe-4 fw-bold shadow-none border-top border-light-subtle"
-        type="button"
-        aria-label="sidebar toggler"
-        style={{
-          backgroundColor:
-            sidebarType === "transparent" ? "transparent" : "inherit",
-          color: sidebarType === "transparent" ? "#f8f9fa" : "inherit",
-          borderTop:
-            sidebarType === "transparent"
-              ? "none"
-              : "1px solid rgba(255,255,255,0.1)",
-        }}
-      >
-        <FontAwesomeIcon icon={faAngleLeft} fontSize={24} />
-      </Button>
     </div>
   );
 }

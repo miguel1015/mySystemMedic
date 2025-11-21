@@ -7,7 +7,8 @@ import * as z from "zod";
 import CustomButton from "@/components/button";
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
-import { TCreateUser } from "../types";
+import { DocumentType, TCreateUser } from "../types";
+import Select from "@/components/select";
 
 // ----- SCHEMA ZOD -----
 const createUserSchema = z
@@ -70,15 +71,29 @@ export default function CreateUser({ setOpen }: TCreateUser) {
     } catch (err: any) {}
   };
 
+  const documentTypes: DocumentType[] = [
+    { label: "Cédula de Ciudadanía", value: "cc" },
+    { label: "Cédula de Extranjería", value: "ce" },
+    { label: "Pasaporte", value: "passport" },
+    { label: "Tarjeta de Identidad", value: "ti" },
+    { label: "Registro Civil", value: "rc" },
+    { label: "Número de Identificación Tributaria (NIT)", value: "nit" },
+    { label: "Licencia de Conducir", value: "driver_license" },
+    { label: "Documento Militar", value: "military" },
+    { label: "Carné de Extranjería", value: "foreigner_card" },
+    { label: "Otro Documento", value: "other" },
+  ];
+
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <GridContainer gap="g-3">
-          <Input
+          <Select
             name="tipoDocumento"
             label="Tipo de documento"
             placeholder="Tipo de documento"
             control={control}
+            options={documentTypes}
           />
           <Input
             name="numeroDocumento"
