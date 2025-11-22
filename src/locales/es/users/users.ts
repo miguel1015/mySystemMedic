@@ -4,7 +4,7 @@ export const users = {
   typeDocument: "Tipo de documento",
   numberId: "Número de documento",
   names: "Nombres",
-  lastNames: "apellidos",
+  lastNames: "Apellidos",
   userID: "Usuario",
   userProfile: "Perfil de usuario",
   rol: "Rol",

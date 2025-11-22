@@ -161,6 +161,21 @@ export default async function SidebarNav() {
       </SidebarNavGroup>
 
       <SidebarNavGroup
+        toggleIcon={faFirstAid}
+        toggleText={dict.sidebar.items.pharmacy}
+      >
+        <SidebarNavItem href="#" icon={faFirstAid}>
+          {dict.sidebar.pharmacy.references}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faFirstAid}>
+          {dict.sidebar.pharmacy.suppliers}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faFirstAid}>
+          {dict.sidebar.pharmacy.supplies}
+        </SidebarNavItem>
+      </SidebarNavGroup>
+
+      <SidebarNavGroup
         toggleIcon={faUser}
         toggleText={dict.sidebar.items.patients}
       >

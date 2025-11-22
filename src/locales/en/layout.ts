@@ -12,6 +12,7 @@ export const sidebar = {
     radiology: "Radiology",
     institutionalReports: "Institutional Reports",
     user: "User",
+    pharmacy: "Pharmacy",
     users: "Users",
   },
 
@@ -77,5 +78,10 @@ export const sidebar = {
     resolution256: "Resolution 256",
     circular030: "Circular 030",
     st006Information: "ST006 Information",
+  },
+  pharmacy: {
+    references: "References",
+    suppliers: "Suppliers",
+    supplies: "Supplies",
   },
 };

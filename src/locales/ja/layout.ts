@@ -12,6 +12,7 @@ export const sidebar = {
     radiology: "放射線科",
     institutionalReports: "機関レポート",
     user: "ユーザー",
+    pharmacy: "薬局",
     users: "ユーザー一覧",
   },
 
@@ -77,5 +78,10 @@ export const sidebar = {
     resolution256: "決議256",
     circular030: "通達030",
     st006Information: "ST006情報",
+  },
+  pharmacy: {
+    references: "参考",
+    suppliers: "供給業者",
+    supplies: "備品",
   },
 };

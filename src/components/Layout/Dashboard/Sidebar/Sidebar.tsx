@@ -24,13 +24,26 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
       }}
     >
       {/* Brand */}
-      <div className="sidebar-brand d-none d-md-flex align-items-center justify-content-center py-3">
-        <div className="mySystemMedic-logo">
-          <span className="mySystemMedic-text fw-bold fs-5">
-            <span className="mySystemMedic-part1">my</span>
-            <span className="mySystemMedic-part2">System</span>
-            <span className="mySystemMedic-part3">Medic</span>
-          </span>
+      <div className="sidebar-brand d-flex d-md-flex align-items-center justify-content-center py-3">
+        <div
+          style={{
+            width: "120px",
+            height: "auto",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <img
+            src="assets/img/avatars/Logo.png"
+            alt="Logo"
+            style={{
+              width: "120%",
+              height: "auto",
+              objectFit: "contain",
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+            }}
+          />
         </div>
       </div>
 

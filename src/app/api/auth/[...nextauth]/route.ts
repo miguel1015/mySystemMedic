@@ -7,6 +7,7 @@ declare module "next-auth" {
     username?: string;
     token?: string | unknown;
     name?: string;
+    rol?: string;
     email: string;
     accessToken: string;
     expiresAt: string;

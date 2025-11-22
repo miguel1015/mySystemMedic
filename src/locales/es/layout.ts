@@ -13,6 +13,7 @@ export const sidebar = {
     institutionalReports: "Reportes institucionales",
     user: "Usuario",
     users: "Usuarios",
+    pharmacy: "Farmacia",
   },
 
   configuration: {
@@ -72,10 +73,14 @@ export const sidebar = {
     radiologyManagement: "Gestión radiología",
     radiologyInformation: "Información radiología",
   },
-
   institutionalReports: {
     resolution256: "Resolución 256",
     circular030: "Circular 030",
     st006Information: "Información ST006",
+  },
+  pharmacy: {
+    references: "Referencias",
+    suppliers: "Proveedores",
+    supplies: "Suministros",
   },
 };

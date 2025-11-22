@@ -12,6 +12,7 @@ export const sidebar = {
     radiology: "放射科",
     institutionalReports: "机构报告",
     user: "用户",
+    pharmacy: "药房",
     users: "用户列表",
   },
 
@@ -77,5 +78,10 @@ export const sidebar = {
     resolution256: "第256号决议",
     circular030: "030号通告",
     st006Information: "ST006信息",
+  },
+  pharmacy: {
+    references: "参考",
+    suppliers: "供应商",
+    supplies: "用品",
   },
 };
