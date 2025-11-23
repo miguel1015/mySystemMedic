@@ -15,7 +15,7 @@ import {
 } from "react-bootstrap";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 
 type SidebarNavGroupToggleProps = {
   eventKey: string;
@@ -31,7 +31,6 @@ const SidebarNavGroupToggle = (props: SidebarNavGroupToggleProps) => {
   const decoratedOnClick = useAccordionButton(eventKey);
 
   const isCurrentEventKey = activeEventKey === eventKey;
-
   useEffect(() => {
     setIsShow(activeEventKey === eventKey);
   }, [activeEventKey, eventKey, setIsShow]);
@@ -51,7 +50,14 @@ const SidebarNavGroupToggle = (props: SidebarNavGroupToggleProps) => {
       <FontAwesomeIcon className="nav-icon ms-n3" icon={icon} />
       <span className="nav-text text-truncate">{children}</span>
       <div className="nav-chevron ms-auto text-end">
-        <FontAwesomeIcon size="xs" icon={faChevronUp} />
+        <FontAwesomeIcon
+          size="xs"
+          icon={faChevronUp}
+          style={{
+            transition: "transform 0.25s ease",
+            transform: !isCurrentEventKey ? "rotate(0deg)" : "rotate(180deg)",
+          }}
+        />
       </div>
     </Button>
   );

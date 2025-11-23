@@ -42,8 +42,6 @@ export default async function serverFetch(
           );
         }
 
-        console.log("😎😎😎", response);
-
         throw new Error(`HTTP error! Status: ${statusCode}`);
       }
 

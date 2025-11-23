@@ -10,7 +10,6 @@ const loginRequest = async (
     "https://medinexus-api-bja6aha9esfqa5ga.brazilsouth-01.azurewebsites.net/api/auth/login",
     credentials
   );
-  console.log("🩵🩵🩵", data);
   return data;
 };
 

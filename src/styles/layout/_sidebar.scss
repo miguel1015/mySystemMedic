@@ -1,3 +1,6 @@
+/* -------------------------
+   Variables (tu bloque)
+   ------------------------- */
 $sidebar-background: #3c4b64;
 $sidebar-background-dark: var(--#{$prefix}body-bg);
 $sidebar-text-color: rgba(255, 255, 255, 0.6);
@@ -16,7 +19,7 @@ $sidebar-toggler-background-dark: #1a1e26;
 $sidebar-toggler-background-hover: rgba(0, 0, 0, 0.3);
 $sidebar-toggler-color: rgba(255, 255, 255, 0.6);
 $sidebar-toggler-color-hover: #ffffff;
-$sidebar-z-index: $zindex-fixed; // Default 1030
+$sidebar-z-index: $zindex-fixed;
 $sidebar-overlay-z-index: 1025;
 
 :root {
@@ -24,26 +27,95 @@ $sidebar-overlay-z-index: 1025;
   --sidebar-background: #{$sidebar-background};
   --sidebar-brand-background: #{$sidebar-brand-background};
   --sidebar-toggler-background: #{$sidebar-toggler-background};
-  --sidebar-border-color: #{$sidebar-border-color}
+  --sidebar-border-color: #{$sidebar-border-color};
 }
 
 @include color-mode(dark) {
   --sidebar-background: #{$sidebar-background-dark};
   --sidebar-brand-background: #{$sidebar-brand-background-dark};
   --sidebar-toggler-background: #{$sidebar-toggler-background-dark};
-  --sidebar-border-color: #{$sidebar-border-color-dark}
+  --sidebar-border-color: #{$sidebar-border-color-dark};
 }
 
+/* -------------------------
+   Header toggler (FontAwesome safe)
+   ------------------------- */
+.header {
+  .header-navbar {
+    .header-toggler {
+      color: var(--header-link-color, rgba(255,255,255,0.6));
+      padding: 0.25rem;
+
+      /* Si en algún lugar usas .burger, lo soportamos también */
+      .burger {
+        width: 20px;
+        height: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
+      }
+
+      .burger span {
+        display: block;
+        height: 2px;
+        width: 100%;
+        background: currentColor;
+        border-radius: 2px;
+        transition: transform 0.35s ease, opacity 0.25s ease;
+      }
+
+      .burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+      .burger.open span:nth-child(2) { opacity: 0; }
+      .burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+      /* Para FontAwesomeIcon (no rompe nada) */
+      .toggler-icon {
+        transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s;
+        font-size: 1.1rem;
+        display: inline-block; /* para que transform funcione bien */
+        transform-origin: center;
+      }
+
+      .toggler-icon.open {
+        transform: rotate(90deg) scale(1.05);
+        opacity: 0.95;
+      }
+
+      .toggler-icon.closed {
+        transform: rotate(0deg) scale(1);
+        opacity: 1;
+      }
+
+      &:hover .toggler-icon {
+        transform: scale(1.05);
+      }
+    }
+  }
+}
+
+/* -------------------------
+   Sidebar (animación suave + scroll)
+   ------------------------- */
 .sidebar {
   flex: 0 0 var(--sidebar-width);
   width: var(--sidebar-width);
   background: var(--sidebar-background);
   color: $sidebar-text-color;
-  transition: margin-left 0.15s, margin-right 0.15s, box-shadow 0.075s, transform 0.15s, width 0.15s, z-index 0s ease 0.15s;
   z-index: $sidebar-z-index;
+  border-right: 1px solid var(--sidebar-border-color);
 
-  & + .wrapper {
-    transition: padding 0.15s;
+  /* ANIMACIÓN SUAVE (transform + opacity) */
+  transform: translateX(-100%);
+  opacity: 0;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease,
+    box-shadow 0.2s ease;
+
+  &.show {
+    transform: translateX(0);
+    opacity: 1;
   }
 
   .sidebar-brand {
@@ -56,43 +128,58 @@ $sidebar-overlay-z-index: 1025;
     overflow-y: auto;
     border-top-color: var(--sidebar-border-color) !important;
 
-    .nav-title {
-      font-size: 80%;
+    /* SCROLL ESTILO MODERNO (VSCode-like) */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+
+    &::-webkit-scrollbar { width: 10px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14));
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background 0.2s ease, transform 0.12s ease;
     }
+    &::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.28));
+      transform: scale(1.02);
+    }
+
+    /* pequeño fade en el scroll shadow para cue experiencia */
+    &:before {
+      content: "";
+      position: sticky;
+      top: 0;
+      height: 8px;
+      display: block;
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.12), transparent);
+      z-index: 1;
+    }
+
+    .nav-title { font-size: 80%; }
 
     .nav-link {
       color: $sidebar-link-color;
-
+      transition: background 0.18s ease, color 0.18s ease;
       &:hover {
         color: $sidebar-link-color-hover;
-        text-decoration: none;
         background: $sidebar-link-background-hover;
+        text-decoration: none;
       }
-
-      .nav-icon {
-        flex: 0 0 4rem;
-      }
+      .nav-icon { flex: 0 0 4rem; }
     }
 
     .nav-group {
-      &.show {
-        background: $sidebar-nav-group-background;
-      }
+      &.show { background: $sidebar-nav-group-background; }
 
       .nav-link {
-        &:focus {
-          box-shadow: none;
-        }
+        &:focus { box-shadow: none; }
 
-        .nav-chevron {
-          transition: transform 0.15s;
-        }
+        .nav-chevron { transition: transform 0.2s cubic-bezier(0.25,1,0.5,1); }
 
-        &.collapsed {
-          .nav-chevron {
-            transform: rotate(180deg);
-          }
-        }
+        &.collapsed .nav-chevron { transform: rotate(180deg); }
       }
     }
   }
@@ -108,86 +195,28 @@ $sidebar-overlay-z-index: 1025;
       color: $sidebar-toggler-color-hover;
     }
 
-    .sidebar-toggler-chevron {
-      transition: transform 0.15s;
-    }
+    .sidebar-toggler-chevron { transition: transform 0.2s ease; }
   }
 
-  & {
-    margin-left: calc(-1 * var(--sidebar-width));
-  }
-
-  &.show {
-    margin-left: 0;
-  }
-
-  & + .wrapper {
-    padding-left: calc(-1 * var(--sidebar-width));
-  }
-
-  // Push content to the right only for md and up
+  /* Comportamiento responsive / Desktop: invertir lógica visual sin romper layout */
   @include media-breakpoint-up(md) {
-    & {
-      margin-left: 0;
-    }
+    /* En desktop la barra está visible por defecto: ajusta el comportamiento esperado */
+    transform: translateX(0);
+    opacity: 1;
 
-    & + .wrapper {
-      padding-left: var(--sidebar-width);
-    }
-
-    // .show is the opposite meaning for md and up
-    // it means the sidebar is collapsed
     &.show {
-      margin-left: calc(-1 * var(--sidebar-width));
-
-        & + .wrapper {
-          padding-left: calc(-1 * var(--sidebar-width));
-        }
+      /* si aplicas .show en desktop, se interpreta como "oculto" (mantengo compatibilidad con CoreUI) */
+      transform: translateX(-100%);
+      opacity: 0;
     }
-  }
 
-  // Sidebar narrow styling, only for md and up
-  @include media-breakpoint-up(md) {
-    &.sidebar-narrow {
-      .sidebar-toggler {
-        .sidebar-toggler-chevron {
-          transform: rotate(180deg);
-        }
-      }
-
-      &:not(:hover) {
-        --sidebar-width: 4rem;
-
-        .sidebar-brand {
-          .sidebar-brand-full {
-            display: none !important;
-          }
-
-          .sidebar-brand-narrow {
-            display: flex !important;
-          }
-        }
-
-        .nav-title, .nav-group-items {
-          display: none;
-        }
-
-        & + .wrapper {
-          --sidebar-width: 4rem;
-        }
-
-        .nav-link {
-          white-space: nowrap;
-        }
-      }
-    }
+    & + .wrapper { padding-left: var(--sidebar-width); transition: padding 0.35s ease; }
+    &.show + .wrapper { padding-left: 0; }
   }
 }
 
+/* Overlay para mobile (opcional si usas) */
 .sidebar-overlay {
   z-index: $sidebar-overlay-z-index;
-
-  @include media-breakpoint-up(md) {
-    display: none;
-  }
+  @include media-breakpoint-up(md) { display: none; }
 }
