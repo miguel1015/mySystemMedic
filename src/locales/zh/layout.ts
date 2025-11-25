@@ -4,6 +4,7 @@ export const sidebar = {
     wallet: "钱包",
     healthcare: "医疗",
     billing: "计费",
+    admission: "入院登记",
     settings: "参数设置",
     clinicalLaboratory: "临床实验室",
     deliveryResults: "结果交付",
@@ -17,8 +18,10 @@ export const sidebar = {
   },
 
   healthcare: {
-    triage: "分诊",
-    admission: "入院登记",
+    admission: {
+      admission: "入院登记",
+      triage: "分诊",
+    },
     ongoingCare: "持续护理",
     careList: "护理列表",
     radiology: "放射科",
@@ -42,6 +45,10 @@ export const sidebar = {
     admissionReport: "入院报告",
     servicesReport: "服务报告",
     eDocNotSent: "未发送电子文件",
+    filing: {
+      filing: "提出",
+      filingInvoice: "請求書を提出する",
+    },
   },
 
   careManagement: {

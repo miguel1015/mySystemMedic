@@ -8,10 +8,13 @@ import Modal from "@/components/modal";
 import Title from "@/components/title";
 import UsersTable from "@/components/table";
 import useDictionary from "@/locales/dictionary-hook";
+import { useUserRoles } from "@/core/hooks/roles/useUser";
 
 export default function UsersContainer() {
   const dict = useDictionary();
   const [open, setOpen] = useState(false);
+
+  const { data, isLoading } = useUserRoles();
 
   return (
     <Container>

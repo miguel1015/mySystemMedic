@@ -5,6 +5,7 @@ export const sidebar = {
     healthcare: "Healthcare",
     billing: "Billing",
     settings: "Settings",
+    admission: "Admission",
     clinicalLaboratory: "Clinical Laboratory",
     deliveryResults: "Results Delivery",
     patients: "Patients",
@@ -17,8 +18,10 @@ export const sidebar = {
   },
 
   healthcare: {
-    triage: "Triage",
-    admission: "Admission",
+    admission: {
+      admission: "Admission",
+      triage: "Triage",
+    },
     ongoingCare: "Ongoing care",
     careList: "CareList",
     radiology: "Radiology",
@@ -42,6 +45,10 @@ export const sidebar = {
     admissionReport: "Admission Report",
     servicesReport: "Services Report",
     eDocNotSent: "e'Doc Not Sent",
+    filing: {
+      filing: "提交",
+      filingInvoice: "提交发票",
+    },
   },
 
   careManagement: {

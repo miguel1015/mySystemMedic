@@ -12,10 +12,11 @@ import classNames from "classnames";
 type Props = {
   href: string;
   icon?: IconDefinition;
+  level?: number;
 } & PropsWithChildren;
 
 export default function SidebarNavItem(props: Props) {
-  const { icon, children, href } = props;
+  const { icon, children, href, level = 0 } = props;
   const pathname = usePathname();
   const {
     showSidebarState: [, setIsShowSidebar],
@@ -30,7 +31,12 @@ export default function SidebarNavItem(props: Props) {
   const hoverBackgroundColor = "rgba(255,255,255,0.1)"; // hover suave
 
   return (
-    <NavItem className="sidebar-item-wrapper">
+    <NavItem
+      className="sidebar-item-wrapper"
+      style={{
+        marginLeft: `${level * 5}px`,
+      }}
+    >
       <Link href={href} passHref legacyBehavior>
         <NavLink
           onClick={() => setIsShowSidebar(false)}

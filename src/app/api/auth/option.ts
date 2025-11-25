@@ -18,7 +18,7 @@ export const authOptions: NextAuthOptions = {
           const { email, password } = credentials;
 
           const { data } = await axios.post(
-            "https://medinexus-api-bja6aha9esfqa5ga.brazilsouth-01.azurewebsites.net/api/auth/login",
+            `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
             {
               Email: email,
               Password: password,

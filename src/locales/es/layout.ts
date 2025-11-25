@@ -4,6 +4,7 @@ export const sidebar = {
     wallet: "Cartera",
     healthcare: "Asistencial",
     billing: "Facturación",
+    admission: "Admisión",
     settings: "Parametrización",
     clinicalLaboratory: "Laboratorio clínico",
     deliveryResults: "Entrega de resultados",
@@ -16,8 +17,10 @@ export const sidebar = {
     pharmacy: "Farmacia",
   },
   healthcare: {
-    triage: "Triage",
-    admission: "Admisión",
+    admission: {
+      admission: "Admisión",
+      triage: "Triage",
+    },
     ongoingCare: "Atención en curso",
     careList: "Lista de atenciones",
     radiology: "Radiología",
@@ -40,6 +43,10 @@ export const sidebar = {
     admissionReport: "Reporte de admisiones",
     servicesReport: "Reporte servicios",
     eDocNotSent: "e'doc no enviados",
+    filing: {
+      filing: "Radicar",
+      filingInvoice: "Radicar factura",
+    },
   },
 
   careManagement: {

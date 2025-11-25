@@ -66,10 +66,11 @@ const SidebarNavGroupToggle = (props: SidebarNavGroupToggleProps) => {
 type SidebarNavGroupProps = {
   toggleIcon: IconDefinition;
   toggleText: string;
+  level?: number;
 } & PropsWithChildren;
 
 export default function SidebarNavGroup(props: SidebarNavGroupProps) {
-  const { toggleIcon, toggleText, children } = props;
+  const { toggleIcon, toggleText, children, level = 0 } = props;
 
   const [isShow, setIsShow] = useState(false);
 
@@ -78,6 +79,9 @@ export default function SidebarNavGroup(props: SidebarNavGroupProps) {
       as="li"
       bsPrefix="nav-group"
       className={classNames({ show: isShow })}
+      style={{
+        marginLeft: `${level * 10}px`,
+      }}
     >
       <SidebarNavGroupToggle
         icon={toggleIcon}
@@ -87,7 +91,13 @@ export default function SidebarNavGroup(props: SidebarNavGroupProps) {
         {toggleText}
       </SidebarNavGroupToggle>
       <Accordion.Collapse eventKey="0">
-        <ul className="nav-group-items list-unstyled">{children}</ul>
+        <ul className="nav-group-items list-unstyled">
+          {React.Children.map(children, (child) =>
+            React.isValidElement(child)
+              ? React.cloneElement(child as any, { level: level + 1 })
+              : child
+          )}
+        </ul>
       </Accordion.Collapse>
     </Accordion>
   );

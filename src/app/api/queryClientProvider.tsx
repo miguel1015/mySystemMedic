@@ -9,7 +9,6 @@ export default function ReactQueryProvider({
 }: {
   children: ReactNode;
 }) {
-  // Crear solo una instancia del cliente
   const [client] = useState(() => new QueryClient());
 
   return (

@@ -7,6 +7,7 @@ import {
   faFileLines,
   faHospital,
   faNoteSticky,
+  faUser,
 } from "@fortawesome/free-regular-svg-icons";
 import {
   faBoxOpen,
@@ -35,6 +36,7 @@ import {
   faPrescriptionBottleMedical,
   faStethoscope,
   faTruckMedical,
+  faUserCheck,
   faUserDoctor,
   faUsers,
   faWallet,
@@ -53,12 +55,17 @@ export default async function SidebarNav() {
         toggleIcon={faStethoscope}
         toggleText={dict.sidebar.items.healthcare}
       >
-        <SidebarNavItem href="#" icon={faNotesMedical}>
-          {dict.sidebar.healthcare.triage}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faHospitalUser}>
-          {dict.sidebar.healthcare.admission}
-        </SidebarNavItem>
+        <SidebarNavGroup
+          toggleIcon={faUserCheck}
+          toggleText={dict.sidebar.items.admission}
+        >
+          <SidebarNavItem href="#" icon={faNotesMedical}>
+            {dict.sidebar.healthcare.admission.triage}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faHospitalUser}>
+            {dict.sidebar.healthcare.admission.admission}
+          </SidebarNavItem>
+        </SidebarNavGroup>
         <SidebarNavGroup
           toggleIcon={faStethoscope}
           toggleText={dict.sidebar.healthcare.ongoingCare}
@@ -107,36 +114,52 @@ export default async function SidebarNav() {
         toggleIcon={faFileInvoiceDollar}
         toggleText={dict.sidebar.items.billing}
       >
-        <SidebarNavItem href="#" icon={faFileInvoice}>
-          {dict.sidebar.billing.admissionOpenIntegral}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faCut}>
-          {dict.sidebar.billing.surgeryUpload}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faFileMedicalAlt}>
-          {dict.sidebar.billing.admissionClosedIntegral}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faFileLines}>
-          {dict.sidebar.billing.invoiceVisualization}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faFileArrowUp}>
-          {dict.sidebar.billing.invoiceAttachment}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faChartBar}>
-          {dict.sidebar.billing.billingReport}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faFileCode}>
-          {dict.sidebar.billing.electronicDocuments}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faFileCircleCheck}>
-          {dict.sidebar.billing.admissionReport}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faFileContract}>
-          {dict.sidebar.billing.servicesReport}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faCircleExclamation}>
-          {dict.sidebar.billing.eDocNotSent}
-        </SidebarNavItem>
+        <SidebarNavGroup
+          toggleIcon={faFileInvoiceDollar}
+          toggleText={dict.sidebar.items.billing}
+        >
+          <SidebarNavItem href="#" icon={faFileInvoice}>
+            {dict.sidebar.billing.admissionOpenIntegral}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faCut}>
+            {dict.sidebar.billing.surgeryUpload}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faFileMedicalAlt}>
+            {dict.sidebar.billing.admissionClosedIntegral}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faFileLines}>
+            {dict.sidebar.billing.invoiceVisualization}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faFileArrowUp}>
+            {dict.sidebar.billing.invoiceAttachment}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faChartBar}>
+            {dict.sidebar.billing.billingReport}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faFileCode}>
+            {dict.sidebar.billing.electronicDocuments}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faFileCircleCheck}>
+            {dict.sidebar.billing.admissionReport}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faFileContract}>
+            {dict.sidebar.billing.servicesReport}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faCircleExclamation}>
+            {dict.sidebar.billing.eDocNotSent}
+          </SidebarNavItem>
+        </SidebarNavGroup>
+        <SidebarNavGroup
+          toggleIcon={faFileInvoiceDollar}
+          toggleText={dict.sidebar.items.filing}
+        >
+          <SidebarNavItem href="#" icon={faCircleExclamation}>
+            {dict.sidebar.billing.filing.filing}
+          </SidebarNavItem>
+          <SidebarNavItem href="#" icon={faCircleExclamation}>
+            {dict.sidebar.billing.filing.filingInvoice}
+          </SidebarNavItem>
+        </SidebarNavGroup>
       </SidebarNavGroup>
 
       <SidebarNavGroup
@@ -187,6 +210,11 @@ export default async function SidebarNav() {
             {dict.sidebar.wallet.accountingNote}
           </SidebarNavItem>
         </SidebarNavGroup>
+      </SidebarNavGroup>
+      <SidebarNavGroup toggleIcon={faUser} toggleText={dict.sidebar.items.user}>
+        <SidebarNavItem href="/users" icon={faUsers}>
+          {dict.sidebar.items.users}
+        </SidebarNavItem>
       </SidebarNavGroup>
     </ul>
   );

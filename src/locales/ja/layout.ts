@@ -5,6 +5,7 @@ export const sidebar = {
     healthcare: "医療",
     billing: "請求",
     settings: "設定",
+    admission: "入院受付",
     clinicalLaboratory: "臨床検査室",
     deliveryResults: "結果交付",
     patients: "患者",
@@ -17,8 +18,10 @@ export const sidebar = {
   },
 
   healthcare: {
-    triage: "トリアージ",
-    admission: "入院受付",
+    admission: {
+      admission: "入院受付",
+      triage: "トリアージ",
+    },
     ongoingCare: "継続ケア",
     careList: "ケア一覧",
     radiology: "放射線科",
@@ -42,6 +45,10 @@ export const sidebar = {
     admissionReport: "入院レポート",
     servicesReport: "サービスレポート",
     eDocNotSent: "未送信電子文書",
+    filing: {
+      filing: "Filing",
+      filingInvoice: "Filing Invoice",
+    },
   },
 
   careManagement: {
