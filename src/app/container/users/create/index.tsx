@@ -3,13 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-
 import CustomButton from "@/components/button";
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
-import { DocumentType, TCreateUser } from "../types";
 import Select from "@/components/select";
 import useDictionary from "@/locales/dictionary-hook";
+import { useUserRoles } from "../../../../core/hooks/roles/useUser";
+import { DocumentType, TCreateUser } from "../types";
 
 const createUserSchema = z
   .object({
@@ -21,27 +21,33 @@ const createUserSchema = z
     perfil: z.string().min(1, "Perfil de usuario es obligatorio"),
     rol: z.string().min(1, "Rol es obligatorio"),
     estado: z.string().min(1, "Estado es obligatorio"),
-    contrasena: z
+    contraseña: z
       .string()
       .min(6, "Contraseña debe tener al menos 6 caracteres"),
-    confirmarContrasena: z
+    confirmarContraseña: z
       .string()
       .min(6, "Confirmar contraseña es obligatorio"),
   })
-  .refine((data) => data.contrasena === data.confirmarContrasena, {
+  .refine((data) => data.contraseña === data.confirmarContraseña, {
     message: "Las contraseñas no coinciden",
-    path: ["confirmarContrasena"],
+    path: ["confirmarContraseña"],
   });
 
 type CreateUserForm = z.infer<typeof createUserSchema>;
 
-export default function CreateUser({ setOpen }: TCreateUser) {
+const CreateUser: React.FC<TCreateUser> = ({ setOpen }) => {
+  const { data: dataRol } = useUserRoles();
+
+  const roleOptions = (dataRol ?? []).map((r) => ({
+    value: r.id,
+    label: r.name,
+  }));
   const dict = useDictionary();
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
     reset,
   } = useForm<CreateUserForm>({
     resolver: zodResolver(createUserSchema),
@@ -54,8 +60,8 @@ export default function CreateUser({ setOpen }: TCreateUser) {
       perfil: "",
       rol: "",
       estado: "",
-      contrasena: "",
-      confirmarContrasena: "",
+      contraseña: "",
+      confirmarContraseña: "",
     },
   });
 
@@ -127,11 +133,12 @@ export default function CreateUser({ setOpen }: TCreateUser) {
             placeholder={dict.users.userProfile}
             control={control}
           />
-          <Input
+          <Select
             name="rol"
             label={dict.users.rol}
             placeholder={dict.users.rol}
             control={control}
+            options={roleOptions}
           />
           <Input
             name="estado"
@@ -140,14 +147,14 @@ export default function CreateUser({ setOpen }: TCreateUser) {
             control={control}
           />
           <Input
-            name="contrasena"
+            name="contraseña"
             label={dict.users.password}
             placeholder={dict.users.password}
             type="password"
             control={control}
           />
           <Input
-            name="confirmarContrasena"
+            name="confirmarContraseña"
             label={dict.users.confirmPassword}
             placeholder={dict.users.confirmPassword}
             type="password"
@@ -165,4 +172,6 @@ export default function CreateUser({ setOpen }: TCreateUser) {
       </form>
     </div>
   );
-}
+};
+
+export default CreateUser;

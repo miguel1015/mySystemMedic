@@ -12,14 +12,14 @@ export interface ModalProps {
   closeOnOutsideClick?: boolean;
 }
 
-export default function Modal({
+const Modal: React.FC<ModalProps> = ({
   open,
   onClose,
   title,
   children,
   size = "md",
   closeOnOutsideClick = true,
-}: ModalProps) {
+}) => {
   // Cerrar con ESC
   useEffect(() => {
     const handler = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -87,4 +87,6 @@ export default function Modal({
       )}
     </AnimatePresence>
   );
-}
+};
+
+export default Modal;

@@ -2,19 +2,16 @@
 
 import CustomButton from "@/components/button";
 import { Container } from "@/components/container";
-import CreateUser from "./create";
-import { useState } from "react";
 import Modal from "@/components/modal";
-import Title from "@/components/title";
 import UsersTable from "@/components/table";
+import Title from "@/components/title";
 import useDictionary from "@/locales/dictionary-hook";
-import { useUserRoles } from "@/core/hooks/roles/useUser";
+import { useState } from "react";
+import CreateUser from "./create";
 
 export default function UsersContainer() {
   const dict = useDictionary();
   const [open, setOpen] = useState(false);
-
-  const { data, isLoading } = useUserRoles();
 
   return (
     <Container>

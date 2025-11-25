@@ -1,19 +1,31 @@
-import apiClient from "./client";
-import type { AxiosError, AxiosResponse, AxiosRequestConfig } from "axios";
-
 export async function getAll<T>(
   endpoint: string,
-  params?: AxiosRequestConfig["params"]
+  params?: Record<string, string | number | boolean>
 ): Promise<T> {
   try {
-    const response: AxiosResponse<T> = await apiClient.get<T>(endpoint, {
-      params,
-    });
-    return response.data;
-  } catch (err) {
-    const error = err as AxiosError;
+    const url = new URL(endpoint, window.location.origin);
 
-    console.error("Error in getAll:", error.response?.data ?? error.message);
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        url.searchParams.append(key, String(value));
+      });
+    }
+
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error fetching: ${res.statusText}`);
+    }
+
+    return (await res.json()) as T;
+  } catch (error) {
+    console.error("getAll error:", error);
     throw error;
   }
 }

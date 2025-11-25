@@ -9,7 +9,7 @@ export const ENDPOINTS = {
     GET_BY_ID: (id: string | number) => `/users/${id}`,
   },
   USERS_ROLES: {
-    GET_ALL: "/api/user-roles",
+    GET_ALL: "/api/auth/user-roles",
   },
   CREDIT: {
     GET_ALL: "/credits",
