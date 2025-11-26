@@ -3,11 +3,12 @@
 import CustomButton from "@/components/button";
 import { Container } from "@/components/container";
 import Modal from "@/components/modal";
-import UsersTable from "@/components/table";
 import Title from "@/components/title";
 import useDictionary from "@/locales/dictionary-hook";
 import { useState } from "react";
 import CreateUser from "./create";
+import { useGetUsers } from "@/core/hooks/users/useGetUsers";
+import UsersTable from "./table";
 
 export default function UsersContainer() {
   const dict = useDictionary();

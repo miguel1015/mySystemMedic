@@ -10,5 +10,5 @@ export interface TCreateUser {
 
 export type DocumentType = {
   label: string;
-  value: string;
+  value: number;
 };

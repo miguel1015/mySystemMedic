@@ -8,6 +8,7 @@ export const users = {
   userID: "Username",
   userProfile: "User Profile",
   rol: "Role",
+  email: "Email",
   state: "Status",
   password: "Password",
   confirmPassword: "Confirm Password",

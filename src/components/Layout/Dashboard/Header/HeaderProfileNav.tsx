@@ -1,25 +1,26 @@
+import { authOptions } from "@/app/api/auth/option";
+import HeaderLogout from "@/components/Layout/Dashboard/Header/HeaderLogout";
+import { getDictionary } from "@/locales/dictionary";
+import { faPowerOff, faUserCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getServerSession } from "next-auth";
 import {
   Dropdown,
   DropdownDivider,
-  DropdownHeader,
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
   Nav,
   NavItem,
 } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPowerOff, faUserCircle } from "@fortawesome/free-solid-svg-icons";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/option";
-import { getDictionary } from "@/locales/dictionary";
-import HeaderLogout from "@/components/Layout/Dashboard/Header/HeaderLogout";
 
 export default async function HeaderProfileNav() {
   const session = await getServerSession(authOptions);
   const dict = await getDictionary();
 
   const avatarSrc = "assets/img/avatars/doctorLogo.png";
+
+  console.log("☠️☠️☠️", session);
 
   return (
     <Nav>

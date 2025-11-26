@@ -10,7 +10,7 @@ export type InputSize = "sm" | "lg";
 
 export interface SelectOption {
   label: string;
-  value: string | number;
+  value: number;
 }
 
 export interface SelectAutocompleteProps {
@@ -53,9 +53,9 @@ export default function SelectAutocomplete({
     newValue: SingleValue<SelectOption> | MultiValue<SelectOption>
   ) => {
     if (isMulti) {
-      onChange(newValue as SelectOption[]);
+      (newValue as SelectOption[]).map((v) => v.value);
     } else {
-      onChange(newValue as SelectOption);
+      onChange((newValue as SelectOption)?.value ?? null);
     }
   };
 
@@ -192,7 +192,11 @@ export default function SelectAutocomplete({
       {label && <label className="form-label fw-semibold">{label}</label>}
 
       <Select<SelectOption, typeof isMulti>
-        value={value || (isMulti ? [] : null)}
+        value={
+          isMulti
+            ? options.filter((opt) => (value || []).includes(opt.value))
+            : options.find((opt) => opt.value === value) || null
+        }
         onChange={handleChange}
         options={options}
         placeholder={placeholder}

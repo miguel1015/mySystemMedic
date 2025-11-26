@@ -29,3 +29,27 @@ export async function getAll<T>(
     throw error;
   }
 }
+
+export async function create<T, U>(endpoint: string, body: U): Promise<T> {
+  try {
+    const url = new URL(endpoint, window.location.origin);
+
+    const res = await fetch(url.toString(), {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error creating: ${res.statusText}`);
+    }
+
+    return (await res.json()) as T;
+  } catch (error) {
+    console.error("create error:", error);
+    throw error;
+  }
+}

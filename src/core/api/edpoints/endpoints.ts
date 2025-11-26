@@ -5,11 +5,15 @@ export const ENDPOINTS = {
     PROFILE: "/auth/profile",
   },
   USERS: {
-    GET_ALL: "/api/users/me",
+    GET_ALL: "/api/auth/users/users/getAll",
+    CREATE: "/api/auth/users/users/register",
     GET_BY_ID: (id: string | number) => `/users/${id}`,
   },
   USERS_ROLES: {
-    GET_ALL: "/api/auth/user-roles",
+    GET_ALL: "/api/auth/users/user-roles",
+  },
+  PROFILES: {
+    GET_ALL: "/api/auth/users/user-profiles",
   },
   CREDIT: {
     GET_ALL: "/credits",

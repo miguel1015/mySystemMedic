@@ -1,7 +1,7 @@
 import { getAll } from "@/core/api/baseService";
-import { ENDPOINTS } from "@/core/api/endpoints";
+import { ENDPOINTS } from "@/core/api/edpoints/endpoints";
 import { useQuery } from "@tanstack/react-query";
-import { UserRole } from "../../interfaces/user/users";
+import { UserRole } from "../../../interfaces/user/users";
 
 export const userRolesService = {
   getAll: () => getAll<UserRole[]>(ENDPOINTS.USERS_ROLES.GET_ALL),

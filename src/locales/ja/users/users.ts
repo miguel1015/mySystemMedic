@@ -4,6 +4,7 @@ export const users = {
   typeDocument: "書類の種類",
   numberId: "書類番号",
   names: "名",
+  email: "名",
   lastNames: "姓",
   userID: "ユーザー名",
   userProfile: "ユーザープロフィール",

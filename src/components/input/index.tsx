@@ -54,6 +54,14 @@ export default function Input<T extends FieldValues>({
         placeholder={placeholder}
         disabled={disabled}
         {...field}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (type === "number") {
+            field.onChange(val === "" ? undefined : Number(val));
+          } else {
+            field.onChange(val);
+          }
+        }}
         className={classNames(
           "form-control",
           {

@@ -4,6 +4,7 @@ export const users = {
   typeDocument: "证件类型",
   numberId: "证件号码",
   names: "名字",
+  email: "名字",
   lastNames: "姓氏",
   userID: "用户名",
   userProfile: "用户资料",
