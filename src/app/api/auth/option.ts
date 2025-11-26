@@ -17,6 +17,7 @@ export const authOptions: NextAuthOptions = {
         try {
           const { email, password } = credentials;
 
+          // LOGIN
           const { data } = await axios.post(
             `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
             {
@@ -33,7 +34,7 @@ export const authOptions: NextAuthOptions = {
             accessToken: data.accessToken,
             expiresAt: data.expiresAt,
           };
-        } catch (err) {
+        } catch {
           throw new Error("Usuario o contraseña inválidos");
         }
       },
@@ -45,6 +46,7 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
+    // Guardamos token en el JWT
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.accessToken;
@@ -54,13 +56,41 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
 
+    // Construimos session llamando a /users/me
     async session({ session, token }) {
-      session.user = {
-        email: token.email as string,
-        accessToken: token.accessToken as string,
-        expiresAt: token.expiresAt as string,
-      };
-      return session;
+      try {
+        if (!token?.accessToken) return session;
+
+        const meResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token.accessToken}`,
+            },
+          }
+        );
+
+        const me = meResponse.data;
+
+        // Final user data in session
+        session.user = {
+          id: me.id,
+          email: me.email,
+          username: me.username,
+          firstName: me.firstName,
+          lastName: me.lastName,
+          role: me.userRoleId,
+          profileId: me.userProfileId,
+          statusId: me.userStatusId,
+          accessToken: String(token.accessToken),
+          expiresAt: String(token.expiresAt),
+        };
+
+        return session;
+      } catch (e) {
+        console.error("❌ Error fetching user/me:", e);
+        return session;
+      }
     },
   },
 

@@ -25,7 +25,6 @@ export async function getAll<T>(
 
     return (await res.json()) as T;
   } catch (error) {
-    console.error("getAll error:", error);
     throw error;
   }
 }
@@ -49,7 +48,6 @@ export async function create<T, U>(endpoint: string, body: U): Promise<T> {
 
     return (await res.json()) as T;
   } catch (error) {
-    console.error("create error:", error);
     throw error;
   }
 }

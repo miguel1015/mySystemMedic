@@ -1,16 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
 import apiClient from "../../api/client";
-import { ENDPOINTS } from "../../api/edpoints/endpoints";
+import { ENDPOINTS } from "../../api/endpoints/endpoints";
 import { User } from "../../interfaces/api/user";
+import { useQuery } from "@tanstack/react-query";
 
-const fetchUsers = async (): Promise<User[]> => {
-  const { data } = await apiClient.get(ENDPOINTS.USERS.GET_ALL);
+const fetchMe = async (): Promise<User> => {
+  const { data } = await apiClient.get(ENDPOINTS.USERS.ME);
   return data;
 };
 
-export const useUsers = () => {
+export const useMe = () => {
   return useQuery({
-    queryKey: ["users"],
-    queryFn: fetchUsers,
+    queryKey: ["me"],
+    queryFn: fetchMe,
   });
 };

@@ -1,5 +1,5 @@
 import { getAll } from "@/core/api/baseService";
-import { ENDPOINTS } from "@/core/api/edpoints/endpoints";
+import { ENDPOINTS } from "@/core/api/endpoints/endpoints";
 import { UserProfile } from "@/core/interfaces/user/users";
 import { useQuery } from "@tanstack/react-query";
 

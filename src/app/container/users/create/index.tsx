@@ -25,9 +25,7 @@ const createUserSchema = z
     userRoleId: z.number().min(1, "Rol es obligatorio"),
     userStatusId: z.number().min(1, "Debe ser mayor o igual a 1"),
     email: z.string().min(1, "Email es obligatorio"),
-    password: z
-      .string()
-      .min(6, "Contraseña debe tener al menos 6 caracteres"),
+    password: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
     confirmarContraseña: z
       .string()
       .min(6, "Confirmar contraseña es obligatorio"),
@@ -53,16 +51,9 @@ const CreateUser: React.FC<TCreateUser> = ({ setOpen }) => {
     label: r.name,
   }));
 
-  console.log("🎶🎶🎶", profilesOptions);
-
   const dict = useDictionary();
 
-  const {
-    control,
-    handleSubmit,
-    formState: { isSubmitting },
-    reset,
-  } = useForm<CreateUserForm>({
+  const { control, handleSubmit, reset } = useForm<CreateUserForm>({
     resolver: zodResolver(createUserSchema),
     defaultValues: {
       documentTypeId: 0,

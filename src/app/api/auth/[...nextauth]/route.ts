@@ -9,9 +9,14 @@ declare module "next-auth" {
     names?: string;
     rol?: string;
     email: string;
-    accessToken: string;
-    expiresAt: string;
+    accessToken?: string;
+    expiresAt?: string;
     avatar?: string;
+    firstName?: string;
+    lastName?: string;
+    role?: number;
+    profileId?: number;
+    statusId?: number;
   }
 
   interface Session {

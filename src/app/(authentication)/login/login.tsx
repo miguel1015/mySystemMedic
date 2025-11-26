@@ -10,11 +10,10 @@ import { z } from "zod";
 import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
 
-// ✅ Zod schema
+// Schema Zod
 const loginSchema = z.object({
   email: z.string().min(1, "Usuario es requerido"),
   password: z.string().min(1, "Contraseña es requerida"),
-  costCenter: z.string().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -104,53 +103,79 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
         }}
       />
 
-      {/* Card principal */}
+      {/* CARD */}
       <div
         style={{
           position: "relative",
           zIndex: 10,
           background: "white",
-          borderRadius: "40px",
-          padding: "30px 50px 35px",
-          width: "90%",
-          maxWidth: "600px",
-          margin: "20px",
+          borderRadius: "30px",
+          padding: "45px 45px",
+          width: "100%",
+          maxWidth: "420px",
+          height: "400px",
+
+          boxShadow:
+            "0 8px 20px rgba(0,0,0,0.08), 0 15px 40px rgba(0,0,0,0.12)",
+
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: "25px" }}>
-          <h2 style={{ color: "#2b7ab8", fontSize: "32px", margin: 0 }}>
+        {/* Título */}
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <h2 style={{ color: "#2b7ab8", fontSize: "30px", margin: 0 }}>
             Medic <span style={{ color: "#3ba9e7" }}>System</span>
           </h2>
-          <h3 style={{ color: "#d0d0d0", fontWeight: 300 }}>Login</h3>
+          <h3
+            style={{
+              color: "#bfbfbf",
+              fontWeight: 300,
+              marginTop: "4px",
+              fontSize: "18px",
+            }}
+          >
+            Login
+          </h3>
         </div>
 
-        {/* Formulario */}
+        {/* FORM */}
         <form
           onSubmit={handleSubmit(onSubmit)}
-          style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            marginTop: "10px",
+          }}
         >
+          {/* Input usuario */}
           <input
             type="text"
             placeholder="Usuario"
             {...register("email")}
             style={{
               width: "100%",
-              padding: "14px 25px",
-              background: "#e8e8e8",
-              border: errors.email ? "2px solid #f44" : "none",
-              borderRadius: "50px",
-              fontSize: "15px",
-              color: "#333",
+              padding: "10px 18px",
+              background: "#F1F1F1",
+              border: errors.email
+                ? "1px solid #ff4d4d"
+                : "1px solid transparent",
+              borderRadius: "25px",
+              fontSize: "14px",
+              height: "36px",
               outline: "none",
-              boxSizing: "border-box",
+              transition: "0.2s",
             }}
           />
           {errors.email && (
-            <span style={{ color: "red", fontSize: "13px" }}>
+            <span style={{ color: "red", fontSize: "12px" }}>
               {errors.email.message}
             </span>
           )}
 
+          {/* Input contraseña */}
           <div style={{ position: "relative" }}>
             <input
               type={showPassword ? "text" : "password"}
@@ -158,15 +183,17 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
               {...register("password")}
               style={{
                 width: "100%",
-                padding: "14px 25px",
-                paddingRight: "50px",
-                background: "#e8e8e8",
-                border: errors.password ? "2px solid #f44" : "none",
-                borderRadius: "50px",
-                fontSize: "15px",
-                color: "#333",
+                padding: "10px 18px",
+                paddingRight: "45px",
+                background: "#F1F1F1",
+                border: errors.password
+                  ? "1px solid #ff4d4d"
+                  : "1px solid transparent",
+                borderRadius: "25px",
+                fontSize: "14px",
+                height: "36px",
                 outline: "none",
-                boxSizing: "border-box",
+                transition: "0.2s",
               }}
             />
             <button
@@ -174,43 +201,44 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
               onClick={() => setShowPassword(!showPassword)}
               style={{
                 position: "absolute",
-                right: "18px",
+                right: "14px",
                 top: "50%",
                 transform: "translateY(-50%)",
                 background: "none",
                 border: "none",
-                color: "#999",
                 cursor: "pointer",
+                color: "#999",
+                fontSize: "14px",
               }}
             >
               <i className={showPassword ? "far fa-eye-slash" : "far fa-eye"} />
             </button>
           </div>
           {errors.password && (
-            <span style={{ color: "red", fontSize: "13px" }}>
+            <span style={{ color: "red", fontSize: "12px" }}>
               {errors.password.message}
             </span>
           )}
 
+          {/* Botón */}
           <button
             type="submit"
             disabled={loading}
             style={{
               width: "100%",
-              padding: "14px",
-              marginTop: "8px",
+              padding: "12px",
+              marginTop: "10px",
               background: loading
                 ? "#7fb8e6"
                 : "linear-gradient(135deg, #2563ba 0%, #1e4a8f 100%)",
               color: "white",
               border: "none",
-              borderRadius: "50px",
-              fontSize: "16px",
+              borderRadius: "30px",
+              fontSize: "15px",
               fontWeight: "600",
               cursor: loading ? "not-allowed" : "pointer",
-              boxShadow: "0 4px 15px rgba(37, 99, 186, 0.4)",
-              transition: "all 0.3s",
-              opacity: loading ? 0.7 : 1,
+              boxShadow: "0 5px 18px rgba(37, 99, 186, 0.45)",
+              transition: "all 0.25s ease",
             }}
           >
             {loading ? "Cargando..." : "Iniciar"}
@@ -226,7 +254,6 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
           right: "25px",
           fontSize: "13px",
           color: "#2b7ab8",
-          zIndex: 20,
           fontWeight: "500",
         }}
       >
