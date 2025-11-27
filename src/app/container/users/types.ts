@@ -5,6 +5,7 @@ export interface TUsersContainer {
 
 export interface TCreateUser {
   open?: boolean;
+  editUserId: number | null;
   setOpen: (open: boolean) => void;
 }
 

@@ -4,15 +4,18 @@ import CustomButton from "@/components/button";
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import Select from "@/components/select";
+import { useCreateUser } from "@/core/hooks/users/useCreateUser";
+import { useUserDocumentType } from "@/core/hooks/users/useDocumentTypes";
 import { useUserProfiles } from "@/core/hooks/users/useProfile";
+import { useUserRoles } from "@/core/hooks/users/useRole";
+import { useUserStatuses } from "@/core/hooks/users/useStatuses";
 import useDictionary from "@/locales/dictionary-hook";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { useUserRoles } from "../../../../core/hooks/users/roles/useRole";
-import { DocumentType, TCreateUser } from "../types";
-import { useCreateUser } from "@/core/hooks/users/useCreateUser";
 import toast from "react-hot-toast";
+import * as z from "zod";
+import { TCreateUser } from "../types";
+import { useUpdateUser } from "@/core/hooks/users/useUpdateUser";
 
 const createUserSchema = z
   .object({
@@ -23,30 +26,44 @@ const createUserSchema = z
     username: z.string().min(1, "Usuario es obligatorio"),
     userProfileId: z.number().min(1, "Perfil de usuario es obligatorio"),
     userRoleId: z.number().min(1, "Rol es obligatorio"),
-    userStatusId: z.number().min(1, "Debe ser mayor o igual a 1"),
-    email: z.string().min(1, "Email es obligatorio"),
-    password: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
-    confirmarContraseña: z
-      .string()
-      .min(6, "Confirmar contraseña es obligatorio"),
+    userStatusId: z.number().min(1, "Estado es obligatorio"),
+    email: z.string().email("Email inválido"),
+
+    // Opcional: solo obligatorio cuando NO es edición
+    password: z.string().optional(),
+    confirmarContraseña: z.string().optional(),
   })
-  .refine((data) => data.password === data.confirmarContraseña, {
-    message: "Las contraseñas no coinciden",
-    path: ["confirmarContraseña"],
-  });
+  .refine(
+    (data) => !data.password || data.password === data.confirmarContraseña,
+    {
+      message: "Las contraseñas no coinciden",
+      path: ["confirmarContraseña"],
+    }
+  );
 
 type CreateUserForm = z.infer<typeof createUserSchema>;
 
-const CreateUser: React.FC<TCreateUser> = ({ setOpen }) => {
+const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
   const { data: dataRol } = useUserRoles();
   const { data: dataProfile } = useUserProfiles();
+  const { data: dataDocumentType } = useUserDocumentType();
+  const { data: dataStatuses } = useUserStatuses();
   const createUser = useCreateUser();
+  const updateUser = useUpdateUser();
 
   const roleOptions = (dataRol ?? []).map((r) => ({
     value: r.id,
     label: r.name,
   }));
   const profilesOptions = (dataProfile ?? []).map((r) => ({
+    value: r.id,
+    label: r.name,
+  }));
+  const documentTypesOptions = (dataDocumentType ?? []).map((r) => ({
+    value: r.id,
+    label: r.name,
+  }));
+  const statusesOptions = (dataStatuses ?? []).map((r) => ({
     value: r.id,
     label: r.name,
   }));
@@ -83,19 +100,6 @@ const CreateUser: React.FC<TCreateUser> = ({ setOpen }) => {
     });
   };
 
-  const documentTypes: DocumentType[] = [
-    { label: "Cédula de Ciudadanía", value: 1 },
-    { label: "Cédula de Extranjería", value: 2 },
-    { label: "Pasaporte", value: 3 },
-    { label: "Tarjeta de Identidad", value: 4 },
-    { label: "Registro Civil", value: 5 },
-    { label: "Número de Identificación Tributaria (NIT)", value: 6 },
-    { label: "Licencia de Conducir", value: 7 },
-    { label: "Documento Militar", value: 8 },
-    { label: "Carné de Extranjería", value: 9 },
-    { label: "Otro Documento", value: 10 },
-  ];
-
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -105,7 +109,7 @@ const CreateUser: React.FC<TCreateUser> = ({ setOpen }) => {
             label={dict.users.typeDocument}
             placeholder={dict.users.typeDocument}
             control={control}
-            options={documentTypes}
+            options={documentTypesOptions}
           />
           <Input
             name="documentNumber"
@@ -132,6 +136,13 @@ const CreateUser: React.FC<TCreateUser> = ({ setOpen }) => {
             control={control}
           />
           <Select
+            name="userRoleId"
+            label={dict.users.rol}
+            placeholder={dict.users.rol}
+            control={control}
+            options={roleOptions}
+          />
+          <Select
             name="userProfileId"
             label={dict.users.userProfile}
             placeholder={dict.users.userProfile}
@@ -139,18 +150,11 @@ const CreateUser: React.FC<TCreateUser> = ({ setOpen }) => {
             options={profilesOptions}
           />
           <Select
-            name="userRoleId"
-            label={dict.users.rol}
-            placeholder={dict.users.rol}
-            control={control}
-            options={roleOptions}
-          />
-          <Input
-            type="number"
             name="userStatusId"
             label={dict.users.state}
             placeholder={dict.users.state}
             control={control}
+            options={statusesOptions}
           />
           <Input
             name="email"
@@ -158,20 +162,24 @@ const CreateUser: React.FC<TCreateUser> = ({ setOpen }) => {
             placeholder={dict.users.email}
             control={control}
           />
-          <Input
-            name="password"
-            label={dict.users.password}
-            placeholder={dict.users.password}
-            type="password"
-            control={control}
-          />
-          <Input
-            name="confirmarContraseña"
-            label={dict.users.confirmPassword}
-            placeholder={dict.users.confirmPassword}
-            type="password"
-            control={control}
-          />
+          {!editUserId && (
+            <>
+              <Input
+                name="password"
+                label={dict.users.password}
+                placeholder={dict.users.password}
+                type="password"
+                control={control}
+              />
+              <Input
+                name="confirmarContraseña"
+                label={dict.users.confirmPassword}
+                placeholder={dict.users.confirmPassword}
+                type="password"
+                control={control}
+              />
+            </>
+          )}
         </GridContainer>
         <div className="d-flex justify-content-end gap-2 mt-3">
           <CustomButton variant="secondary" onClick={() => setOpen(false)}>
@@ -186,4 +194,4 @@ const CreateUser: React.FC<TCreateUser> = ({ setOpen }) => {
   );
 };
 
-export default CreateUser;
+export default UserForm;

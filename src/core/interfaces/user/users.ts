@@ -11,7 +11,21 @@ export interface UserProfile {
   description: string;
 }
 
-export interface UserCreateUser {
+export interface UserDocumentType {
+  id: number;
+  name: string;
+  isActive: boolean;
+  description: string;
+}
+
+export interface UserStatuses {
+  id: number;
+  name: string;
+  isActive: boolean;
+  description: string;
+}
+
+export interface DataUser {
   documentTypeId: number;
   documentNumber: string;
   firstName: string;

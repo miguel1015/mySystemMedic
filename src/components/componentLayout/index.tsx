@@ -24,7 +24,7 @@ export default function GridContainer({
     <Wrapper
       {...(container ? { className: classNames("container", className) } : {})}
     >
-      <div className={classNames("row justify-content-center", gap)}>
+      <div className={classNames("row", gap)}>
         {React.Children.map(children, (child) => (
           <div className={columns}>{child}</div>
         ))}

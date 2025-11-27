@@ -6,13 +6,18 @@ import Modal from "@/components/modal";
 import Title from "@/components/title";
 import useDictionary from "@/locales/dictionary-hook";
 import { useState } from "react";
-import CreateUser from "./create";
-import { useGetUsers } from "@/core/hooks/users/useGetUsers";
+import UserForm from "./userForm";
 import UsersTable from "./table";
 
 export default function UsersContainer() {
   const dict = useDictionary();
   const [open, setOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState<number | null>(null);
+
+  const handleEdit = (id: number) => {
+    setEditUserId(id);
+    setOpen(true);
+  };
 
   return (
     <Container>
@@ -24,14 +29,16 @@ export default function UsersContainer() {
       </div>
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
-        title="Crear usuario"
+        onClose={() => {
+          setOpen(false), setEditUserId(null);
+        }}
+        title={editUserId ? "Editar usuario" : "Crear usuario"}
         size="xl"
       >
-        <CreateUser setOpen={setOpen} />
+        <UserForm setOpen={setOpen} editUserId={editUserId} />
       </Modal>
 
-      <UsersTable />
+      <UsersTable onEdit={handleEdit} />
     </Container>
   );
 }

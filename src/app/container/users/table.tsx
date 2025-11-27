@@ -4,10 +4,19 @@ import { useState, useMemo } from "react";
 import { Container } from "@/components/container";
 import CustomButton from "@/components/button";
 import { useGetUsers } from "@/core/hooks/users/useGetUsers";
+import ModalConfirm from "@/components/modalConfirmation.tsx";
+import toast from "react-hot-toast";
 
-export default function UsersTable() {
+interface UsersTableProps {
+  onEdit: (id: number) => void;
+}
+
+export default function UsersTable({ onEdit }: UsersTableProps) {
   const { data: dataUsers } = useGetUsers();
   const [search, setSearch] = useState("");
+
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
 
   const filteredUsers = useMemo(() => {
     if (!dataUsers) return [];
@@ -24,11 +33,9 @@ export default function UsersTable() {
 
   return (
     <Container className="py-4">
-      {" "}
       <div className="card shadow-sm">
-        {" "}
         <div className="card-body">
-          {/* Buscador */}{" "}
+          {/* Buscador */}
           <div className="mb-3">
             <input
               type="text"
@@ -36,8 +43,9 @@ export default function UsersTable() {
               placeholder="Buscar usuario..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-            />{" "}
+            />
           </div>
+
           {/* Tabla */}
           <div className="table-responsive">
             <table className="table table-hover align-middle mb-0">
@@ -59,6 +67,7 @@ export default function UsersTable() {
                     </td>
                   </tr>
                 )}
+
                 {filteredUsers.map((user, index) => (
                   <tr key={user.id}>
                     <td>{index + 1}</td>
@@ -76,10 +85,22 @@ export default function UsersTable() {
                     </td>
                     <td>
                       <div className="d-flex gap-2">
-                        <CustomButton size="sm" variant="outline">
+                        <CustomButton
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onEdit(user.id)}
+                        >
                           Editar
                         </CustomButton>
-                        <CustomButton size="sm" variant="danger">
+
+                        <CustomButton
+                          size="sm"
+                          variant="danger"
+                          onClick={() => {
+                            setUserToDelete(user.id);
+                            setOpenConfirm(true);
+                          }}
+                        >
                           Eliminar
                         </CustomButton>
                       </div>
@@ -91,6 +112,20 @@ export default function UsersTable() {
           </div>
         </div>
       </div>
+
+      {/* Confirmación de eliminación */}
+      <ModalConfirm
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        title="Eliminar usuario"
+        subtitle="¿Estás seguro de eliminar este usuario?"
+        onConfirm={() => {
+          console.log("Eliminar ID:", userToDelete);
+          // deleteUser.mutate(userToDelete)
+          toast.success("Usuario eliminado correctamente");
+          setOpenConfirm(false);
+        }}
+      />
     </Container>
   );
 }

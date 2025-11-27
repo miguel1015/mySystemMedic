@@ -1,14 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { create } from "@/core/api/baseService";
 import { ENDPOINTS } from "@/core/api/endpoints/endpoints";
-import { UserCreateUser } from "@/core/interfaces/user/users";
+import { DataUser } from "@/core/interfaces/user/users";
 
 export const userCreateUserService = {
-  create: (data: Partial<UserCreateUser>) =>
-    create<UserCreateUser, Partial<UserCreateUser>>(
-      ENDPOINTS.USERS.CREATE,
-      data
-    ),
+  create: (data: Partial<DataUser>) =>
+    create<DataUser, Partial<DataUser>>(ENDPOINTS.USERS.CREATE, data),
 };
 
 export function useCreateUser() {
