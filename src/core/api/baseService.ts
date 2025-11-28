@@ -135,3 +135,24 @@ export async function remove<T>(
 
   return (await res.json()) as T;
 }
+
+/* -------------------------------- GET ONE -------------------------------- */
+
+export async function getById<T>(
+  endpoint: string,
+  options?: RequestOptions
+): Promise<T> {
+  const url = buildUrl(endpoint, options?.params);
+
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: "include",
+    headers: buildHeaders(options?.token),
+  });
+
+  if (!res.ok) {
+    throw new Error(`GET ONE error: ${res.statusText}`);
+  }
+
+  return (await res.json()) as T;
+}

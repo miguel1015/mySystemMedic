@@ -81,6 +81,7 @@ export const authOptions: NextAuthOptions = {
           lastName: me.lastName,
           role: me.userRoleId,
           profileId: me.userProfileId,
+          userProfileName: me.userProfileName,
           statusId: me.userStatusId,
           accessToken: String(token.accessToken),
           expiresAt: String(token.expiresAt),

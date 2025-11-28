@@ -12,8 +12,13 @@ export function useUpdateUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string | number; data: Partial<any> }) =>
-      userUpdateUserService.update(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string | number;
+      data: Partial<DataUser>;
+    }) => userUpdateUserService.update(id, data),
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });

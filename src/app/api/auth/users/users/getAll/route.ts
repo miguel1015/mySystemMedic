@@ -6,8 +6,8 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   users: "/api/users",
   "user-roles": "/api/user-roles",
   "user-profiles": "/api/user-profiles",
-  "users/document-types": "/api/users/document-types",
-  "users/UserStatuses": "/api/users/UserStatuses",
+  "document-types": "/api/users/document-types",
+  "UserStatuses": "/api/users/UserStatuses",
 };
 
 export async function GET(request: Request) {

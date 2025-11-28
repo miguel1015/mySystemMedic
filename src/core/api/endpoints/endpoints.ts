@@ -7,7 +7,9 @@ export const ENDPOINTS = {
   USERS: {
     GET_ALL: "/api/auth/users/users/getAll?type=users",
     CREATE: "/api/auth/users/users/register",
-    UPDATE: (id: string | number) => `/api/users/${id}`,
+    UPDATE: (id: string | number) => `/api/auth/users/users/${id}`,
+    DELETE: (id: string | number) => `/api/auth/users/users/${id}`,
+    GET_BY_ID: (id: string | number) => `/api/auth/users/users/${id}`,
     ME: "/api/auth/users/users/me",
   },
   USERS_ROLES: {

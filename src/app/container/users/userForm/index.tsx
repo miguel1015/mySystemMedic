@@ -11,11 +11,14 @@ import { useUserRoles } from "@/core/hooks/users/useRole";
 import { useUserStatuses } from "@/core/hooks/users/useStatuses";
 import useDictionary from "@/locales/dictionary-hook";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 import * as z from "zod";
 import { TCreateUser } from "../types";
 import { useUpdateUser } from "@/core/hooks/users/useUpdateUser";
+import { useGetUserById } from "@/core/hooks/users/useGetByIdUser";
+import { useEffect } from "react";
+import UserFormSkeleton from "./useFormSkeleton";
 
 const createUserSchema = z
   .object({
@@ -50,6 +53,9 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
   const { data: dataStatuses } = useUserStatuses();
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
+  const { data: getUser, isLoading: loadingUser } = useGetUserById(
+    Number(editUserId)
+  );
 
   const roleOptions = (dataRol ?? []).map((r) => ({
     value: r.id,
@@ -58,6 +64,7 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
   const profilesOptions = (dataProfile ?? []).map((r) => ({
     value: r.id,
     label: r.name,
+    roleId: r.userRoleId,
   }));
   const documentTypesOptions = (dataDocumentType ?? []).map((r) => ({
     value: r.id,
@@ -67,7 +74,6 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
     value: r.id,
     label: r.name,
   }));
-
   const dict = useDictionary();
 
   const { control, handleSubmit, reset } = useForm<CreateUserForm>({
@@ -86,8 +92,35 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
       confirmarContraseña: "",
     },
   });
+  const selectedRoleId = useWatch({ control });
+  const filteredProfiles = profilesOptions.filter(
+    (p) => p.roleId === selectedRoleId.userRoleId
+  );
 
   const onSubmit = (data: CreateUserForm) => {
+    if (editUserId) {
+      const updatePayload = {
+        ...data,
+        password: undefined,
+        confirmarContraseña: undefined,
+      };
+
+      updateUser.mutate(
+        { id: editUserId, data: updatePayload },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            toast.success("Usuario actualizado correctamente");
+          },
+          onError: () => {
+            toast.error("Error actualizando usuario");
+          },
+        }
+      );
+
+      return;
+    }
+
     createUser.mutate(data, {
       onSuccess: () => {
         reset();
@@ -99,6 +132,30 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
       },
     });
   };
+
+  useEffect(() => {
+    if (editUserId && getUser) {
+      reset({
+        documentTypeId: getUser.documentTypeId ?? 0,
+        documentNumber: getUser.documentNumber ?? "",
+        firstName: getUser.firstName ?? "",
+        lastName: getUser.lastName ?? "",
+        username: getUser.username ?? "",
+        userProfileId: getUser.userProfileId ?? 0,
+        userRoleId: getUser.userRoleId ?? 0,
+        userStatusId: getUser.userStatusId ?? 0,
+        email: getUser.email ?? "",
+
+        // nunca llenar contraseñas cuando editas
+        password: "",
+        confirmarContraseña: "",
+      });
+    }
+  }, [editUserId, getUser, reset]);
+
+  if (loadingUser) {
+    return <UserFormSkeleton />;
+  }
 
   return (
     <div>
@@ -147,7 +204,8 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
             label={dict.users.userProfile}
             placeholder={dict.users.userProfile}
             control={control}
-            options={profilesOptions}
+            options={filteredProfiles}
+            disabled={!selectedRoleId.userRoleId}
           />
           <Select
             name="userStatusId"
@@ -185,7 +243,10 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
           <CustomButton variant="secondary" onClick={() => setOpen(false)}>
             {dict.users.cancel}
           </CustomButton>
-          <CustomButton variant="primary" loading={createUser.isPending}>
+          <CustomButton
+            variant="primary"
+            loading={createUser.isPending || updateUser.isPending}
+          >
             {dict.users.save}
           </CustomButton>
         </div>

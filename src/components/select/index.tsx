@@ -110,14 +110,18 @@ export default function SelectAutocomplete({
       color: themeColors.text,
       minHeight: bsSize === "sm" ? 34 : bsSize === "lg" ? 50 : 40,
       transition: "all 0.3s ease",
+      opacity: disabled ? 0.55 : 1,
+      cursor: disabled ? "not-allowed" : "default",
     }),
     input: (provided) => ({
       ...provided,
       color: themeColors.text,
+      opacity: disabled ? 0.6 : 1,
     }),
     singleValue: (provided) => ({
       ...provided,
       color: themeColors.text,
+      opacity: disabled ? 0.6 : 1,
     }),
     multiValue: (provided) => ({
       ...provided,
@@ -152,7 +156,8 @@ export default function SelectAutocomplete({
         ? themeColors.optionSelected
         : "transparent",
       color: state.isSelected ? "#fff" : themeColors.text,
-      cursor: "pointer",
+      cursor: disabled ? "not-allowed" : "pointer",
+      pointerEvents: disabled ? "none" : "auto",
       transition: "all 0.2s",
       ":active": {
         backgroundColor: themeColors.optionSelected,
@@ -162,6 +167,7 @@ export default function SelectAutocomplete({
     placeholder: (provided) => ({
       ...provided,
       color: themeColors.placeholder,
+      opacity: disabled ? 0.6 : 1,
     }),
     menuPortal: (base) => ({ ...base, zIndex: 9999 }),
     menuList: (provided) => ({

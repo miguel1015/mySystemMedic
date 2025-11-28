@@ -94,7 +94,7 @@ export default async function HeaderProfileNav() {
                 : "--"}
             </p>
             <p className="mb-0">
-              <strong>Perfil:</strong> {session?.user?.profileId ?? "--"}
+              <strong>Perfil:</strong> {session?.user?.userProfileName ?? "--"}
             </p>
           </div>
 

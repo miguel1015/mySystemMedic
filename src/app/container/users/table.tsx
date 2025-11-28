@@ -6,6 +6,7 @@ import CustomButton from "@/components/button";
 import { useGetUsers } from "@/core/hooks/users/useGetUsers";
 import ModalConfirm from "@/components/modalConfirmation.tsx";
 import toast from "react-hot-toast";
+import { useDeleteUser } from "@/core/hooks/users/useDeleteUser";
 
 interface UsersTableProps {
   onEdit: (id: number) => void;
@@ -13,6 +14,7 @@ interface UsersTableProps {
 
 export default function UsersTable({ onEdit }: UsersTableProps) {
   const { data: dataUsers } = useGetUsers();
+  const deleteUser = useDeleteUser();
   const [search, setSearch] = useState("");
 
   const [openConfirm, setOpenConfirm] = useState(false);
@@ -48,7 +50,7 @@ export default function UsersTable({ onEdit }: UsersTableProps) {
 
           {/* Tabla */}
           <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0">
+            <table className="table table-hover align-middle table-lg">
               <thead className="table-light">
                 <tr>
                   <th>#</th>
@@ -73,14 +75,20 @@ export default function UsersTable({ onEdit }: UsersTableProps) {
                     <td>{index + 1}</td>
                     <td>{`${user.firstName} ${user.lastName}`}</td>
                     <td>{user.email}</td>
-                    <td>{user.userRoleId}</td>
+                    <td>{user.userRoleName}</td>
                     <td>
                       <span
                         className={`badge ${
-                          user.isActive ? "bg-success" : "bg-secondary"
+                          user.userStatusName === "Activo"
+                            ? "bg-success"
+                            : user.userStatusName === "Inactivo"
+                            ? "bg-secondary"
+                            : user.userStatusName === "Bloqueado"
+                            ? "bg-danger"
+                            : "bg-dark"
                         }`}
                       >
-                        {user.isActive ? "Activo" : "Inactivo"}
+                        {user.userStatusName}
                       </span>
                     </td>
                     <td>
@@ -120,9 +128,10 @@ export default function UsersTable({ onEdit }: UsersTableProps) {
         title="Eliminar usuario"
         subtitle="¿Estás seguro de eliminar este usuario?"
         onConfirm={() => {
-          console.log("Eliminar ID:", userToDelete);
-          // deleteUser.mutate(userToDelete)
-          toast.success("Usuario eliminado correctamente");
+          deleteUser.mutate(Number(userToDelete), {
+            onSuccess: () => toast.success("Usuario eliminado"),
+            onError: () => toast.error("Error eliminando usuario"),
+          });
           setOpenConfirm(false);
         }}
       />

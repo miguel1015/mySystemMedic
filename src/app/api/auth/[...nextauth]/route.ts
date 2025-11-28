@@ -16,6 +16,7 @@ declare module "next-auth" {
     lastName?: string;
     role?: number;
     profileId?: number;
+    userProfileName?: number;
     statusId?: number;
   }
 

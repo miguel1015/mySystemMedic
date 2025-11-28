@@ -7,6 +7,8 @@ export interface UserRole {
 export interface UserProfile {
   id: number;
   name: string;
+  userRoleId: number;
+  nameRol: string;
   isActive: boolean;
   description: string;
 }
@@ -51,5 +53,7 @@ export interface GetUser {
   email: string;
   password: string;
   isActive: number;
+  userStatusName: string;
+  userRoleName: string;
   createdAt: string;
 }
