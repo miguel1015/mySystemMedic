@@ -62,11 +62,32 @@ export async function create<T, U>(
     body: JSON.stringify(body),
   });
 
+  const contentType = res.headers.get("content-type") ?? "";
+
+  const parsed = contentType.includes("application/json")
+    ? ((await res.json().catch(() => null)) as T | { error?: string } | null)
+    : await res.text().catch(() => null);
+
   if (!res.ok) {
-    throw new Error(`POST error: ${res.statusText}`);
+    const errorMessage =
+      typeof parsed === "string"
+        ? parsed
+        : parsed && typeof parsed === "object" && "error" in parsed
+        ? parsed.error ?? res.statusText
+        : res.statusText;
+
+    throw new Error(errorMessage);
   }
 
-  return (await res.json()) as T;
+  if (
+    !contentType.includes("application/json") ||
+    parsed == null ||
+    typeof parsed === "string"
+  ) {
+    throw new Error("Invalid response format: expected JSON object");
+  }
+
+  return parsed as T;
 }
 
 /* -------------------------------- PUT -------------------------------- */
@@ -85,11 +106,32 @@ export async function updatePut<T, U>(
     body: JSON.stringify(body),
   });
 
+  const contentType = res.headers.get("content-type") ?? "";
+
+  const parsed = contentType.includes("application/json")
+    ? ((await res.json().catch(() => null)) as T | { error?: string } | null)
+    : await res.text().catch(() => null);
+
   if (!res.ok) {
-    throw new Error(`PUT error: ${res.statusText}`);
+    const message =
+      typeof parsed === "string"
+        ? parsed
+        : parsed && typeof parsed === "object" && "error" in parsed
+        ? parsed.error ?? res.statusText
+        : res.statusText;
+
+    throw new Error(message);
   }
 
-  return (await res.json()) as T;
+  if (
+    !contentType.includes("application/json") ||
+    parsed == null ||
+    typeof parsed === "string"
+  ) {
+    throw new Error("Invalid response format: expected JSON object");
+  }
+
+  return parsed as T;
 }
 
 /* -------------------------------- PATCH -------------------------------- */
