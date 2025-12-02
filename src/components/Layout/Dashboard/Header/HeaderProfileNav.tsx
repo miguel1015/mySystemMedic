@@ -17,7 +17,6 @@ import {
 export default async function HeaderProfileNav() {
   const session = await getServerSession(authOptions);
   const dict = await getDictionary();
-
   return (
     <Nav>
       <Dropdown as={NavItem}>
@@ -89,7 +88,7 @@ export default async function HeaderProfileNav() {
             </p>
             <p className="mb-2">
               <strong>Nombres:</strong>{" "}
-              {session?.user?.firstName && session?.user?.lastName
+              {session?.user?.firstName || session?.user?.lastName
                 ? `${session.user.firstName} ${session.user.lastName}`
                 : "--"}
             </p>

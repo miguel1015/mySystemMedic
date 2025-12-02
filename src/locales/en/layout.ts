@@ -95,5 +95,7 @@ export const sidebar = {
     medicalDevices: "Medical Devices",
     infrastructureInventory: "infrastructure Inventory",
     infrastructureManagement: "Infrastructure Management",
+    tarifs: "Tarifs",
+    insuranceCompanies: "Insurance companies",
   },
 };

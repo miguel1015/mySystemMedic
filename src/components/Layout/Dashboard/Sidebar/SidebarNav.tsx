@@ -11,6 +11,7 @@ import {
 } from "@fortawesome/free-regular-svg-icons";
 import {
   faBoxOpen,
+  faBuildingShield,
   faCalculator,
   faCapsules,
   faCircleExclamation,
@@ -31,6 +32,7 @@ import {
   faListCheck,
   faMicroscope,
   faMoneyBill,
+  faMoneyCheckAlt,
   faNotesMedical,
   faPills,
   faPrescriptionBottleMedical,
@@ -172,7 +174,7 @@ export default async function SidebarNav() {
         <SidebarNavItem href="#" icon={faHospital}>
           {dict.sidebar.settings.ipsData}
         </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faFileSignature}>
+        <SidebarNavItem href="/contracts" icon={faFileSignature}>
           {dict.sidebar.settings.contracts}
         </SidebarNavItem>
         <SidebarNavItem href="#" icon={faCapsules}>
@@ -187,8 +189,11 @@ export default async function SidebarNav() {
         <SidebarNavItem href="#" icon={faWarehouse}>
           {dict.sidebar.settings.infrastructureInventory}
         </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faUserDoctor}>
-          {dict.sidebar.settings.infrastructureManagement}
+        <SidebarNavItem href="#" icon={faMoneyCheckAlt}>
+          {dict.sidebar.settings.tarifs}
+        </SidebarNavItem>
+        <SidebarNavItem href="#" icon={faBuildingShield}>
+          {dict.sidebar.settings.insuranceCompanies}
         </SidebarNavItem>
       </SidebarNavGroup>
 

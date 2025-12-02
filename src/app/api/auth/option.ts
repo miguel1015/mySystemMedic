@@ -17,7 +17,6 @@ export const authOptions: NextAuthOptions = {
         try {
           const { email, password } = credentials;
 
-          // LOGIN
           const { data } = await axios.post(
             `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
             {
@@ -41,38 +40,49 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
-  session: {
-    strategy: "jwt",
-  },
+  session: { strategy: "jwt" },
 
   callbacks: {
-    // Guardamos token en el JWT
+    /* =====================================================
+     * 🔹 JWT CALLBACK — NO ROMPAS LA EJECUCIÓN
+     * ===================================================== */
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.accessToken;
         token.expiresAt = user.expiresAt;
-        token.email = user.email;
+        return token;
       }
+
+      const expiresAt = token.expiresAt as string | undefined;
+      if (!expiresAt) {
+        token.expired = true;
+        return token;
+      }
+
+      if (new Date(expiresAt) < new Date()) {
+        console.log("⚠️ TOKEN EXPIRADO — marcando expired");
+        token.expired = true;
+      }
+
       return token;
     },
 
-    // Construimos session llamando a /users/me
+    /* =====================================================
+     * 🔹 SESSION CALLBACK — AQUÍ CIERRAS SESIÓN
+     * ===================================================== */
     async session({ session, token }) {
-      try {
-        if (!token?.accessToken) return session;
+      if (token.expired || !token.accessToken) {
+        return null;
+      }
 
-        const meResponse = await axios.get(
+      try {
+        const { data: me } = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
           {
-            headers: {
-              Authorization: `Bearer ${token.accessToken}`,
-            },
+            headers: { Authorization: `Bearer ${token.accessToken}` },
           }
         );
 
-        const me = meResponse.data;
-
-        // Final user data in session
         session.user = {
           id: me.id,
           email: me.email,
@@ -88,17 +98,13 @@ export const authOptions: NextAuthOptions = {
         };
 
         return session;
-      } catch (e) {
-        console.error("❌ Error fetching user/me:", e);
-        return session;
+      } catch {
+        return null as any;
       }
     },
   },
 
-  pages: {
-    signIn: "/login",
-  },
-
+  pages: { signIn: "/login" },
   secret: process.env.NEXTAUTH_SECRET,
 };
 

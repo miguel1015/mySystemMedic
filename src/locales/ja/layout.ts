@@ -95,5 +95,7 @@ export const sidebar = {
     medicalDevices: "医療機器",
     infrastructureInventory: "インフラ在庫",
     infrastructureManagement: "インフラ管理",
+    tarifs: "料金表",
+    insuranceCompanies: "保険会社",
   },
 };

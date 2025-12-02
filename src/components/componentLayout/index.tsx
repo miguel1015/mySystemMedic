@@ -4,29 +4,44 @@ import React, { ReactNode } from "react";
 import classNames from "classnames";
 
 interface GridContainerProps {
-  children: ReactNode[];
-  gap?: string; // Clase Bootstrap para gap, ej: "g-3", "g-4"
-  columns?: string; // Clases para controlar cols, ej: "col-12 col-md-6 col-lg-4"
+  children: ReactNode | ReactNode[];
+  gap?: string; // Ej: g-3, g-4
+  columns?: string; // Ej: "col-12 col-md-6 col-lg-4"
+  cols?: number; // Ej: 2, 3, 4 -> genera automáticamente col clases
   className?: string;
-  container?: boolean; // si quieres el container o no
+  container?: boolean; // si envuelve en .container
+  as?: keyof JSX.IntrinsicElements; // Tag personalizado: div, section, article...
 }
 
 export default function GridContainer({
   children,
   gap = "g-4",
-  columns = "col-12 col-md-6 col-lg-4",
+  columns,
+  cols,
   className,
   container = true,
+  as = "div",
 }: GridContainerProps) {
-  const Wrapper = container ? "div" : React.Fragment;
+  // Etiqueta custom
+  const Wrapper = as;
+
+  // Generamos columnas automáticamente si se pasa cols={3} por ejemplo
+  const autoColumns = cols
+    ? `col-12 col-md-${12 / cols} col-lg-${12 / cols}`
+    : null;
+
+  const colClasses = columns || autoColumns || "col-12 col-md-6 col-lg-4";
+
+  // Normalizamos children
+  const childArray = React.Children.toArray(children).filter(Boolean);
 
   return (
-    <Wrapper
-      {...(container ? { className: classNames("container", className) } : {})}
-    >
+    <Wrapper className={classNames(container && "container", className)}>
       <div className={classNames("row", gap)}>
-        {React.Children.map(children, (child) => (
-          <div className={columns}>{child}</div>
+        {childArray.map((child, index) => (
+          <div key={index} className={colClasses}>
+            {child}
+          </div>
         ))}
       </div>
     </Wrapper>

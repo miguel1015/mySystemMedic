@@ -92,5 +92,7 @@ export const sidebar = {
     medicalDevices: "Dispositivos médicos",
     infrastructureInventory: "Inventario infraestructura",
     infrastructureManagement: "Gestión de infraestructura",
+    tarifs: "Tarifarios",
+    insuranceCompanies: "Aseguradoras",
   },
 };
