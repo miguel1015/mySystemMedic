@@ -6,6 +6,16 @@ interface Params {
   id: string;
 }
 
+async function parseApiResponse(res: Response) {
+  const contentType = res.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    return await res.json().catch(() => null);
+  }
+
+  return await res.text().catch(() => null);
+}
+
 /* ===========================
  * 🔹 GET /api/users/[id]
  * =========================== */
@@ -26,16 +36,22 @@ export async function GET(req: Request, { params }: { params: Params }) {
       }
     );
 
+    const data = await parseApiResponse(res);
+
     if (!res.ok) {
       return NextResponse.json(
-        { error: `Error fetching user with id ${params.id}` },
+        {
+          error:
+            typeof data === "string"
+              ? data
+              : data?.error ?? "Error fetching user",
+        },
         { status: res.status }
       );
     }
 
-    const data = await res.json();
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
@@ -65,17 +81,22 @@ export async function PUT(req: Request, { params }: { params: Params }) {
       }
     );
 
-    const data = await res.json();
+    const data = await parseApiResponse(res);
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: data?.message || "Error updating user" },
+        {
+          error:
+            typeof data === "string"
+              ? data
+              : data?.error ?? "Error updating user",
+        },
         { status: res.status }
       );
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
@@ -101,9 +122,16 @@ export async function DELETE(req: Request, { params }: { params: Params }) {
       }
     );
 
+    const data = await parseApiResponse(res);
+
     if (!res.ok) {
       return NextResponse.json(
-        { error: "Error deleting user" },
+        {
+          error:
+            typeof data === "string"
+              ? data
+              : data?.error ?? "Error deleting user",
+        },
         { status: res.status }
       );
     }
@@ -112,7 +140,7 @@ export async function DELETE(req: Request, { params }: { params: Params }) {
       ok: true,
       message: "User deleted successfully",
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

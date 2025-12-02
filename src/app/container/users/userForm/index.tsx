@@ -112,8 +112,8 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
             setOpen(false);
             toast.success("Usuario actualizado correctamente");
           },
-          onError: () => {
-            toast.error("Error actualizando usuario");
+          onError: (err: Error) => {
+            toast.error(err.message);
           },
         }
       );
@@ -127,8 +127,8 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
         setOpen(false);
         toast.success("Usuario creado correctamente");
       },
-      onError: () => {
-        toast.error("Error creando usuario");
+      onError: (err: Error) => {
+        toast.error(err.message);
       },
     });
   };
@@ -221,22 +221,22 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
             control={control}
           />
           {!editUserId && (
-            <>
-              <Input
-                name="password"
-                label={dict.users.password}
-                placeholder={dict.users.password}
-                type="password"
-                control={control}
-              />
-              <Input
-                name="confirmarContraseña"
-                label={dict.users.confirmPassword}
-                placeholder={dict.users.confirmPassword}
-                type="password"
-                control={control}
-              />
-            </>
+            <Input
+              name="password"
+              label={dict.users.password}
+              placeholder={dict.users.password}
+              type="password"
+              control={control}
+            />
+          )}
+          {!editUserId && (
+            <Input
+              name="confirmarContraseña"
+              label={dict.users.confirmPassword}
+              placeholder={dict.users.confirmPassword}
+              type="password"
+              control={control}
+            />
           )}
         </GridContainer>
         <div className="d-flex justify-content-end gap-2 mt-3">

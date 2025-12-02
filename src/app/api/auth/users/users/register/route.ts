@@ -24,15 +24,24 @@ export async function POST(req: Request) {
       }
     );
 
+    // Leer el contenido según content-type
+    const contentType = res.headers.get("content-type") || "";
+    let backendResponse;
+
+    if (contentType.includes("application/json")) {
+      backendResponse = await res.json().catch(() => null);
+    } else {
+      backendResponse = await res.text().catch(() => null);
+    }
+    // Si el back devuelve error
     if (!res.ok) {
       return NextResponse.json(
-        { error: "Error creating user profile" },
+        { error: backendResponse || "Unknown error" },
         { status: res.status }
       );
     }
 
-    const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json(backendResponse);
   } catch (error) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
