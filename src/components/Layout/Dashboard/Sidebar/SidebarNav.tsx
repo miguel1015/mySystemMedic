@@ -192,7 +192,7 @@ export default async function SidebarNav() {
         <SidebarNavItem href="#" icon={faMoneyCheckAlt}>
           {dict.sidebar.settings.tarifs}
         </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faBuildingShield}>
+        <SidebarNavItem href="/insuranceCompanies" icon={faBuildingShield}>
           {dict.sidebar.settings.insuranceCompanies}
         </SidebarNavItem>
       </SidebarNavGroup>

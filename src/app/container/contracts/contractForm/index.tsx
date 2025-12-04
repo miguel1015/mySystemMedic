@@ -2,22 +2,33 @@ import GridContainer from "@/components/componentLayout";
 import SelectAutocomplete from "@/components/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { ContractSchema } from "./contractSchema";
+import {
+  ContractSchema,
+  TContractSchema,
+  TDefaultValues,
+} from "./contractSchema";
 import Input from "@/components/input";
 import CustomButton from "@/components/button";
+import TextArea from "../../../../components/textArea";
+import toast from "react-hot-toast";
 
 const ContractForm: React.FC = () => {
-  const { control } = useForm({
+  const { control, handleSubmit } = useForm<TContractSchema>({
     resolver: zodResolver(ContractSchema),
+    defaultValues: TDefaultValues,
   });
+
+  const onSubmit = () => {
+    toast.success("Formulario solo visual");
+  };
 
   return (
     <div>
-      <form>
+      <form onSubmit={handleSubmit(onSubmit)}>
         {/* ======================
             BLOQUE SUPERIOR
         ======================= */}
-        <GridContainer columns="col-5" gap="g-3">
+        <GridContainer columns="col-4" gap="g-3">
           <SelectAutocomplete
             name="isLegal"
             label="¿Este contrato constituido legalmente por las partes?"
@@ -139,8 +150,7 @@ const ContractForm: React.FC = () => {
             OBJETO DEL CONTRATO
         ======================= */}
         <GridContainer columns="col-12" container gap="g-3">
-          <Input
-            type="textArea"
+          <TextArea
             name="contractObject"
             label="Objeto del contrato"
             placeholder="Describa el objeto del contrato"
@@ -223,7 +233,7 @@ const ContractForm: React.FC = () => {
         {/* ======================
             AUTORIZACIONES
         ======================= */}
-        <GridContainer columns="col-5" gap="g-3">
+        <GridContainer columns="col-4" gap="g-3">
           <SelectAutocomplete
             name="authorizationCode"
             label="Autorización código"

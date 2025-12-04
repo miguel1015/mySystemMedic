@@ -42,7 +42,19 @@ export default function Input<T extends FieldValues>({
     <div className="mb-3">
       {/* Label */}
       {label && (
-        <label htmlFor={name} className="form-label fw-semibold">
+        <label
+          className="form-label fw-semibold"
+          title={label}
+          style={{
+            marginBottom: "3px",
+            display: "inline-block",
+            maxWidth: "100%",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            cursor: "default",
+          }}
+        >
           {label}
         </label>
       )}

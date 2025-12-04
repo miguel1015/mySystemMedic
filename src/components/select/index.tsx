@@ -195,7 +195,23 @@ export default function SelectAutocomplete({
 
   return (
     <div className={`mb-3 ${className ?? ""}`}>
-      {label && <label className="form-label fw-semibold">{label}</label>}
+      {label && (
+        <label
+          className="form-label fw-semibold"
+          title={label}
+          style={{
+            marginBottom: "3px",
+            display: "inline-block",
+            maxWidth: "100%",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            cursor: "default",
+          }}
+        >
+          {label}
+        </label>
+      )}
 
       <Select<SelectOption, typeof isMulti>
         value={
