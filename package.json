@@ -30,6 +30,7 @@
     "chart.js": "^4.4.8",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
+    "country-flag-icons": "^1.6.4",
     "framer-motion": "^12.23.24",
     "i18next": "^23.16.8",
     "js-cookie": "^3.0.5",

@@ -1,0 +1,98 @@
+export const sidebar = {
+  items: {
+    dashboard: "Inizio",
+    wallet: "Portafoglio",
+    healthcare: "Assistenza",
+    billing: "Fatturazione",
+    admission: "Ammissione",
+    settings: "Parametrizzazione",
+    clinicalLaboratory: "Laboratorio clinico",
+    deliveryResults: "Consegna risultati",
+    patients: "Pazienti",
+    filing: "Radicazione",
+    radiology: "Radiologia",
+    accounting: "Contabilità",
+    user: "Utente",
+    users: "Utenti",
+    pharmacy: "Farmacia",
+  },
+  healthcare: {
+    admission: {
+      admission: "Ammissione",
+      triage: "Triage",
+    },
+    ongoingCare: "Assistenza in corso",
+    careList: "Lista delle assistenze",
+    radiology: "Radiologia",
+    clinicalLab: "Laboratorio clinico",
+  },
+  wallet: {
+    invoicePayment: "Pagamento fatture",
+    billingObjections: "Obiezioni",
+    accountingNote: "Nota contabile",
+  },
+
+  billing: {
+    admissionOpenIntegral: "Ammissione (Aperta) integrale",
+    surgeryUpload: "Caricamento chirurgia",
+    admissionClosedIntegral: "Ammissione (Chiusa) integrale",
+    invoiceVisualization: "Visualizzazione fatture",
+    invoiceAttachment: "Allegato fatture",
+    billingReport: "Rapporto di fatturazione",
+    electronicDocuments: "Documenti elettronici",
+    admissionReport: "Rapporto ammissioni",
+    servicesReport: "Rapporto servizi",
+    eDocNotSent: "Documenti elettronici non inviati",
+    filing: {
+      filing: "Radicare",
+      filingInvoice: "Radicare fattura",
+    },
+  },
+
+  careManagement: {
+    hcConsultation: "Consulto HC",
+    hcEvolution: "Evoluzione HC",
+    patientsAttendedToday: "Pazienti assistiti oggi",
+    ambulatory: "Ambulatoriale",
+    operatingRoomReport: "Rapporto sala operatoria",
+  },
+
+  filing: {
+    invoiceReview: "Revisione fatture",
+    filingProcess: "Processo di radicazione",
+    filingUpdate: "Aggiornamento radicazione",
+    glossResponse: "Risposta alle obiezioni",
+    furipsFlatFiles: "File FURIPS",
+    ripsFlatFiles: "File RIPS",
+    filingReport: "Rapporto di radicazione",
+    flatFilesPerInvoice: "File per fattura",
+    glossReport: "Rapporto obiezioni",
+  },
+
+  radiology: {
+    radiologyManagement: "Gestione radiologia",
+    radiologyInformation: "Informazioni radiologia",
+  },
+  institutionalReports: {
+    resolution256: "Risoluzione 256",
+    circular030: "Circolare 030",
+    st006Information: "Informazioni ST006",
+  },
+  pharmacy: {
+    references: "Riferimenti",
+    suppliers: "Fornitori",
+    supplies: "Forniture",
+  },
+  settings: {
+    services: "Servizi",
+    ipsData: "Dati IPS",
+    contracts: "Contratti",
+    medications: "Medicinali",
+    users: "Utenti",
+    medicalDevices: "Dispositivi medici",
+    infrastructureInventory: "Inventario infrastruttura",
+    infrastructureManagement: "Gestione infrastruttura",
+    tarifs: "Tariffe",
+    insuranceCompanies: "Assicurazioni",
+  },
+};

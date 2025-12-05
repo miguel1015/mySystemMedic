@@ -6,8 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { insuranceCompaniesSchema, TDefaultValues } from "./schema";
+import useDictionary from "../../../../locales/dictionary-hook";
 
 const InsuranceCompaniesForm: React.FC = () => {
+  const dict = useDictionary();
+
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(insuranceCompaniesSchema),
     defaultValues: TDefaultValues,
@@ -23,23 +26,23 @@ const InsuranceCompaniesForm: React.FC = () => {
         <GridContainer columns="col-4" gap="g-3">
           <Input
             name="insuranceName"
-            label="Nombre aseguradora"
-            placeholder="Nombre aseguradora"
+            label={dict.insuranceCompanies.insuranceName}
+            placeholder={dict.insuranceCompanies.placeholderInsuranceName}
             control={control}
           />
 
           <Input
             type="number"
             name="nit"
-            label="NIT / EPS"
-            placeholder="NIT"
+            label={dict.insuranceCompanies.nit}
+            placeholder={dict.insuranceCompanies.placeholderNit}
             control={control}
           />
 
           <Input
             name="insuranceCode"
-            label="Código aseguradora"
-            placeholder="Código"
+            label={dict.insuranceCompanies.insuranceCode}
+            placeholder={dict.insuranceCompanies.placeholderInsuranceCode}
             control={control}
           />
         </GridContainer>
@@ -48,24 +51,24 @@ const InsuranceCompaniesForm: React.FC = () => {
           <Input
             type="number"
             name="verificationDigit"
-            label="Dígito verificación"
-            placeholder="0-9"
+            label={dict.insuranceCompanies.verificationDigit}
+            placeholder={dict.insuranceCompanies.placeholderVerificationDigit}
             control={control}
           />
 
           <Input
             name="address"
-            label="Dirección"
-            placeholder="Dirección"
+            label={dict.insuranceCompanies.address}
+            placeholder={dict.insuranceCompanies.placeholderAddress}
             control={control}
           />
 
           <SelectAutocomplete
             name="cityId"
-            label="Ciudad"
-            placeholder="Seleccione ciudad"
+            label={dict.insuranceCompanies.cityId}
+            placeholder={dict.insuranceCompanies.placeholderCityId}
             control={control}
-            options={[]} // ← Aquí van tus ciudades
+            options={[]}
           />
         </GridContainer>
 
@@ -73,31 +76,36 @@ const InsuranceCompaniesForm: React.FC = () => {
           <Input
             type="number"
             name="phone"
-            label="Teléfono"
-            placeholder="Teléfono"
+            label={dict.insuranceCompanies.phone}
+            placeholder={dict.insuranceCompanies.placeholderPhone}
             control={control}
           />
 
           <Input
             type="email"
             name="email"
-            label="Email"
-            placeholder="email@dominio.com"
+            label={dict.insuranceCompanies.email}
+            placeholder={dict.insuranceCompanies.placeholderEmail}
             control={control}
           />
 
           <SelectAutocomplete
             name="adminTypeId"
-            label="Tipo de administradora"
-            placeholder="Seleccione tipo"
+            label={dict.insuranceCompanies.adminTypeId}
+            placeholder={dict.insuranceCompanies.placeholderAdminTypeId}
             control={control}
-            options={[]} // ← Aquí van tus tipos de administradora
+            options={[]}
           />
         </GridContainer>
 
         <div className="d-flex justify-content-end gap-2 mt-3">
-          <CustomButton variant="secondary">Cancelar</CustomButton>
-          <CustomButton variant="primary">Guardar</CustomButton>
+          <CustomButton variant="secondary">
+            {dict.insuranceCompanies.cancel}
+          </CustomButton>
+
+          <CustomButton variant="primary">
+            {dict.insuranceCompanies.save}
+          </CustomButton>
         </div>
       </form>
     </div>

@@ -1,4 +1,26 @@
 export const insuranceCompanies = {
   title: "保险公司",
   create: "创建保险公司",
+  insuranceName: "保险公司名称",
+  nit: "NIT / EPS",
+  insuranceCode: "保险代码",
+  verificationDigit: "校验位",
+  address: "地址",
+  cityId: "城市",
+  phone: "电话",
+  email: "邮箱",
+  adminTypeId: "管理类型",
+
+  placeholderInsuranceName: "保险公司名称",
+  placeholderNit: "NIT",
+  placeholderInsuranceCode: "代码",
+  placeholderVerificationDigit: "0-9",
+  placeholderAddress: "地址",
+  placeholderCityId: "选择城市",
+  placeholderPhone: "电话",
+  placeholderEmail: "email@domain.com",
+  placeholderAdminTypeId: "选择类型",
+
+  cancel: "取消",
+  save: "保存",
 };

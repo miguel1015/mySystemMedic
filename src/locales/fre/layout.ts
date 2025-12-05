@@ -1,0 +1,98 @@
+export const sidebar = {
+  items: {
+    dashboard: "Accueil",
+    wallet: "Portefeuille",
+    healthcare: "Soins",
+    billing: "Facturation",
+    admission: "Admission",
+    settings: "Paramétrage",
+    clinicalLaboratory: "Laboratoire clinique",
+    deliveryResults: "Remise de résultats",
+    patients: "Patients",
+    filing: "Radication",
+    radiology: "Radiologie",
+    accounting: "Comptabilité",
+    user: "Utilisateur",
+    users: "Utilisateurs",
+    pharmacy: "Pharmacie",
+  },
+  healthcare: {
+    admission: {
+      admission: "Admission",
+      triage: "Triage",
+    },
+    ongoingCare: "Soins en cours",
+    careList: "Liste des soins",
+    radiology: "Radiologie",
+    clinicalLab: "Laboratoire clinique",
+  },
+  wallet: {
+    invoicePayment: "Paiement des factures",
+    billingObjections: "Gloses",
+    accountingNote: "Note comptable",
+  },
+
+  billing: {
+    admissionOpenIntegral: "Admission (Ouverte) intégrale",
+    surgeryUpload: "Chargement de chirurgie",
+    admissionClosedIntegral: "Admission (Fermée) intégrale",
+    invoiceVisualization: "Visualisation des factures",
+    invoiceAttachment: "Annexes des factures",
+    billingReport: "Rapport de facturation",
+    electronicDocuments: "Documents électroniques",
+    admissionReport: "Rapport d’admissions",
+    servicesReport: "Rapport des services",
+    eDocNotSent: "Documents électroniques non envoyés",
+    filing: {
+      filing: "Radication",
+      filingInvoice: "Radication de facture",
+    },
+  },
+
+  careManagement: {
+    hcConsultation: "Consultation HC",
+    hcEvolution: "Évolution HC",
+    patientsAttendedToday: "Patients traités aujourd’hui",
+    ambulatory: "Ambulatoire",
+    operatingRoomReport: "Rapport de bloc opératoire",
+  },
+
+  filing: {
+    invoiceReview: "Révision des factures",
+    filingProcess: "Processus de radication",
+    filingUpdate: "Mise à jour de radication",
+    glossResponse: "Réponse aux gloses",
+    furipsFlatFiles: "Fichiers plats FURIPS",
+    ripsFlatFiles: "Fichiers plats RIPS",
+    filingReport: "Rapport de radication",
+    flatFilesPerInvoice: "Fichiers par facture",
+    glossReport: "Rapport de gloses",
+  },
+
+  radiology: {
+    radiologyManagement: "Gestion de radiologie",
+    radiologyInformation: "Information de radiologie",
+  },
+  institutionalReports: {
+    resolution256: "Résolution 256",
+    circular030: "Circulaire 030",
+    st006Information: "Information ST006",
+  },
+  pharmacy: {
+    references: "Références",
+    suppliers: "Fournisseurs",
+    supplies: "Fournitures",
+  },
+  settings: {
+    services: "Services",
+    ipsData: "Données IPS",
+    contracts: "Contrats",
+    medications: "Médicaments",
+    users: "Utilisateurs",
+    medicalDevices: "Dispositifs médicaux",
+    infrastructureInventory: "Inventaire infrastructure",
+    infrastructureManagement: "Gestion de l’infrastructure",
+    tarifs: "Tarifs",
+    insuranceCompanies: "Assureurs",
+  },
+};

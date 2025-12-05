@@ -1,4 +1,26 @@
 export const insuranceCompanies = {
   title: "Insurance Companies",
   create: "Create Insurance Company",
+  insuranceName: "Insurance Name",
+  nit: "NIT / EPS",
+  insuranceCode: "Insurance Code",
+  verificationDigit: "Verification Digit",
+  address: "Address",
+  cityId: "City",
+  phone: "Phone",
+  email: "Email",
+  adminTypeId: "Administrator Type",
+
+  placeholderInsuranceName: "Insurance name",
+  placeholderNit: "NIT",
+  placeholderInsuranceCode: "Code",
+  placeholderVerificationDigit: "0-9",
+  placeholderAddress: "Address",
+  placeholderCityId: "Select city",
+  placeholderPhone: "Phone",
+  placeholderEmail: "email@domain.com",
+  placeholderAdminTypeId: "Select type",
+
+  cancel: "Cancel",
+  save: "Save",
 };

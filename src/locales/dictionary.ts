@@ -7,6 +7,10 @@ const dictionaries = {
   en: () => import("./en"),
   ja: () => import("./ja"),
   zh: () => import("./zh"),
+  it: () => import("./it"),
+  port: () => import("./port"),
+  ger: () => import("./ger"),
+  fre: () => import("./fre"),
 };
 
 type Locale = keyof typeof dictionaries;

@@ -1,4 +1,26 @@
 export const insuranceCompanies = {
   title: "保険会社",
   create: "保険会社を作成",
+  insuranceName: "保険会社名",
+  nit: "NIT / EPS",
+  insuranceCode: "保険コード",
+  verificationDigit: "検証番号",
+  address: "住所",
+  cityId: "市区町村",
+  phone: "電話番号",
+  email: "メール",
+  adminTypeId: "管理者タイプ",
+
+  placeholderInsuranceName: "保険会社名",
+  placeholderNit: "NIT",
+  placeholderInsuranceCode: "コード",
+  placeholderVerificationDigit: "0-9",
+  placeholderAddress: "住所",
+  placeholderCityId: "市区町村を選択",
+  placeholderPhone: "電話番号",
+  placeholderEmail: "email@domain.com",
+  placeholderAdminTypeId: "タイプを選択",
+
+  cancel: "キャンセル",
+  save: "保存",
 };

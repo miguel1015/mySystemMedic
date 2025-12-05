@@ -6,7 +6,11 @@ import Modal from "@/components/modal";
 import Title from "@/components/title";
 import useDictionary from "@/locales/dictionary-hook";
 import { useState } from "react";
-import ContractForm from "./contractForm";
+import dynamic from "next/dynamic";
+
+const ContractForm = dynamic(() => import("./contractForm"), {
+  loading: () => <p>Cargando formulario...</p>,
+});
 
 export default function ContractsContainer() {
   const dict = useDictionary();
