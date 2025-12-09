@@ -7,7 +7,7 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   "user-roles": "/api/user-roles",
   "user-profiles": "/api/user-profiles",
   "document-types": "/api/users/document-types",
-  "UserStatuses": "/api/users/UserStatuses",
+  UserStatuses: "/api/users/UserStatuses",
 };
 
 export async function GET(request: Request) {

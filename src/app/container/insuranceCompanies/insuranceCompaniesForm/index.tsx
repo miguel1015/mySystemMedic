@@ -7,9 +7,16 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { insuranceCompaniesSchema, TDefaultValues } from "./schema";
 import useDictionary from "../../../../locales/dictionary-hook";
+import { useCities } from "../../../../core/hooks/utils/useCities";
 
 const InsuranceCompaniesForm: React.FC = () => {
   const dict = useDictionary();
+  const { data: dataCities } = useCities();
+
+  const citiesOptions = (dataCities ?? []).map((x) => ({
+    value: x.id,
+    label: x.name,
+  }));
 
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(insuranceCompaniesSchema),
@@ -68,7 +75,7 @@ const InsuranceCompaniesForm: React.FC = () => {
             label={dict.insuranceCompanies.cityId}
             placeholder={dict.insuranceCompanies.placeholderCityId}
             control={control}
-            options={[]}
+            options={citiesOptions}
           />
         </GridContainer>
 

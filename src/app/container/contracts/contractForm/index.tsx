@@ -12,6 +12,7 @@ import CustomButton from "@/components/button";
 import TextArea from "../../../../components/textArea";
 import toast from "react-hot-toast";
 import useDictionary from "../../../../locales/dictionary-hook";
+import { contractHook } from "./hooks";
 
 const ContractForm: React.FC = () => {
   const dict = useDictionary();

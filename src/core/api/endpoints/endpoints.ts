@@ -24,6 +24,21 @@ export const ENDPOINTS = {
   PROFILES: {
     GET_ALL: "/api/auth/users/users/getAll?type=user-profiles",
   },
+  COUNTRIES: {
+    GET_ALL: "/api/auth/users/users/getAll?type=countries",
+  },
+  STATES: {
+    GET_ALL: "/api/auth/utils/getAll?type=states",
+  },
+  CITIES: {
+    GET_ALL: "/api/auth/utils/getAll?type=cities",
+  },
+  ADMINISTRADOR_TYPES: {
+    GET_ALL: "/api/auth/utils/getAll?type=administrador-types",
+  },
+  INSURERS: {
+    GET_ALL: "/api/auth/utils/getAll?type=insurers",
+  },
   CREDIT: {
     GET_ALL: "/credits",
     CREATE: "/credits",

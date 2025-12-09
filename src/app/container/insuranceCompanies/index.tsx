@@ -7,10 +7,17 @@ import Title from "@/components/title";
 import useDictionary from "@/locales/dictionary-hook";
 import { useState } from "react";
 import InsuranceCompaniesForm from "./insuranceCompaniesForm";
+import InsuranceTable from "./table";
 
 export default function InsuranceCompaniesContainer() {
   const dict = useDictionary();
   const [open, setOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState<number | null>(null);
+
+  const handleEdit = (id: number) => {
+    setEditUserId(id);
+    setOpen(true);
+  };
 
   return (
     <Container>
@@ -19,16 +26,16 @@ export default function InsuranceCompaniesContainer() {
         <CustomButton onClick={() => setOpen(true)} variant="primary" size="lg">
           {dict.insuranceCompanies.create}
         </CustomButton>
-
-        <Modal
-          open={open}
-          onClose={() => setOpen(false)}
-          title={dict.insuranceCompanies.create}
-          size="xl"
-        >
-          <InsuranceCompaniesForm />
-        </Modal>
       </div>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={dict.insuranceCompanies.create}
+        size="xl"
+      >
+        <InsuranceCompaniesForm />
+      </Modal>
+      <InsuranceTable onEdit={handleEdit} />
     </Container>
   );
 }

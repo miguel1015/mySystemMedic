@@ -7,6 +7,7 @@ import Title from "@/components/title";
 import useDictionary from "@/locales/dictionary-hook";
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { useInsurers } from "../../../core/hooks/utils/useInsurer";
 
 const ContractForm = dynamic(() => import("./contractForm"), {
   loading: () => <p>Cargando formulario...</p>,

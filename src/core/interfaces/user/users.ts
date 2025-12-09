@@ -57,3 +57,52 @@ export interface GetUser {
   userRoleName: string;
   createdAt: string;
 }
+
+export interface TCountries {
+  id: number;
+  code: string;
+  name: string;
+}
+
+export interface TStates {
+  id: number;
+  name: string;
+  daneCode: string;
+  countryId: number;
+  countryName: string;
+}
+export interface TCities {
+  id: number;
+  code: string;
+  furipsCode: string;
+  name: string;
+  stateId: number;
+  stateName: string;
+  countryId: number;
+  countryName: string;
+}
+export interface TAdministradorTypes {
+  id: number;
+  name: string;
+  shortName: string;
+}
+export interface TInsurers {
+  id: number;
+  name: string;
+  nit: string;
+  verificationDigit: number;
+  code: string;
+  address: string;
+  phone1: string;
+  phone2: null;
+  email: string;
+  cityId: 150;
+  cityName: string;
+  stateId: 14;
+  stateName: string;
+  countryId: 48;
+  countryName: string;
+  administratorTypeId: 4;
+  administratorTypeName: string;
+  administratorTypeShortName: string;
+}
