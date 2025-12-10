@@ -19,6 +19,7 @@ import { useUpdateUser } from "@/core/hooks/users/useUpdateUser";
 import { useGetUserById } from "@/core/hooks/users/useGetByIdUser";
 import { useEffect } from "react";
 import UserFormSkeleton from "./useFormSkeleton";
+import FileInput from "../../../../components/fileInput";
 
 const createUserSchema = z
   .object({
@@ -30,11 +31,29 @@ const createUserSchema = z
     userProfileId: z.number().min(1, "Perfil de usuario es obligatorio"),
     userRoleId: z.number().min(1, "Rol es obligatorio"),
     userStatusId: z.number().min(1, "Estado es obligatorio"),
+    cellphone: z.number().min(1, "Celular es obligatorio"),
+    telephone: z.number().min(1, "Teléfono es obligatorio"),
+    licenseCard: z.string().optional(),
     email: z.string().email("Email inválido"),
 
     // Opcional: solo obligatorio cuando NO es edición
     password: z.string().optional(),
     confirmarContraseña: z.string().optional(),
+    file: z
+      .instanceof(File, { message: "Debes adjuntar un archivo" })
+      .refine(
+        (file) =>
+          [
+            "application/pdf",
+            "image/jpeg",
+            "image/png",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/msword",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          ].includes(file.type),
+        "Tipo de archivo no permitido"
+      ),
   })
   .refine(
     (data) => !data.password || data.password === data.confirmarContraseña,
@@ -85,6 +104,8 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
       lastName: "",
       username: "",
       userProfileId: 0,
+      cellphone: 0,
+      telephone: 0,
       userRoleId: 0,
       userStatusId: undefined,
       email: "",
@@ -215,6 +236,25 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
             options={statusesOptions}
           />
           <Input
+            name="cellphone"
+            label={dict.users.cellphone}
+            placeholder={dict.users.cellphone}
+            control={control}
+          />
+          <Input
+            name="telephone"
+            label={dict.users.telephone}
+            placeholder={dict.users.telephone}
+            control={control}
+          />
+          <Input
+            name="licenseCard"
+            label={dict.users.licenseCard}
+            placeholder={dict.users.licenseCard}
+            control={control}
+          />
+
+          <Input
             name="email"
             label={dict.users.email}
             placeholder={dict.users.email}
@@ -238,6 +278,7 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
               control={control}
             />
           )}
+          <FileInput name="file" control={control} label="Documento" />
         </GridContainer>
         <div className="d-flex justify-content-end gap-2 mt-3">
           <CustomButton variant="secondary" onClick={() => setOpen(false)}>

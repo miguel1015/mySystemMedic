@@ -4,8 +4,8 @@ import {
   ReactNode,
   MouseEventHandler,
   CSSProperties,
-  useRef,
   MouseEvent,
+  useRef,
 } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -28,10 +28,10 @@ export interface CustomButtonProps {
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
+  ripple?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   children: ReactNode;
   className?: string;
-  ripple?: boolean;
 }
 
 export default function CustomButton({
@@ -43,89 +43,14 @@ export default function CustomButton({
   ripple = true,
   onClick,
   children,
+  className = "",
 }: CustomButtonProps) {
   const isDisabled = disabled || loading;
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  const baseStyle: CSSProperties = {
-    all: "unset",
-    boxSizing: "border-box",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: 500,
-    borderRadius: "8px",
-    cursor: isDisabled ? "not-allowed" : "pointer",
-    gap: "6px",
-    position: "relative",
-    overflow: "hidden",
-    transition: "all 0.2s ease",
-    width: fullWidth ? "100%" : undefined,
-    userSelect: "none",
-    lineHeight: 1,
-  };
-
-  // Variants
-  const variants: Record<ButtonVariant, CSSProperties> = {
-    primary: {
-      backgroundColor: "#0d6efd",
-      color: "#fff",
-      border: "1px solid #0a58ca",
-    },
-    secondary: {
-      backgroundColor: "#fff",
-      color: "#444",
-      border: "1px solid #ccc",
-    },
-    danger: {
-      backgroundColor: "#dc3545",
-      color: "#fff",
-      border: "1px solid #b02a37",
-    },
-    outline: {
-      backgroundColor: "transparent",
-      color: "#0d6efd",
-      border: "1px solid #0d6efd",
-    },
-    ghost: {
-      backgroundColor: "transparent",
-      color: "#0d6efd",
-      border: "none",
-    },
-    link: {
-      backgroundColor: "transparent",
-      color: "#0d6efd",
-      border: "none",
-      padding: 0,
-    },
-    soft: {
-      backgroundColor: "#e7f1ff",
-      color: "#0d6efd",
-      border: "1px solid #bfd7ff",
-    },
-    gradient: {
-      background: "linear-gradient(135deg, #0d6efd, #6741d9)",
-      color: "white",
-      border: "none",
-    },
-    icon: {
-      width: "32px",
-      height: "32px",
-      padding: 0,
-      borderRadius: "50%",
-      backgroundColor: "#0d6efd",
-      color: "white",
-      border: "1px solid #0b5ed7",
-    },
-  };
-
-  const sizes: Record<ButtonSize, CSSProperties> = {
-    sm: { padding: "4px 10px", height: "30px", fontSize: "0.75rem" },
-    md: { padding: "4px 12px", height: "40px", fontSize: "0.85rem" },
-    lg: { padding: "6px 14px", height: "40px", fontSize: "0.95rem" },
-  };
-
-  // Ripple
+  // --------------------------
+  // Ripple Effect
+  // --------------------------
   function createRipple(e: MouseEvent<HTMLButtonElement>) {
     if (!ripple || isDisabled) return;
 
@@ -134,17 +59,78 @@ export default function CustomButton({
 
     const circle = document.createElement("span");
     const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+    const radius = diameter / 2;
 
     circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${e.clientX - btn.offsetLeft - radius}px`;
+    circle.style.top = `${e.clientY - btn.offsetTop - radius}px`;
+
+    // Ripple Styling Inline
     circle.style.position = "absolute";
     circle.style.borderRadius = "50%";
-    circle.style.background = "rgba(255, 255, 255, 0.35)";
-    circle.style.animation = "ripple-effect 0.6s ease-out";
-    circle.style.left = `${e.clientX - btn.offsetLeft - diameter / 2}px`;
-    circle.style.top = `${e.clientY - btn.offsetTop - diameter / 2}px`;
+    circle.style.background = "rgba(255,255,255,0.35)";
+    circle.style.transform = "scale(0)";
+    circle.style.pointerEvents = "none";
+    circle.style.animation = "ripple-animation 0.6s ease-out";
+    circle.style.zIndex = "1";
 
     btn.appendChild(circle);
     setTimeout(() => circle.remove(), 600);
+  }
+
+  // Create ripple keyframes dynamically (only once)
+  if (
+    typeof document !== "undefined" &&
+    !document.getElementById("ripple-keyframes")
+  ) {
+    const style = document.createElement("style");
+    style.id = "ripple-keyframes";
+    style.innerHTML = `
+      @keyframes ripple-animation {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+      @keyframes spin-animation {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // --------------------------
+  // Bootstrap variants mapped
+  // --------------------------
+  const variantClass = {
+    primary: "btn btn-primary",
+    secondary: "btn btn-secondary",
+    danger: "btn btn-danger",
+    outline: "btn btn-outline-primary",
+    ghost: "btn btn-light border-0",
+    link: "btn btn-link p-0",
+    soft: "btn btn-primary bg-opacity-10 border-primary border-opacity-25 text-primary",
+    gradient: "btn text-white border-0",
+    icon: "btn btn-primary rounded-circle p-0 d-flex justify-content-center align-items-center",
+  }[variant];
+
+  // --------------------------
+  // Sizes
+  // --------------------------
+  const sizeClass = { sm: "btn-sm", md: "", lg: "btn-lg" }[size];
+
+  // --------------------------
+  // Extra styles
+  // --------------------------
+  const customStyle: CSSProperties = {};
+  if (variant === "gradient") {
+    customStyle.background = "linear-gradient(135deg, #0d6efd, #6741d9)";
+  }
+  if (variant === "icon") {
+    customStyle.width = "36px";
+    customStyle.height = "36px";
   }
 
   return (
@@ -155,15 +141,44 @@ export default function CustomButton({
         createRipple(e);
         onClick?.(e);
       }}
-      style={{
-        ...baseStyle,
-        ...variants[variant],
-        ...(variant !== "icon" ? sizes[size] : {}),
-        opacity: isDisabled ? 0.6 : 1,
-      }}
+      className={`
+        ${variantClass}
+        ${sizeClass}
+        ${fullWidth ? "w-100" : ""}
+        position-relative
+        d-inline-flex
+        justify-content-center
+        align-items-center
+        gap-2
+        overflow-hidden
+        ${className}
+      `}
+      style={customStyle}
     >
-      {loading && <Loader2 size={16} className="animate-spin" />}
-      {children}
+      {loading && (
+        <Loader2
+          size={25}
+          style={{
+            animation: "spin-animation 1s linear infinite",
+            transformOrigin: "center",
+            transformBox: "fill-box",
+            zIndex: 2,
+          }}
+        />
+      )}
+      <span
+        style={{
+          animation: loading ? "fadeLoop 1.2s ease-in-out infinite" : "none",
+          fontSize: "1.05em",
+          fontWeight: 500,
+          letterSpacing: "0.3px",
+          display: "inline-block",
+          transformOrigin: "center",
+          zIndex: 2,
+        }}
+      >
+        {children}
+      </span>
     </button>
   );
 }

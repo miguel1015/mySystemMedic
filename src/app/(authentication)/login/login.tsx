@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
+import CustomButton from "../../../components/button";
 
 // Schema Zod
 const loginSchema = z.object({
@@ -221,28 +222,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
           )}
 
           {/* Botón */}
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "12px",
-              marginTop: "10px",
-              background: loading
-                ? "#7fb8e6"
-                : "linear-gradient(135deg, #2563ba 0%, #1e4a8f 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "30px",
-              fontSize: "15px",
-              fontWeight: "600",
-              cursor: loading ? "not-allowed" : "pointer",
-              boxShadow: "0 5px 18px rgba(37, 99, 186, 0.45)",
-              transition: "all 0.25s ease",
-            }}
-          >
-            {loading ? "Cargando..." : "Iniciar"}
-          </button>
+          <CustomButton loading={loading}>Iniciar</CustomButton>
         </form>
       </div>
 
