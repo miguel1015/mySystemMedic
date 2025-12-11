@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { Table, Tag, Input, Space, Button } from "antd";
 import { Container } from "@/components/container";
 import CustomButton from "@/components/button";
 import { useGetUsers } from "@/core/hooks/users/useGetUsers";
@@ -15,8 +16,8 @@ interface UsersTableProps {
 export default function UsersTable({ onEdit }: UsersTableProps) {
   const { data: dataUsers } = useGetUsers();
   const deleteUser = useDeleteUser();
-  const [search, setSearch] = useState("");
 
+  const [search, setSearch] = useState("");
   const [openConfirm, setOpenConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | null>(null);
 
@@ -33,95 +34,91 @@ export default function UsersTable({ onEdit }: UsersTableProps) {
     );
   }, [search, dataUsers]);
 
+  const columns = [
+    {
+      title: "#",
+      dataIndex: "index",
+      width: 60,
+      render: (_: any, __: any, index: number) => index + 1,
+    },
+    {
+      title: "Nombre",
+      dataIndex: "name",
+      render: (_: any, record: any) => `${record.firstName} ${record.lastName}`,
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+    },
+    {
+      title: "Rol",
+      dataIndex: "userRoleName",
+    },
+    {
+      title: "Estado",
+      dataIndex: "userStatusName",
+      render: (status: string) => {
+        let color =
+          status === "Activo"
+            ? "green"
+            : status === "Inactivo"
+            ? "default"
+            : status === "Bloqueado"
+            ? "red"
+            : "blue";
+
+        return <Tag color={color}>{status}</Tag>;
+      },
+    },
+    {
+      title: "Acciones",
+      render: (_: any, record: any) => (
+        <Space>
+          <CustomButton
+            size="sm"
+            variant="outline"
+            onClick={() => onEdit(record.id)}
+          >
+            Editar
+          </CustomButton>
+
+          <CustomButton
+            size="sm"
+            variant="danger"
+            onClick={() => {
+              setUserToDelete(record.id);
+              setOpenConfirm(true);
+            }}
+          >
+            Eliminar
+          </CustomButton>
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <Container className="py-4">
-      <div className="card shadow-sm">
-        <div className="card-body">
-          {/* Buscador */}
-          <div className="mb-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Buscar usuario..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
-          {/* Tabla */}
-          <div className="table-responsive">
-            <table className="table table-hover align-middle table-lg">
-              <thead className="table-light">
-                <tr>
-                  <th>#</th>
-                  <th>Nombre</th>
-                  <th>Email</th>
-                  <th>Rol</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="text-center text-muted py-3">
-                      No se encontraron usuarios
-                    </td>
-                  </tr>
-                )}
-
-                {filteredUsers.map((user, index) => (
-                  <tr key={user.id}>
-                    <td>{index + 1}</td>
-                    <td>{`${user.firstName} ${user.lastName}`}</td>
-                    <td>{user.email}</td>
-                    <td>{user.userRoleName}</td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          user.userStatusName === "Activo"
-                            ? "bg-success"
-                            : user.userStatusName === "Inactivo"
-                            ? "bg-secondary"
-                            : user.userStatusName === "Bloqueado"
-                            ? "bg-danger"
-                            : "bg-dark"
-                        }`}
-                      >
-                        {user.userStatusName}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="d-flex gap-2">
-                        <CustomButton
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onEdit(user.id)}
-                        >
-                          Editar
-                        </CustomButton>
-
-                        <CustomButton
-                          size="sm"
-                          variant="danger"
-                          onClick={() => {
-                            setUserToDelete(user.id);
-                            setOpenConfirm(true);
-                          }}
-                        >
-                          Eliminar
-                        </CustomButton>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      {/* Buscador */}
+      <div className="mb-3">
+        <Input
+          placeholder="Buscar usuario..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          allowClear
+          size="large"
+        />
       </div>
 
-      {/* Confirmación de eliminación */}
+      {/* Tabla */}
+      <Table
+        columns={columns}
+        dataSource={filteredUsers}
+        rowKey="id"
+        pagination={{ pageSize: 10 }}
+      />
+
+      {/* Confirmación */}
       <ModalConfirm
         open={openConfirm}
         onClose={() => setOpenConfirm(false)}

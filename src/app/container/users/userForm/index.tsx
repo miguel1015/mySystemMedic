@@ -20,6 +20,7 @@ import { useGetUserById } from "@/core/hooks/users/useGetByIdUser";
 import { useEffect } from "react";
 import UserFormSkeleton from "./useFormSkeleton";
 import FileInput from "../../../../components/fileInput";
+import { Button } from "antd";
 
 const createUserSchema = z
   .object({
@@ -281,15 +282,15 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
           <FileInput name="file" control={control} label="Documento" />
         </GridContainer>
         <div className="d-flex justify-content-end gap-2 mt-3">
-          <CustomButton variant="secondary" onClick={() => setOpen(false)}>
+          <Button type="default" onClick={() => setOpen(false)}>
             {dict.users.cancel}
-          </CustomButton>
-          <CustomButton
-            variant="primary"
+          </Button>
+          <Button
+            type="primary"
             loading={createUser.isPending || updateUser.isPending}
           >
             {dict.users.save}
-          </CustomButton>
+          </Button>
         </div>
       </form>
     </div>

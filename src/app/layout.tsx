@@ -1,4 +1,5 @@
 import "@/styles/globals.scss";
+import "antd/dist/reset.css";
 // Next.js allows you to import CSS directly in .js files.
 // It handles optimization and all the necessary Webpack configuration to make this work.
 import ProgressBar from "@/components/ProgressBar/ProgressBar";
@@ -12,6 +13,7 @@ import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import ReactQueryProvider from "./api/queryClientProvider";
 import ToasterProvider from "../components/toast/toast";
+import AntdThemeProvider from "../themes/antdTheme";
 
 config.autoAddCss = false;
 
@@ -32,9 +34,11 @@ export default async function RootLayout({
         <ProgressBar />
         <ToasterProvider />
         <ReactQueryProvider>
-          <DictionaryProvider dictionary={dictionary}>
-            {children}
-          </DictionaryProvider>
+          <AntdThemeProvider>
+            <DictionaryProvider dictionary={dictionary}>
+              {children}
+            </DictionaryProvider>
+          </AntdThemeProvider>
         </ReactQueryProvider>
         {vercelAnalytics && <Analytics />}
       </body>

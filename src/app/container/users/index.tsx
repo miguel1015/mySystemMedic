@@ -8,6 +8,7 @@ import useDictionary from "@/locales/dictionary-hook";
 import { useState } from "react";
 import UserForm from "./userForm";
 import UsersTable from "./table";
+import { Button } from "antd";
 
 export default function UsersContainer() {
   const dict = useDictionary();
@@ -23,9 +24,9 @@ export default function UsersContainer() {
     <Container>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title children={dict.users.users} level={3} />
-        <CustomButton onClick={() => setOpen(true)} variant="primary" size="lg">
+        <Button onClick={() => setOpen(true)} type="primary">
           {dict.users.newUser}
-        </CustomButton>
+        </Button>
       </div>
       <Modal
         open={open}
