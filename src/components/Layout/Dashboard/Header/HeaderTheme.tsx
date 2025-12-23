@@ -19,6 +19,7 @@ import {
 import { Theme } from "@/themes/enum";
 import useDictionary from "@/locales/dictionary-hook";
 import { useMediaQuery } from "react-responsive";
+import { useAppTheme } from "../../../../themes/antdTheme";
 
 const CurrentTheme = ({ theme }: { theme: string }) => (
   <>
@@ -40,28 +41,26 @@ export default function HeaderTheme({
     currentPreferredTheme
   );
   const router = useRouter();
+  const { setTheme } = useAppTheme();
 
   const changePreferredTheme = useCallback(
     (t: Theme) => {
       setPreferredTheme(t);
       Cookies.set("preferred_theme", t);
 
-      if (t === Theme.Auto) {
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          Cookies.set("theme", Theme.Dark);
-          router.refresh();
-          return;
-        }
+      let resolvedTheme = t;
 
-        Cookies.set("theme", Theme.Light);
-        router.refresh();
-        return;
+      if (t === Theme.Auto) {
+        resolvedTheme = window.matchMedia("(prefers-color-scheme: dark)")
+          .matches
+          ? Theme.Dark
+          : Theme.Light;
       }
 
-      Cookies.set("theme", t);
-      router.refresh();
+      Cookies.set("theme", resolvedTheme);
+      setTheme(resolvedTheme as "light" | "dark");
     },
-    [router]
+    [setTheme]
   );
 
   const isDarkMode = useMediaQuery({

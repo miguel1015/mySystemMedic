@@ -90,3 +90,10 @@ $enable-negative-margins: true;
   50%  { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(2px); }
 }
+
+@media (max-width: 768px) {
+  .ant-table-cell {
+    padding: 8px;
+    font-size: 13px;
+  }
+}

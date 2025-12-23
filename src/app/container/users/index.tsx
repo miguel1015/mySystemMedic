@@ -1,14 +1,13 @@
 "use client";
 
-import CustomButton from "@/components/button";
 import { Container } from "@/components/container";
 import Modal from "@/components/modal";
 import Title from "@/components/title";
 import useDictionary from "@/locales/dictionary-hook";
-import { useState } from "react";
-import UserForm from "./userForm";
-import UsersTable from "./table";
 import { Button } from "antd";
+import { useState } from "react";
+import UsersTable from "./table";
+import UserForm from "./userForm";
 
 export default function UsersContainer() {
   const dict = useDictionary();

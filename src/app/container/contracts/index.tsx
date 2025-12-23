@@ -1,13 +1,12 @@
 "use client";
 
-import CustomButton from "@/components/button";
 import { Container } from "@/components/container";
 import Modal from "@/components/modal";
 import Title from "@/components/title";
 import useDictionary from "@/locales/dictionary-hook";
-import { useState } from "react";
+import { Button } from "antd";
 import dynamic from "next/dynamic";
-import { useInsurers } from "../../../core/hooks/utils/useInsurer";
+import { useState } from "react";
 
 const ContractForm = dynamic(() => import("./contractForm"), {
   loading: () => <p>Cargando formulario...</p>,
@@ -21,9 +20,9 @@ export default function ContractsContainer() {
     <Container>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title children={dict.contracts.title} level={3} />
-        <CustomButton onClick={() => setOpen(true)} variant="primary" size="lg">
+        <Button onClick={() => setOpen(true)} type="primary">
           {dict.contracts.newContract}
-        </CustomButton>
+        </Button>
 
         <Modal
           open={open}

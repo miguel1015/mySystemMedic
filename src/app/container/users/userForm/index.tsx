@@ -1,26 +1,25 @@
 "use client";
 
-import CustomButton from "@/components/button";
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import Select from "@/components/select";
 import { useCreateUser } from "@/core/hooks/users/useCreateUser";
 import { useUserDocumentType } from "@/core/hooks/users/useDocumentTypes";
+import { useGetUserById } from "@/core/hooks/users/useGetByIdUser";
 import { useUserProfiles } from "@/core/hooks/users/useProfile";
 import { useUserRoles } from "@/core/hooks/users/useRole";
 import { useUserStatuses } from "@/core/hooks/users/useStatuses";
+import { useUpdateUser } from "@/core/hooks/users/useUpdateUser";
 import useDictionary from "@/locales/dictionary-hook";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "antd";
+import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 import * as z from "zod";
-import { TCreateUser } from "../types";
-import { useUpdateUser } from "@/core/hooks/users/useUpdateUser";
-import { useGetUserById } from "@/core/hooks/users/useGetByIdUser";
-import { useEffect } from "react";
-import UserFormSkeleton from "./useFormSkeleton";
 import FileInput from "../../../../components/fileInput";
-import { Button } from "antd";
+import { TCreateUser } from "../types";
+import UserFormSkeleton from "./useFormSkeleton";
 
 const createUserSchema = z
   .object({
@@ -120,6 +119,7 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
   );
 
   const onSubmit = (data: CreateUserForm) => {
+    console.log("😭😭😭");
     if (editUserId) {
       const updatePayload = {
         ...data,
@@ -287,6 +287,7 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
           </Button>
           <Button
             type="primary"
+            htmlType="submit"
             loading={createUser.isPending || updateUser.isPending}
           >
             {dict.users.save}

@@ -1,50 +1,48 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Table, Tag, Input, Space, Button } from "antd";
-import { Container } from "@/components/container";
 import CustomButton from "@/components/button";
-import { useGetUsers } from "@/core/hooks/users/useGetUsers";
+import { Container } from "@/components/container";
 import ModalConfirm from "@/components/modalConfirmation.tsx";
-import toast from "react-hot-toast";
 import { useDeleteUser } from "@/core/hooks/users/useDeleteUser";
+import { useGetUsers } from "@/core/hooks/users/useGetUsers";
+import { Input, Space, Table, Tag } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useMemo, useState } from "react";
+import toast from "react-hot-toast";
+import { GetUser } from "../../../core/interfaces/user/users";
 
-interface UsersTableProps {
+export default function UsersTable({
+  onEdit,
+}: {
   onEdit: (id: number) => void;
-}
-
-export default function UsersTable({ onEdit }: UsersTableProps) {
-  const { data: dataUsers } = useGetUsers();
+}) {
+  const { data: dataUsers = [] } = useGetUsers();
   const deleteUser = useDeleteUser();
 
   const [search, setSearch] = useState("");
   const [openConfirm, setOpenConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | null>(null);
 
-  const filteredUsers = useMemo(() => {
-    if (!dataUsers) return [];
-    return dataUsers.filter(
-      (user) =>
-        `${user.firstName} ${user.lastName}`
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase()) ||
-        String(user.userRoleId).includes(search.toLowerCase()) ||
-        (user.isActive ? "activo" : "inactivo").includes(search.toLowerCase())
+  const filteredUsers = useMemo<GetUser[]>(() => {
+    return dataUsers.filter((user) =>
+      [
+        `${user.firstName} ${user.lastName}`,
+        user.email,
+        String(user.userRoleId),
+        user.isActive ? "activo" : "inactivo",
+      ].some((field) => field.toLowerCase().includes(search.toLowerCase()))
     );
   }, [search, dataUsers]);
 
-  const columns = [
+  const columns: ColumnsType<GetUser> = [
     {
       title: "#",
-      dataIndex: "index",
       width: 60,
-      render: (_: any, __: any, index: number) => index + 1,
+      render: (_value, _record, index) => index + 1,
     },
     {
       title: "Nombre",
-      dataIndex: "name",
-      render: (_: any, record: any) => `${record.firstName} ${record.lastName}`,
+      render: (_, record) => `${record.firstName} ${record.lastName}`,
     },
     {
       title: "Email",
@@ -57,22 +55,19 @@ export default function UsersTable({ onEdit }: UsersTableProps) {
     {
       title: "Estado",
       dataIndex: "userStatusName",
-      render: (status: string) => {
-        let color =
-          status === "Activo"
-            ? "green"
-            : status === "Inactivo"
-            ? "default"
-            : status === "Bloqueado"
-            ? "red"
-            : "blue";
+      render: (status) => {
+        const colorMap: Record<string, string> = {
+          Activo: "green",
+          Inactivo: "default",
+          Bloqueado: "red",
+        };
 
-        return <Tag color={color}>{status}</Tag>;
+        return <Tag color={colorMap[status] ?? "blue"}>{status}</Tag>;
       },
     },
     {
       title: "Acciones",
-      render: (_: any, record: any) => (
+      render: (_, record) => (
         <Space>
           <CustomButton
             size="sm"
@@ -99,7 +94,6 @@ export default function UsersTable({ onEdit }: UsersTableProps) {
 
   return (
     <Container className="py-4">
-      {/* Buscador */}
       <div className="mb-3">
         <Input
           placeholder="Buscar usuario..."
@@ -110,25 +104,27 @@ export default function UsersTable({ onEdit }: UsersTableProps) {
         />
       </div>
 
-      {/* Tabla */}
-      <Table
+      <Table<GetUser>
         columns={columns}
         dataSource={filteredUsers}
         rowKey="id"
         pagination={{ pageSize: 10 }}
+        scroll={{ x: "max-content" }}
       />
 
-      {/* Confirmación */}
       <ModalConfirm
         open={openConfirm}
         onClose={() => setOpenConfirm(false)}
         title="Eliminar usuario"
         subtitle="¿Estás seguro de eliminar este usuario?"
         onConfirm={() => {
-          deleteUser.mutate(Number(userToDelete), {
+          if (!userToDelete) return;
+
+          deleteUser.mutate(userToDelete, {
             onSuccess: () => toast.success("Usuario eliminado"),
             onError: () => toast.error("Error eliminando usuario"),
           });
+
           setOpenConfirm(false);
         }}
       />

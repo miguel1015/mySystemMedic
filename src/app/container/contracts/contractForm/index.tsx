@@ -1,18 +1,17 @@
 import GridContainer from "@/components/componentLayout";
+import Input from "@/components/input";
 import SelectAutocomplete from "@/components/select";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "antd";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import TextArea from "../../../../components/textArea";
+import useDictionary from "../../../../locales/dictionary-hook";
 import {
   ContractSchema,
   TContractSchema,
   TDefaultValues,
 } from "./contractSchema";
-import Input from "@/components/input";
-import CustomButton from "@/components/button";
-import TextArea from "../../../../components/textArea";
-import toast from "react-hot-toast";
-import useDictionary from "../../../../locales/dictionary-hook";
-import { contractHook } from "./hooks";
 
 const ContractForm: React.FC = () => {
   const dict = useDictionary();
@@ -258,8 +257,10 @@ const ContractForm: React.FC = () => {
         </GridContainer>
 
         <div className="d-flex justify-content-end gap-2 mt-3">
-          <CustomButton variant="secondary">Cancelar</CustomButton>
-          <CustomButton variant="primary">Guardar</CustomButton>
+          <Button>Cancelar</Button>
+          <Button type="primary" htmlType="submit">
+            Guardar
+          </Button>
         </div>
       </form>
     </div>

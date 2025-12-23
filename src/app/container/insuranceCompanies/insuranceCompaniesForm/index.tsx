@@ -1,13 +1,13 @@
-import CustomButton from "@/components/button";
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import SelectAutocomplete from "@/components/select";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "antd";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { insuranceCompaniesSchema, TDefaultValues } from "./schema";
-import useDictionary from "../../../../locales/dictionary-hook";
 import { useCities } from "../../../../core/hooks/utils/useCities";
+import useDictionary from "../../../../locales/dictionary-hook";
+import { insuranceCompaniesSchema, TDefaultValues } from "./schema";
 
 const InsuranceCompaniesForm: React.FC = () => {
   const dict = useDictionary();
@@ -106,13 +106,11 @@ const InsuranceCompaniesForm: React.FC = () => {
         </GridContainer>
 
         <div className="d-flex justify-content-end gap-2 mt-3">
-          <CustomButton variant="secondary">
-            {dict.insuranceCompanies.cancel}
-          </CustomButton>
+          <Button>{dict.insuranceCompanies.cancel}</Button>
 
-          <CustomButton variant="primary">
+          <Button type="primary" htmlType="submit">
             {dict.insuranceCompanies.save}
-          </CustomButton>
+          </Button>
         </div>
       </form>
     </div>

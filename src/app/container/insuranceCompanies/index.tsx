@@ -8,6 +8,7 @@ import useDictionary from "@/locales/dictionary-hook";
 import { useState } from "react";
 import InsuranceCompaniesForm from "./insuranceCompaniesForm";
 import InsuranceTable from "./table";
+import { Button } from "antd";
 
 export default function InsuranceCompaniesContainer() {
   const dict = useDictionary();
@@ -23,9 +24,9 @@ export default function InsuranceCompaniesContainer() {
     <Container>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title children={dict.insuranceCompanies.title} level={3} />
-        <CustomButton onClick={() => setOpen(true)} variant="primary" size="lg">
+        <Button onClick={() => setOpen(true)} type="primary">
           {dict.insuranceCompanies.create}
-        </CustomButton>
+        </Button>
       </div>
       <Modal
         open={open}

@@ -21,7 +21,7 @@ export const insuranceCompaniesSchema = z.object({
 
   address: z.string().min(1, "La dirección es obligatoria"),
 
-  cityId: z.string().min(1, "Debe seleccionar una ciudad"),
+  cityId: z.coerce.number().min(1, "Debe seleccionar una ciudad"),
 
   phone: z
     .string()
@@ -44,7 +44,7 @@ export const TDefaultValues: TInsuranceCompaniesSchema = {
   insuranceCode: "",
   verificationDigit: "",
   address: "",
-  cityId: "",
+  cityId: null as unknown as number,
   phone: "",
   email: "",
   adminTypeId: "",

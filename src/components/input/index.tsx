@@ -1,35 +1,27 @@
 "use client";
 
 import React from "react";
+import { Input } from "antd";
+import type { InputProps as AntdInputProps } from "antd";
 import { useController, Control, FieldValues, Path } from "react-hook-form";
-import classNames from "classnames";
 
-export type InputSize = "sm" | "lg";
-
-export interface InputProps<T extends FieldValues> {
+export interface RHFAntdInputProps<T extends FieldValues>
+  extends AntdInputProps {
   name: Path<T>;
   control: Control<T>;
   label?: string;
   helperText?: string;
-  bsSize?: InputSize;
-  className?: string;
-  type?: string;
-  placeholder?: string;
-  disabled?: boolean;
 }
 
-export default function Input<T extends FieldValues>({
+export default function RHFAntdInput<T extends FieldValues>({
   name,
   control,
   label,
   helperText,
-  bsSize,
-  className,
   type = "text",
-  placeholder,
   disabled,
-}: InputProps<T>) {
-  // Controlador interno
+  ...antdProps
+}: RHFAntdInputProps<T>) {
   const {
     field,
     fieldState: { error },
@@ -39,57 +31,52 @@ export default function Input<T extends FieldValues>({
   });
 
   return (
-    <div className="mb-3">
+    <div style={{ marginBottom: 16 }}>
       {/* Label */}
       {label && (
         <label
-          className="form-label fw-semibold"
-          title={label}
           style={{
-            marginBottom: "3px",
-            display: "inline-block",
-            maxWidth: "100%",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            cursor: "default",
+            display: "block",
+            marginBottom: 4,
+            fontWeight: 500,
           }}
         >
           {label}
         </label>
       )}
 
-      {/* Input */}
-      <input
-        id={name}
-        type={type}
-        placeholder={placeholder}
-        disabled={disabled}
+      {/* Ant Design Input */}
+      <Input
+        {...antdProps}
         {...field}
+        type={type}
+        disabled={disabled}
+        status={error ? "error" : undefined}
+        value={field.value ?? ""}
         onChange={(e) => {
-          const val = e.target.value;
+          const value = e.target.value;
+
           if (type === "number") {
-            field.onChange(val === "" ? undefined : Number(val));
+            field.onChange(value === "" ? undefined : Number(value));
           } else {
-            field.onChange(val);
+            field.onChange(value);
           }
         }}
-        className={classNames(
-          "form-control",
-          {
-            "form-control-sm": bsSize === "sm",
-            "form-control-lg": bsSize === "lg",
-            "is-invalid": !!error,
-          },
-          className
-        )}
       />
 
       {/* Error */}
-      {error && <div className="invalid-feedback d-block">{error.message}</div>}
+      {error && (
+        <div style={{ color: "#ff4d4f", fontSize: 12, marginTop: 4 }}>
+          {error.message}
+        </div>
+      )}
 
       {/* Helper text */}
-      {!error && helperText && <div className="form-text">{helperText}</div>}
+      {!error && helperText && (
+        <div style={{ color: "rgba(0,0,0,0.45)", fontSize: 12, marginTop: 4 }}>
+          {helperText}
+        </div>
+      )}
     </div>
   );
 }
