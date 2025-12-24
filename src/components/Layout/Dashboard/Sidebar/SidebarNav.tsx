@@ -1,226 +1,81 @@
-import SidebarNavGroup from "@/components/Layout/Dashboard/Sidebar/SidebarNavGroup";
-import SidebarNavItem from "@/components/Layout/Dashboard/Sidebar/SidebarNavItem";
-import { getDictionary } from "@/locales/dictionary";
-import {
-  faChartBar,
-  faFileCode,
-  faFileLines,
-  faHospital,
-  faNoteSticky,
-  faUser,
-} from "@fortawesome/free-regular-svg-icons";
-import {
-  faBoxOpen,
-  faBuildingShield,
-  faCalculator,
-  faCapsules,
-  faCircleExclamation,
-  faCircleInfo,
-  faCut,
-  faFileArrowUp,
-  faFileCircleCheck,
-  faFileCircleXmark,
-  faFileContract,
-  faFileInvoice,
-  faFileInvoiceDollar,
-  faFileMedicalAlt,
-  faFileSignature,
-  faFlaskVial,
-  faGear,
-  faHome,
-  faHospitalUser,
-  faListCheck,
-  faMicroscope,
-  faMoneyBill,
-  faMoneyCheckAlt,
-  faNotesMedical,
-  faPills,
-  faPrescriptionBottleMedical,
-  faStethoscope,
-  faTruckMedical,
-  faUserCheck,
-  faUserDoctor,
-  faUsers,
-  faWallet,
-  faWarehouse,
-  faXRay,
-} from "@fortawesome/free-solid-svg-icons";
+"use client";
 
-export default async function SidebarNav() {
-  const dict = await getDictionary();
+import { useMenu } from "@/core/hooks/authentication/UseMenu";
+import { BackendMenu } from "@/types/typeModules";
+import { faHospital } from "@fortawesome/free-regular-svg-icons";
+import {
+  faCalculator,
+  faFileInvoiceDollar,
+  faHome,
+  faStethoscope,
+  IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
+import SidebarNavGroup from "./SidebarNavGroup";
+import SidebarNavItem from "./SidebarNavItem";
+
+interface SidebarNavProps {
+  idRole: number;
+}
+
+export default function SidebarNav({ idRole }: SidebarNavProps) {
+  const iconMap: Record<string, IconDefinition> = {
+    assignment_ind: faHospital,
+    local_hospital: faStethoscope,
+    receipt_long: faFileInvoiceDollar,
+    account_balance: faCalculator,
+  };
+
+  const getIcon = (icon?: string): IconDefinition | undefined =>
+    icon ? iconMap[icon] : undefined;
+
+  const { data } = useMenu(Number(idRole));
+  const modules = data?.modules ?? [];
+
+  function renderMenus(menus: BackendMenu[]) {
+    return menus
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((menu) => {
+        const icon = getIcon(menu.icon);
+
+        if (menu.subMenus?.length) {
+          return (
+            <SidebarNavGroup
+              key={menu.id}
+              toggleIcon={icon}
+              toggleText={menu.name}
+            >
+              {menu.subMenus
+                .sort((a, b) => a.sortOrder - b.sortOrder)
+                .map((sub) => (
+                  <SidebarNavItem key={sub.id} href={sub.route}>
+                    {sub.name}
+                  </SidebarNavItem>
+                ))}
+            </SidebarNavGroup>
+          );
+        }
+
+        return (
+          <SidebarNavItem key={menu.id} href={menu.route} icon={icon}>
+            {menu.name}
+          </SidebarNavItem>
+        );
+      });
+  }
+
   return (
     <ul className="list-unstyled">
       <SidebarNavItem icon={faHome} href="/">
-        {dict.sidebar.items.dashboard}
+        Inicio
       </SidebarNavItem>
-      <SidebarNavGroup
-        toggleIcon={faStethoscope}
-        toggleText={dict.sidebar.items.healthcare}
-      >
-        <SidebarNavGroup
-          toggleIcon={faUserCheck}
-          toggleText={dict.sidebar.items.admission}
-        >
-          <SidebarNavItem href="#" icon={faNotesMedical}>
-            {dict.sidebar.healthcare.admission.triage}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faHospitalUser}>
-            {dict.sidebar.healthcare.admission.admission}
-          </SidebarNavItem>
-        </SidebarNavGroup>
-        <SidebarNavGroup
-          toggleIcon={faStethoscope}
-          toggleText={dict.sidebar.healthcare.ongoingCare}
-        >
-          <SidebarNavItem href="#" icon={faListCheck}>
-            {dict.sidebar.healthcare.careList}
-          </SidebarNavItem>
-        </SidebarNavGroup>
-        <SidebarNavGroup
-          toggleIcon={faXRay}
-          toggleText={dict.sidebar.items.radiology}
-        >
-          <SidebarNavItem icon={faCircleInfo} href="#">
-            {dict.sidebar.radiology.radiologyManagement}
-          </SidebarNavItem>
-          <SidebarNavItem icon={faCircleInfo} href="#">
-            {dict.sidebar.radiology.radiologyInformation}
-          </SidebarNavItem>
-        </SidebarNavGroup>
-        <SidebarNavGroup
-          toggleIcon={faFlaskVial}
-          toggleText={dict.sidebar.items.clinicalLaboratory}
-        >
-          <SidebarNavItem href="#" icon={faFileInvoice}>
-            {dict.sidebar.items.deliveryResults}
-          </SidebarNavItem>
-        </SidebarNavGroup>
-      </SidebarNavGroup>
 
-      <SidebarNavGroup
-        toggleIcon={faPrescriptionBottleMedical}
-        toggleText={dict.sidebar.items.pharmacy}
-      >
-        <SidebarNavItem href="#" icon={faPills}>
-          {dict.sidebar.pharmacy.references}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faTruckMedical}>
-          {dict.sidebar.pharmacy.suppliers}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faBoxOpen}>
-          {dict.sidebar.pharmacy.supplies}
-        </SidebarNavItem>
-      </SidebarNavGroup>
-
-      <SidebarNavGroup
-        toggleIcon={faFileInvoiceDollar}
-        toggleText={dict.sidebar.items.billing}
-      >
-        <SidebarNavGroup
-          toggleIcon={faFileInvoiceDollar}
-          toggleText={dict.sidebar.items.billing}
-        >
-          <SidebarNavItem href="#" icon={faFileInvoice}>
-            {dict.sidebar.billing.admissionOpenIntegral}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faCut}>
-            {dict.sidebar.billing.surgeryUpload}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faFileMedicalAlt}>
-            {dict.sidebar.billing.admissionClosedIntegral}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faFileLines}>
-            {dict.sidebar.billing.invoiceVisualization}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faFileArrowUp}>
-            {dict.sidebar.billing.invoiceAttachment}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faChartBar}>
-            {dict.sidebar.billing.billingReport}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faFileCode}>
-            {dict.sidebar.billing.electronicDocuments}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faFileCircleCheck}>
-            {dict.sidebar.billing.admissionReport}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faFileContract}>
-            {dict.sidebar.billing.servicesReport}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faCircleExclamation}>
-            {dict.sidebar.billing.eDocNotSent}
-          </SidebarNavItem>
-        </SidebarNavGroup>
-        <SidebarNavGroup
-          toggleIcon={faFileInvoiceDollar}
-          toggleText={dict.sidebar.items.filing}
-        >
-          <SidebarNavItem href="#" icon={faCircleExclamation}>
-            {dict.sidebar.billing.filing.filing}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faCircleExclamation}>
-            {dict.sidebar.billing.filing.filingInvoice}
-          </SidebarNavItem>
-        </SidebarNavGroup>
-      </SidebarNavGroup>
-
-      <SidebarNavGroup
-        toggleIcon={faGear}
-        toggleText={dict.sidebar.items.settings}
-      >
-        <SidebarNavItem href="#" icon={faGear}>
-          {dict.sidebar.settings.services}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faHospital}>
-          {dict.sidebar.settings.ipsData}
-        </SidebarNavItem>
-        <SidebarNavItem href="/contracts" icon={faFileSignature}>
-          {dict.sidebar.settings.contracts}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faCapsules}>
-          {dict.sidebar.settings.medications}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faUsers}>
-          {dict.sidebar.settings.users}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faMicroscope}>
-          {dict.sidebar.settings.medicalDevices}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faWarehouse}>
-          {dict.sidebar.settings.infrastructureInventory}
-        </SidebarNavItem>
-        <SidebarNavItem href="#" icon={faMoneyCheckAlt}>
-          {dict.sidebar.settings.tarifs}
-        </SidebarNavItem>
-        <SidebarNavItem href="/insuranceCompanies" icon={faBuildingShield}>
-          {dict.sidebar.settings.insuranceCompanies}
-        </SidebarNavItem>
-      </SidebarNavGroup>
-
-      <SidebarNavGroup
-        toggleIcon={faCalculator}
-        toggleText={dict.sidebar.items.accounting}
-      >
-        <SidebarNavGroup
-          toggleIcon={faWallet}
-          toggleText={dict.sidebar.items.wallet}
-        >
-          <SidebarNavItem href="#" icon={faMoneyBill}>
-            {dict.sidebar.wallet.invoicePayment}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faFileCircleXmark}>
-            {dict.sidebar.wallet.billingObjections}
-          </SidebarNavItem>
-          <SidebarNavItem href="#" icon={faNoteSticky}>
-            {dict.sidebar.wallet.accountingNote}
-          </SidebarNavItem>
-        </SidebarNavGroup>
-      </SidebarNavGroup>
-      <SidebarNavGroup toggleIcon={faUser} toggleText={dict.sidebar.items.user}>
-        <SidebarNavItem href="/users" icon={faUsers}>
-          {dict.sidebar.items.users}
-        </SidebarNavItem>
-      </SidebarNavGroup>
+      {modules
+        ?.sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((module) => (
+          <SidebarNavGroup key={module.id} toggleText={module.name}>
+            {renderMenus(module.menus)}
+          </SidebarNavGroup>
+        ))}
     </ul>
   );
 }

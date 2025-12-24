@@ -15,11 +15,11 @@ import {
 } from "react-bootstrap";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faChevronUp } from "@fortawesome/free-solid-svg-icons";
 
 type SidebarNavGroupToggleProps = {
   eventKey: string;
-  icon: IconDefinition;
+  icon?: IconDefinition;
   setIsShow: (isShow: boolean) => void;
 } & PropsWithChildren;
 
@@ -41,14 +41,14 @@ const SidebarNavGroupToggle = (props: SidebarNavGroupToggleProps) => {
       type="button"
       className={classNames(
         "rounded-0 nav-link px-3 py-2 d-flex align-items-center flex-fill w-100 shadow-none",
-        {
-          collapsed: !isCurrentEventKey,
-        }
+        { collapsed: !isCurrentEventKey }
       )}
       onClick={decoratedOnClick}
     >
-      <FontAwesomeIcon className="nav-icon ms-n3" icon={icon} />
+      {icon && <FontAwesomeIcon className="nav-icon ms-n3" icon={icon} />}
+
       <span className="nav-text text-truncate">{children}</span>
+
       <div className="nav-chevron ms-auto text-end">
         <FontAwesomeIcon
           size="xs"
@@ -64,7 +64,7 @@ const SidebarNavGroupToggle = (props: SidebarNavGroupToggleProps) => {
 };
 
 type SidebarNavGroupProps = {
-  toggleIcon: IconDefinition;
+  toggleIcon?: IconDefinition;
   toggleText: string;
   level?: number;
 } & PropsWithChildren;

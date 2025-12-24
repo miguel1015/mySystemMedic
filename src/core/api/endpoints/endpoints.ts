@@ -43,4 +43,7 @@ export const ENDPOINTS = {
     GET_ALL: "/credits",
     CREATE: "/credits",
   },
+  NAVIGATION: {
+    ME: (id: string | number) => `/api/auth/menu/${id}`,
+  },
 };

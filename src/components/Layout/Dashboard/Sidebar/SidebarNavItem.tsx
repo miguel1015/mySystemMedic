@@ -1,13 +1,13 @@
 "use client";
 
-import { IconDefinition } from "@fortawesome/free-regular-svg-icons";
-import React, { PropsWithChildren } from "react";
 import { useSidebar } from "@/components/Layout/Dashboard/SidebarProvider";
-import { NavItem, NavLink } from "react-bootstrap";
-import Link from "next/link";
+import { IconDefinition } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { usePathname } from "next/navigation";
 import classNames from "classnames";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { PropsWithChildren } from "react";
+import { NavItem, NavLink } from "react-bootstrap";
 
 type Props = {
   href: string;

@@ -119,7 +119,6 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
   );
 
   const onSubmit = (data: CreateUserForm) => {
-    console.log("😭😭😭");
     if (editUserId) {
       const updatePayload = {
         ...data,

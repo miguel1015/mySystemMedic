@@ -3,15 +3,24 @@ import Sidebar from "@/components/Layout/Dashboard/Sidebar/Sidebar";
 import SidebarNav from "@/components/Layout/Dashboard/Sidebar/SidebarNav";
 import SidebarOverlay from "@/components/Layout/Dashboard/Sidebar/SidebarOverlay";
 import SidebarProvider from "@/components/Layout/Dashboard/SidebarProvider";
+import { getServerSession } from "next-auth";
 import React from "react";
 import { Container } from "react-bootstrap";
+import { authOptions } from "../api/auth/option";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default async function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await getServerSession(authOptions);
+
+  console.log(session);
   return (
     <SidebarProvider>
       <SidebarOverlay />
       <Sidebar>
-        <SidebarNav />
+        <SidebarNav idRole={Number(session?.user.role)} />
       </Sidebar>
       <div className="wrapper d-flex flex-column min-vh-100">
         <Header />
