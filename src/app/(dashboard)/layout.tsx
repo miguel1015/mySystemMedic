@@ -15,7 +15,6 @@ export default async function Layout({
 }) {
   const session = await getServerSession(authOptions);
 
-  console.log(session);
   return (
     <SidebarProvider>
       <SidebarOverlay />

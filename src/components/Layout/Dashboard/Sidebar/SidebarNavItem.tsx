@@ -26,9 +26,9 @@ export default function SidebarNavItem(props: Props) {
   const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
   // Colores personalizados
-  const activeTextColor = "#fff"; // blanco para activo
-  const inactiveTextColor = "#adb5bd"; // gris más vivo para inactivo
-  const hoverBackgroundColor = "rgba(255,255,255,0.1)"; // hover suave
+  const activeTextColor = "#fff"; 
+  const inactiveTextColor = "#adb5bd"; 
+  const hoverBackgroundColor = "rgba(255,255,255,0.1)"; 
 
   return (
     <NavItem
@@ -46,7 +46,7 @@ export default function SidebarNavItem(props: Props) {
             { "shadow-sm": isActive }
           )}
           style={{
-            marginLeft: "12px",
+            marginLeft: "2px",
             borderRadius: "10px",
             color: isActive ? activeTextColor : inactiveTextColor,
             backgroundColor: isActive ? sidebarColor : "transparent",
