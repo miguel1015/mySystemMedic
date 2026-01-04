@@ -1,16 +1,12 @@
 "use client";
 
 import { Container } from "@/components/container";
-import Modal from "@/components/modal";
 import Title from "@/components/title";
-import useDictionary from "@/locales/dictionary-hook";
-import { Button } from "antd";
+import { Button, Modal } from "antd";
 import { useState } from "react";
-import InsuranceCompaniesForm from "./insuranceCompaniesForm";
-import InsuranceTable from "./table";
+import PatientsForm from "./patientsForm";
 
-export default function InsuranceCompaniesContainer() {
-  const dict = useDictionary();
+export default function PatientsContainer() {
   const [open, setOpen] = useState(false);
   const [editUserId, setEditUserId] = useState<number | null>(null);
 
@@ -22,20 +18,20 @@ export default function InsuranceCompaniesContainer() {
   return (
     <Container>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Title children={dict.insuranceCompanies.title} level={3} />
+        <Title children="Pacientes" level={3} />
         <Button onClick={() => setOpen(true)} type="primary">
-          {dict.insuranceCompanies.create}
+          Crear paciente
         </Button>
       </div>
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
-        title={dict.insuranceCompanies.create}
-        size="xl"
+        // onClose={() => setOpen(false)}
+        title="Crear paciente"
+        // size="xl"
       >
-        <InsuranceCompaniesForm />
+        <PatientsForm />
       </Modal>
-      <InsuranceTable onEdit={handleEdit} />
+      {/* <InsuranceTable onEdit={handleEdit} /> */}
     </Container>
   );
 }
