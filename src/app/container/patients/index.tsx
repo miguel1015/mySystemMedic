@@ -2,9 +2,10 @@
 
 import { Container } from "@/components/container";
 import Title from "@/components/title";
-import { Button, Modal } from "antd";
+import { Button } from "antd";
 import { useState } from "react";
 import PatientsForm from "./patientsForm";
+import Modal from "../../../components/modal";
 
 export default function PatientsContainer() {
   const [open, setOpen] = useState(false);
@@ -25,11 +26,11 @@ export default function PatientsContainer() {
       </div>
       <Modal
         open={open}
-        // onClose={() => setOpen(false)}
+        onClose={() => setOpen(false)}
         title="Crear paciente"
-        // size="xl"
+        size="xl"
       >
-        <PatientsForm />
+        <PatientsForm setOpen={setOpen} />
       </Modal>
       {/* <InsuranceTable onEdit={handleEdit} /> */}
     </Container>

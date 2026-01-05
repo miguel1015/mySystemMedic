@@ -1,13 +1,14 @@
 "use client";
 
 import GridContainer from "@/components/componentLayout";
+import Input from "@/components/input";
 import SelectAutocomplete from "@/components/select";
 import { Button } from "antd";
-import Input from "@/components/input";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { TUtils } from "../../../../types/utils";
 
-const PatientsForm: React.FC = () => {
+const PatientsForm: React.FC<TUtils> = ({ setOpen }) => {
   const { control, handleSubmit } = useForm({
     /*     resolver: zodResolver(insuranceCompaniesSchema),
     defaultValues: TDefaultValues, */
@@ -20,11 +21,11 @@ const PatientsForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {/* EPS / CONVENIO */}
-      <GridContainer columns="col-2" gap="g-3">
+      <GridContainer gap="g-3">
         <SelectAutocomplete
           name="epsId"
           label="EPS"
-          placeholder="Seleccione EPS"
+          placeholder="Adres sistema de seguridad social en salud"
           control={control}
           options={[]}
         />
@@ -39,7 +40,7 @@ const PatientsForm: React.FC = () => {
       </GridContainer>
 
       {/* DOCUMENTO */}
-      <GridContainer columns="col-2" gap="g-3">
+      <GridContainer gap="g-3">
         <SelectAutocomplete
           name="documentType"
           label="Tipo documento"
@@ -58,14 +59,15 @@ const PatientsForm: React.FC = () => {
 
       {/* NOMBRES */}
       <GridContainer columns="col-4" gap="g-3">
-        <Input name="firstName" label="1 Nombre" control={control} />
-        <Input name="secondName" label="2 Nombre" control={control} />
-        <Input name="firstLastName" label="1 Apellido" control={control} />
-        <Input name="secondLastName" label="2 Apellido" control={control} />
-      </GridContainer>
+        <Input name="firstName" label="Primer Nombre" control={control} />
+        <Input name="secondName" label="Segundo Nombre" control={control} />
+        <Input name="firstLastName" label="Primer Apellido" control={control} />
+        <Input
+          name="secondLastName"
+          label="Segundo Apellido"
+          control={control}
+        />
 
-      {/* NACIMIENTO / SEXO */}
-      <GridContainer columns="col-2" gap="g-3">
         <Input
           type="date"
           name="birthDate"
@@ -80,10 +82,8 @@ const PatientsForm: React.FC = () => {
           control={control}
           options={[]}
         />
-      </GridContainer>
 
-      {/* PAÍSES */}
-      <GridContainer columns="col-2" gap="g-3">
+        {/* PAÍSES */}
         <SelectAutocomplete
           name="residenceCountry"
           label="País residencia"
@@ -99,10 +99,7 @@ const PatientsForm: React.FC = () => {
           control={control}
           options={[]}
         />
-      </GridContainer>
 
-      {/* UBICACIÓN */}
-      <GridContainer columns="col-3" gap="g-3">
         <SelectAutocomplete
           name="department"
           label="Departamento"
@@ -126,28 +123,19 @@ const PatientsForm: React.FC = () => {
           control={control}
           options={[]}
         />
-      </GridContainer>
 
-      {/* DIRECCIÓN / TELÉFONOS */}
-      <GridContainer columns="col-4" gap="g-3">
         <Input name="address" label="Dirección" control={control} />
         <Input name="phone1" label="Teléfono 1" control={control} />
         <Input name="phone2" label="Teléfono 2" control={control} />
         <Input name="phone3" label="Teléfono 3" control={control} />
-      </GridContainer>
 
-      {/* EMAIL */}
-      <GridContainer columns="col-1" gap="g-3">
         <Input
           type="email"
           name="email"
           label="Correo electrónico"
           control={control}
         />
-      </GridContainer>
 
-      {/* ESTADO CIVIL */}
-      <GridContainer columns="col-4" gap="g-3">
         <SelectAutocomplete
           name="maritalStatus"
           label="Estado civil"
@@ -172,10 +160,7 @@ const PatientsForm: React.FC = () => {
           control={control}
           options={[]}
         />
-      </GridContainer>
 
-      {/* RELIGIÓN / OCUPACIÓN */}
-      <GridContainer columns="col-2" gap="g-3">
         <SelectAutocomplete
           name="religion"
           label="Religión"
@@ -192,7 +177,7 @@ const PatientsForm: React.FC = () => {
 
       {/* BOTONES */}
       <div className="d-flex justify-content-end gap-2 mt-3">
-        <Button>Cancelar</Button>
+        <Button onClick={() => setOpen(false)}>Cancelar</Button>
         <Button type="primary" htmlType="submit">
           Guardar
         </Button>

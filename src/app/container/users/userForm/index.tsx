@@ -16,54 +16,10 @@ import { Button } from "antd";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
-import * as z from "zod";
 import FileInput from "../../../../components/fileInput";
 import { TCreateUser } from "../types";
 import UserFormSkeleton from "./useFormSkeleton";
-
-const createUserSchema = z
-  .object({
-    documentTypeId: z.number().min(1, "Tipo de documento es obligatorio"),
-    documentNumber: z.string().min(1, "Número de documento es obligatorio"),
-    firstName: z.string().min(1, "Nombres son obligatorios"),
-    lastName: z.string().min(1, "Apellidos son obligatorios"),
-    username: z.string().min(1, "Usuario es obligatorio"),
-    userProfileId: z.number().min(1, "Perfil de usuario es obligatorio"),
-    userRoleId: z.number().min(1, "Rol es obligatorio"),
-    userStatusId: z.number().min(1, "Estado es obligatorio"),
-    cellphone: z.number().min(1, "Celular es obligatorio"),
-    telephone: z.number().min(1, "Teléfono es obligatorio"),
-    licenseCard: z.string().optional(),
-    email: z.string().email("Email inválido"),
-
-    // Opcional: solo obligatorio cuando NO es edición
-    password: z.string().optional(),
-    confirmarContraseña: z.string().optional(),
-    file: z
-      .instanceof(File, { message: "Debes adjuntar un archivo" })
-      .refine(
-        (file) =>
-          [
-            "application/pdf",
-            "image/jpeg",
-            "image/png",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/msword",
-            "application/vnd.ms-excel",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          ].includes(file.type),
-        "Tipo de archivo no permitido"
-      ),
-  })
-  .refine(
-    (data) => !data.password || data.password === data.confirmarContraseña,
-    {
-      message: "Las contraseñas no coinciden",
-      path: ["confirmarContraseña"],
-    }
-  );
-
-type CreateUserForm = z.infer<typeof createUserSchema>;
+import { CreateUserForm, createUserSchema } from "./yup";
 
 const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
   const { data: dataRol } = useUserRoles();
@@ -98,15 +54,15 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
   const { control, handleSubmit, reset } = useForm<CreateUserForm>({
     resolver: zodResolver(createUserSchema),
     defaultValues: {
-      documentTypeId: 0,
+      documentTypeId: undefined,
       documentNumber: "",
       firstName: "",
       lastName: "",
       username: "",
-      userProfileId: 0,
-      cellphone: 0,
-      telephone: 0,
-      userRoleId: 0,
+      userProfileId: undefined,
+      cellphone: undefined,
+      telephone: undefined,
+      userRoleId: undefined,
       userStatusId: undefined,
       email: "",
       password: "",
@@ -236,12 +192,14 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
             options={statusesOptions}
           />
           <Input
+            type="number"
             name="cellphone"
             label={dict.users.cellphone}
             placeholder={dict.users.cellphone}
             control={control}
           />
           <Input
+            type="number"
             name="telephone"
             label={dict.users.telephone}
             placeholder={dict.users.telephone}
