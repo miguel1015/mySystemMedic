@@ -33,7 +33,7 @@ export default function InsuranceCompaniesContainer() {
         title={dict.insuranceCompanies.create}
         size="xl"
       >
-        <InsuranceCompaniesForm />
+        <InsuranceCompaniesForm setOpen={setOpen} editUserId={editUserId} />
       </Modal>
       <InsuranceTable onEdit={handleEdit} />
     </Container>

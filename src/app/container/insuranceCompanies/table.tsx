@@ -9,6 +9,7 @@ import type { ColumnsType } from "antd/es/table";
 import { useDeleteUser } from "@/core/hooks/users/useDeleteUser";
 import { useInsurers } from "@/core/hooks/utils/useInsurer";
 import { TInsurers } from "../../../core/interfaces/user/users";
+import { useDeleteInsuranceCompany } from "../../../core/hooks/parameterization/insuranceCompany/useDeleteInsuranceCompany";
 
 interface InsuranceTableProps {
   onEdit: (id: number) => void;
@@ -16,7 +17,7 @@ interface InsuranceTableProps {
 
 export default function InsuranceTable({ onEdit }: InsuranceTableProps) {
   const { data: dataInsurers = [] } = useInsurers();
-  const deleteUser = useDeleteUser();
+  const deleteInsurer = useDeleteInsuranceCompany();
 
   const [search, setSearch] = useState("");
   const [openConfirm, setOpenConfirm] = useState(false);
@@ -103,7 +104,7 @@ export default function InsuranceTable({ onEdit }: InsuranceTableProps) {
         onConfirm={() => {
           if (!insurerToDelete) return;
 
-          deleteUser.mutate(insurerToDelete, {
+          deleteInsurer.mutate(insurerToDelete, {
             onSuccess: () => toast.success("Aseguradora eliminada"),
             onError: () => toast.error("Error eliminando aseguradora"),
           });

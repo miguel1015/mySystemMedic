@@ -1,36 +1,30 @@
 import { z } from "zod";
 
 export const insuranceCompaniesSchema = z.object({
-  insuranceName: z
-    .string()
-    .min(1, "El nombre de la aseguradora es obligatorio"),
-
-  nit: z
-    .string()
-    .min(1, "El NIT es obligatorio")
-    .regex(/^[0-9]+$/, "El NIT debe ser numérico"),
-
-  insuranceCode: z
-    .string()
-    .min(1, "El código de la aseguradora es obligatorio"),
-
+  name: z.string().min(1, "El nombre de la aseguradora es obligatorio"),
+  nit: z.string().min(1, "El NIT es obligatorio"),
+  code: z.string().min(1, "El código de la aseguradora es obligatorio"),
   verificationDigit: z
-    .string()
-    .length(1, "Debe ser un solo dígito")
-    .regex(/^[0-9]$/, "Debe ser un número entre 0 y 9"),
-
+    .number({
+      required_error: "El Dígito verificación es obligatorio",
+      invalid_type_error: "El Dígito verificación es obligatorio",
+    })
+    .positive("El Dígito verificación es obligatorio"),
   address: z.string().min(1, "La dirección es obligatoria"),
-
   cityId: z.coerce.number().min(1, "Debe seleccionar una ciudad"),
-
-  phone: z
+  phone1: z
     .string()
     .min(1, "El teléfono es obligatorio")
     .regex(/^[0-9]+$/, "El teléfono debe ser numérico"),
 
   email: z.string().min(1, "El email es obligatorio").email("Email inválido"),
 
-  adminTypeId: z.string().min(1, "Debe seleccionar un tipo de administradora"),
+  administratorTypeId: z
+    .number({
+      required_error: "Tipo de administradora es obligatorio",
+      invalid_type_error: "Tipo de administradora es obligatorio",
+    })
+    .positive("Tipo de administradora es obligatorio"),
 });
 
 export type TInsuranceCompaniesSchema = z.infer<
@@ -39,13 +33,13 @@ export type TInsuranceCompaniesSchema = z.infer<
 
 // Default values limpios
 export const TDefaultValues: TInsuranceCompaniesSchema = {
-  insuranceName: "",
+  name: "",
   nit: "",
-  insuranceCode: "",
-  verificationDigit: "",
+  code: "",
+  verificationDigit: undefined as unknown as number,
   address: "",
   cityId: null as unknown as number,
-  phone: "",
+  phone1: "",
   email: "",
-  adminTypeId: "",
+  administratorTypeId: undefined as unknown as number,
 };

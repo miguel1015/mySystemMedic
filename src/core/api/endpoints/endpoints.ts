@@ -34,10 +34,14 @@ export const ENDPOINTS = {
     GET_ALL: "/api/auth/utils/getAll?type=cities",
   },
   ADMINISTRADOR_TYPES: {
-    GET_ALL: "/api/auth/utils/getAll?type=administrador-types",
+    GET_ALL: "/api/auth/utils/getAll?type=administrator-types",
   },
   INSURERS: {
     GET_ALL: "/api/auth/utils/getAll?type=insurers",
+    CREATE: "/api/auth/parameterization/register?type=insurers",
+    UPDATE: (id: string | number) => `/api/auth/parameterization/${id}`,
+    DELETE: (id: string | number) => `/api/auth/parameterization/${id}`,
+    GET_BY_ID: (id: string | number) => `/api/auth/parameterization/${id}`,
   },
   CREDIT: {
     GET_ALL: "/credits",
