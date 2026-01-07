@@ -14,10 +14,10 @@ import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
 
 interface SidebarNavProps {
-  idRole: number;
+  id: number;
 }
 
-export default function SidebarNav({ idRole }: SidebarNavProps) {
+export default function SidebarNav({ id }: SidebarNavProps) {
   const iconMap: Record<string, IconDefinition> = {
     assignment_ind: faHospital,
     local_hospital: faStethoscope,
@@ -28,7 +28,7 @@ export default function SidebarNav({ idRole }: SidebarNavProps) {
   const getIcon = (icon?: string): IconDefinition | undefined =>
     icon ? iconMap[icon] : undefined;
 
-  const { data } = useMenu(Number(idRole));
+  const { data } = useMenu(Number(id));
   const modules = data?.modules ?? [];
 
   function renderMenus(menus: BackendMenu[]) {

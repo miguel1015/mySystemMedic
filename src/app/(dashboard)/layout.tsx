@@ -19,7 +19,7 @@ export default async function Layout({
     <SidebarProvider>
       <SidebarOverlay />
       <Sidebar>
-        <SidebarNav idRole={Number(session?.user.role)} />
+        <SidebarNav id={Number(session?.user.id)} />
       </Sidebar>
       <div className="wrapper d-flex flex-column min-vh-100">
         <Header />
