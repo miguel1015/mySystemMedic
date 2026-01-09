@@ -78,6 +78,7 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
     if (editUserId) {
       const updatePayload = {
         ...data,
+        isActive: true,
         password: undefined,
         confirmarContraseña: undefined,
       };

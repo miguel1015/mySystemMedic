@@ -42,8 +42,9 @@ const InsuranceCompaniesForm: React.FC<TUtils> = ({ setOpen, editUserId }) => {
 
   const onSubmit = (data: Insurance) => {
     if (editUserId) {
+      const payload = { ...data, isActive: true };
       updateInsuranceCompany.mutate(
-        { id: editUserId, data },
+        { id: editUserId, data: payload },
         {
           onSuccess: () => {
             setOpen(false);
