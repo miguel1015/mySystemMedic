@@ -48,7 +48,7 @@ const InsuranceCompaniesForm: React.FC<TUtils> = ({ setOpen, editUserId }) => {
         {
           onSuccess: () => {
             setOpen(false);
-            toast.success("Usuario actualizado correctamente");
+            toast.success("Aseguradora actualizada correctamente");
           },
           onError: (err: Error) => {
             toast.error(err.message);
@@ -61,15 +61,13 @@ const InsuranceCompaniesForm: React.FC<TUtils> = ({ setOpen, editUserId }) => {
       onSuccess: () => {
         reset();
         setOpen(false);
-        toast.success("Usuario creado correctamente");
+        toast.success("Aseguradora creada correctamente");
       },
       onError: (err: Error) => {
         toast.error(err.message);
       },
     });
   };
-
-  console.log("✅✅✅", getInsuranceCompany);
 
   useEffect(() => {
     if (editUserId && getInsuranceCompany) {

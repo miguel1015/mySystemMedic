@@ -2,14 +2,13 @@
 
 import { Container } from "@/components/container";
 import ModalConfirm from "@/components/modalConfirmation.tsx";
-import { useMemo, useState } from "react";
-import toast from "react-hot-toast";
+import { useInsurers } from "@/core/hooks/utils/useInsurer";
 import { Button, Input, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useDeleteUser } from "@/core/hooks/users/useDeleteUser";
-import { useInsurers } from "@/core/hooks/utils/useInsurer";
-import { TInsurers } from "../../../core/interfaces/user/users";
+import { useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import { useDeleteInsuranceCompany } from "../../../core/hooks/parameterization/insuranceCompany/useDeleteInsuranceCompany";
+import { TInsurers } from "../../../core/interfaces/user/users";
 
 interface InsuranceTableProps {
   onEdit: (id: number) => void;
@@ -105,7 +104,8 @@ export default function InsuranceTable({ onEdit }: InsuranceTableProps) {
           if (!insurerToDelete) return;
 
           deleteInsurer.mutate(insurerToDelete, {
-            onSuccess: () => toast.success("Aseguradora eliminada"),
+            onSuccess: () =>
+              toast.success("Aseguradora eliminada correctamente"),
             onError: () => toast.error("Error eliminando aseguradora"),
           });
 

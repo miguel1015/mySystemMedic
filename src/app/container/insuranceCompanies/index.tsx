@@ -29,8 +29,10 @@ export default function InsuranceCompaniesContainer() {
       </div>
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
-        title={dict.insuranceCompanies.create}
+        onClose={() => {
+          setOpen(false), setEditUserId(null);
+        }}
+        title={editUserId ? "Editar aseguradora" : "Crear aseguradora"}
         size="xl"
       >
         <InsuranceCompaniesForm setOpen={setOpen} editUserId={editUserId} />

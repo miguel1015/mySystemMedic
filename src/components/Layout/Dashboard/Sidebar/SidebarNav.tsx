@@ -12,6 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
+import Loading from "@/components/loading";
 
 interface SidebarNavProps {
   id: number;
@@ -28,8 +29,12 @@ export default function SidebarNav({ id }: SidebarNavProps) {
   const getIcon = (icon?: string): IconDefinition | undefined =>
     icon ? iconMap[icon] : undefined;
 
-  const { data } = useMenu(Number(id));
+  const { data, isLoading } = useMenu(Number(id));
   const modules = data?.modules ?? [];
+
+  if (isLoading || !data) {
+    return <Loading />;
+  }
 
   function renderMenus(menus: BackendMenu[]) {
     return menus
