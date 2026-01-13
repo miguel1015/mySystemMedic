@@ -30,7 +30,7 @@ export default function PatientsContainer() {
         title="Crear paciente"
         size="xl"
       >
-        <PatientsForm setOpen={setOpen} />
+        <PatientsForm setOpen={setOpen} setEditUserId={setEditUserId} />
       </Modal>
       {/* <InsuranceTable onEdit={handleEdit} /> */}
     </Container>
