@@ -16,7 +16,11 @@ import useDictionary from "../../../../locales/dictionary-hook";
 import { TUtils } from "../../../../types/utils";
 import { insuranceCompaniesSchema, TDefaultValues } from "./schema";
 
-const InsuranceCompaniesForm: React.FC<TUtils> = ({ setOpen, editUserId }) => {
+const InsuranceCompaniesForm: React.FC<TUtils> = ({
+  setOpen,
+  editUserId,
+  setEditUserId,
+}) => {
   const dict = useDictionary();
   const { data: dataCities } = useCities();
   const { data: dataAdministradorTypes } = useAdministradorTypes();
@@ -48,6 +52,7 @@ const InsuranceCompaniesForm: React.FC<TUtils> = ({ setOpen, editUserId }) => {
         {
           onSuccess: () => {
             setOpen(false);
+            setEditUserId(null);
             toast.success("Aseguradora actualizada correctamente");
           },
           onError: (err: Error) => {

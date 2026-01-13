@@ -21,7 +21,11 @@ import { TCreateUser } from "../types";
 import UserFormSkeleton from "./useFormSkeleton";
 import { CreateUserForm, createUserSchema } from "./yup";
 
-const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
+const UserForm: React.FC<TCreateUser> = ({
+  setOpen,
+  editUserId,
+  setEditUserId,
+}) => {
   const { data: dataRol } = useUserRoles();
   const { data: dataProfile } = useUserProfiles();
   const { data: dataDocumentType } = useUserDocumentType();
@@ -88,6 +92,7 @@ const UserForm: React.FC<TCreateUser> = ({ setOpen, editUserId }) => {
         {
           onSuccess: () => {
             setOpen(false);
+            setEditUserId(null);
             toast.success("Usuario actualizado correctamente");
           },
           onError: (err: Error) => {

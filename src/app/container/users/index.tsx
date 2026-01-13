@@ -35,7 +35,11 @@ export default function UsersContainer() {
         title={editUserId ? "Editar usuario" : "Crear usuario"}
         size="xl"
       >
-        <UserForm setOpen={setOpen} editUserId={editUserId} />
+        <UserForm
+          setOpen={setOpen}
+          editUserId={editUserId}
+          setEditUserId={setEditUserId}
+        />
       </Modal>
 
       <UsersTable onEdit={handleEdit} />

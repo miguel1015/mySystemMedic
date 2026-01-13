@@ -35,7 +35,11 @@ export default function InsuranceCompaniesContainer() {
         title={editUserId ? "Editar aseguradora" : "Crear aseguradora"}
         size="xl"
       >
-        <InsuranceCompaniesForm setOpen={setOpen} editUserId={editUserId} />
+        <InsuranceCompaniesForm
+          setOpen={setOpen}
+          editUserId={editUserId}
+          setEditUserId={setEditUserId}
+        />
       </Modal>
       <InsuranceTable onEdit={handleEdit} />
     </Container>
