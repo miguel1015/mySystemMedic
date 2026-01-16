@@ -25,7 +25,7 @@ const Modal: React.FC<ModalProps> = ({
     const handler = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     if (open) document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [open]);
+  }, [open, onClose]);
 
   const sizes = {
     sm: "modal-sm",
@@ -38,9 +38,8 @@ const Modal: React.FC<ModalProps> = ({
     <AnimatePresence>
       {open && (
         <>
-          {/* Overlay Bootstrap */}
+          {/* Overlay */}
           <motion.div
-            key="backdrop"
             className="modal-backdrop fade show"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -48,38 +47,45 @@ const Modal: React.FC<ModalProps> = ({
             onClick={closeOnOutsideClick ? onClose : undefined}
           />
 
-          {/* Modal - Bootstrap structure */}
+          {/* Modal */}
           <motion.div
-            key="modal"
             className="modal d-block"
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
-            initial={{ opacity: 0, y: 40, scale: 0.98 }}
+            initial={{ opacity: 0, y: 30, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.98 }}
             transition={{ duration: 0.25 }}
             onClick={closeOnOutsideClick ? onClose : undefined}
           >
             <div
-              className={`modal-dialog modal-dialog-centered ${sizes[size]}`}
-              onClick={(e) => e.stopPropagation()} // evita cierre al click interno
+              className={`modal-dialog modal-dialog-centered modal-dialog-scrollable ${sizes[size]}`}
+              style={{ maxHeight: "90vh" }}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="modal-content shadow-lg">
-                {/* Header */}
+                {/* Header fijo */}
                 <div className="modal-header">
                   <h5 className="modal-title">{title}</h5>
-
                   <button
                     type="button"
                     className="btn-close"
                     aria-label="Close"
                     onClick={onClose}
-                  ></button>
+                  />
                 </div>
 
-                {/* Body */}
-                <div className="modal-body">{children}</div>
+                {/* Body con scroll */}
+                <div
+                  className="modal-body"
+                  style={{
+                    overflowY: "auto",
+                    maxHeight: "calc(90vh - 130px)",
+                  }}
+                >
+                  {children}
+                </div>
               </div>
             </div>
           </motion.div>
