@@ -2,22 +2,81 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../option";
 
+const TYPE_CONFIG = {
+  insurers: {
+    endpoint: "/api/insurers",
+  },
+  tariffs: {
+    endpoint: "/api/tariff-schedules",
+  },
+  brokers: {
+    endpoint: "/api/brokers",
+  },
+  users: {
+    endpoint: "/api/users",
+  },
+} as const;
+
+type ParameterType = keyof typeof TYPE_CONFIG;
+
 interface Params {
   id: string;
 }
 
-const TYPE_TO_ENDPOINT: Record<string, string> = {
-  insurers: "/api/insurers/",
-};
+/* ===========================
+ * 🔹 HELPERS INTERNOS
+ * =========================== */
+function resolveEndpoint(type: ParameterType, id?: string) {
+  const base = TYPE_CONFIG[type].endpoint;
+  return id ? `${base}/${id}` : base;
+}
 
-async function parseApiResponse(res: Response) {
-  const contentType = res.headers.get("content-type") ?? "";
+async function getAuthAndType(req: Request) {
+  const session = await getServerSession(authOptions);
 
-  if (contentType.includes("application/json")) {
-    return await res.json().catch(() => null);
+  if (!session?.user?.accessToken) {
+    throw { status: 401, message: "Unauthorized" };
   }
 
-  return await res.text().catch(() => null);
+  const { searchParams } = new URL(req.url);
+  const type = (searchParams.get("type") || "insurers") as ParameterType;
+
+  if (!TYPE_CONFIG[type]) {
+    throw {
+      status: 400,
+      message: "Invalid type parameter",
+      validTypes: Object.keys(TYPE_CONFIG),
+    };
+  }
+
+  return {
+    token: session.user.accessToken,
+    type,
+  };
+}
+
+async function apiFetch(url: string, token: string, options: RequestInit = {}) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  });
+
+  const contentType = res.headers.get("content-type") ?? "";
+  const data = contentType.includes("application/json")
+    ? await res.json().catch(() => null)
+    : await res.text().catch(() => null);
+
+  if (!res.ok) {
+    throw {
+      status: res.status,
+      message: typeof data === "string" ? data : data?.error,
+    };
+  }
+
+  return data;
 }
 
 /* ===========================
@@ -25,52 +84,14 @@ async function parseApiResponse(res: Response) {
  * =========================== */
 export async function GET(req: Request, { params }: { params: Params }) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.accessToken) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(req.url);
-    const type = searchParams.get("type") || "insurers";
-
-    if (!TYPE_TO_ENDPOINT[type]) {
-      return NextResponse.json(
-        {
-          error: "Invalid type parameter",
-          received: type,
-          validTypes: Object.keys(TYPE_TO_ENDPOINT),
-        },
-        { status: 400 }
-      );
-    }
-
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${TYPE_TO_ENDPOINT[type]}${params.id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${session.user.accessToken}`,
-        },
-      }
-    );
-
-    const data = await parseApiResponse(res);
-
-    if (!res.ok) {
-      return NextResponse.json(
-        {
-          error:
-            typeof data === "string"
-              ? data
-              : data?.error ?? "Error fetching user",
-        },
-        { status: res.status }
-      );
-    }
-
+    const { token, type } = await getAuthAndType(req);
+    const data = await apiFetch(resolveEndpoint(type, params?.id), token);
     return NextResponse.json(data);
-  } catch {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e.message ?? "Server error", validTypes: e.validTypes },
+      { status: e.status ?? 500 },
+    );
   }
 }
 
@@ -79,57 +100,21 @@ export async function GET(req: Request, { params }: { params: Params }) {
  * =========================== */
 export async function PUT(req: Request, { params }: { params: Params }) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.accessToken) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(req.url);
-    const type = searchParams.get("type") || "insurers";
-
-    if (!TYPE_TO_ENDPOINT[type]) {
-      return NextResponse.json(
-        {
-          error: "Invalid type parameter",
-          received: type,
-          validTypes: Object.keys(TYPE_TO_ENDPOINT),
-        },
-        { status: 400 }
-      );
-    }
-
+    const { token, type } = await getAuthAndType(req);
     const body = await req.json();
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${TYPE_TO_ENDPOINT[type]}${params.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.user.accessToken}`,
-        },
-        body: JSON.stringify(body),
-      }
-    );
-
-    const data = await parseApiResponse(res);
-
-    if (!res.ok) {
-      return NextResponse.json(
-        {
-          error:
-            typeof data === "string"
-              ? data
-              : data?.error ?? "Error updating user",
-        },
-        { status: res.status }
-      );
-    }
+    const data = await apiFetch(resolveEndpoint(type, params.id), token, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
 
     return NextResponse.json(data);
-  } catch {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e.message ?? "Server error" },
+      { status: e.status ?? 500 },
+    );
   }
 }
 
@@ -138,55 +123,20 @@ export async function PUT(req: Request, { params }: { params: Params }) {
  * =========================== */
 export async function DELETE(req: Request, { params }: { params: Params }) {
   try {
-    const session = await getServerSession(authOptions);
+    const { token, type } = await getAuthAndType(req);
 
-    if (!session?.user?.accessToken) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(req.url);
-    const type = searchParams.get("type") || "insurers";
-
-    if (!TYPE_TO_ENDPOINT[type]) {
-      return NextResponse.json(
-        {
-          error: "Invalid type parameter",
-          received: type,
-          validTypes: Object.keys(TYPE_TO_ENDPOINT),
-        },
-        { status: 400 }
-      );
-    }
-
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${TYPE_TO_ENDPOINT[type]}${params.id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${session.user.accessToken}`,
-        },
-      }
-    );
-
-    const data = await parseApiResponse(res);
-
-    if (!res.ok) {
-      return NextResponse.json(
-        {
-          error:
-            typeof data === "string"
-              ? data
-              : data?.error ?? "Error deleting user",
-        },
-        { status: res.status }
-      );
-    }
+    await apiFetch(resolveEndpoint(type, params.id), token, {
+      method: "DELETE",
+    });
 
     return NextResponse.json({
       ok: true,
-      message: "User deleted successfully",
+      message: "Deleted successfully",
     });
-  } catch {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e.message ?? "Server error" },
+      { status: e.status ?? 500 },
+    );
   }
 }

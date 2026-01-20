@@ -50,4 +50,14 @@ export const ENDPOINTS = {
   NAVIGATION: {
     ME: (id: string | number) => `/api/auth/menu/${id}`,
   },
+  TARIFFS: {
+    GET_ALL: "/api/auth/parameterization/getAll?type=tariffs",
+    CREATE: "/api/auth/parameterization/register?type=tariffs",
+    UPDATE: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=tariffs`,
+    DELETE: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=tariffs`,
+    GET_BY_ID: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=tariffs`,
+  },
 };

@@ -6,10 +6,16 @@ import Title from "../../../../components/title";
 import { Button } from "antd";
 import Modal from "../../../../components/modal";
 import TariffsForm from "./tariffsForm";
+import TariffsTable from "./table";
 
 export default function TariffsContainer() {
   const [open, setOpen] = useState(false);
   const [editUserId, setEditUserId] = useState<number | null>(null);
+
+  const handleEdit = (id: number) => {
+    setEditUserId(id);
+    setOpen(true);
+  };
 
   return (
     <Container>
@@ -21,7 +27,9 @@ export default function TariffsContainer() {
 
         <Modal
           open={open}
-          onClose={() => setOpen(false)}
+          onClose={() => {
+            (setOpen(false), setEditUserId(null));
+          }}
           title={editUserId ? "Editar tarifario" : "Crear tarifario"}
           size="xl"
         >
@@ -32,6 +40,8 @@ export default function TariffsContainer() {
           />
         </Modal>
       </div>
+
+      <TariffsTable onEdit={handleEdit} />
     </Container>
   );
 }

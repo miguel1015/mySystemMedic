@@ -127,7 +127,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
         {/* Título */}
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <h2 style={{ color: "#2b7ab8", fontSize: "30px", margin: 0 }}>
-            Data <span style={{ color: "#3ba9e7" }}>System</span>
+            Data<span style={{ color: "#3ba9e7" }}>Medic</span>
           </h2>
           <h3
             style={{

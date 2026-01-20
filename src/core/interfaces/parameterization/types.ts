@@ -10,3 +10,9 @@ export interface Insurance {
   email: string;
   administratorTypeId: number;
 }
+
+export interface TTariffs {
+  id?: number;
+  codingId: number;
+  name: string;
+}

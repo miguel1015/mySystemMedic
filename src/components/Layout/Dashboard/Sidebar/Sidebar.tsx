@@ -34,7 +34,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
             src="assets/img/avatars/Logo.png"
             alt="Logo"
             style={{
-              width: "120%",
+              width: "150%",
               height: "auto",
               objectFit: "contain",
               filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
