@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getServerSession } from "next-auth";
 import {
   Dropdown,
-  DropdownDivider,
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
@@ -23,37 +22,61 @@ export default async function HeaderProfileNav() {
         <DropdownToggle
           variant="link"
           bsPrefix="hide-caret"
-          className="py-0 px-2 rounded-0"
           id="dropdown-profile"
+          style={{
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: '0.5rem',
+            paddingRight: '0.5rem',
+            borderRadius: 0,
+          }}
         >
           <div
-            className="d-flex justify-content-center align-items-center rounded-circle bg-light"
             style={{
               width: 38,
               height: 38,
               overflow: "hidden",
               boxShadow: "0 3px 8px rgba(0,0,0,0.12)",
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderRadius: '50%',
+              background: '#f8f9fa',
             }}
           >
             <FontAwesomeIcon
               icon={faUserCircle}
-              className="text-primary"
-              style={{ fontSize: "30px" }}
+              style={{
+                fontSize: "30px",
+                color: '#0F6F5C',
+              }}
             />
           </div>
         </DropdownToggle>
 
         <DropdownMenu
-          className="profile-menu p-0 mt-3 shadow-lg rounded-4 overflow-hidden animate-dropdown"
-          style={{ minWidth: 280 }}
+          style={{
+            minWidth: 280,
+            padding: 0,
+            marginTop: '1rem',
+            boxShadow: '0 1rem 3rem rgba(0,0,0,.175)',
+            borderRadius: '0.375rem',
+            overflow: 'hidden',
+          }}
         >
-          {/* Flecha */}
-          <div className="menu-arrow"></div>
-
           {/* Encabezado */}
-          <div className="text-center bg-primary text-white py-4 px-3">
+          <div
+            style={{
+              textAlign: 'center',
+              background: '#0F6F5C',
+              color: '#fff',
+              paddingTop: '1.5rem',
+              paddingBottom: '1.5rem',
+              paddingLeft: '1rem',
+              paddingRight: '1rem',
+            }}
+          >
             <div
-              className="rounded-circle mx-auto mb-2 overflow-hidden"
               style={{
                 width: 85,
                 height: 85,
@@ -62,6 +85,11 @@ export default async function HeaderProfileNav() {
                 justifyContent: "center",
                 alignItems: "center",
                 boxShadow: "0 4px 10px rgba(255,255,255,0.25)",
+                borderRadius: '50%',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                marginBottom: '0.5rem',
+                overflow: 'hidden',
               }}
             >
               <img
@@ -69,39 +97,78 @@ export default async function HeaderProfileNav() {
                 alt="profile avatar"
                 width={85}
                 height={85}
-                className="object-cover"
+                style={{ objectFit: 'cover' }}
               />
             </div>
 
-            <h6 className="mb-0 fw-bold fs-5">
+            <h6
+              style={{
+                marginBottom: 0,
+                fontWeight: 'bold',
+                fontSize: '1.25rem',
+              }}
+            >
               {session?.user?.name ?? "Usuario"}
             </h6>
-            <small className="opacity-75 fs-6">
+            <small
+              style={{
+                opacity: 0.75,
+                fontSize: '1rem',
+              }}
+            >
               {session?.user?.email ?? ""}
             </small>
           </div>
 
           {/* Info */}
-          <div className="px-4 py-3 fs-6">
-            <p className="mb-2">
+          <div
+            style={{
+              paddingLeft: '1.5rem',
+              paddingRight: '1.5rem',
+              paddingTop: '1rem',
+              paddingBottom: '1rem',
+              fontSize: '1rem',
+            }}
+          >
+            <p style={{ marginBottom: '0.5rem' }}>
               <strong>Usuario:</strong> {session?.user?.username ?? "--"}
             </p>
-            <p className="mb-2">
+            <p style={{ marginBottom: '0.5rem' }}>
               <strong>Nombres:</strong>{" "}
               {session?.user?.firstName || session?.user?.lastName
                 ? `${session.user.firstName} ${session.user.lastName}`
                 : "--"}
             </p>
-            <p className="mb-0">
+            <p style={{ marginBottom: 0 }}>
               <strong>Perfil:</strong> {session?.user?.userProfileName ?? "--"}
             </p>
           </div>
 
-          <DropdownDivider />
+          <div
+            style={{
+              height: 0,
+              margin: '0.5rem 0',
+              overflow: 'hidden',
+              borderTop: '1px solid #dee2e6',
+            }}
+          />
 
           <HeaderLogout>
-            <DropdownItem className="d-flex align-items-center text-danger py-3 fw-semibold fs-6">
-              <FontAwesomeIcon icon={faPowerOff} className="me-2" />
+            <DropdownItem
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                color: '#dc3545',
+                paddingTop: '1rem',
+                paddingBottom: '1rem',
+                fontWeight: 600,
+                fontSize: '1rem',
+              }}
+            >
+              <FontAwesomeIcon
+                icon={faPowerOff}
+                style={{ marginRight: '0.5rem' }}
+              />
               {dict.general.profile.logout}
             </DropdownItem>
           </HeaderLogout>

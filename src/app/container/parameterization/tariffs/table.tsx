@@ -93,7 +93,7 @@ const TariffsTable = ({ onEdit }: TariffsTableProps) => {
       {/* Buscador */}
       <div className="mb-3">
         <Input
-          placeholder="Buscar aseguradora..."
+          placeholder="Buscar tarifario..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           allowClear

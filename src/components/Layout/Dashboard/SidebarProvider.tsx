@@ -22,7 +22,7 @@ type SidebarContextType = {
 
 export const SidebarContext = createContext<SidebarContextType>({
   showSidebarState: [false, () => {}],
-  sidebarColor: "#0d6efd", // default bootstrap blue
+  sidebarColor: "#0F6F5C",
   setSidebarColor: () => {},
   sidebarType: "dark",
   setSidebarType: () => {},
@@ -34,14 +34,14 @@ export default function SidebarProvider({
   children: React.ReactNode;
 }) {
   const [isShowSidebar, setIsShowSidebar] = useState(false);
-  const [sidebarColor, setSidebarColor] = useState("#0d6efd");
+  const [sidebarColor, setSidebarColor] = useState("#0F6F5C");
   const [sidebarType, setSidebarType] = useState<SidebarType>("dark");
 
   // Persistencia
   useEffect(() => {
     const storedColor = localStorage.getItem("sidebarColor");
     const storedType = localStorage.getItem(
-      "sidebarType"
+      "sidebarType",
     ) as SidebarType | null;
     if (storedColor) setSidebarColor(storedColor);
     if (storedType) setSidebarType(storedType);
@@ -60,7 +60,7 @@ export default function SidebarProvider({
       sidebarType,
       setSidebarType,
     }),
-    [isShowSidebar, sidebarColor, sidebarType]
+    [isShowSidebar, sidebarColor, sidebarType],
   );
 
   return (

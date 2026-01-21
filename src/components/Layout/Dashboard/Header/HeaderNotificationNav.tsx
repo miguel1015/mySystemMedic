@@ -184,7 +184,7 @@ export default async function HeaderNotificationNav() {
             <FontAwesomeIcon icon={faEnvelope} size="lg" />
             <Badge
               pill
-              bg="primary"
+              bg="success"
               className="position-absolute top-0 end-0 px-1 px-sm-2"
             >
               7

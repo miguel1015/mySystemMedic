@@ -54,6 +54,20 @@ export default function AntdThemeProvider({
           },
 
           components: {
+            Button: {
+              colorPrimary: "#0F6F5C",
+              colorPrimaryHover: "#0d5f4f",
+              colorPrimaryActive: "#0a4f42",
+              defaultBg: "#0F6F5C",
+              defaultColor: "#ffffff",
+              defaultBorderColor: "#0F6F5C",
+              defaultHoverBg: "#0d5f4f",
+              defaultHoverColor: "#ffffff",
+              defaultHoverBorderColor: "#0d5f4f",
+              defaultActiveBg: "#0a4f42",
+              defaultActiveColor: "#ffffff",
+              defaultActiveBorderColor: "#0a4f42",
+            },
             Table: {
               headerBg: isDark ? "#020617" : "#f9fafb",
               headerColor: isDark ? "#e5e7eb" : "#111827",
@@ -81,6 +95,16 @@ export default function AntdThemeProvider({
               colorBorder: isDark ? "#1f2937" : "#d1d5db",
 
               boxShadow: "none",
+            },
+            Spin: {
+              colorPrimary: "#0F6F5C",
+            },
+            Pagination: {
+              itemActiveBg: "#0F6F5C",
+              itemActiveColorDisabled: "#ffffff",
+              colorPrimary: "#ffffff",
+              colorPrimaryHover: "#ffffff",
+              colorPrimaryBorder: "#0F6F5C",
             },
           },
         }}

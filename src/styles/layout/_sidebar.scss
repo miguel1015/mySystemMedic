@@ -1,27 +1,36 @@
 /* -------------------------
-   Variables (tu bloque)
+   Variables (verde corporativo)
    ------------------------- */
-$sidebar-background: #3c4b64;
-$sidebar-background-dark: var(--#{$prefix}body-bg);
-$sidebar-text-color: rgba(255, 255, 255, 0.6);
+$sidebar-background: #1F3D36;
+$sidebar-background-dark: #141F1C;
+$sidebar-text-color: rgba(255, 255, 255, 0.65);
+
 $sidebar-brand-height: 4rem;
-$sidebar-brand-background: rgba(0, 0, 21, 0.2);
-$sidebar-brand-background-dark: #1a1e26;
-$sidebar-border-color: #3c4b64;
-$sidebar-border-color-dark: var(--#{$prefix}border-color);
-$sidebar-nav-group-background: rgba(0, 0, 0, 0.2);
-$sidebar-link-color: rgba(255, 255, 255, 0.6);
-$sidebar-link-color-hover: rgba(255, 255, 255, 0.87);
-$sidebar-link-background-hover: rgba(255, 255, 255, 0.05);
+$sidebar-brand-background: rgba(15, 111, 92, 0.25);
+$sidebar-brand-background-dark: rgba(15, 111, 92, 0.35);
+
+$sidebar-border-color: #234B42;
+$sidebar-border-color-dark: rgba(255, 255, 255, 0.08);
+
+$sidebar-nav-group-background: rgba(0, 0, 0, 0.25);
+
+$sidebar-link-color: rgba(255, 255, 255, 0.65);
+$sidebar-link-color-hover: rgba(255, 255, 255, 0.9);
+$sidebar-link-background-hover: rgba(15, 111, 92, 0.18);
+
 $sidebar-toggler-height: 3rem;
-$sidebar-toggler-background: rgba(0, 0, 21, 0.2);
-$sidebar-toggler-background-dark: #1a1e26;
-$sidebar-toggler-background-hover: rgba(0, 0, 0, 0.3);
-$sidebar-toggler-color: rgba(255, 255, 255, 0.6);
+$sidebar-toggler-background: rgba(15, 111, 92, 0.22);
+$sidebar-toggler-background-dark: rgba(15, 111, 92, 0.3);
+$sidebar-toggler-background-hover: rgba(15, 111, 92, 0.35);
+$sidebar-toggler-color: rgba(255, 255, 255, 0.75);
 $sidebar-toggler-color-hover: #ffffff;
+
 $sidebar-z-index: $zindex-fixed;
 $sidebar-overlay-z-index: 1025;
 
+/* -------------------------
+   CSS Variables
+   ------------------------- */
 :root {
   --sidebar-width: 16rem;
   --sidebar-background: #{$sidebar-background};
@@ -43,10 +52,9 @@ $sidebar-overlay-z-index: 1025;
 .header {
   .header-navbar {
     .header-toggler {
-      color: var(--header-link-color, rgba(255,255,255,0.6));
+      color: var(--header-link-color, rgba(255,255,255,0.65));
       padding: 0.25rem;
 
-      /* Si en algún lugar usas .burger, lo soportamos también */
       .burger {
         width: 20px;
         height: 16px;
@@ -69,11 +77,10 @@ $sidebar-overlay-z-index: 1025;
       .burger.open span:nth-child(2) { opacity: 0; }
       .burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-      /* Para FontAwesomeIcon (no rompe nada) */
       .toggler-icon {
         transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s;
         font-size: 1.1rem;
-        display: inline-block; /* para que transform funcione bien */
+        display: inline-block;
         transform-origin: center;
       }
 
@@ -105,7 +112,6 @@ $sidebar-overlay-z-index: 1025;
   z-index: $sidebar-z-index;
   border-right: 1px solid var(--sidebar-border-color);
 
-  /* ANIMACIÓN SUAVE (transform + opacity) */
   transform: translateX(-100%);
   opacity: 0;
   transition:
@@ -128,25 +134,31 @@ $sidebar-overlay-z-index: 1025;
     overflow-y: auto;
     border-top-color: var(--sidebar-border-color) !important;
 
-    /* SCROLL ESTILO MODERNO (VSCode-like) */
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 
     &::-webkit-scrollbar { width: 10px; }
     &::-webkit-scrollbar-track { background: transparent; }
     &::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14));
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.06),
+        rgba(255,255,255,0.14)
+      );
       border-radius: 10px;
       border: 2px solid transparent;
       background-clip: padding-box;
       transition: background 0.2s ease, transform 0.12s ease;
     }
     &::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.28));
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.14),
+        rgba(255,255,255,0.28)
+      );
       transform: scale(1.02);
     }
 
-    /* pequeño fade en el scroll shadow para cue experiencia */
     &:before {
       content: "";
       position: sticky;
@@ -154,7 +166,11 @@ $sidebar-overlay-z-index: 1025;
       height: 8px;
       display: block;
       pointer-events: none;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.12), transparent);
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.12),
+        transparent
+      );
       z-index: 1;
     }
 
@@ -163,11 +179,13 @@ $sidebar-overlay-z-index: 1025;
     .nav-link {
       color: $sidebar-link-color;
       transition: background 0.18s ease, color 0.18s ease;
+
       &:hover {
         color: $sidebar-link-color-hover;
         background: $sidebar-link-background-hover;
         text-decoration: none;
       }
+
       .nav-icon { flex: 0 0 4rem; }
     }
 
@@ -177,9 +195,13 @@ $sidebar-overlay-z-index: 1025;
       .nav-link {
         &:focus { box-shadow: none; }
 
-        .nav-chevron { transition: transform 0.2s cubic-bezier(0.25,1,0.5,1); }
+        .nav-chevron {
+          transition: transform 0.2s cubic-bezier(0.25,1,0.5,1);
+        }
 
-        &.collapsed .nav-chevron { transform: rotate(180deg); }
+        &.collapsed .nav-chevron {
+          transform: rotate(180deg);
+        }
       }
     }
   }
@@ -195,28 +217,38 @@ $sidebar-overlay-z-index: 1025;
       color: $sidebar-toggler-color-hover;
     }
 
-    .sidebar-toggler-chevron { transition: transform 0.2s ease; }
+    .sidebar-toggler-chevron {
+      transition: transform 0.2s ease;
+    }
   }
 
-  /* Comportamiento responsive / Desktop: invertir lógica visual sin romper layout */
   @include media-breakpoint-up(md) {
-    /* En desktop la barra está visible por defecto: ajusta el comportamiento esperado */
     transform: translateX(0);
     opacity: 1;
 
     &.show {
-      /* si aplicas .show en desktop, se interpreta como "oculto" (mantengo compatibilidad con CoreUI) */
       transform: translateX(-100%);
       opacity: 0;
     }
 
-    & + .wrapper { padding-left: var(--sidebar-width); transition: padding 0.35s ease; }
-    &.show + .wrapper { padding-left: 0; }
+    & + .wrapper {
+      padding-left: var(--sidebar-width);
+      transition: padding 0.35s ease;
+    }
+
+    &.show + .wrapper {
+      padding-left: 0;
+    }
   }
 }
 
-/* Overlay para mobile (opcional si usas) */
+/* -------------------------
+   Sidebar overlay (mobile)
+   ------------------------- */
 .sidebar-overlay {
   z-index: $sidebar-overlay-z-index;
-  @include media-breakpoint-up(md) { display: none; }
+
+  @include media-breakpoint-up(md) {
+    display: none;
+  }
 }

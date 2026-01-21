@@ -16,7 +16,7 @@ export default function UsersTable({
 }: {
   onEdit: (id: number) => void;
 }) {
-  const { data: dataUsers = [] } = useGetUsers();
+  const { data: dataUsers = [], isLoading } = useGetUsers();
   const deleteUser = useDeleteUser();
 
   const [search, setSearch] = useState("");
@@ -30,7 +30,7 @@ export default function UsersTable({
         user.email,
         String(user.userRoleId),
         user.isActive ? "activo" : "inactivo",
-      ].some((field) => field.toLowerCase().includes(search.toLowerCase()))
+      ].some((field) => field.toLowerCase().includes(search.toLowerCase())),
     );
   }, [search, dataUsers]);
 
@@ -109,6 +109,7 @@ export default function UsersTable({
         dataSource={filteredUsers}
         rowKey="id"
         pagination={{ pageSize: 10 }}
+        loading={{ spinning: isLoading, tip: "Cargando usuarios..." }}
         scroll={{ x: "max-content" }}
       />
 

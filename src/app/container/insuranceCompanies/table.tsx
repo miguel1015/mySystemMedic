@@ -15,7 +15,7 @@ interface InsuranceTableProps {
 }
 
 export default function InsuranceTable({ onEdit }: InsuranceTableProps) {
-  const { data: dataInsurers = [] } = useInsurers();
+  const { data: dataInsurers = [], isLoading } = useInsurers();
   const deleteInsurer = useDeleteInsuranceCompany();
 
   const [search, setSearch] = useState("");
@@ -29,7 +29,7 @@ export default function InsuranceTable({ onEdit }: InsuranceTableProps) {
     return dataInsurers.filter(
       (insurer) =>
         insurer.name.toLowerCase().includes(term) ||
-        String(insurer.id).includes(term)
+        String(insurer.id).includes(term),
     );
   }, [search, dataInsurers]);
 
@@ -90,6 +90,7 @@ export default function InsuranceTable({ onEdit }: InsuranceTableProps) {
         columns={columns}
         dataSource={filteredInsurers}
         rowKey="id"
+        loading={{ spinning: isLoading, tip: "Cargando aseguradoras..." }}
         pagination={{ pageSize: 10 }}
         scroll={{ x: "max-content" }}
       />

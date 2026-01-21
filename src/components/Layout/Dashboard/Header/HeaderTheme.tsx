@@ -21,15 +21,45 @@ import useDictionary from "@/locales/dictionary-hook";
 import { useMediaQuery } from "react-responsive";
 import { useAppTheme } from "../../../../themes/antdTheme";
 
-const CurrentTheme = ({ theme }: { theme: string }) => (
-  <>
-    {theme === Theme.Light && <FontAwesomeIcon icon={faSun} size="lg" />}
-    {theme === Theme.Dark && <FontAwesomeIcon icon={faMoon} size="lg" />}
-    {theme === Theme.Auto && (
-      <FontAwesomeIcon icon={faCircleHalfStroke} size="lg" />
-    )}
-  </>
-);
+/* ----------------------------------------
+ * Constants
+ * ------------------------------------- */
+const BRAND_COLOR = "#0F6F5C";
+
+const themeOptions = [
+  {
+    key: Theme.Light,
+    labelKey: "light",
+    icon: faSun,
+  },
+  {
+    key: Theme.Dark,
+    labelKey: "dark",
+    icon: faMoon,
+  },
+  {
+    key: Theme.Auto,
+    labelKey: "auto",
+    icon: faCircleHalfStroke,
+  },
+] as const;
+
+/* ----------------------------------------
+ * Helpers
+ * ------------------------------------- */
+const getItemStyle = (active: boolean): React.CSSProperties => ({
+  backgroundColor: active ? BRAND_COLOR : "transparent",
+  color: active ? "#ffffff" : "inherit",
+});
+
+/* ----------------------------------------
+ * Components
+ * ------------------------------------- */
+const CurrentTheme = ({ theme }: { theme: Theme }) => {
+  if (theme === Theme.Light) return <FontAwesomeIcon icon={faSun} size="lg" />;
+  if (theme === Theme.Dark) return <FontAwesomeIcon icon={faMoon} size="lg" />;
+  return <FontAwesomeIcon icon={faCircleHalfStroke} size="lg" />;
+};
 
 export default function HeaderTheme({
   currentPreferredTheme,
@@ -37,20 +67,25 @@ export default function HeaderTheme({
   currentPreferredTheme: Theme;
 }) {
   const dict = useDictionary();
-  const [preferredTheme, setPreferredTheme] = useState<Theme>(
-    currentPreferredTheme
-  );
   const router = useRouter();
   const { setTheme } = useAppTheme();
 
+  const [preferredTheme, setPreferredTheme] = useState<Theme>(
+    currentPreferredTheme,
+  );
+
+  const isDarkMode = useMediaQuery({
+    query: "(prefers-color-scheme: dark)",
+  });
+
   const changePreferredTheme = useCallback(
-    (t: Theme) => {
-      setPreferredTheme(t);
-      Cookies.set("preferred_theme", t);
+    (theme: Theme) => {
+      setPreferredTheme(theme);
+      Cookies.set("preferred_theme", theme);
 
-      let resolvedTheme = t;
+      let resolvedTheme = theme;
 
-      if (t === Theme.Auto) {
+      if (theme === Theme.Auto) {
         resolvedTheme = window.matchMedia("(prefers-color-scheme: dark)")
           .matches
           ? Theme.Dark
@@ -60,58 +95,51 @@ export default function HeaderTheme({
       Cookies.set("theme", resolvedTheme);
       setTheme(resolvedTheme as "light" | "dark");
     },
-    [setTheme]
+    [setTheme],
   );
 
-  const isDarkMode = useMediaQuery({
-    query: "(prefers-color-scheme: dark)",
-  });
-
+  /* ----------------------------------------
+   * Auto theme sync
+   * ------------------------------------- */
   useEffect(() => {
-    if (preferredTheme !== Theme.Auto) {
-      return;
-    }
+    if (preferredTheme !== Theme.Auto) return;
 
     Cookies.set("theme", isDarkMode ? Theme.Dark : Theme.Light);
     router.refresh();
   }, [isDarkMode, preferredTheme, router]);
 
+  /* ----------------------------------------
+   * Render
+   * ------------------------------------- */
   return (
     <Dropdown>
       <DropdownToggle
-        className="px-2 mx-1 px-sm-3 mx-sm-0"
         as={NavLink}
-        bsPrefix="hide-caret"
         id="dropdown-theme"
+        style={{
+          padding: "0.5rem 0.75rem",
+          margin: "0 0.25rem",
+        }}
       >
         <CurrentTheme theme={preferredTheme} />
       </DropdownToggle>
+
       <DropdownMenu className="pt-0" align="end">
-        <DropdownItem
-          active={preferredTheme === Theme.Light}
-          onClick={() => changePreferredTheme(Theme.Light)}
-        >
-          <FontAwesomeIcon className="me-2" icon={faSun} fixedWidth />
-          {dict.general.theme.light}
-        </DropdownItem>
-        <DropdownItem
-          active={preferredTheme === Theme.Dark}
-          onClick={() => changePreferredTheme(Theme.Dark)}
-        >
-          <FontAwesomeIcon className="me-2" icon={faMoon} fixedWidth />
-          {dict.general.theme.dark}
-        </DropdownItem>
-        <DropdownItem
-          active={preferredTheme === Theme.Auto}
-          onClick={() => changePreferredTheme(Theme.Auto)}
-        >
-          <FontAwesomeIcon
-            className="me-2"
-            icon={faCircleHalfStroke}
-            fixedWidth
-          />
-          {dict.general.theme.auto}
-        </DropdownItem>
+        {themeOptions.map(({ key, labelKey, icon }) => {
+          const active = preferredTheme === key;
+
+          return (
+            <DropdownItem
+              key={key}
+              active={active}
+              onClick={() => changePreferredTheme(key)}
+              style={getItemStyle(active)}
+            >
+              <FontAwesomeIcon className="me-2" icon={icon} fixedWidth />
+              {dict.general.theme[labelKey]}
+            </DropdownItem>
+          );
+        })}
       </DropdownMenu>
     </Dropdown>
   );

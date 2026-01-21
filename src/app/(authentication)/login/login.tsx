@@ -98,7 +98,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
           right: 0,
           width: "50%",
           height: "85%",
-          background: "linear-gradient(180deg, #4da8e8 0%, #3ba9e7 100%)",
+          background: "linear-gradient(180deg, #0F6F5C 0%, #0F6F5C 100%)",
           borderTopLeftRadius: "60% 90%",
           zIndex: 1,
         }}
@@ -126,8 +126,8 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
       >
         {/* Título */}
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <h2 style={{ color: "#2b7ab8", fontSize: "30px", margin: 0 }}>
-            Data<span style={{ color: "#3ba9e7" }}>Medic</span>
+          <h2 style={{ color: "#0F6F5C", fontSize: "30px", margin: 0 }}>
+            Data<span style={{ color: "#0F6F5C" }}>Medic</span>
           </h2>
           <h3
             style={{

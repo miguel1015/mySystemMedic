@@ -48,7 +48,7 @@ export default function HeaderNavSettings({
           className="p-3 shadow-lg rounded-3"
           style={{ minWidth: 260 }}
         >
-          <h6 className="text-center mb-3 fw-bold text-primary">
+          <h6 className="text-center mb-3 fw-bold text-success">
             Configuración
           </h6>
 

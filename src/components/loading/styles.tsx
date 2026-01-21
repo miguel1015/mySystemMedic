@@ -1,6 +1,6 @@
 import { CSSProperties } from "react";
 
-const PRIMARY = "#3c89e8";
+const PRIMARY = "#0F6F5C";
 
 /**
  * Inyecta animaciones globales y Material Icons UNA sola vez
