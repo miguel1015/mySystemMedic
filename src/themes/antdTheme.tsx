@@ -55,18 +55,20 @@ export default function AntdThemeProvider({
 
           components: {
             Button: {
+              // Primary buttons
               colorPrimary: "#0F6F5C",
               colorPrimaryHover: "#0d5f4f",
               colorPrimaryActive: "#0a4f42",
-              defaultBg: "#0F6F5C",
-              defaultColor: "#ffffff",
-              defaultBorderColor: "#0F6F5C",
-              defaultHoverBg: "#0d5f4f",
-              defaultHoverColor: "#ffffff",
-              defaultHoverBorderColor: "#0d5f4f",
-              defaultActiveBg: "#0a4f42",
-              defaultActiveColor: "#ffffff",
-              defaultActiveBorderColor: "#0a4f42",
+              // Default buttons
+              defaultBg: isDark ? "#1f2937" : "#ffffff",
+              defaultColor: isDark ? "#ffffff" : "#374151",
+              defaultBorderColor: isDark ? "#4b5563" : "#d1d5db",
+              defaultHoverBg: isDark ? "#0F6F5C" : "#f3f4f6",
+              defaultHoverColor: isDark ? "#ffffff" : "#0F6F5C",
+              defaultHoverBorderColor: isDark ? "#c1e7e0" : "#3f6962",
+              defaultActiveBg: isDark ? "#0a4f42" : "#e5e7eb",
+              defaultActiveColor: isDark ? "#ffffff" : "#0a4f42",
+              defaultActiveBorderColor: "#0F6F5C",
             },
             Table: {
               headerBg: isDark ? "#020617" : "#f9fafb",
@@ -105,6 +107,15 @@ export default function AntdThemeProvider({
               colorPrimary: "#ffffff",
               colorPrimaryHover: "#ffffff",
               colorPrimaryBorder: "#0F6F5C",
+            },
+            Typography: {
+              colorText: isDark ? "#e5e7eb" : "#111827",
+              colorTextHeading: isDark ? "#ffffff" : "#111827",
+              colorTextSecondary: isDark ? "#9ca3af" : "#6b7280",
+              colorTextDescription: isDark ? "#9ca3af" : "#6b7280",
+              colorLink: "#0F6F5C",
+              colorLinkHover: "#0d5f4f",
+              colorLinkActive: "#0a4f42",
             },
           },
         }}
