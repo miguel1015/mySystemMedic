@@ -16,3 +16,11 @@ export interface TTariffs {
   codingId: number;
   name: string;
 }
+
+
+export interface TTableMedicine {
+  id?: number;
+  cum?: string;
+  status?: string;
+  name: string;
+}
