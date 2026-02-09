@@ -24,3 +24,29 @@ export interface TTableMedicine {
   status?: string;
   name: string;
 }
+
+export interface TIpsData {
+  id?: number;
+  companyName: string;
+  nit: string;
+  verificationDigit: number;
+  habilitationCode: string;
+  complexityLevel: string;
+  invoiceConsecutive: number;
+  phone: string;
+  email: string;
+  ivaPercentage: number;
+  currencySymbol: string;
+  address: string;
+  stateId: number;
+  cityId: number;
+  isIps: boolean;
+  isAmbulance: boolean;
+  electronicInvoicing: boolean;
+  ownWebServices: boolean;
+  apiSiigo: boolean;
+  legalRepDocument: string;
+  legalRepName: string;
+  logo?: string;
+  legalRepSignature?: string;
+}
