@@ -62,6 +62,35 @@ export interface TContractDetail extends ContractDetail {
   id: number;
 }
 
+export interface TProvider {
+  id: number;
+  name: string;
+  identificationType: string;
+  nit: string;
+  verificationDigit: string;
+  address: string;
+  phone: string;
+  cityId: number;
+  legalRepresentative: string;
+  documentType: string;
+  documentNumber: string;
+  legalRepresentativeSign: string | null;
+  dianResolution: string;
+  prefix: string;
+  fromNumber: number;
+  toNumber: number;
+  resolutionFromDate: string;
+  resolutionToDate: string;
+  resolutionText: string;
+  email: string;
+  logo: string | null;
+  enableCode: string;
+  regimen: string;
+  invoiceIssuerName: string;
+  invoiceIssuerSign: string | null;
+  applyTax: boolean;
+}
+
 export interface TIpsData {
   id?: number;
   companyName: string;

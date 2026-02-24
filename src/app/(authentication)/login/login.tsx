@@ -11,7 +11,6 @@ import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
 import CustomButton from "../../../components/button";
 
-// Schema Zod
 const loginSchema = z.object({
   email: z.string().min(1, "Usuario es requerido"),
   password: z.string().min(1, "Contraseña es requerida"),
@@ -39,6 +38,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
 
   useEffect(() => {
     if (hasCallbackParam) {
+      toast.error("Tu sesión ha expirado, por favor inicia sesión nuevamente");
       router.replace("/login", { scroll: false });
     }
   }, [hasCallbackParam, router]);

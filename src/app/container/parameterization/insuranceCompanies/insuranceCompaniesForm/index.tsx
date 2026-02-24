@@ -1,19 +1,19 @@
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import SelectAutocomplete from "@/components/select";
+import { useCreateInsuranceCompany } from "@/core/hooks/parameterization/insuranceCompany/useCreateInsuranceCompany";
+import { useGetInsuranceCompanyById } from "@/core/hooks/parameterization/insuranceCompany/useGetByIdInsuranceCompany";
+import { useUpdateInsuranceCompany } from "@/core/hooks/parameterization/insuranceCompany/useUpdateInsuranceCompany";
+import { useAdministradorTypes } from "@/core/hooks/utils/useAdministradorTypes";
+import { useCities } from "@/core/hooks/utils/useCities";
+import { Insurance } from "@/core/interfaces/parameterization/types";
+import useDictionary from "@/locales/dictionary-hook";
+import { TUtils } from "@/types/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "antd";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { useCreateInsuranceCompany } from "../../../../core/hooks/parameterization/insuranceCompany/useCreateInsuranceCompany";
-import { useGetInsuranceCompanyById } from "../../../../core/hooks/parameterization/insuranceCompany/useGetByIdInsuranceCompany";
-import { useUpdateInsuranceCompany } from "../../../../core/hooks/parameterization/insuranceCompany/useUpdateInsuranceCompany";
-import { useAdministradorTypes } from "../../../../core/hooks/utils/useAdministradorTypes";
-import { useCities } from "../../../../core/hooks/utils/useCities";
-import { Insurance } from "../../../../core/interfaces/parameterization/types";
-import useDictionary from "../../../../locales/dictionary-hook";
-import { TUtils } from "../../../../types/utils";
 import { insuranceCompaniesSchema, TDefaultValues } from "./schema";
 
 const InsuranceCompaniesForm: React.FC<TUtils> = ({

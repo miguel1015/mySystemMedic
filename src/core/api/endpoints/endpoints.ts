@@ -73,6 +73,12 @@ export const ENDPOINTS = {
     GET_BY_ID: (id: string | number) =>
       `/api/auth/parameterization/${id}?type=contracts`,
   },
+  PROVIDERS: {
+    GET_BY_ID: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=providers`,
+    UPDATE: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=providers`,
+  },
   CONTRACT_DETAILS: {
     GET_ALL: "/api/auth/parameterization/getAll?type=contract-details",
     CREATE: "/api/auth/parameterization/register?type=contract-details",
@@ -82,5 +88,8 @@ export const ENDPOINTS = {
       `/api/auth/parameterization/${id}?type=contract-details`,
     GET_BY_ID: (id: string | number) =>
       `/api/auth/parameterization/${id}?type=contract-details`,
+  },
+  ACTIVE_ADMISSIONS: {
+    GET_ALL: "/api/auth/care/getAll?type=active-admissions",
   },
 };

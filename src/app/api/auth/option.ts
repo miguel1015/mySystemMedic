@@ -60,7 +60,6 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (new Date(expiresAt) < new Date()) {
-        console.log("⚠️ TOKEN EXPIRADO — marcando expired");
         token.expired = true;
       }
 
