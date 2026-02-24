@@ -17,12 +17,49 @@ export interface TTariffs {
   name: string;
 }
 
-
 export interface TTableMedicine {
   id?: number;
   cum?: string;
   status?: string;
   name: string;
+}
+
+export interface Contract {
+  contractNumber: string;
+  insurerId: number;
+  contractType: string;
+  populationNumber: number;
+  cityId: number;
+  startDate: string;
+  endDate: string | null;
+  isActive: boolean;
+  tariffScheduleId: number;
+  medicineTariffScheduleId: number | null;
+  factor: number;
+  providerId: number;
+  policy: string;
+  chargeCopay: boolean;
+  chargeModeratingFee: boolean;
+  billingDestinationId: number;
+  benefitPlanId: number;
+  referenceCode: string;
+}
+
+export interface TContract extends Contract {
+  id: number;
+}
+
+export interface ContractDetail {
+  contractId: number;
+  startDate: string;
+  endDate: string | null;
+  serviceId: number;
+  externalTariffScheduleId: number;
+  factor: number;
+}
+
+export interface TContractDetail extends ContractDetail {
+  id: number;
 }
 
 export interface TIpsData {

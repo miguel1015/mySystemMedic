@@ -86,6 +86,10 @@ export interface TAdministradorTypes {
   name: string;
   shortName: string;
 }
+export interface TBenefitPlans {
+  id: number;
+  name: string;
+}
 export interface TInsurers {
   id: number;
   name: string;

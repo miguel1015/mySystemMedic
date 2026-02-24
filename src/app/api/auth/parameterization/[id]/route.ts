@@ -15,6 +15,12 @@ const TYPE_CONFIG = {
   users: {
     endpoint: "/api/users",
   },
+  contracts: {
+    endpoint: "/api/contracts",
+  },
+  "contract-details": {
+    endpoint: "/api/contract-details",
+  },
 } as const;
 
 type ParameterType = keyof typeof TYPE_CONFIG;

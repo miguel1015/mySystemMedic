@@ -50,6 +50,9 @@ export const ENDPOINTS = {
   NAVIGATION: {
     ME: (id: string | number) => `/api/auth/menu/${id}`,
   },
+  BENEFIT_PLANS: {
+    GET_ALL: "/api/auth/parameterization/getAll?type=benefit-plans",
+  },
   TARIFFS: {
     GET_ALL: "/api/auth/parameterization/getAll?type=tariffs",
     CREATE: "/api/auth/parameterization/register?type=tariffs",
@@ -59,5 +62,25 @@ export const ENDPOINTS = {
       `/api/auth/parameterization/${id}?type=tariffs`,
     GET_BY_ID: (id: string | number) =>
       `/api/auth/parameterization/${id}?type=tariffs`,
+  },
+  CONTRACTS: {
+    GET_ALL: "/api/auth/parameterization/getAll?type=contracts",
+    CREATE: "/api/auth/parameterization/register?type=contracts",
+    UPDATE: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=contracts`,
+    DELETE: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=contracts`,
+    GET_BY_ID: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=contracts`,
+  },
+  CONTRACT_DETAILS: {
+    GET_ALL: "/api/auth/parameterization/getAll?type=contract-details",
+    CREATE: "/api/auth/parameterization/register?type=contract-details",
+    UPDATE: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=contract-details`,
+    DELETE: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=contract-details`,
+    GET_BY_ID: (id: string | number) =>
+      `/api/auth/parameterization/${id}?type=contract-details`,
   },
 };

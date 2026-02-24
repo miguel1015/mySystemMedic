@@ -5,6 +5,8 @@ import { authOptions } from "../../option";
 const TYPE_TO_ENDPOINT: Record<string, string> = {
   insurers: "/api/insurers",
   tariffs: "/api/tariff-schedules",
+  contracts: "/api/contracts",
+  "contract-details": "/api/contract-details",
 };
 
 export async function POST(req: Request) {
