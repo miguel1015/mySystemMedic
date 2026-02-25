@@ -13,7 +13,7 @@ export interface Insurance {
 
 export interface TTariffs {
   id?: number;
-  codingId: number;
+  codingId: string;
   name: string;
 }
 

@@ -69,27 +69,12 @@ const MedicinesForm: React.FC<TUtils> = ({ setOpen }) => {
           options={[]}
         />
 
-        <SelectAutocomplete
-          name="city"
-          label="Ciudad"
-          placeholder="Seleccione"
-          control={control}
-          options={[]}
-        />
-
-        <SelectAutocomplete
-          name="zone"
-          label="ATC"
-          placeholder="ATC"
-          control={control}
-          options={[]}
-        />
-        <SelectAutocomplete
+        <Input name="zone" label="ATC" placeholder="ATC" control={control} />
+        <Input
           name="zone"
           label="Invima"
           placeholder="Invima"
           control={control}
-          options={[]}
         />
       </GridContainer>
 

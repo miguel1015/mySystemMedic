@@ -9,7 +9,6 @@ import GridContainer from "../../../../../components/componentLayout";
 import { useCreateTariffs } from "../../../../../core/hooks/parameterization/tariffs/useCreateTariffs";
 import { useGetTariffById } from "../../../../../core/hooks/parameterization/tariffs/useGetByIdTariffs";
 import { useUpdateTariffs } from "../../../../../core/hooks/parameterization/tariffs/useUpdateTariffs";
-import { TTariffs } from "../../../../../core/interfaces/parameterization/types";
 import { TUtils } from "../../../../../types/utils";
 import TariffsFormSkeleton from "./tariffsSkeleton";
 
@@ -27,11 +26,10 @@ const TariffsForm: React.FC<TUtils> = ({
   const schema = z.object({
     name: z.string().min(1, "Nombre del tarifario es obligatorio"),
     codingId: z
-      .number({
-        required_error: "ID de codificación verificación es obligatorio",
-        invalid_type_error: "ID de codificación es obligatorio",
+      .string({
+        required_error: "ID de codificación es obligatorio",
       })
-      .positive("ID de codificación es obligatorio"),
+      .min(1, "ID de codificación es obligatorio"),
   });
   type TTariffsForm = z.infer<typeof schema>;
 
@@ -39,11 +37,11 @@ const TariffsForm: React.FC<TUtils> = ({
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
-      codingId: undefined,
+      codingId: "",
     },
   });
 
-  const onSubmit = (data: TTariffs) => {
+  const onSubmit = (data: TTariffsForm) => {
     if (editUserId) {
       const payload = { ...data, isActive: true };
       updateTariffs.mutate(
@@ -97,7 +95,6 @@ const TariffsForm: React.FC<TUtils> = ({
             control={control}
           />
           <Input
-            type="number"
             name="codingId"
             label="ID de codificación"
             placeholder="ID de codificación"

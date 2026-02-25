@@ -1,0 +1,165 @@
+/* ========================
+   Modal — Light (default)
+   ======================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+}
+
+.modal-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 1055;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-dialog-custom {
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-dialog-custom.modal-size-sm { max-width: 360px; }
+.modal-dialog-custom.modal-size-md { max-width: 500px; }
+.modal-dialog-custom.modal-size-lg { max-width: 800px; }
+.modal-dialog-custom.modal-size-xl { max-width: 1140px; }
+
+.modal-content-custom {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 90vh;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-header-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e8e8e8;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+
+.modal-title-custom {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.4;
+  transition: color 0.2s ease;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 18px;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.modal-close-btn:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.modal-body-custom {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer-custom {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid #e8e8e8;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+
+/* ========================
+   Modal — Dark mode
+   ======================== */
+
+[data-bs-theme="dark"] .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.65);
+}
+
+[data-bs-theme="dark"] .modal-content-custom {
+  background-color: #1e1e1e;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .modal-header-custom {
+  border-bottom-color: #333;
+}
+
+[data-bs-theme="dark"] .modal-title-custom {
+  color: #e5e5e5;
+}
+
+[data-bs-theme="dark"] .modal-close-btn {
+  color: #777;
+}
+
+[data-bs-theme="dark"] .modal-close-btn:hover {
+  background-color: #2a2a2a;
+  color: #ddd;
+}
+
+[data-bs-theme="dark"] .modal-body-custom {
+  color: #d4d4d4;
+}
+
+[data-bs-theme="dark"] .modal-footer-custom {
+  border-top-color: #333;
+}
+
+/* ========================
+   Scrollbar styling
+   ======================== */
+
+.modal-body-custom::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-body-custom::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 3px;
+}
+
+[data-bs-theme="dark"] .modal-body-custom::-webkit-scrollbar-thumb {
+  background-color: #444;
+}

@@ -1,98 +1,159 @@
-"use client";
+"use client"
 
-import { ReactNode, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ReactNode, useEffect, useRef, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import "./modal.css"
 
 export interface ModalProps {
   open: boolean;
   onClose: () => void;
   title?: string;
   children: ReactNode;
+  footer?: ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
-  closeOnOutsideClick?: boolean;
 }
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 const Modal: React.FC<ModalProps> = ({
   open,
   onClose,
   title,
   children,
+  footer,
   size = "md",
-  closeOnOutsideClick = true,
 }) => {
-  // Cerrar con ESC
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    if (open) document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose]);
+  const modalRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
 
-  const sizes = {
-    sm: "modal-sm",
-    md: "",
-    lg: "modal-lg",
-    xl: "modal-xl",
-  };
+  useEffect(() => {
+    if (!open) return
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (open) {
+      previousFocusRef.current = document.activeElement as HTMLElement
+    } else if (previousFocusRef.current) {
+      previousFocusRef.current.focus()
+      previousFocusRef.current = null
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!open || !modalRef.current) return
+    const timer = setTimeout(() => {
+      const firstFocusable = modalRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+      if (firstFocusable) {
+        firstFocusable.focus()
+      } else {
+        modalRef.current?.focus()
+      }
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [open])
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose()
+        return
+      }
+
+      if (e.key === "Tab" && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+        if (focusableElements.length === 0) return
+
+        const first = focusableElements[0]
+        const last = focusableElements[focusableElements.length - 1]
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    },
+    [onClose]
+  )
+
+  useEffect(() => {
+    if (open) document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [open, handleKeyDown])
 
   return (
     <AnimatePresence>
       {open && (
         <>
-          {/* Overlay */}
           <motion.div
-            className="modal-backdrop fade show"
+            className="modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={closeOnOutsideClick ? onClose : undefined}
+            transition={{ duration: 0.2 }}
           />
 
-          {/* Modal */}
           <motion.div
-            className="modal d-block"
+            className="modal-wrapper"
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
-            initial={{ opacity: 0, y: 30, scale: 0.98 }}
+            aria-labelledby={title ? "modal-title" : undefined}
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.98 }}
-            transition={{ duration: 0.25 }}
-            onClick={closeOnOutsideClick ? onClose : undefined}
+            exit={{ opacity: 0, y: 30, scale: 0.97 }}
+            transition={{
+              type: "spring",
+              damping: 25,
+              stiffness: 350,
+              mass: 0.8,
+            }}
           >
             <div
-              className={`modal-dialog modal-dialog-centered modal-dialog-scrollable ${sizes[size]}`}
-              style={{ maxHeight: "90vh" }}
+              ref={modalRef}
+              className={`modal-dialog-custom modal-size-${size}`}
               onClick={(e) => e.stopPropagation()}
+              role="document"
             >
-              <div className="modal-content shadow-lg">
-                {/* Header fijo */}
-                <div className="modal-header">
-                  <h5 className="modal-title">{title}</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    aria-label="Close"
-                    onClick={onClose}
-                  />
-                </div>
+              <div className="modal-content-custom">
+                {title && (
+                  <div className="modal-header-custom">
+                    <h5 className="modal-title-custom" id="modal-title">
+                      {title}
+                    </h5>
+                    <button
+                      type="button"
+                      className="modal-close-btn"
+                      aria-label="Cerrar modal"
+                      onClick={onClose}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
 
-                {/* Body con scroll */}
-                <div
-                  className="modal-body"
-                  style={{
-                    overflowY: "auto",
-                    maxHeight: "calc(90vh - 130px)",
-                  }}
-                >
+                <div className="modal-body-custom">
                   {children}
                 </div>
+
+                {footer && (
+                  <div className="modal-footer-custom">{footer}</div>
+                )}
               </div>
             </div>
           </motion.div>
         </>
       )}
     </AnimatePresence>
-  );
-};
+  )
+}
 
-export default Modal;
+export default Modal

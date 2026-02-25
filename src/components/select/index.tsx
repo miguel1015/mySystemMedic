@@ -65,6 +65,7 @@ export default function RHFAntdSelect<T extends FieldValues>({
         onChange={(val) => field.onChange(val)}
         allowClear
         showSearch
+        optionFilterProp="label"
         style={{ width: "100%" }}
         getPopupContainer={(trigger) => trigger.parentElement!}
       />
