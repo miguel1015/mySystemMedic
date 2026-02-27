@@ -122,11 +122,12 @@ const MedicinesForm: React.FC<TUtils> = ({
       </GridContainer>
 
       <div className="d-flex justify-content-end gap-2 mt-3">
-        <Button onClick={() => setOpen(false)}>Cancelar</Button>
+        <Button onClick={() => setOpen(false)} disabled={isSubmitting}>Cancelar</Button>
         <Button
           type="primary"
           htmlType="submit"
           loading={isSubmitting}
+          disabled={isSubmitting}
         >
           {editUserId ? "Actualizar" : "Guardar"}
         </Button>

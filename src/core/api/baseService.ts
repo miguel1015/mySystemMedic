@@ -128,7 +128,7 @@ export async function updatePut<T, U>(
     parsed == null ||
     typeof parsed === "string"
   ) {
-    throw new Error("Invalid response format: expected JSON object");
+    return {} as T;
   }
 
   return parsed as T;
