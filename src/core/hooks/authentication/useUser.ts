@@ -1,5 +1,5 @@
 import apiClient from "../../api/client";
-import { ENDPOINTS } from "../../api/endpoints/endpoints";
+import { ENDPOINTS } from "@/core/api/endpoints";
 import { User } from "../../interfaces/api/user";
 import { useQuery } from "@tanstack/react-query";
 

@@ -12,7 +12,7 @@ export const users = {
   state: "状態",
   cellphone: "携帯電話",
   telephone: "電話",
-  Signature: "署名",
+  signature: "署名",
   licenseCard: "職業許可証",
   attachFile: "ファイルを添付",
   password: "パスワード",

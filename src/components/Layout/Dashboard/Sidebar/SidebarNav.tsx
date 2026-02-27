@@ -36,6 +36,9 @@ export default function SidebarNav({ id }: SidebarNavProps) {
     return <Loading />;
   }
 
+  const normalizeRoute = (route: string) =>
+    route.startsWith("/") ? route : `/${route}`
+
   function renderMenus(menus: BackendMenu[]) {
     return menus
       .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -52,7 +55,7 @@ export default function SidebarNav({ id }: SidebarNavProps) {
               {menu.subMenus
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map((sub) => (
-                  <SidebarNavItem key={sub.id} href={sub.route}>
+                  <SidebarNavItem key={sub.id} href={normalizeRoute(sub.route)}>
                     {sub.name}
                   </SidebarNavItem>
                 ))}
@@ -61,7 +64,7 @@ export default function SidebarNav({ id }: SidebarNavProps) {
         }
 
         return (
-          <SidebarNavItem key={menu.id} href={menu.route} icon={icon}>
+          <SidebarNavItem key={menu.id} href={normalizeRoute(menu.route)} icon={icon}>
             {menu.name}
           </SidebarNavItem>
         );

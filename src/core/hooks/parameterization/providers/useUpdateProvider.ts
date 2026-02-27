@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { TProvider } from "../../../interfaces/parameterization/types"
-import { ENDPOINTS } from "../../../api/endpoints/endpoints"
+import { ENDPOINTS } from "@/core/api/endpoints"
 import { updatePut } from "../../../api/baseService"
 
 export const providerUpdateService = {

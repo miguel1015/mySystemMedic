@@ -17,11 +17,64 @@ export interface TTariffs {
   name: string;
 }
 
+export interface TMedicine {
+  id?: number;
+  name: string;
+  cum: string;
+  concentration: string;
+  measurementUnitSidamId: string;
+  administrationRouteCode: string;
+  pharmaceuticalFormCode: string;
+  presentationCode: string;
+  medicineGroupCode: string;
+  atc: string;
+  invima: string;
+  price: number;
+}
+
 export interface TTableMedicine {
   id?: number;
   cum?: string;
   status?: string;
   name: string;
+}
+
+export interface TMeasurementUnit {
+  sidamId: string;
+  unitCode: string;
+  description: string;
+  mipresEnabled: boolean;
+  mipresVersion: number;
+  effectiveDate: string;
+}
+
+export interface TAdministrationRoute {
+  code: string;
+  description: string;
+  mipresEnabled: boolean;
+  mipresVersion: number;
+  effectiveDate: string;
+}
+
+export interface TPharmaceuticalForm {
+  code: string;
+  description: string;
+  mipresEnabled: boolean;
+  mipresVersion: number;
+  effectiveDate: string;
+}
+
+export interface TPresentation {
+  code: string;
+  description: string;
+  mipresEnabled: boolean;
+  mipresVersion: number;
+  effectiveDate: string;
+}
+
+export interface TMedicineGroup {
+  code: string;
+  description: string;
 }
 
 export interface Contract {

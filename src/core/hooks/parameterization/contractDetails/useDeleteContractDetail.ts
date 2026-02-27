@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { remove } from "../../../api/baseService";
-import { ENDPOINTS } from "../../../api/endpoints/endpoints";
+import { ENDPOINTS } from "@/core/api/endpoints";
 
 export const contractDetailDeleteService = {
   delete: (id: string | number) =>

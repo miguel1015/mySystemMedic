@@ -30,41 +30,15 @@ export const createUserSchema = z
         invalid_type_error: "Estado es obligatorio",
       })
       .positive("Estado es obligatorio"),
-    cellphone: z
-      .number({
-        required_error: "Celular es obligatorio",
-        invalid_type_error: "Celular es obligatorio",
-      })
-      .positive("Celular es obligatorio"),
-    telephone: z
-      .number({
-        required_error: "Teléfono es obligatorio",
-        invalid_type_error: "Teléfono es obligatorio",
-      })
-      .positive("Celular es obligatorio"),
+    phone: z.string().min(1, "Celular es obligatorio"),
+    telephone: z.string().min(1, "Teléfono es obligatorio"),
     licenseCard: z.string().optional(),
+    signature: z.any().optional(),
     email: z.string().email("Email inválido"),
 
     // Opcional: solo obligatorio cuando NO es edición
     password: z.string().optional(),
     confirmarContraseña: z.string().optional(),
-    file: z
-      .instanceof(File)
-      .optional()
-      .refine(
-        (file) =>
-          !file ||
-          [
-            "application/pdf",
-            "image/jpeg",
-            "image/png",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/msword",
-            "application/vnd.ms-excel",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          ].includes(file.type),
-        "Tipo de archivo no permitido"
-      ),
   })
   .refine(
     (data) => !data.password || data.password === data.confirmarContraseña,

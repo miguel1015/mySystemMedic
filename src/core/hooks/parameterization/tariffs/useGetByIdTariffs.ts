@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ENDPOINTS } from "../../../api/endpoints/endpoints";
+import { ENDPOINTS } from "@/core/api/endpoints";
 import { TTariffs } from "../../../interfaces/parameterization/types";
 import { getById } from "../../../api/baseService";
 

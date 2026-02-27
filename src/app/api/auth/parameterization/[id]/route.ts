@@ -24,6 +24,9 @@ const TYPE_CONFIG = {
   providers: {
     endpoint: "/api/providers",
   },
+  medicines: {
+    endpoint: "/api/medicines",
+  },
 } as const;
 
 type ParameterType = keyof typeof TYPE_CONFIG;

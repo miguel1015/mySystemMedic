@@ -61,7 +61,7 @@ export default function RHFAntdSelect<T extends FieldValues>({
         options={options}
         mode={isMulti ? "multiple" : undefined}
         status={error ? "error" : undefined}
-        value={field.value ?? undefined}
+        value={field.value || undefined}
         onChange={(val) => field.onChange(val)}
         allowClear
         showSearch

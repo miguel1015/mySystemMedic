@@ -12,7 +12,7 @@ export const users = {
   email: "Email",
   cellphone: "Téléphone portable",
   telephone: "Téléphone",
-  Signature: "Signature",
+  signature: "Signature",
   licenseCard: "Carte professionnelle",
   attachFile: "Joindre un fichier",
   password: "Mot de passe",

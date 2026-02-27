@@ -4,9 +4,9 @@ import SidebarNav from "@/components/Layout/Dashboard/Sidebar/SidebarNav";
 import SidebarOverlay from "@/components/Layout/Dashboard/Sidebar/SidebarOverlay";
 import SidebarProvider from "@/components/Layout/Dashboard/SidebarProvider";
 import { getServerSession } from "next-auth";
-import { Container } from "react-bootstrap";
 import { authOptions } from "../api/auth/option";
 import LayoutLoading from "./layoutLoading";
+import { styles } from "./styles";
 
 export default async function Layout({
   children,
@@ -23,10 +23,10 @@ export default async function Layout({
         <Sidebar>
           <SidebarNav id={userId} />
         </Sidebar>
-        <div className="wrapper d-flex flex-column min-vh-100">
+        <div className="wrapper" style={styles.header}>
           <Header />
-          <div className="body flex-grow-1 px-sm-2 mb-4">
-            <Container fluid="lg">{children}</Container>
+          <div style={styles.containerChildren}>
+            <div style={styles.contentChildren}>{children}</div>
           </div>
         </div>
         <SidebarOverlay />

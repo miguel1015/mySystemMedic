@@ -7,6 +7,7 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   "benefit-plans": "/api/benefit-plans",
   contracts: "/api/contracts",
   "contract-details": "/api/contract-details",
+  medicines: "/api/medicines",
 };
 
 export async function GET(request: Request) {

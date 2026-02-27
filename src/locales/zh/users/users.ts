@@ -12,7 +12,7 @@ export const users = {
   state: "状态",
   cellphone: "手机",
   telephone: "电话",
-  Signature: "签名",
+  signature: "签名",
   licenseCard: "职业证",
   attachFile: "附件",
   password: "密码",

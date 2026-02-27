@@ -8,6 +8,11 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   cities: "/api/cities",
   "administrator-types": "/api/administrator-types",
   insurers: "/api/insurers",
+  "measurement-units": "/api/medicines/measurement-units",
+  "administration-routes": "/api/medicines/administration-routes",
+  "pharmaceutical-forms": "/api/medicines/pharmaceutical-forms",
+  presentations: "/api/medicines/presentations",
+  "medicine-groups": "/api/medicines/medicine-groups",
 };
 
 export async function GET(request: Request) {

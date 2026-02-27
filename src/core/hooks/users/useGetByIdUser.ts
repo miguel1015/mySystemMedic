@@ -1,5 +1,5 @@
 import { getById } from "@/core/api/baseService";
-import { ENDPOINTS } from "@/core/api/endpoints/endpoints";
+import { ENDPOINTS } from "@/core/api/endpoints";
 import { DataUser } from "@/core/interfaces/user/users";
 import { useQuery } from "@tanstack/react-query";
 

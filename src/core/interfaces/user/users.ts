@@ -38,6 +38,9 @@ export interface DataUser {
   userStatusId: number;
   email: string;
   password: string;
+  phone?: string;
+  telephone?: string;
+  signature?: string;
 }
 
 export interface GetUser {
@@ -56,6 +59,9 @@ export interface GetUser {
   userStatusName: string;
   userRoleName: string;
   createdAt: string;
+  phone?: string;
+  telephone?: string;
+  signature?: string;
 }
 
 export interface TCountries {

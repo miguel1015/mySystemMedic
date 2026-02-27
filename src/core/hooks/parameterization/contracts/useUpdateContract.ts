@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updatePut } from "../../../api/baseService";
-import { ENDPOINTS } from "../../../api/endpoints/endpoints";
+import { ENDPOINTS } from "@/core/api/endpoints";
 import { Contract, TContract } from "../../../interfaces/parameterization/types";
 
 export const contractUpdateService = {

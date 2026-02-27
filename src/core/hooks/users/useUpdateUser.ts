@@ -1,5 +1,5 @@
 import { updatePut } from "@/core/api/baseService";
-import { ENDPOINTS } from "@/core/api/endpoints/endpoints";
+import { ENDPOINTS } from "@/core/api/endpoints";
 import { DataUser } from "@/core/interfaces/user/users";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

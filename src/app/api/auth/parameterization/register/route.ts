@@ -7,6 +7,7 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   tariffs: "/api/tariff-schedules",
   contracts: "/api/contracts",
   "contract-details": "/api/contract-details",
+  medicines: "/api/medicines",
 };
 
 export async function POST(req: Request) {

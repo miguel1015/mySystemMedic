@@ -1,5 +1,3 @@
-"use client";
-
 import CustomButton from "@/components/button";
 import { Container } from "@/components/container";
 import ModalConfirm from "@/components/modalConfirmation.tsx";

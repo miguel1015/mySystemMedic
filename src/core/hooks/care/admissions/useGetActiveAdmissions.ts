@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 // import { getAll } from "../../../api/baseService"
-// import { ENDPOINTS } from "../../../api/endpoints/endpoints"
+// import { ENDPOINTS } from "@/core/api/endpoints"
 import { ActiveAdmission } from "../../../interfaces/care/types"
 
 const MOCK_ADMISSIONS: ActiveAdmission[] = [
