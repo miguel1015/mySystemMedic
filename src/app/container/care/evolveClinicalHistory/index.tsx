@@ -34,7 +34,7 @@ const EvolveClinicalHistoryContainer = () => {
           marginBottom: 4,
         }}
       >
-        <FileTextOutlined style={{ fontSize: 22, color: "#0F6F5C" }} />
+        <FileTextOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
         <Title level={3}>Evolucionar Historia Clínica</Title>
       </div>
 

@@ -20,7 +20,7 @@ export default function Loading({ active = true }: LoadingProps) {
             key={i}
             style={{ ...styles.icon, animationDelay: `${i}s` }}
           >
-            <Icon size={24} color="#0F6F5C" strokeWidth={2} />
+            <Icon size={24} style={{ color: "var(--theme-primary, #0F6F5C)" }} strokeWidth={2} />
           </div>
         ))}
       </div>

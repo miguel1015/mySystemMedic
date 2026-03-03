@@ -1,27 +1,21 @@
-"use client";
+"use client"
 
-import HeaderLocale from "@/components/Layout/Dashboard/Header/HeaderLocale";
-import HeaderTheme from "@/components/Layout/Dashboard/Header/HeaderTheme";
-import { useSidebar } from "@/components/Layout/Dashboard/SidebarProvider";
-import { Theme } from "@/themes/enum";
-import { faGear } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import HeaderLocale from "@/components/Layout/Dashboard/Header/HeaderLocale"
+import HeaderTheme from "@/components/Layout/Dashboard/Header/HeaderTheme"
+import { useSidebar } from "@/components/Layout/Dashboard/SidebarProvider"
+import { COLOR_PALETTES } from "@/themes/colorPalettes"
+import { Theme } from "@/themes/enum"
+import { faGear } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
   Dropdown,
   DropdownMenu,
   DropdownToggle,
   NavItem,
   NavLink,
-} from "react-bootstrap";
+} from "react-bootstrap"
 
-const colorOptions = [
-  "#d63384",
-  "#212529",
-  "#0d6efd",
-  "#198754",
-  "#fd7e14",
-  "#dc3545",
-];
+const colorOptions = Object.values(COLOR_PALETTES).map((p) => p.primary)
 
 export default function HeaderNavSettings({
   locale,
@@ -30,7 +24,7 @@ export default function HeaderNavSettings({
   locale: string;
   theme: Theme;
 }) {
-  const { sidebarColor, setSidebarColor } = useSidebar();
+  const { sidebarColor, setSidebarColor } = useSidebar()
 
   return (
     <NavItem>
@@ -48,7 +42,10 @@ export default function HeaderNavSettings({
           className="p-3 shadow-lg rounded-3"
           style={{ minWidth: 260 }}
         >
-          <h6 className="text-center mb-3 fw-bold text-success">
+          <h6
+            className="text-center mb-3 fw-bold"
+            style={{ color: "var(--theme-primary)" }}
+          >
             Configuración
           </h6>
 
@@ -67,10 +64,10 @@ export default function HeaderNavSettings({
 
             <hr className="my-2" />
 
-            {/* Sidenav Colors */}
+            {/* Color del tema */}
             <div>
               <h6 className="fw-bold text-secondary small mb-2">
-                Sidenav Colors
+                Color del tema
               </h6>
               <div className="d-flex gap-2 flex-wrap">
                 {colorOptions.map((color) => (
@@ -97,5 +94,5 @@ export default function HeaderNavSettings({
         </DropdownMenu>
       </Dropdown>
     </NavItem>
-  );
+  )
 }

@@ -19,12 +19,7 @@ import {
 import { Theme } from "@/themes/enum";
 import useDictionary from "@/locales/dictionary-hook";
 import { useMediaQuery } from "react-responsive";
-import { useAppTheme } from "../../../../themes/antdTheme";
-
-/* ----------------------------------------
- * Constants
- * ------------------------------------- */
-const BRAND_COLOR = "#0F6F5C";
+import { useAppTheme, useThemeColor } from "../../../../themes/antdTheme";
 
 const themeOptions = [
   {
@@ -47,8 +42,8 @@ const themeOptions = [
 /* ----------------------------------------
  * Helpers
  * ------------------------------------- */
-const getItemStyle = (active: boolean): React.CSSProperties => ({
-  backgroundColor: active ? BRAND_COLOR : "transparent",
+const getItemStyle = (active: boolean, brandColor: string): React.CSSProperties => ({
+  backgroundColor: active ? brandColor : "transparent",
   color: active ? "#ffffff" : "inherit",
 });
 
@@ -69,6 +64,7 @@ export default function HeaderTheme({
   const dict = useDictionary();
   const router = useRouter();
   const { setTheme } = useAppTheme();
+  const { palette } = useThemeColor();
 
   const [preferredTheme, setPreferredTheme] = useState<Theme>(
     currentPreferredTheme,
@@ -133,7 +129,7 @@ export default function HeaderTheme({
               key={key}
               active={active}
               onClick={() => changePreferredTheme(key)}
-              style={getItemStyle(active)}
+              style={getItemStyle(active, palette.primary)}
             >
               <FontAwesomeIcon className="me-2" icon={icon} fixedWidth />
               {dict.general.theme[labelKey]}

@@ -46,7 +46,7 @@ const CareManagementContainer = () => {
         }}
       >
         <SearchOutlined
-          style={{ color: "#0F6F5C", fontSize: "18px", marginBottom: "20px" }}
+          style={{ color: "var(--theme-primary, #0F6F5C)", fontSize: "18px", marginBottom: "20px" }}
         />
         <Title level={4}>Buscar Historial Clínico</Title>
       </div>
@@ -79,7 +79,8 @@ const CareManagementContainer = () => {
       {/* Información del paciente */}
       <div
         style={{
-          backgroundColor: "#528063",
+          backgroundColor: "var(--theme-primary, #0F6F5C)",
+          opacity: 0.85,
           padding: "12px 16px",
           borderRadius: "4px",
           marginBottom: "16px",
@@ -119,8 +120,7 @@ const CareManagementContainer = () => {
                   icon={<PrinterOutlined />}
                   onClick={() => setOpen(true)}
                   style={{
-                    backgroundColor: "#0F6F5C",
-                    borderColor: "#0F6F5C",
+                    borderRadius: 8,
                   }}
                 >
                   EPICRISIS IPS

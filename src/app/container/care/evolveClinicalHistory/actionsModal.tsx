@@ -26,7 +26,7 @@ const actions = [
     label: "Evolucionar Historia Clínica",
     icon: <FileTextOutlined style={{ fontSize: 28 }} />,
     path: "/care/careManagement",
-    color: "#0F6F5C",
+    color: "var(--theme-primary, #0F6F5C)",
   },
   {
     key: "expense-urgency",
@@ -91,13 +91,13 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
         <div style={{ marginBottom: 20 }}>
           <div
             style={{
-              backgroundColor: "#f0f7f4",
-              borderLeft: "4px solid #0F6F5C",
+              backgroundColor: "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)",
+              borderLeft: "4px solid var(--theme-primary, #0F6F5C)",
               padding: "12px 16px",
               borderRadius: "0 8px 8px 0",
             }}
           >
-            <span style={{ fontWeight: 600, color: "#0F6F5C" }}>Paciente: </span>
+            <span style={{ fontWeight: 600, color: "var(--theme-primary, #0F6F5C)" }}>Paciente: </span>
             <span style={{ fontWeight: 500 }}>{patient.patientFullName}</span>
             <span style={{ color: "#666", marginLeft: 12 }}>
               Doc: {patient.documentNumber}

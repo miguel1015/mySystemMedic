@@ -111,8 +111,6 @@ const AdmissionsTable = ({ data, loading, onAction }: AdmissionsTableProps) => {
           icon={<SettingOutlined />}
           onClick={() => onAction(record)}
           style={{
-            backgroundColor: "#0F6F5C",
-            borderColor: "#0F6F5C",
             borderRadius: 8,
           }}
         >
@@ -127,7 +125,7 @@ const AdmissionsTable = ({ data, loading, onAction }: AdmissionsTableProps) => {
       <div style={{ marginBottom: 16 }}>
         <Input
           placeholder="Buscar por nombre, documento o ámbito..."
-          prefix={<SearchOutlined style={{ color: "#0F6F5C" }} />}
+          prefix={<SearchOutlined style={{ color: "var(--theme-primary, #0F6F5C)" }} />}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           allowClear

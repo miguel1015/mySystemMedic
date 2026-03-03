@@ -1,6 +1,6 @@
 import { CSSProperties } from "react"
 
-const PRIMARY = "#0F6F5C"
+const PRIMARY = "var(--theme-primary, #0F6F5C)"
 
 export const keyframes = `
   @keyframes rotate {

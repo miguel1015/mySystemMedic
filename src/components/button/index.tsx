@@ -68,7 +68,7 @@ export default function CustomButton({
     // Ripple Styling Inline
     circle.style.position = "absolute";
     circle.style.borderRadius = "50%";
-    circle.style.background = "rgba(15,111,92,0.35)";
+    circle.style.background = "rgba(var(--theme-primary-rgb, 15,111,92),0.35)";
     circle.style.transform = "scale(0)";
     circle.style.pointerEvents = "none";
     circle.style.animation = "ripple-animation 0.6s ease-out";
@@ -140,11 +140,11 @@ export default function CustomButton({
     variant === "icon"
   ) {
     customStyle.backgroundColor =
-      variant === "outline" ? "transparent" : "#0F6F5C";
+      variant === "outline" ? "transparent" : "var(--theme-primary, #0F6F5C)";
 
-    customStyle.borderColor = "#0F6F5C";
+    customStyle.borderColor = "var(--theme-primary, #0F6F5C)";
     customStyle.color =
-      variant === "outline" || variant === "soft" ? "#0F6F5C" : "#ffffff";
+      variant === "outline" || variant === "soft" ? "var(--theme-primary, #0F6F5C)" : "#ffffff";
   }
 
   return (

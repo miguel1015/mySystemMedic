@@ -37,6 +37,12 @@ $sidebar-overlay-z-index: 1025;
   --sidebar-brand-background: #{$sidebar-brand-background};
   --sidebar-toggler-background: #{$sidebar-toggler-background};
   --sidebar-border-color: #{$sidebar-border-color};
+  --sidebar-link-hover-bg: #{$sidebar-link-background-hover};
+  --sidebar-toggler-hover-bg: #{$sidebar-toggler-background-hover};
+  --theme-primary: #0F6F5C;
+  --theme-primary-hover: #0d5f4f;
+  --theme-primary-active: #0a4f42;
+  --theme-primary-rgb: 15, 111, 92;
 }
 
 @include color-mode(dark) {
@@ -182,7 +188,7 @@ $sidebar-overlay-z-index: 1025;
 
       &:hover {
         color: $sidebar-link-color-hover;
-        background: $sidebar-link-background-hover;
+        background: var(--sidebar-link-hover-bg, #{$sidebar-link-background-hover});
         text-decoration: none;
       }
 
@@ -213,7 +219,7 @@ $sidebar-overlay-z-index: 1025;
     border-top-color: var(--sidebar-border-color) !important;
 
     &:hover {
-      background: $sidebar-toggler-background-hover;
+      background: var(--sidebar-toggler-hover-bg, #{$sidebar-toggler-background-hover});
       color: $sidebar-toggler-color-hover;
     }
 

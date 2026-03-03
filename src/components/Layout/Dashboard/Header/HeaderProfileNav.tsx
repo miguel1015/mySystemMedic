@@ -48,7 +48,7 @@ export default async function HeaderProfileNav() {
               icon={faUserCircle}
               style={{
                 fontSize: "30px",
-                color: '#0F6F5C',
+                color: 'var(--theme-primary, #0F6F5C)',
               }}
             />
           </div>
@@ -68,7 +68,7 @@ export default async function HeaderProfileNav() {
           <div
             style={{
               textAlign: 'center',
-              background: '#0F6F5C',
+              background: 'var(--theme-primary, #0F6F5C)',
               color: '#fff',
               paddingTop: '1.5rem',
               paddingBottom: '1.5rem',
