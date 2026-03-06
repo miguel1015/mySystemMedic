@@ -70,8 +70,6 @@ export default function SidebarNav({ id }: SidebarNavProps) {
     return <Loading />;
   }
 
-  console.log(data);
-
   const normalizeRoute = (route: string) =>
     route.startsWith("/") ? route : `/${route}`;
 

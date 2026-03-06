@@ -13,6 +13,12 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   "pharmaceutical-forms": "/api/medicines/pharmaceutical-forms",
   presentations: "/api/medicines/presentations",
   "medicine-groups": "/api/medicines/medicine-groups",
+  "value-methods": "/api/value-methods",
+  "contract-types": "/api/contract-types",
+  "eps-regimens": "/api/eps-regimens",
+  "user-types": "/api/user-types",
+  "payment-modalities": "/api/payment-modalities",
+  coverages: "/api/coverages",
 };
 
 export async function GET(request: Request) {

@@ -26,4 +26,22 @@ export const UTILS_ENDPOINTS = {
   MEDICINE_GROUPS: {
     GET_ALL: "/api/auth/utils/getAll?type=medicine-groups",
   },
+  VALUE_METHODS: {
+    GET_ALL: "/api/auth/utils/getAll?type=value-methods",
+  },
+  CONTRACT_TYPES: {
+    GET_ALL: "/api/auth/utils/getAll?type=contract-types",
+  },
+  EPS_REGIMENS: {
+    GET_ALL: "/api/auth/utils/getAll?type=eps-regimens",
+  },
+  USER_TYPES: {
+    GET_ALL: "/api/auth/utils/getAll?type=user-types",
+  },
+  PAYMENT_MODALITIES: {
+    GET_ALL: "/api/auth/utils/getAll?type=payment-modalities",
+  },
+  COVERAGES: {
+    GET_ALL: "/api/auth/utils/getAll?type=coverages",
+  },
 }

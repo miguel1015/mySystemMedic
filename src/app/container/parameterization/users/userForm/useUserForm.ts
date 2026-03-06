@@ -25,7 +25,7 @@ export function useUserForm({
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const { data: getUser, isLoading: loadingUser } = useGetUserById(
-    Number(editUserId)
+    Number(editUserId),
   );
 
   const { control, handleSubmit, reset } = useForm<CreateUserForm>({
@@ -50,7 +50,7 @@ export function useUserForm({
   const watchedValues = useWatch({ control });
 
   const filteredProfilesByRole = (
-    profiles: { value: number; label: string; roleId: number }[]
+    profiles: { value: number; label: string; roleId: number }[],
   ) => profiles.filter((p) => p.roleId === watchedValues.userRoleId);
 
   const onSubmit = async (data: CreateUserForm) => {
@@ -79,7 +79,7 @@ export function useUserForm({
           onError: (err: Error) => {
             toast.error(err.message);
           },
-        }
+        },
       );
 
       return;

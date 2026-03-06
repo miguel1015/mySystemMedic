@@ -18,6 +18,7 @@ export default function IpsDataForm() {
     cityOptions,
     isLoading,
     isUpdating,
+    documentTypesOptions,
   } = useProviderForm();
 
   if (isLoading) {
@@ -189,11 +190,12 @@ export default function IpsDataForm() {
                 placeholder="Nombre"
                 control={control}
               />
-              <Input
-                name="identificationType"
-                label="Tipo de identificación"
-                placeholder="Tipo de identificación"
+              <Select
+                name="documentType"
+                label="Tipo de documento"
+                placeholder="Tipo de documento"
                 control={control}
+                options={documentTypesOptions}
               />
               <div className="d-flex gap-2">
                 <div style={{ flex: 3 }}>

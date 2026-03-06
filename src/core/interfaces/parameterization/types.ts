@@ -78,24 +78,18 @@ export interface TMedicineGroup {
 }
 
 export interface Contract {
-  contractNumber: string;
   insurerId: number;
-  contractType: string;
-  populationNumber: number;
-  cityId: number;
+  contractNumber: string;
+  contractName: string;
+  valueMethodId: number;
+  contractTypeId: number;
+  epsRegimenId: number;
+  userTypeId: number;
+  paymentModalityId: number;
+  coverageId: number;
   startDate: string;
   endDate: string | null;
-  isActive: boolean;
-  tariffScheduleId: number;
-  medicineTariffScheduleId: number | null;
-  factor: number;
-  providerId: number;
-  policy: string;
-  chargeCopay: boolean;
-  chargeModeratingFee: boolean;
-  billingDestinationId: number;
-  benefitPlanId: number;
-  referenceCode: string;
+  status: string;
 }
 
 export interface TContract extends Contract {

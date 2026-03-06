@@ -6,6 +6,7 @@ import { useCities } from "@/core/hooks/utils/useCities";
 import { useGetProvider } from "@/core/hooks/parameterization/providers/useGetProvider";
 import { useUpdateProvider } from "@/core/hooks/parameterization/providers/useUpdateProvider";
 import { providerSchema, providerDefaultValues, TProviderForm } from "./schema";
+import { useUserDocumentType } from "../../../../../core/hooks/users/useDocumentTypes";
 
 const PROVIDER_ID = 32;
 
@@ -22,10 +23,16 @@ export function useProviderForm() {
   const { data: provider, isLoading } = useGetProvider(PROVIDER_ID);
   const updateProvider = useUpdateProvider();
   const { data: citiesData } = useCities();
+  const { data: dataDocumentType } = useUserDocumentType();
 
   const cityOptions = (citiesData ?? []).map((c) => ({
     value: c.id,
     label: c.name,
+  }));
+
+  const documentTypesOptions = (dataDocumentType ?? []).map((r) => ({
+    value: r.id,
+    label: r.name,
   }));
 
   const { control, handleSubmit, reset, setValue } = useForm<TProviderForm>({
@@ -95,6 +102,7 @@ export function useProviderForm() {
     setValue,
     watchedValues,
     cityOptions,
+    documentTypesOptions,
     isLoading,
     isUpdating: updateProvider.isPending,
   };
