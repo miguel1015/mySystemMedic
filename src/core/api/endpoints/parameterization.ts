@@ -13,6 +13,9 @@ export const PARAMETERIZATION_ENDPOINTS = {
   },
   TARIFFS: makeParamCrud("tariffs"),
   CONTRACTS: makeParamCrud("contracts"),
+  CONTRACT_CATALOGS: {
+    GET_ALL: "/api/auth/parameterization/getAll?type=contract-catalogs",
+  },
   CONTRACT_DETAILS: makeParamCrud("contract-details"),
   PROVIDERS: {
     GET_BY_ID: (id: string | number) =>

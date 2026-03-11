@@ -8,6 +8,7 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   contracts: "/api/contracts",
   "contract-details": "/api/contract-details",
   medicines: "/api/medicines",
+  "contract-catalogs": "/api/contracts/catalogs",
 };
 
 export async function GET(request: Request) {

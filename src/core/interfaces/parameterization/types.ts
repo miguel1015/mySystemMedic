@@ -77,6 +77,20 @@ export interface TMedicineGroup {
   description: string;
 }
 
+export interface CatalogItem {
+  id: number;
+  description: string;
+}
+
+export interface ContractCatalogs {
+  valueMethods: CatalogItem[];
+  benefitPlanContractTypes: CatalogItem[];
+  epsRegimes: CatalogItem[];
+  paymentModalities: CatalogItem[];
+  healthUserTypes: CatalogItem[];
+  coverages: CatalogItem[];
+}
+
 export interface Contract {
   insurerId: number;
   contractNumber: string;
