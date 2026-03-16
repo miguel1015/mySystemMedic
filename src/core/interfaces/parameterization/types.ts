@@ -96,18 +96,19 @@ export interface Contract {
   contractNumber: string;
   contractName: string;
   valueMethodId: number;
-  contractTypeId: number;
-  epsRegimenId: number;
-  userTypeId: number;
+  benefitPlanContractTypeId: number;
+  epsRegimeId: number;
+  healthUserTypeId: number;
   paymentModalityId: number;
   coverageId: number;
   startDate: string;
   endDate: string | null;
-  status: string;
+  contractStatusId: number;
 }
 
 export interface TContract extends Contract {
   id: number;
+  status: string;
 }
 
 export interface ContractDetail {

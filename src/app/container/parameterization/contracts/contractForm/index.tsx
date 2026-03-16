@@ -1,7 +1,6 @@
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import SelectAutocomplete from "@/components/select";
-import Select from "@/components/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "antd";
 import { useEffect } from "react";
@@ -18,6 +17,12 @@ import {
   TDefaultValues,
 } from "./contractSchema";
 import { useContractOptions } from "./hooks";
+
+const statusOptions = [
+  { value: 1, label: "Activo" },
+  { value: 2, label: "Suspendido" },
+  { value: 3, label: "Terminado" },
+];
 
 const ContractForm: React.FC<TUtils> = ({
   setOpen,
@@ -45,12 +50,6 @@ const ContractForm: React.FC<TUtils> = ({
     resolver: zodResolver(ContractSchema),
     defaultValues: TDefaultValues,
   });
-
-  const statusOptions = [
-    { value: "activo", label: "Activo" },
-    { value: "suspendido", label: "Suspendido" },
-    { value: "terminado", label: "Terminado" },
-  ];
 
   const onSubmit = handleSubmit((data) => {
     if (editUserId) {
@@ -85,14 +84,14 @@ const ContractForm: React.FC<TUtils> = ({
         contractNumber: getContract.contractNumber,
         contractName: getContract.contractName,
         valueMethodId: getContract.valueMethodId,
-        contractTypeId: getContract.contractTypeId,
-        epsRegimenId: getContract.epsRegimenId,
-        userTypeId: getContract.userTypeId,
+        benefitPlanContractTypeId: getContract.benefitPlanContractTypeId,
+        epsRegimeId: getContract.epsRegimeId,
+        healthUserTypeId: getContract.healthUserTypeId,
         paymentModalityId: getContract.paymentModalityId,
         coverageId: getContract.coverageId,
         startDate: getContract.startDate,
         endDate: getContract.endDate,
-        status: getContract.status,
+        contractStatusId: getContract.contractStatusId,
       });
     }
   }, [editUserId, getContract]);
@@ -143,7 +142,7 @@ const ContractForm: React.FC<TUtils> = ({
           />
 
           <SelectAutocomplete
-            name="contractTypeId"
+            name="benefitPlanContractTypeId"
             label="Tipo de contrato"
             placeholder={dict.contracts.placeholderSelect}
             control={control}
@@ -151,7 +150,7 @@ const ContractForm: React.FC<TUtils> = ({
           />
 
           <SelectAutocomplete
-            name="epsRegimenId"
+            name="epsRegimeId"
             label="Régimen EPS"
             placeholder={dict.contracts.placeholderSelect}
             control={control}
@@ -159,7 +158,7 @@ const ContractForm: React.FC<TUtils> = ({
           />
 
           <SelectAutocomplete
-            name="userTypeId"
+            name="healthUserTypeId"
             label="Tipo de usuario"
             placeholder={dict.contracts.placeholderSelect}
             control={control}
@@ -198,8 +197,8 @@ const ContractForm: React.FC<TUtils> = ({
             control={control}
           />
 
-          <Select
-            name="status"
+          <SelectAutocomplete
+            name="contractStatusId"
             label="Estado"
             placeholder={dict.contracts.placeholderSelect}
             control={control}
@@ -218,7 +217,12 @@ const ContractForm: React.FC<TUtils> = ({
           >
             Cancelar
           </Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isPending}
+            disabled={isPending}
+          >
             Guardar
           </Button>
         </div>
