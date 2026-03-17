@@ -1,7 +1,5 @@
-import { getDictionary } from "@/locales/dictionary";
+import DashboardContainer from "@/app/container/dashboard"
 
-export default async function Page() {
-  const dict = await getDictionary();
-
-  return <div></div>;
+export default function Page() {
+  return <DashboardContainer />
 }

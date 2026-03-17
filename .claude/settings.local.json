@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat /c/Users/wow/Desktop/mySystemMedic/mySystemMedic/src/app/\\\\\\(dashboard\\\\\\)/styles.ts)"
+    ]
+  }
+}
