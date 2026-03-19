@@ -1,5 +1,5 @@
-$header-background: #fff;
-$header-background-dark: #212529;
+$header-background: #ffffff;
+$header-background-dark: #141419;
 $header-link-color: rgba(44, 56, 74, 0.681);
 $header-link-color-dark: var(--#{$prefix}body-color);
 $header-link-color-hover: rgba(44, 56, 74, 0.95);
@@ -23,6 +23,7 @@ $header-brand-color-dark: var(--#{$prefix}body-color);
 
 .header {
   background: var(--header-background);
+  transition: background 0.2s ease, border-color 0.2s ease;
 
   .header-brand {
     color: var(--header-brand-color);
@@ -38,6 +39,7 @@ $header-brand-color-dark: var(--#{$prefix}body-color);
     .header-nav {
       .nav-link {
         color: var(--header-link-color);
+        transition: color 0.15s ease;
 
         &:hover {
           color: var(--header-link-color-hover);

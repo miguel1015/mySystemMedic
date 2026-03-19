@@ -7,10 +7,10 @@ export const keyframes = `
     100% { transform: rotate(360deg); }
   }
   @keyframes loadicons {
-    0%   { transform: scale(0); }
-    11%  { transform: scale(1.2); }
-    22%  { transform: scale(1); }
-    33%  { transform: scale(0); }
+    0%   { transform: translate(-50%, -50%) scale(0); }
+    11%  { transform: translate(-50%, -50%) scale(1.2); }
+    22%  { transform: translate(-50%, -50%) scale(1); }
+    33%  { transform: translate(-50%, -50%) scale(0); }
   }
 `
 
@@ -42,14 +42,14 @@ export const styles: Record<string, CSSProperties> = {
 
   icon: {
     position: "absolute",
-    inset: 0,
-    margin: "auto",
+    top: "50%",
+    left: "50%",
     width: 24,
     height: 24,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    transform: "scale(0)",
+    transform: "translate(-50%, -50%) scale(0)",
     animation: "loadicons 3s ease-in-out infinite",
   },
 }

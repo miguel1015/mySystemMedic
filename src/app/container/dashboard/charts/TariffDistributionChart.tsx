@@ -8,6 +8,9 @@ import {
   Legend,
 } from "chart.js"
 import { TTariffs } from "@/core/interfaces/parameterization/types"
+import { useAppTheme } from "@/themes/antdTheme"
+import { Inbox } from "lucide-react"
+import styles from "../dashboard.module.scss"
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -15,9 +18,34 @@ interface Props {
   tariffs: TTariffs[]
 }
 
+const colorPalette = [
+  "#10B981",
+  "#0F6F5C",
+  "#059669",
+  "#34D399",
+  "#6EE7B7",
+  "#F59E0B",
+  "#6366F1",
+  "#EC4899",
+]
+
 export function TariffDistributionChart({ tariffs }: Props) {
+  const { theme } = useAppTheme()
+  const isDark = theme === "dark"
+
+  if (tariffs.length === 0) {
+    return (
+      <div className={styles.emptyState}>
+        <div className={styles.emptyStateIcon}>
+          <Inbox size={20} />
+        </div>
+        <p className={styles.emptyStateText}>No hay tarifarios registrados</p>
+      </div>
+    )
+  }
+
   const codingGroups = tariffs.reduce<Record<string, number>>((acc, t) => {
-    const group = t.codingId || "Sin código"
+    const group = t.codingId || "Sin codigo"
     acc[group] = (acc[group] || 0) + 1
     return acc
   }, {})
@@ -29,27 +57,16 @@ export function TariffDistributionChart({ tariffs }: Props) {
   const labels = entries.map(([key]) => key)
   const values = entries.map(([, val]) => val)
 
-  const colorPalette = [
-    "#10B981",
-    "#0F6F5C",
-    "#059669",
-    "#34D399",
-    "#6EE7B7",
-    "#F59E0B",
-    "#6366F1",
-    "#EC4899",
-  ]
-
   const data = {
     labels,
     datasets: [
       {
         data: values,
         backgroundColor: colorPalette.slice(0, labels.length),
-        hoverBackgroundColor: colorPalette.slice(0, labels.length).map((c) => c + "CC"),
+        hoverBackgroundColor: colorPalette.slice(0, labels.length).map((c) => c + "DD"),
         borderWidth: 0,
-        spacing: 4,
-        borderRadius: 6,
+        spacing: 3,
+        borderRadius: 4,
       },
     ],
   }
@@ -57,47 +74,38 @@ export function TariffDistributionChart({ tariffs }: Props) {
   const options = {
     responsive: true,
     maintainAspectRatio: true,
-    cutout: "65%",
+    cutout: "72%",
     plugins: {
       legend: {
         position: "bottom" as const,
         labels: {
-          padding: 16,
+          padding: 14,
           usePointStyle: true,
-          pointStyleWidth: 12,
-          font: {
-            size: 12,
-            family: "inherit",
-          },
-          color: "#374151",
+          pointStyleWidth: 8,
+          font: { size: 11, family: "inherit" },
+          color: isDark ? "#9ca3af" : "#6b7280",
         },
       },
       tooltip: {
-        backgroundColor: "rgba(16, 185, 129, 0.95)",
-        titleFont: { size: 14, weight: "bold" as const },
-        bodyFont: { size: 13 },
-        padding: 14,
-        cornerRadius: 12,
+        backgroundColor: isDark ? "#1f2937" : "#111827",
+        titleFont: { size: 13, weight: "bold" as const },
+        bodyFont: { size: 12 },
+        padding: 12,
+        cornerRadius: 8,
         displayColors: true,
-        boxPadding: 6,
+        boxPadding: 4,
+        borderColor: isDark ? "#374151" : "transparent",
+        borderWidth: isDark ? 1 : 0,
       },
     },
     animation: {
       animateRotate: true,
-      duration: 1400,
+      duration: 800,
     },
   }
 
-  if (tariffs.length === 0) {
-    return (
-      <div style={{ textAlign: "center", padding: "60px 0", color: "#9CA3AF" }}>
-        No hay tarifarios registrados
-      </div>
-    )
-  }
-
   return (
-    <div style={{ maxWidth: "360px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "320px", margin: "0 auto" }}>
       <Doughnut data={data} options={options} />
     </div>
   )

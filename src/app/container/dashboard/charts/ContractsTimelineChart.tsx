@@ -10,6 +10,9 @@ import {
   Legend,
 } from "chart.js"
 import { TContract } from "@/core/interfaces/parameterization/types"
+import { useAppTheme } from "@/themes/antdTheme"
+import { Inbox } from "lucide-react"
+import styles from "../dashboard.module.scss"
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
@@ -23,8 +26,21 @@ const monthNames = [
 ]
 
 export function ContractsTimelineChart({ contracts }: Props) {
-  const monthCounts = new Array(12).fill(0)
+  const { theme } = useAppTheme()
+  const isDark = theme === "dark"
 
+  if (contracts.length === 0) {
+    return (
+      <div className={styles.emptyState}>
+        <div className={styles.emptyStateIcon}>
+          <Inbox size={20} />
+        </div>
+        <p className={styles.emptyStateText}>No hay contratos registrados</p>
+      </div>
+    )
+  }
+
+  const monthCounts = new Array(12).fill(0)
   contracts.forEach((c) => {
     if (c.startDate) {
       const date = new Date(c.startDate)
@@ -40,22 +56,18 @@ export function ContractsTimelineChart({ contracts }: Props) {
       {
         label: "Contratos iniciados",
         data: monthCounts,
-        backgroundColor: (ctx: { dataIndex: number }) => {
-          const canvas = document.createElement("canvas")
-          const chartCtx = canvas.getContext("2d")
-          if (!chartCtx) return "#0F6F5C"
-          const gradient = chartCtx.createLinearGradient(0, 0, 0, 300)
-          gradient.addColorStop(0, "#0F6F5C")
-          gradient.addColorStop(1, "#1a9e7e88")
-          return gradient
-        },
-        borderRadius: 8,
+        backgroundColor: isDark ? "rgba(99, 102, 241, 0.6)" : "rgba(15, 111, 92, 0.75)",
+        hoverBackgroundColor: isDark ? "rgba(99, 102, 241, 0.8)" : "rgba(15, 111, 92, 0.9)",
+        borderRadius: 6,
         borderSkipped: false,
-        barPercentage: 0.6,
+        barPercentage: 0.55,
         categoryPercentage: 0.7,
       },
     ],
   }
+
+  const gridColor = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.05)"
+  const tickColor = isDark ? "#6b7280" : "#9ca3af"
 
   const options = {
     responsive: true,
@@ -63,12 +75,14 @@ export function ContractsTimelineChart({ contracts }: Props) {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: "rgba(31, 61, 54, 0.95)",
-        titleFont: { size: 14, weight: "bold" as const },
-        bodyFont: { size: 13 },
-        padding: 14,
-        cornerRadius: 12,
+        backgroundColor: isDark ? "#1f2937" : "#111827",
+        titleFont: { size: 13, weight: "bold" as const },
+        bodyFont: { size: 12 },
+        padding: 12,
+        cornerRadius: 8,
         displayColors: false,
+        borderColor: isDark ? "#374151" : "transparent",
+        borderWidth: isDark ? 1 : 0,
         callbacks: {
           label: (ctx: { parsed: { y: number } }) =>
             `${ctx.parsed.y} contrato${ctx.parsed.y !== 1 ? "s" : ""}`,
@@ -78,36 +92,19 @@ export function ContractsTimelineChart({ contracts }: Props) {
     scales: {
       x: {
         grid: { display: false },
-        ticks: {
-          color: "#9CA3AF",
-          font: { size: 12 },
-        },
+        ticks: { color: tickColor, font: { size: 11 } },
         border: { display: false },
       },
       y: {
-        grid: {
-          color: "rgba(15, 111, 92, 0.06)",
-        },
-        ticks: {
-          color: "#9CA3AF",
-          font: { size: 12 },
-          stepSize: 1,
-        },
+        grid: { color: gridColor },
+        ticks: { color: tickColor, font: { size: 11 }, stepSize: 1 },
         border: { display: false },
       },
     },
     animation: {
-      duration: 1400,
+      duration: 800,
       easing: "easeOutQuart" as const,
     },
-  }
-
-  if (contracts.length === 0) {
-    return (
-      <div style={{ textAlign: "center", padding: "60px 0", color: "#9CA3AF" }}>
-        No hay contratos registrados
-      </div>
-    )
   }
 
   return <Bar data={data} options={options} />

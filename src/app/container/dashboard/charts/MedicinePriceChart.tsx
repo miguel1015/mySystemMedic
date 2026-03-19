@@ -10,6 +10,9 @@ import {
   Legend,
 } from "chart.js"
 import { TMedicine } from "@/core/interfaces/parameterization/types"
+import { useAppTheme } from "@/themes/antdTheme"
+import { Inbox } from "lucide-react"
+import styles from "../dashboard.module.scss"
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
@@ -18,23 +21,35 @@ interface Props {
 }
 
 export function MedicinePriceChart({ medicines }: Props) {
+  const { theme } = useAppTheme()
+  const isDark = theme === "dark"
+
+  if (medicines.length === 0) {
+    return (
+      <div className={styles.emptyState}>
+        <div className={styles.emptyStateIcon}>
+          <Inbox size={20} />
+        </div>
+        <p className={styles.emptyStateText}>No hay medicamentos registrados</p>
+      </div>
+    )
+  }
+
   const sorted = [...medicines]
     .filter((m) => m.price > 0)
     .sort((a, b) => b.price - a.price)
     .slice(0, 10)
 
   const labels = sorted.map((m) =>
-    m.name.length > 20 ? m.name.substring(0, 20) + "..." : m.name
+    m.name.length > 22 ? m.name.substring(0, 22) + "..." : m.name
   )
   const values = sorted.map((m) => m.price)
 
-  const gradientColors = sorted.map((_, i) => {
-    const ratio = i / Math.max(sorted.length - 1, 1)
-    const r = Math.round(99 + (139 - 99) * ratio)
-    const g = Math.round(102 + (92 - 102) * ratio)
-    const b = Math.round(241 + (246 - 241) * ratio)
-    return `rgb(${r}, ${g}, ${b})`
-  })
+  const barColor = isDark ? "rgba(129, 140, 248, 0.6)" : "rgba(99, 102, 241, 0.7)"
+  const barHoverColor = isDark ? "rgba(129, 140, 248, 0.8)" : "rgba(99, 102, 241, 0.9)"
+  const gridColor = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.05)"
+  const tickColor = isDark ? "#6b7280" : "#9ca3af"
+  const labelColor = isDark ? "#9ca3af" : "#6b7280"
 
   const data = {
     labels,
@@ -42,8 +57,9 @@ export function MedicinePriceChart({ medicines }: Props) {
       {
         label: "Precio",
         data: values,
-        backgroundColor: gradientColors,
-        borderRadius: 8,
+        backgroundColor: barColor,
+        hoverBackgroundColor: barHoverColor,
+        borderRadius: 4,
         borderSkipped: false,
         barPercentage: 0.7,
         categoryPercentage: 0.8,
@@ -58,12 +74,14 @@ export function MedicinePriceChart({ medicines }: Props) {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: "rgba(99, 102, 241, 0.95)",
-        titleFont: { size: 13, weight: "bold" as const },
-        bodyFont: { size: 13 },
-        padding: 14,
-        cornerRadius: 12,
+        backgroundColor: isDark ? "#1f2937" : "#111827",
+        titleFont: { size: 12, weight: "bold" as const },
+        bodyFont: { size: 12 },
+        padding: 12,
+        cornerRadius: 8,
         displayColors: false,
+        borderColor: isDark ? "#374151" : "transparent",
+        borderWidth: isDark ? 1 : 0,
         callbacks: {
           label: (ctx: { parsed: { x: number } }) =>
             `$${ctx.parsed.x.toLocaleString()}`,
@@ -72,12 +90,10 @@ export function MedicinePriceChart({ medicines }: Props) {
     },
     scales: {
       x: {
-        grid: {
-          color: "rgba(99, 102, 241, 0.06)",
-        },
+        grid: { color: gridColor },
         ticks: {
-          color: "#9CA3AF",
-          font: { size: 12 },
+          color: tickColor,
+          font: { size: 11 },
           callback: (value: string | number) =>
             `$${Number(value).toLocaleString()}`,
         },
@@ -85,25 +101,14 @@ export function MedicinePriceChart({ medicines }: Props) {
       },
       y: {
         grid: { display: false },
-        ticks: {
-          color: "#6B7280",
-          font: { size: 11 },
-        },
+        ticks: { color: labelColor, font: { size: 11 } },
         border: { display: false },
       },
     },
     animation: {
-      duration: 1400,
+      duration: 800,
       easing: "easeOutQuart" as const,
     },
-  }
-
-  if (medicines.length === 0) {
-    return (
-      <div style={{ textAlign: "center", padding: "60px 0", color: "#9CA3AF" }}>
-        No hay medicamentos registrados
-      </div>
-    )
   }
 
   return <Bar data={data} options={options} />

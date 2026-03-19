@@ -1,4 +1,35 @@
+/* ── Dashboard Design Tokens ── */
+:root {
+  --dash-bg: #f8f9fb;
+  --dash-surface: #ffffff;
+  --dash-surface-hover: #f3f4f6;
+  --dash-border: #e5e7eb;
+  --dash-border-subtle: #f0f0f3;
+  --dash-text-primary: #111827;
+  --dash-text-secondary: #6b7280;
+  --dash-text-tertiary: #9ca3af;
+  --dash-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --dash-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --dash-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --dash-skeleton-from: #e5e7eb;
+  --dash-skeleton-to: #f3f4f6;
+}
+
 @include color-mode(dark) {
+  --dash-bg: #0a0a0f;
+  --dash-surface: #141419;
+  --dash-surface-hover: #1c1c24;
+  --dash-border: #23232e;
+  --dash-border-subtle: #1a1a23;
+  --dash-text-primary: #f1f1f4;
+  --dash-text-secondary: #9ca3af;
+  --dash-text-tertiary: #6b7280;
+  --dash-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --dash-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --dash-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --dash-skeleton-from: #1f1f2a;
+  --dash-skeleton-to: #28283a;
+
   .dark\:text-gray-500 {
     color: $gray-500 !important;
   }
@@ -9,5 +40,39 @@
 
   .dark\:bg-dark {
     @extend .bg-dark;
+  }
+}
+
+/* ── Smooth transitions for theme switching ── */
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Dashboard Layout (responsive) ── */
+.dash-layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--dash-bg, #f8f9fb);
+}
+
+.dash-content-area {
+  flex-grow: 1;
+  padding: 0.5rem 12px 1rem;
+}
+
+.dash-content-inner {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .dash-content-area {
+    padding: 0.5rem 20px 1.5rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .dash-content-area {
+    padding: 0.5rem 28px 1.5rem;
   }
 }

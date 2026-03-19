@@ -5,88 +5,41 @@ import { useMedicines } from "@/core/hooks/parameterization/medicines/useGetAllM
 import { useTariffs } from "@/core/hooks/parameterization/tariffs/useGetAllTariffs"
 import { useContractCatalogs } from "@/core/hooks/parameterization/contracts/useContractCatalogs"
 import { motion } from "framer-motion"
-import { CSSProperties } from "react"
-import { FileText, Pill, Receipt, TrendingUp, Activity, BarChart3 } from "lucide-react"
-import { Spin } from "antd"
+import { FileText, Pill, Receipt, Activity, TrendingUp, BarChart3 } from "lucide-react"
 import { ContractsByStatusChart } from "./charts/ContractsByStatusChart"
 import { MedicinePriceChart } from "./charts/MedicinePriceChart"
 import { ContractsTimelineChart } from "./charts/ContractsTimelineChart"
 import { TariffDistributionChart } from "./charts/TariffDistributionChart"
-import { StatCard } from "./StatCard"
-
-const s = (style: CSSProperties) => style
-
-const styles = {
-  wrapper: s({
-    padding: "0 8px",
-    minHeight: "100vh",
-  }),
-  greeting: s({
-    fontSize: "28px",
-    fontWeight: 700,
-    color: "#1F3D36",
-    marginBottom: "4px",
-  }),
-  subtitle: s({
-    fontSize: "15px",
-    color: "#6B7280",
-    marginBottom: "32px",
-  }),
-  statsGrid: s({
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-    gap: "20px",
-    marginBottom: "32px",
-  }),
-  chartsGrid: s({
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(480px, 1fr))",
-    gap: "24px",
-    marginBottom: "32px",
-  }),
-  chartCard: s({
-    background: "rgba(255, 255, 255, 0.7)",
-    backdropFilter: "blur(16px)",
-    WebkitBackdropFilter: "blur(16px)",
-    borderRadius: "20px",
-    border: "1px solid rgba(255, 255, 255, 0.5)",
-    boxShadow: "0 8px 32px rgba(15, 111, 92, 0.08)",
-    padding: "28px",
-    overflow: "hidden",
-    position: "relative" as const,
-  }),
-  chartTitle: s({
-    fontSize: "18px",
-    fontWeight: 600,
-    color: "#1F3D36",
-    marginBottom: "20px",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-  }),
-  loadingContainer: s({
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "60vh",
-  }),
-}
+import { StatCard, StatCardSkeleton } from "./StatCard"
+import styles from "./dashboard.module.scss"
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 },
+    transition: { staggerChildren: 0.06 },
   },
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
   },
+}
+
+function ChartCardSkeleton() {
+  return (
+    <div className={styles.chartCard}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+        <div className={styles.skeletonIcon} style={{ width: 32, height: 32 }} />
+        <div className={styles.skeleton} style={{ width: 140, height: 14 }} />
+      </div>
+      <div className={styles.skeletonChart} />
+    </div>
+  )
 }
 
 export default function DashboardContainer() {
@@ -97,14 +50,6 @@ export default function DashboardContainer() {
 
   const isLoading = loadingContracts || loadingMedicines || loadingTariffs
 
-  if (isLoading) {
-    return (
-      <div style={styles.loadingContainer}>
-        <Spin size="large" />
-      </div>
-    )
-  }
-
   const contractCount = contracts?.length ?? 0
   const medicineCount = medicines?.length ?? 0
   const tariffCount = tariffs?.length ?? 0
@@ -112,82 +57,143 @@ export default function DashboardContainer() {
 
   return (
     <motion.div
-      style={styles.wrapper}
+      className={styles.wrapper}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
+      {/* Header */}
+      <motion.div className={styles.headerSection} variants={itemVariants}>
+        <h1 className={styles.greeting}>Dashboard</h1>
+        <p className={styles.subtitle}>Resumen general del sistema</p>
+      </motion.div>
+
+      {/* Stats */}
       <motion.div variants={itemVariants}>
-        <h1 style={styles.greeting}>Dashboard</h1>
-        <p style={styles.subtitle}>
-          Resumen general del sistema
-        </p>
+        <div className={styles.sectionLabel}>Indicadores</div>
+        {isLoading ? (
+          <div className={styles.statsGrid}>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </div>
+        ) : (
+          <div className={styles.statsGrid}>
+            <StatCard
+              icon={<FileText size={20} />}
+              title="Contratos"
+              value={contractCount}
+              subtitle={`${activeContracts} activos`}
+              color="#0F6F5C"
+              gradient="linear-gradient(135deg, #0F6F5C 0%, #10B981 100%)"
+              delay={0}
+            />
+            <StatCard
+              icon={<Pill size={20} />}
+              title="Medicamentos"
+              value={medicineCount}
+              subtitle="Registrados"
+              color="#6366F1"
+              gradient="linear-gradient(135deg, #6366F1 0%, #818CF8 100%)"
+              delay={0.06}
+            />
+            <StatCard
+              icon={<Receipt size={20} />}
+              title="Tarifarios"
+              value={tariffCount}
+              subtitle="Configurados"
+              color="#F59E0B"
+              gradient="linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)"
+              delay={0.12}
+            />
+          </div>
+        )}
       </motion.div>
 
-      <motion.div style={styles.statsGrid} variants={itemVariants}>
-        <StatCard
-          icon={<FileText size={24} />}
-          title="Contratos"
-          value={contractCount}
-          subtitle={`${activeContracts} activos`}
-          color="#0F6F5C"
-          gradient="linear-gradient(135deg, #0F6F5C 0%, #1a9e7e 100%)"
-          delay={0}
-        />
-        <StatCard
-          icon={<Pill size={24} />}
-          title="Medicamentos"
-          value={medicineCount}
-          subtitle="Registrados"
-          color="#6366F1"
-          gradient="linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"
-          delay={0.1}
-        />
-        <StatCard
-          icon={<Receipt size={24} />}
-          title="Tarifarios"
-          value={tariffCount}
-          subtitle="Configurados"
-          color="#F59E0B"
-          gradient="linear-gradient(135deg, #F59E0B 0%, #F97316 100%)"
-          delay={0.2}
-        />
+      {/* Charts Row 1 */}
+      <motion.div variants={itemVariants}>
+        <div className={styles.sectionLabel}>Contratos</div>
+        {isLoading ? (
+          <div className={styles.chartsGrid}>
+            <ChartCardSkeleton />
+            <ChartCardSkeleton />
+          </div>
+        ) : (
+          <div className={styles.chartsGrid}>
+            <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
+              <div className={styles.chartCardHeader}>
+                <h3 className={styles.chartTitle}>
+                  <span
+                    className={styles.chartTitleIcon}
+                    style={{ background: "rgba(15, 111, 92, 0.1)", color: "#0F6F5C" }}
+                  >
+                    <Activity size={16} />
+                  </span>
+                  Estado de Contratos
+                </h3>
+              </div>
+              <ContractsByStatusChart contracts={contracts ?? []} />
+            </motion.div>
+
+            <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
+              <div className={styles.chartCardHeader}>
+                <h3 className={styles.chartTitle}>
+                  <span
+                    className={styles.chartTitleIcon}
+                    style={{ background: "rgba(99, 102, 241, 0.1)", color: "#6366F1" }}
+                  >
+                    <TrendingUp size={16} />
+                  </span>
+                  Contratos por Mes
+                </h3>
+              </div>
+              <ContractsTimelineChart contracts={contracts ?? []} />
+            </motion.div>
+          </div>
+        )}
       </motion.div>
 
-      <motion.div style={styles.chartsGrid} variants={itemVariants}>
-        <motion.div style={styles.chartCard} variants={itemVariants}>
-          <div style={styles.chartTitle}>
-            <Activity size={20} color="#0F6F5C" />
-            Estado de Contratos
+      {/* Charts Row 2 */}
+      <motion.div variants={itemVariants}>
+        <div className={styles.sectionLabel}>Inventario</div>
+        {isLoading ? (
+          <div className={styles.chartsGrid}>
+            <ChartCardSkeleton />
+            <ChartCardSkeleton />
           </div>
-          <ContractsByStatusChart contracts={contracts ?? []} />
-        </motion.div>
+        ) : (
+          <div className={styles.chartsGrid}>
+            <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
+              <div className={styles.chartCardHeader}>
+                <h3 className={styles.chartTitle}>
+                  <span
+                    className={styles.chartTitleIcon}
+                    style={{ background: "rgba(245, 158, 11, 0.1)", color: "#F59E0B" }}
+                  >
+                    <BarChart3 size={16} />
+                  </span>
+                  Precios de Medicamentos
+                </h3>
+              </div>
+              <MedicinePriceChart medicines={medicines ?? []} />
+            </motion.div>
 
-        <motion.div style={styles.chartCard} variants={itemVariants}>
-          <div style={styles.chartTitle}>
-            <TrendingUp size={20} color="#6366F1" />
-            Contratos por Mes
+            <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
+              <div className={styles.chartCardHeader}>
+                <h3 className={styles.chartTitle}>
+                  <span
+                    className={styles.chartTitleIcon}
+                    style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10B981" }}
+                  >
+                    <Receipt size={16} />
+                  </span>
+                  Distribucion de Tarifarios
+                </h3>
+              </div>
+              <TariffDistributionChart tariffs={tariffs ?? []} />
+            </motion.div>
           </div>
-          <ContractsTimelineChart contracts={contracts ?? []} />
-        </motion.div>
-      </motion.div>
-
-      <motion.div style={styles.chartsGrid} variants={itemVariants}>
-        <motion.div style={styles.chartCard} variants={itemVariants}>
-          <div style={styles.chartTitle}>
-            <BarChart3 size={20} color="#F59E0B" />
-            Precios de Medicamentos
-          </div>
-          <MedicinePriceChart medicines={medicines ?? []} />
-        </motion.div>
-
-        <motion.div style={styles.chartCard} variants={itemVariants}>
-          <div style={styles.chartTitle}>
-            <Receipt size={20} color="#10B981" />
-            Distribución de Tarifarios
-          </div>
-          <TariffDistributionChart tariffs={tariffs ?? []} />
-        </motion.div>
+        )}
       </motion.div>
     </motion.div>
   )

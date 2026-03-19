@@ -6,7 +6,6 @@ import SidebarProvider from "@/components/Layout/Dashboard/SidebarProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/option";
 import LayoutLoading from "./layoutLoading";
-import { styles } from "./styles";
 
 export default async function Layout({
   children,
@@ -23,10 +22,10 @@ export default async function Layout({
         <Sidebar>
           <SidebarNav id={userId} />
         </Sidebar>
-        <div className="wrapper" style={styles.header}>
+        <div className="wrapper dash-layout-wrapper">
           <Header />
-          <div style={styles.containerChildren}>
-            <div style={styles.contentChildren}>{children}</div>
+          <div className="dash-content-area">
+            <div className="dash-content-inner">{children}</div>
           </div>
         </div>
         <SidebarOverlay />

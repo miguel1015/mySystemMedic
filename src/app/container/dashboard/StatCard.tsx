@@ -1,9 +1,8 @@
 "use client"
 
-import { motion, useMotionValue, useTransform } from "framer-motion"
-import { CSSProperties, useEffect, useState } from "react"
-
-const s = (style: CSSProperties) => style
+import { motion } from "framer-motion"
+import { useEffect, useState } from "react"
+import styles from "./dashboard.module.scss"
 
 interface StatCardProps {
   icon: React.ReactNode
@@ -15,21 +14,19 @@ interface StatCardProps {
   delay: number
 }
 
-function AnimatedCounter({ value, duration = 2 }: { value: number; duration?: number }) {
+function AnimatedCounter({ value, duration = 1.5 }: { value: number; duration?: number }) {
   const [display, setDisplay] = useState(0)
 
   useEffect(() => {
-    let start = 0
-    const end = value
-    if (start === end) return
-
-    const increment = end / (duration * 60)
+    if (value === 0) return
+    const totalFrames = duration * 60
+    const increment = value / totalFrames
     let current = 0
 
     const timer = setInterval(() => {
       current += increment
-      if (current >= end) {
-        setDisplay(end)
+      if (current >= value) {
+        setDisplay(value)
         clearInterval(timer)
       } else {
         setDisplay(Math.floor(current))
@@ -43,74 +40,40 @@ function AnimatedCounter({ value, duration = 2 }: { value: number; duration?: nu
 }
 
 export function StatCard({ icon, title, value, subtitle, color, gradient, delay }: StatCardProps) {
-  const [isHovered, setIsHovered] = useState(false)
-
-  const cardStyle: CSSProperties = {
-    background: "rgba(255, 255, 255, 0.8)",
-    backdropFilter: "blur(16px)",
-    WebkitBackdropFilter: "blur(16px)",
-    borderRadius: "20px",
-    border: "1px solid rgba(255, 255, 255, 0.6)",
-    boxShadow: isHovered
-      ? `0 20px 60px ${color}22, 0 8px 24px rgba(0,0,0,0.06)`
-      : "0 8px 32px rgba(15, 111, 92, 0.06)",
-    padding: "28px",
-    position: "relative",
-    overflow: "hidden",
-    cursor: "default",
-    transition: "box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
-  }
-
-  const decorStyle: CSSProperties = {
-    position: "absolute",
-    top: "-20px",
-    right: "-20px",
-    width: "100px",
-    height: "100px",
-    borderRadius: "50%",
-    background: gradient,
-    opacity: 0.08,
-    transition: "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s",
-    transform: isHovered ? "scale(1.8)" : "scale(1)",
-  }
-
-  const iconContainerStyle: CSSProperties = {
-    width: "48px",
-    height: "48px",
-    borderRadius: "14px",
-    background: gradient,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "white",
-    marginBottom: "16px",
-    boxShadow: `0 4px 16px ${color}33`,
-  }
-
   return (
     <motion.div
-      style={cardStyle}
-      initial={{ opacity: 0, y: 40, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{
-        duration: 0.7,
-        delay,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className={styles.statCard}
+      style={{ "--card-accent": color } as React.CSSProperties}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
     >
-      <div style={decorStyle} />
-      <div style={iconContainerStyle}>{icon}</div>
-      <div style={{ fontSize: "13px", fontWeight: 500, color: "#6B7280", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-        {title}
+      <div className={styles.statCardHeader}>
+        <div
+          className={styles.statCardIcon}
+          style={{ background: gradient }}
+        >
+          {icon}
+        </div>
+        <span className={styles.statCardBadge}>{subtitle}</span>
       </div>
-      <div style={{ fontSize: "36px", fontWeight: 700, color: "#1F3D36", lineHeight: 1.2, marginBottom: "4px" }}>
+      <div className={styles.statCardValue}>
         <AnimatedCounter value={value} />
       </div>
-      <div style={{ fontSize: "13px", color: "#9CA3AF" }}>
-        {subtitle}
-      </div>
+      <div className={styles.statCardLabel}>{title}</div>
     </motion.div>
+  )
+}
+
+export function StatCardSkeleton() {
+  return (
+    <div className={styles.skeletonCard}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div className={styles.skeletonIcon} />
+        <div className={styles.skeleton} style={{ width: 60, height: 20, borderRadius: 20 }} />
+      </div>
+      <div className={styles.skeletonValue} />
+      <div className={styles.skeletonLineShort} />
+    </div>
   )
 }

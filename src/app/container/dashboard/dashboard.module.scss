@@ -1,0 +1,457 @@
+/* ═══════════════════════════════════════════
+   Dashboard — Local Component Styles
+   CSS variables defined in _custom.scss
+   Mobile-first responsive design
+   ═══════════════════════════════════════════ */
+
+/* ── Wrapper ── */
+.wrapper {
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ── Header section ── */
+.headerSection {
+  margin-bottom: 24px;
+}
+
+.greeting {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dash-text-primary);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--dash-text-secondary);
+  margin: 0;
+  font-weight: 400;
+}
+
+@media (min-width: 768px) {
+  .headerSection {
+    margin-bottom: 32px;
+  }
+
+  .greeting {
+    font-size: 26px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+}
+
+/* ── Stats Grid ── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 480px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (min-width: 768px) {
+  .statsGrid {
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    margin-bottom: 32px;
+  }
+}
+
+/* ── Stat Card ── */
+.statCard {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition:
+    box-shadow 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    border-color 0.25s ease,
+    transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@media (min-width: 768px) {
+  .statCard {
+    padding: 20px 24px;
+  }
+}
+
+.statCard:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    var(--dash-shadow-md),
+    0 0 0 1px var(--dash-border);
+}
+
+.statCard:active {
+  transform: translateY(-1px);
+  transition-duration: 0.1s;
+}
+
+/* ── Stat Card: colored left accent on hover ── */
+.statCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--card-accent, transparent);
+  border-radius: 3px 0 0 3px;
+  opacity: 0;
+  transform: scaleY(0.3);
+  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.statCard:hover::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.statCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+@media (min-width: 768px) {
+  .statCardHeader {
+    margin-bottom: 12px;
+  }
+}
+
+.statCardIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.statCard:hover .statCardIcon {
+  transform: scale(1.1) rotate(-3deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@media (min-width: 768px) {
+  .statCardIcon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.statCardBadge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.statCard:hover .statCardBadge {
+  background: rgba(16, 185, 129, 0.18);
+  transform: scale(1.05);
+}
+
+.statCardValue {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--dash-text-primary);
+  line-height: 1.1;
+  margin-bottom: 2px;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.2s ease;
+}
+
+.statCard:hover .statCardValue {
+  color: var(--card-accent, var(--dash-text-primary));
+}
+
+@media (min-width: 768px) {
+  .statCardValue {
+    font-size: 32px;
+    margin-bottom: 4px;
+  }
+}
+
+.statCardLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dash-text-secondary);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Charts Grid ── */
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 768px) {
+  .chartsGrid {
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .chartsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Chart Card ── */
+.chartCard {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 0;
+  transition:
+    box-shadow 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    border-color 0.25s ease,
+    transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@media (min-width: 768px) {
+  .chartCard {
+    padding: 24px;
+  }
+}
+
+.chartCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--dash-shadow-md);
+  border-color: var(--dash-border);
+}
+
+.chartCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .chartCardHeader {
+    margin-bottom: 20px;
+  }
+}
+
+.chartTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dash-text-primary);
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .chartTitle {
+    gap: 10px;
+    font-size: 15px;
+  }
+}
+
+.chartTitleIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
+}
+
+.chartCard:hover .chartTitleIcon {
+  transform: scale(1.12) rotate(-4deg);
+}
+
+@media (min-width: 768px) {
+  .chartTitleIcon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+}
+
+/* ── Empty State ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .emptyState {
+    padding: 48px 24px;
+  }
+}
+
+.emptyStateIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--dash-surface-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: var(--dash-text-tertiary);
+  animation: emptyPulse 3s ease-in-out infinite;
+}
+
+@keyframes emptyPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@media (min-width: 768px) {
+  .emptyStateIcon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+  }
+}
+
+.emptyStateText {
+  font-size: 13px;
+  color: var(--dash-text-tertiary);
+  margin: 0;
+}
+
+/* ── Skeleton Loader ── */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--dash-skeleton-from) 25%,
+    var(--dash-skeleton-to) 50%,
+    var(--dash-skeleton-from) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.skeletonCard {
+  composes: statCard;
+}
+
+.skeletonLine {
+  composes: skeleton;
+  height: 12px;
+  margin-bottom: 8px;
+}
+
+.skeletonLineShort {
+  composes: skeleton;
+  height: 12px;
+  width: 60%;
+}
+
+.skeletonValue {
+  composes: skeleton;
+  height: 28px;
+  width: 80px;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 768px) {
+  .skeletonValue {
+    height: 32px;
+  }
+}
+
+.skeletonIcon {
+  composes: skeleton;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+@media (min-width: 768px) {
+  .skeletonIcon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.skeletonChart {
+  composes: skeleton;
+  height: 180px;
+  border-radius: 8px;
+}
+
+@media (min-width: 768px) {
+  .skeletonChart {
+    height: 200px;
+  }
+}
+
+/* ── Section Label ── */
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dash-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  transition: color 0.2s ease, letter-spacing 0.3s ease;
+}
+
+.sectionLabel:hover {
+  color: var(--dash-text-secondary);
+  letter-spacing: 1px;
+}
+
+@media (min-width: 768px) {
+  .sectionLabel {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+}
