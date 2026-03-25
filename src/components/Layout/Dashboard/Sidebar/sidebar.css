@@ -14,24 +14,24 @@
 
 /* THEME: LIGHT */
 .theme-light .sidebar {
-  background-color: #ffffff;
-  color: #212529;
-  border-right: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  background-color: var(--dash-surface, #ffffff);
+  color: var(--dash-text-primary, #111827);
+  border-right: 1px solid var(--dash-border-subtle, #f0f0f3);
+  box-shadow: var(--dash-shadow-sm, 0 0 10px rgba(0, 0, 0, 0.05));
 }
 
 /* THEME: DARK */
 .theme-dark .sidebar {
-  background-color: #212529;
-  color: #f8f9fa;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--dash-surface, #141419);
+  color: var(--dash-text-primary, #f1f1f4);
+  border-right: 1px solid var(--dash-border, #23232e);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
-/* THEME: TRANSPARENT (si quieres conservarlo) */
+/* THEME: TRANSPARENT */
 .sidebar-transparent {
   background-color: transparent !important;
-  color: #f8f9fa !important;
+  color: var(--dash-text-primary, #f1f1f4) !important;
   border-right: none !important;
   box-shadow: none !important;
 }
@@ -45,9 +45,9 @@
 .sidebar-toggler {
   width: 100%;
   padding: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--dash-border-subtle, #f0f0f3);
 }
 
 .theme-light .sidebar-toggler {
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--dash-border-subtle, #f0f0f3);
 }

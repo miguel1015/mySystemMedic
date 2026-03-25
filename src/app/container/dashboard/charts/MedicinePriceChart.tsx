@@ -69,7 +69,7 @@ export function MedicinePriceChart({ medicines }: Props) {
 
   const options = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
     indexAxis: "y" as const,
     plugins: {
       legend: { display: false },
@@ -111,5 +111,9 @@ export function MedicinePriceChart({ medicines }: Props) {
     },
   }
 
-  return <Bar data={data} options={options} />
+  return (
+    <div style={{ height: "160px" }}>
+      <Bar data={data} options={options} />
+    </div>
+  )
 }

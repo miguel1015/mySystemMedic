@@ -11,5 +11,6 @@ export function useContracts() {
   return useQuery({
     queryKey: ["contracts"],
     queryFn: contractsServices.getAll,
+    staleTime: 5 * 60 * 1000,
   });
 }

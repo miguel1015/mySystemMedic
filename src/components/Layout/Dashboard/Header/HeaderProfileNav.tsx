@@ -41,7 +41,7 @@ export default async function HeaderProfileNav() {
               justifyContent: 'center',
               alignItems: 'center',
               borderRadius: '50%',
-              background: '#f8f9fa',
+              background: 'var(--dash-surface-hover, #f3f4f6)',
             }}
           >
             <FontAwesomeIcon
@@ -69,7 +69,7 @@ export default async function HeaderProfileNav() {
             style={{
               textAlign: 'center',
               background: 'var(--theme-primary, #0F6F5C)',
-              color: '#fff',
+              color: '#ffffff',
               paddingTop: '1.5rem',
               paddingBottom: '1.5rem',
               paddingLeft: '1rem',
@@ -80,7 +80,7 @@ export default async function HeaderProfileNav() {
               style={{
                 width: 85,
                 height: 85,
-                background: "#fff",
+                background: "#ffffff",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
@@ -149,7 +149,7 @@ export default async function HeaderProfileNav() {
               height: 0,
               margin: '0.5rem 0',
               overflow: 'hidden',
-              borderTop: '1px solid #dee2e6',
+              borderTop: '1px solid var(--dash-border, #e5e7eb)',
             }}
           />
 

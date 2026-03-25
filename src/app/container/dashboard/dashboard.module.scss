@@ -7,25 +7,24 @@
 /* ── Wrapper ── */
 .wrapper {
   padding: 0;
-  min-height: 100vh;
 }
 
 /* ── Header section ── */
 .headerSection {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 .greeting {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--dash-text-primary);
-  margin: 0 0 4px 0;
+  margin: 0 0 1px 0;
   letter-spacing: -0.3px;
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
 .subtitle {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--dash-text-secondary);
   margin: 0;
   font-weight: 400;
@@ -33,15 +32,15 @@
 
 @media (min-width: 768px) {
   .headerSection {
-    margin-bottom: 32px;
+    margin-bottom: 14px;
   }
 
   .greeting {
-    font-size: 26px;
+    font-size: 20px;
   }
 
   .subtitle {
-    font-size: 14px;
+    font-size: 12px;
   }
 }
 
@@ -49,28 +48,27 @@
 .statsGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 @media (min-width: 480px) {
   .statsGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 }
 
 @media (min-width: 768px) {
   .statsGrid {
-    gap: 16px;
-    margin-bottom: 28px;
+    gap: 10px;
+    margin-bottom: 14px;
   }
 }
 
 @media (min-width: 1024px) {
   .statsGrid {
-    grid-template-columns: repeat(3, 1fr);
-    margin-bottom: 32px;
+    margin-bottom: 14px;
   }
 }
 
@@ -78,8 +76,8 @@
 .statCard {
   background: var(--dash-surface);
   border: 1px solid var(--dash-border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 8px;
+  padding: 10px 12px;
   position: relative;
   overflow: hidden;
   cursor: default;
@@ -91,12 +89,12 @@
 
 @media (min-width: 768px) {
   .statCard {
-    padding: 20px 24px;
+    padding: 10px 12px;
   }
 }
 
 .statCard:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow:
     var(--dash-shadow-md),
     0 0 0 1px var(--dash-border);
@@ -131,19 +129,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 @media (min-width: 768px) {
   .statCardHeader {
-    margin-bottom: 12px;
+    margin-bottom: 6px;
   }
 }
 
 .statCardIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -159,15 +157,15 @@
 
 @media (min-width: 768px) {
   .statCardIcon {
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
   }
 }
 
 .statCardBadge {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
-  padding: 2px 8px;
+  padding: 1px 6px;
   border-radius: 20px;
   background: rgba(16, 185, 129, 0.1);
   color: #059669;
@@ -180,11 +178,11 @@
 }
 
 .statCardValue {
-  font-size: 26px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--dash-text-primary);
   line-height: 1.1;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   letter-spacing: -0.5px;
   font-variant-numeric: tabular-nums;
   transition: color 0.2s ease;
@@ -196,13 +194,13 @@
 
 @media (min-width: 768px) {
   .statCardValue {
-    font-size: 32px;
-    margin-bottom: 4px;
+    font-size: 20px;
+    margin-bottom: 1px;
   }
 }
 
 .statCardLabel {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--dash-text-secondary);
   text-transform: none;
@@ -213,14 +211,14 @@
 .chartsGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 @media (min-width: 768px) {
   .chartsGrid {
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 8px;
+    margin-bottom: 12px;
   }
 }
 
@@ -234,8 +232,8 @@
 .chartCard {
   background: var(--dash-surface);
   border: 1px solid var(--dash-border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 8px;
+  padding: 10px 12px;
   min-width: 0;
   transition:
     box-shadow 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -245,12 +243,12 @@
 
 @media (min-width: 768px) {
   .chartCard {
-    padding: 24px;
+    padding: 12px;
   }
 }
 
 .chartCard:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: var(--dash-shadow-md);
   border-color: var(--dash-border);
 }
@@ -259,20 +257,20 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 @media (min-width: 768px) {
   .chartCardHeader {
-    margin-bottom: 20px;
+    margin-bottom: 8px;
   }
 }
 
 .chartTitle {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--dash-text-primary);
   margin: 0;
@@ -280,15 +278,15 @@
 
 @media (min-width: 768px) {
   .chartTitle {
-    gap: 10px;
-    font-size: 15px;
+    gap: 6px;
+    font-size: 12px;
   }
 }
 
 .chartTitleIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -302,9 +300,9 @@
 
 @media (min-width: 768px) {
   .chartTitleIcon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
   }
 }
 
@@ -314,25 +312,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: 20px 12px;
   text-align: center;
 }
 
 @media (min-width: 768px) {
   .emptyState {
-    padding: 48px 24px;
+    padding: 24px 16px;
   }
 }
 
 .emptyStateIcon {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--dash-surface-hover);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   color: var(--dash-text-tertiary);
   animation: emptyPulse 3s ease-in-out infinite;
 }
@@ -344,14 +342,14 @@
 
 @media (min-width: 768px) {
   .emptyStateIcon {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 12px;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 8px;
   }
 }
 
 .emptyStateText {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--dash-text-tertiary);
   margin: 0;
 }
@@ -396,51 +394,51 @@
 
 .skeletonValue {
   composes: skeleton;
-  height: 28px;
-  width: 80px;
-  margin-bottom: 8px;
+  height: 20px;
+  width: 60px;
+  margin-bottom: 6px;
 }
 
 @media (min-width: 768px) {
   .skeletonValue {
-    height: 32px;
+    height: 22px;
   }
 }
 
 .skeletonIcon {
   composes: skeleton;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
 }
 
 @media (min-width: 768px) {
   .skeletonIcon {
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
   }
 }
 
 .skeletonChart {
   composes: skeleton;
-  height: 180px;
-  border-radius: 8px;
+  height: 120px;
+  border-radius: 6px;
 }
 
 @media (min-width: 768px) {
   .skeletonChart {
-    height: 200px;
+    height: 140px;
   }
 }
 
 /* ── Section Label ── */
 .sectionLabel {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--dash-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   transition: color 0.2s ease, letter-spacing 0.3s ease;
 }
 
@@ -451,7 +449,7 @@
 
 @media (min-width: 768px) {
   .sectionLabel {
-    font-size: 12px;
-    margin-bottom: 12px;
+    font-size: 10px;
+    margin-bottom: 6px;
   }
 }

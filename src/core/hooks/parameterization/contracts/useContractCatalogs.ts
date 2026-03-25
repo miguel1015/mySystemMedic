@@ -12,5 +12,6 @@ export function useContractCatalogs() {
   return useQuery({
     queryKey: ["contract-catalogs"],
     queryFn: contractCatalogsService.getAll,
+    staleTime: 5 * 60 * 1000,
   })
 }

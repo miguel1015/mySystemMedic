@@ -42,7 +42,7 @@ export function FileCard({
             justifyContent: "center",
             alignItems: "center",
             padding: 12,
-            background: "#fafafa",
+            background: "var(--dash-surface-hover, #f3f4f6)",
             borderBottom: `1px solid ${borderColor}`,
             minHeight: 80,
             maxHeight: 160,
@@ -68,11 +68,11 @@ export function FileCard({
             justifyContent: "center",
             alignItems: "center",
             padding: 16,
-            background: "#fafafa",
+            background: "var(--dash-surface-hover, #f3f4f6)",
             borderBottom: `1px solid ${borderColor}`,
           }}
         >
-          <FileText size={32} style={{ color: "#8c8c8c" }} />
+          <FileText size={32} style={{ color: "var(--dash-text-secondary, #6b7280)" }} />
         </div>
       )}
 

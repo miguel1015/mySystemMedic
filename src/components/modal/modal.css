@@ -1,5 +1,5 @@
 /* ========================
-   Modal — Light (default)
+   Modal — Theme-aware
    ======================== */
 
 .modal-overlay {
@@ -33,11 +33,9 @@
 .modal-dialog-custom.modal-size-xl { max-width: 1140px; }
 
 .modal-content-custom {
-  background-color: #ffffff;
+  background-color: var(--dash-surface, #ffffff);
   border-radius: 12px;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.12),
-    0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--dash-shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.12));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -50,7 +48,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid var(--dash-border, #e5e7eb);
   flex-shrink: 0;
   transition: border-color 0.2s ease;
 }
@@ -59,7 +57,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--dash-text-primary, #111827);
   line-height: 1.4;
   transition: color 0.2s ease;
 }
@@ -73,7 +71,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: var(--dash-text-tertiary, #9ca3af);
   font-size: 18px;
   line-height: 1;
   width: 28px;
@@ -82,14 +80,15 @@
 }
 
 .modal-close-btn:hover {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: var(--dash-surface-hover, #f3f4f6);
+  color: var(--dash-text-primary, #111827);
 }
 
 .modal-body-custom {
   padding: 20px;
   overflow-y: auto;
   flex: 1;
+  color: var(--dash-text-primary, #111827);
 }
 
 .modal-footer-custom {
@@ -98,49 +97,13 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 16px 20px;
-  border-top: 1px solid #e8e8e8;
+  border-top: 1px solid var(--dash-border, #e5e7eb);
   flex-shrink: 0;
   transition: border-color 0.2s ease;
 }
 
-/* ========================
-   Modal — Dark mode
-   ======================== */
-
 [data-bs-theme="dark"] .modal-overlay {
   background-color: rgba(0, 0, 0, 0.65);
-}
-
-[data-bs-theme="dark"] .modal-content-custom {
-  background-color: #1e1e1e;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.4),
-    0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-[data-bs-theme="dark"] .modal-header-custom {
-  border-bottom-color: #333;
-}
-
-[data-bs-theme="dark"] .modal-title-custom {
-  color: #e5e5e5;
-}
-
-[data-bs-theme="dark"] .modal-close-btn {
-  color: #777;
-}
-
-[data-bs-theme="dark"] .modal-close-btn:hover {
-  background-color: #2a2a2a;
-  color: #ddd;
-}
-
-[data-bs-theme="dark"] .modal-body-custom {
-  color: #d4d4d4;
-}
-
-[data-bs-theme="dark"] .modal-footer-custom {
-  border-top-color: #333;
 }
 
 /* ========================
@@ -156,10 +119,6 @@
 }
 
 .modal-body-custom::-webkit-scrollbar-thumb {
-  background-color: #ccc;
+  background-color: var(--dash-border, #e5e7eb);
   border-radius: 3px;
-}
-
-[data-bs-theme="dark"] .modal-body-custom::-webkit-scrollbar-thumb {
-  background-color: #444;
 }

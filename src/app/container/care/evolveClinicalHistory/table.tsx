@@ -32,7 +32,7 @@ const AdmissionsTable = ({ data, loading, onAction }: AdmissionsTableProps) => {
       width: 60,
       align: "center",
       render: (_value, _record, index) => (
-        <span style={{ fontWeight: 600, color: "#888" }}>{index + 1}</span>
+        <span style={{ fontWeight: 600, color: "var(--dash-text-secondary, #6b7280)" }}>{index + 1}</span>
       ),
     },
     {
@@ -52,7 +52,7 @@ const AdmissionsTable = ({ data, loading, onAction }: AdmissionsTableProps) => {
                 day: "2-digit",
               })}
             </div>
-            <div style={{ fontSize: 12, color: "#888" }}>
+            <div style={{ fontSize: 12, color: "var(--dash-text-secondary, #6b7280)" }}>
               {date.toLocaleTimeString("es-CO", {
                 hour: "2-digit",
                 minute: "2-digit",

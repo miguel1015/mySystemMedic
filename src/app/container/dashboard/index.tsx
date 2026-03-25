@@ -33,9 +33,9 @@ const itemVariants = {
 function ChartCardSkeleton() {
   return (
     <div className={styles.chartCard}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-        <div className={styles.skeletonIcon} style={{ width: 32, height: 32 }} />
-        <div className={styles.skeleton} style={{ width: 140, height: 14 }} />
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        <div className={styles.skeletonIcon} style={{ width: 22, height: 22 }} />
+        <div className={styles.skeleton} style={{ width: 100, height: 12 }} />
       </div>
       <div className={styles.skeletonChart} />
     </div>
@@ -47,8 +47,6 @@ export default function DashboardContainer() {
   const { data: medicines, isLoading: loadingMedicines } = useMedicines()
   const { data: tariffs, isLoading: loadingTariffs } = useTariffs()
   const { data: catalogs } = useContractCatalogs()
-
-  const isLoading = loadingContracts || loadingMedicines || loadingTariffs
 
   const contractCount = contracts?.length ?? 0
   const medicineCount = medicines?.length ?? 0
@@ -71,16 +69,12 @@ export default function DashboardContainer() {
       {/* Stats */}
       <motion.div variants={itemVariants}>
         <div className={styles.sectionLabel}>Indicadores</div>
-        {isLoading ? (
-          <div className={styles.statsGrid}>
+        <div className={styles.statsGrid}>
+          {loadingContracts ? (
             <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-          </div>
-        ) : (
-          <div className={styles.statsGrid}>
+          ) : (
             <StatCard
-              icon={<FileText size={20} />}
+              icon={<FileText size={14} />}
               title="Contratos"
               value={contractCount}
               subtitle={`${activeContracts} activos`}
@@ -88,8 +82,12 @@ export default function DashboardContainer() {
               gradient="linear-gradient(135deg, #0F6F5C 0%, #10B981 100%)"
               delay={0}
             />
+          )}
+          {loadingMedicines ? (
+            <StatCardSkeleton />
+          ) : (
             <StatCard
-              icon={<Pill size={20} />}
+              icon={<Pill size={14} />}
               title="Medicamentos"
               value={medicineCount}
               subtitle="Registrados"
@@ -97,8 +95,12 @@ export default function DashboardContainer() {
               gradient="linear-gradient(135deg, #6366F1 0%, #818CF8 100%)"
               delay={0.06}
             />
+          )}
+          {loadingTariffs ? (
+            <StatCardSkeleton />
+          ) : (
             <StatCard
-              icon={<Receipt size={20} />}
+              icon={<Receipt size={14} />}
               title="Tarifarios"
               value={tariffCount}
               subtitle="Configurados"
@@ -106,20 +108,17 @@ export default function DashboardContainer() {
               gradient="linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)"
               delay={0.12}
             />
-          </div>
-        )}
+          )}
+        </div>
       </motion.div>
 
       {/* Charts Row 1 */}
       <motion.div variants={itemVariants}>
         <div className={styles.sectionLabel}>Contratos</div>
-        {isLoading ? (
-          <div className={styles.chartsGrid}>
+        <div className={styles.chartsGrid}>
+          {loadingContracts ? (
             <ChartCardSkeleton />
-            <ChartCardSkeleton />
-          </div>
-        ) : (
-          <div className={styles.chartsGrid}>
+          ) : (
             <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
               <div className={styles.chartCardHeader}>
                 <h3 className={styles.chartTitle}>
@@ -127,14 +126,18 @@ export default function DashboardContainer() {
                     className={styles.chartTitleIcon}
                     style={{ background: "rgba(15, 111, 92, 0.1)", color: "#0F6F5C" }}
                   >
-                    <Activity size={16} />
+                    <Activity size={12} />
                   </span>
                   Estado de Contratos
                 </h3>
               </div>
               <ContractsByStatusChart contracts={contracts ?? []} />
             </motion.div>
+          )}
 
+          {loadingContracts ? (
+            <ChartCardSkeleton />
+          ) : (
             <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
               <div className={styles.chartCardHeader}>
                 <h3 className={styles.chartTitle}>
@@ -142,27 +145,24 @@ export default function DashboardContainer() {
                     className={styles.chartTitleIcon}
                     style={{ background: "rgba(99, 102, 241, 0.1)", color: "#6366F1" }}
                   >
-                    <TrendingUp size={16} />
+                    <TrendingUp size={12} />
                   </span>
                   Contratos por Mes
                 </h3>
               </div>
               <ContractsTimelineChart contracts={contracts ?? []} />
             </motion.div>
-          </div>
-        )}
+          )}
+        </div>
       </motion.div>
 
       {/* Charts Row 2 */}
       <motion.div variants={itemVariants}>
         <div className={styles.sectionLabel}>Inventario</div>
-        {isLoading ? (
-          <div className={styles.chartsGrid}>
+        <div className={styles.chartsGrid}>
+          {loadingMedicines ? (
             <ChartCardSkeleton />
-            <ChartCardSkeleton />
-          </div>
-        ) : (
-          <div className={styles.chartsGrid}>
+          ) : (
             <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
               <div className={styles.chartCardHeader}>
                 <h3 className={styles.chartTitle}>
@@ -170,14 +170,18 @@ export default function DashboardContainer() {
                     className={styles.chartTitleIcon}
                     style={{ background: "rgba(245, 158, 11, 0.1)", color: "#F59E0B" }}
                   >
-                    <BarChart3 size={16} />
+                    <BarChart3 size={12} />
                   </span>
                   Precios de Medicamentos
                 </h3>
               </div>
               <MedicinePriceChart medicines={medicines ?? []} />
             </motion.div>
+          )}
 
+          {loadingTariffs ? (
+            <ChartCardSkeleton />
+          ) : (
             <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
               <div className={styles.chartCardHeader}>
                 <h3 className={styles.chartTitle}>
@@ -185,15 +189,15 @@ export default function DashboardContainer() {
                     className={styles.chartTitleIcon}
                     style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10B981" }}
                   >
-                    <Receipt size={16} />
+                    <Receipt size={14} />
                   </span>
                   Distribucion de Tarifarios
                 </h3>
               </div>
               <TariffDistributionChart tariffs={tariffs ?? []} />
             </motion.div>
-          </div>
-        )}
+          )}
+        </div>
       </motion.div>
     </motion.div>
   )

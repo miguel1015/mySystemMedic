@@ -68,9 +68,9 @@ export function StatCard({ icon, title, value, subtitle, color, gradient, delay 
 export function StatCardSkeleton() {
   return (
     <div className={styles.skeletonCard}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
         <div className={styles.skeletonIcon} />
-        <div className={styles.skeleton} style={{ width: 60, height: 20, borderRadius: 20 }} />
+        <div className={styles.skeleton} style={{ width: 50, height: 16, borderRadius: 16 }} />
       </div>
       <div className={styles.skeletonValue} />
       <div className={styles.skeletonLineShort} />

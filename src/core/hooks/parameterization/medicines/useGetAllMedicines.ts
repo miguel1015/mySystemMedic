@@ -11,5 +11,6 @@ export function useMedicines() {
   return useQuery({
     queryKey: ["medicines"],
     queryFn: medicinesServices.getAll,
+    staleTime: 5 * 60 * 1000,
   })
 }

@@ -93,10 +93,10 @@ const CareManagementContainer = () => {
       <div className="table-responsive" style={{ marginBottom: "24px" }}>
         <table
           className="table table-bordered"
-          style={{ backgroundColor: "#fff" }}
+          style={{ backgroundColor: "var(--dash-surface, #ffffff)" }}
         >
           <thead>
-            <tr style={{ backgroundColor: "#e3f2fd" }}>
+            <tr style={{ backgroundColor: "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)" }}>
               <th style={{ width: "30%" }}>Especialidad de atención</th>
               <th style={{ width: "40%" }}>Historia Clínica</th>
               <th style={{ width: "30%" }}>Epicrisis</th>
@@ -155,10 +155,10 @@ const CareManagementContainer = () => {
       <div className="table-responsive">
         <table
           className="table table-bordered"
-          style={{ backgroundColor: "#fff" }}
+          style={{ backgroundColor: "var(--dash-surface, #ffffff)" }}
         >
           <thead>
-            <tr style={{ backgroundColor: "#e3f2fd" }}>
+            <tr style={{ backgroundColor: "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)" }}>
               <th>Ordenes</th>
               <th>Aplicación de medicamento</th>
               <th>Hoja de Laboratorio</th>

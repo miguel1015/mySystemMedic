@@ -62,7 +62,7 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
         {subtitle && (
           <p
             style={{
-              color: "#8c8c8c",
+              color: "var(--dash-text-secondary, #6b7280)",
               marginBottom: 24,
               fontSize: 14,
             }}

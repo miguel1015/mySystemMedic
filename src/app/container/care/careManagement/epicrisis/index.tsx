@@ -10,7 +10,7 @@ const Epicrisis: React.FC<{ setOpen: (open: boolean) => void }> = ({
     minHeight: "297mm",
     padding: "20mm",
     margin: "0 auto 20px",
-    backgroundColor: "#fff",
+    backgroundColor: "var(--dash-surface, #ffffff)",
     boxShadow: "0 0 5px rgba(0,0,0,0.2)",
     pageBreakAfter: "always",
   };

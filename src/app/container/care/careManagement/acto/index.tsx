@@ -8,7 +8,7 @@ const Acto: React.FC<{ setOpen: (open: boolean) => void }> = ({ setOpen }) => {
     minHeight: "297mm",
     padding: "10mm",
     margin: "0 auto 20px",
-    backgroundColor: "#fff",
+    backgroundColor: "var(--dash-surface, #ffffff)",
     boxShadow: "0 0 5px rgba(0,0,0,0.2)",
     pageBreakAfter: "always",
   };

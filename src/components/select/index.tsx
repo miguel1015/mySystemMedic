@@ -77,7 +77,7 @@ export default function RHFAntdSelect<T extends FieldValues>({
       )}
 
       {!error && helperText && (
-        <div style={{ color: "rgba(0,0,0,0.45)", fontSize: 12, marginTop: 4 }}>
+        <div style={{ color: "var(--dash-text-tertiary, #9ca3af)", fontSize: 12, marginTop: 4 }}>
           {helperText}
         </div>
       )}

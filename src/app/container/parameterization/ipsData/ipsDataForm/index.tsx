@@ -59,7 +59,7 @@ export default function IpsDataForm() {
                 justifyContent: "center",
                 alignItems: "center",
                 overflow: "hidden",
-                background: "#fafafa",
+                background: "var(--dash-surface-hover, #f3f4f6)",
               }}
             >
               {watchedValues.logo ? (
@@ -77,7 +77,7 @@ export default function IpsDataForm() {
                   }}
                 />
               ) : (
-                <span style={{ color: "#bfbfbf", fontSize: 14 }}>Sin logo</span>
+                <span style={{ color: "var(--dash-text-tertiary, #9ca3af)", fontSize: 14 }}>Sin logo</span>
               )}
             </div>
             <div style={{ fontWeight: 600, fontSize: 13 }}>Logo</div>
@@ -99,7 +99,7 @@ export default function IpsDataForm() {
                 justifyContent: "center",
                 alignItems: "center",
                 overflow: "hidden",
-                background: "#fafafa",
+                background: "var(--dash-surface-hover, #f3f4f6)",
                 marginTop: 8,
               }}
             >
@@ -120,7 +120,7 @@ export default function IpsDataForm() {
                   }}
                 />
               ) : (
-                <span style={{ color: "#bfbfbf", fontSize: 14 }}>
+                <span style={{ color: "var(--dash-text-tertiary, #9ca3af)", fontSize: 14 }}>
                   Sin firma
                 </span>
               )}
@@ -146,7 +146,7 @@ export default function IpsDataForm() {
                 justifyContent: "center",
                 alignItems: "center",
                 overflow: "hidden",
-                background: "#fafafa",
+                background: "var(--dash-surface-hover, #f3f4f6)",
                 marginTop: 8,
               }}
             >
@@ -165,7 +165,7 @@ export default function IpsDataForm() {
                   }}
                 />
               ) : (
-                <span style={{ color: "#bfbfbf", fontSize: 14 }}>
+                <span style={{ color: "var(--dash-text-tertiary, #9ca3af)", fontSize: 14 }}>
                   Sin firma
                 </span>
               )}

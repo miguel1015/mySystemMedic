@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cat /c/Users/wow/Desktop/mySystemMedic/mySystemMedic/src/app/\\\\\\(dashboard\\\\\\)/styles.ts)"
+      "Bash(cat /c/Users/wow/Desktop/mySystemMedic/mySystemMedic/src/app/\\\\\\(dashboard\\\\\\)/styles.ts)",
+      "Bash(ls \"c:/Users/wow/Desktop/mySystemMedic/mySystemMedic/src/app/\\(dashboard\\)/\")",
+      "Bash(find \"/c/Users/wow/Desktop/mySystemMedic/mySystemMedic/src/app/\\(dashboard\\)/care\" -type f -name \"*.tsx\")"
     ]
   }
 }

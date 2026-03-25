@@ -64,7 +64,7 @@ export function PreviewModal({
         />
       ) : previewSrc && !isImage ? (
         <div style={{ textAlign: "center", padding: "20px 0" }}>
-          <FileText size={48} style={{ color: "#8c8c8c", marginBottom: 12 }} />
+          <FileText size={48} style={{ color: "var(--dash-text-secondary, #6b7280)", marginBottom: 12 }} />
           {hasFile && fileMeta && (
             <>
               <Text style={{ display: "block" }}>{fileMeta.file.name}</Text>
@@ -78,7 +78,7 @@ export function PreviewModal({
               href={initialPreview}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "#1677ff" }}
+              style={{ color: "var(--theme-primary, #0F6F5C)" }}
             >
               Abrir PDF
             </a>

@@ -102,7 +102,7 @@ export function ContractsByStatusChart({ contracts }: Props) {
   }
 
   return (
-    <div style={{ maxWidth: "320px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "190px", margin: "0 auto" }}>
       <Doughnut data={data} options={options} />
     </div>
   )

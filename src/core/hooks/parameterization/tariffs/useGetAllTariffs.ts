@@ -11,5 +11,6 @@ export function useTariffs() {
   return useQuery({
     queryKey: ["tariffs"],
     queryFn: userTariffsServices.getAll,
+    staleTime: 5 * 60 * 1000,
   });
 }

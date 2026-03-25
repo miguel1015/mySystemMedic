@@ -99,7 +99,7 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
           >
             <span style={{ fontWeight: 600, color: "var(--theme-primary, #0F6F5C)" }}>Paciente: </span>
             <span style={{ fontWeight: 500 }}>{patient.patientFullName}</span>
-            <span style={{ color: "#666", marginLeft: 12 }}>
+            <span style={{ color: "var(--dash-text-secondary, #6b7280)", marginLeft: 12 }}>
               Doc: {patient.documentNumber}
             </span>
           </div>
@@ -124,9 +124,9 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
               justifyContent: "center",
               gap: 12,
               padding: "24px 16px",
-              border: "1px solid #e8e8e8",
+              border: "1px solid var(--dash-border, #e5e7eb)",
               borderRadius: 12,
-              backgroundColor: "#fafffe",
+              backgroundColor: "var(--dash-surface, #ffffff)",
               cursor: "pointer",
               transition: "all 0.25s ease",
               minHeight: 140,
@@ -138,8 +138,8 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
               e.currentTarget.style.boxShadow = `0 4px 12px ${action.color}25`
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#fafffe"
-              e.currentTarget.style.borderColor = "#e8e8e8"
+              e.currentTarget.style.backgroundColor = ""
+              e.currentTarget.style.borderColor = ""
               e.currentTarget.style.transform = "translateY(0)"
               e.currentTarget.style.boxShadow = "none"
             }}
@@ -163,7 +163,7 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
                 fontSize: 13,
                 fontWeight: 600,
                 textAlign: "center",
-                color: "#333",
+                color: "var(--dash-text-primary, #111827)",
                 lineHeight: 1.3,
               }}
             >

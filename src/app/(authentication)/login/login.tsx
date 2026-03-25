@@ -72,7 +72,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
         justifyContent: "center",
         position: "relative",
         overflow: "hidden",
-        background: "white",
+        background: "var(--dash-bg, #f8f9fb)",
       }}
     >
       {/* Fondo izquierdo */}
@@ -109,7 +109,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
         style={{
           position: "relative",
           zIndex: 10,
-          background: "white",
+          background: "var(--dash-surface, #ffffff)",
           borderRadius: "30px",
           padding: "45px 45px",
           width: "100%",
@@ -131,7 +131,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
           </h2>
           <h3
             style={{
-              color: "#bfbfbf",
+              color: "var(--dash-text-tertiary, #9ca3af)",
               fontWeight: 300,
               marginTop: "4px",
               fontSize: "18px",
@@ -159,7 +159,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
             style={{
               width: "100%",
               padding: "10px 18px",
-              background: "#F1F1F1",
+              background: "var(--dash-surface-hover, #f3f4f6)",
               border: errors.email
                 ? "1px solid #ff4d4d"
                 : "1px solid transparent",
@@ -186,7 +186,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
                 width: "100%",
                 padding: "10px 18px",
                 paddingRight: "45px",
-                background: "#F1F1F1",
+                background: "var(--dash-surface-hover, #f3f4f6)",
                 border: errors.password
                   ? "1px solid #ff4d4d"
                   : "1px solid transparent",
@@ -208,7 +208,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "#999",
+                color: "var(--dash-text-tertiary, #9ca3af)",
                 fontSize: "14px",
               }}
             >
@@ -233,7 +233,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
           bottom: "15px",
           right: "25px",
           fontSize: "13px",
-          color: "#2b7ab8",
+          color: "var(--dash-text-secondary, #6b7280)",
           fontWeight: "500",
         }}
       >

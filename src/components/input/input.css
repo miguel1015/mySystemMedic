@@ -1,12 +1,12 @@
 .input-dark {
-  background-color: #2a2d33 !important;
-  color: #f8f9fa !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background-color: var(--dash-surface-hover, #1c1c24) !important;
+  color: var(--dash-text-primary, #f1f1f4) !important;
+  border: 1px solid var(--dash-border, #23232e) !important;
 }
 
 .input-dark:focus {
-  background-color: #30333a !important;
-  border-color: #66afe9 !important;
-  color: #ffffff !important;
-  box-shadow: 0 0 0 0.2rem rgba(102, 175, 233, 0.25) !important;
+  background-color: var(--dash-surface, #141419) !important;
+  border-color: var(--theme-primary, #0F6F5C) !important;
+  color: var(--dash-text-primary, #f1f1f4) !important;
+  box-shadow: 0 0 0 0.2rem rgba(15, 111, 92, 0.25) !important;
 }
