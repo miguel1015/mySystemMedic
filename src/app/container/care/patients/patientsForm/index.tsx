@@ -35,8 +35,8 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
     countriesOptions,
     statesOptions,
     citiesOptions,
+    insurersOptions,
   } = usePatientForm({ setOpen, editPatientId, setEditPatientId });
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {/* ── DATOS GENERALES ── */}
@@ -49,7 +49,7 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
           label="EPS"
           placeholder="Seleccione la EPS"
           control={control}
-          options={[]}
+          options={insurersOptions}
         />
         <SelectAutocomplete
           name="documentTypeId"

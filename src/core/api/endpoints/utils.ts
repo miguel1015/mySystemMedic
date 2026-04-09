@@ -1,6 +1,6 @@
 export const UTILS_ENDPOINTS = {
   COUNTRIES: {
-    GET_ALL: "/api/auth/users/users/getAll?type=countries",
+    GET_ALL: "/api/auth/utils/getAll?type=countries",
   },
   STATES: {
     GET_ALL: "/api/auth/utils/getAll?type=states",
