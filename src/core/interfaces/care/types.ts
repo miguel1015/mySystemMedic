@@ -1,3 +1,52 @@
+export interface PatientCatalog {
+  id: number;
+  name: string;
+}
+
+export interface PatientData {
+  insurerId: number;
+  contractId: number;
+  documentTypeId: number;
+  documentNumber: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  secondLastName?: string;
+  birthDate: string;
+  sexId: number;
+  birthCountryId: number;
+  residenceCountryId: number;
+  stateId: number;
+  cityId: number;
+  zoneId: number;
+  address: string;
+  phone: string;
+  email: string;
+  maritalStatusId: number;
+  disabilityId: number;
+  bloodGroupId: number;
+  rhFactorId: number;
+}
+
+export interface GetPatient extends PatientData {
+  id: number;
+  insurerName: string;
+  contractName: string;
+  documentTypeCode: string;
+  documentTypeName: string;
+  sexName: string;
+  birthCountryName: string;
+  residenceCountryName: string;
+  stateName: string;
+  cityName: string;
+  zoneName: string;
+  maritalStatusName: string;
+  disabilityName: string;
+  bloodGroupName: string;
+  rhFactorName: string;
+  isActive: boolean;
+}
+
 export interface ActiveAdmission {
   id: number;
   admissionDate: string;

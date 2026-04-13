@@ -8,10 +8,12 @@ import { useState } from "react"
 import { UserOutlined } from "@ant-design/icons"
 import PatientsForm from "./patientsForm"
 import PatientsTable from "./table"
+import { useGetAllPatients } from "@/core/hooks/care/patients/useGetAllPatients"
 
 export default function PatientsContainer() {
   const [open, setOpen] = useState(false)
   const [editPatientId, setEditPatientId] = useState<number | null>(null)
+  const { data: patients, isLoading } = useGetAllPatients()
 
   const handleEdit = (id: number) => {
     setEditPatientId(id)
@@ -42,7 +44,11 @@ export default function PatientsContainer() {
         </Button>
       </div>
 
-      <PatientsTable onEdit={handleEdit} />
+      <PatientsTable
+        data={patients ?? []}
+        isLoading={isLoading}
+        onEdit={handleEdit}
+      />
 
       <Modal
         open={open}

@@ -1,0 +1,53 @@
+import { z } from "zod"
+
+export const patientSchema = z.object({
+  insurerId: z.coerce.number().min(1, "EPS es obligatoria"),
+  contractId: z.coerce.number().min(1, "Contrato es obligatorio"),
+  documentTypeId: z.coerce.number().min(1, "Tipo de documento es obligatorio"),
+  documentNumber: z.string().min(1, "Número de documento es obligatorio"),
+  firstName: z.string().min(1, "Primer nombre es obligatorio"),
+  middleName: z.string().optional().default(""),
+  lastName: z.string().min(1, "Primer apellido es obligatorio"),
+  secondLastName: z.string().optional().default(""),
+  birthDate: z.string().min(1, "Fecha de nacimiento es obligatoria"),
+  sexId: z.coerce.number().min(1, "Sexo es obligatorio"),
+  birthCountryId: z.coerce.number().min(1, "País de nacimiento es obligatorio"),
+  residenceCountryId: z.coerce.number().min(1, "País de residencia es obligatorio"),
+  stateId: z.coerce.number().min(1, "Departamento es obligatorio"),
+  cityId: z.coerce.number().min(1, "Ciudad es obligatoria"),
+  zoneId: z.coerce.number().min(1, "Zona es obligatoria"),
+  address: z.string().min(1, "Dirección es obligatoria"),
+  phone: z.string().min(1, "Teléfono es obligatorio"),
+  email: z.string().min(1, "Correo es obligatorio").email("Correo no válido"),
+  maritalStatusId: z.coerce.number().min(1, "Estado civil es obligatorio"),
+  disabilityId: z.coerce.number().min(1, "Discapacidad es obligatoria"),
+  bloodGroupId: z.coerce.number().min(1, "Grupo sanguíneo es obligatorio"),
+  rhFactorId: z.coerce.number().min(1, "RH es obligatorio"),
+})
+
+export type TPatientForm = z.infer<typeof patientSchema>
+
+export const patientDefaultValues: TPatientForm = {
+  insurerId: 0,
+  contractId: 0,
+  documentTypeId: 0,
+  documentNumber: "",
+  firstName: "",
+  middleName: "",
+  lastName: "",
+  secondLastName: "",
+  birthDate: "",
+  sexId: 0,
+  birthCountryId: 0,
+  residenceCountryId: 0,
+  stateId: 0,
+  cityId: 0,
+  zoneId: 0,
+  address: "",
+  phone: "",
+  email: "",
+  maritalStatusId: 0,
+  disabilityId: 0,
+  bloodGroupId: 0,
+  rhFactorId: 0,
+}

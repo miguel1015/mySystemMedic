@@ -4,6 +4,12 @@ import { authOptions } from "../../option"
 
 const TYPE_TO_ENDPOINT: Record<string, string> = {
   "active-admissions": "/api/admissions/active",
+  "sexes": "/api/patients/catalogs/sexes",
+  "disabilities": "/api/patients/catalogs/disabilities",
+  "zones": "/api/patients/catalogs/zones",
+  "blood-groups": "/api/patients/catalogs/blood-groups",
+  "rh-factors": "/api/patients/catalogs/rh-factors",
+  "marital-statuses": "/api/patients/catalogs/marital-statuses",
 }
 
 export async function GET(request: Request) {

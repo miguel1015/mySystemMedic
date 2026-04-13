@@ -69,25 +69,27 @@ export async function create<T, U>(
     : await res.text().catch(() => null);
 
   if (!res.ok) {
-    const errorMessage =
-      typeof parsed === "string"
-        ? parsed
-        : parsed && typeof parsed === "object" && "error" in parsed
-        ? parsed.error ?? res.statusText
-        : res.statusText;
+    let errorMessage = res.statusText;
+
+    if (typeof parsed === "string") {
+      errorMessage = parsed;
+    } else if (parsed && typeof parsed === "object") {
+      const err = parsed as Record<string, unknown>;
+      if (typeof err.error === "string") {
+        errorMessage = err.error;
+      } else if (typeof err.title === "string") {
+        errorMessage = err.title;
+      } else if (typeof err.message === "string") {
+        errorMessage = err.message;
+      } else if (err.error) {
+        errorMessage = JSON.stringify(err.error);
+      }
+    }
 
     throw new Error(errorMessage);
   }
 
-  if (
-    !contentType.includes("application/json") ||
-    parsed == null ||
-    typeof parsed === "string"
-  ) {
-    throw new Error("Invalid response format: expected JSON object");
-  }
-
-  return parsed as T;
+  return (parsed ?? {}) as T;
 }
 
 /* -------------------------------- PUT -------------------------------- */
