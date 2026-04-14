@@ -1,0 +1,1 @@
+- [No Co-Authored-By](feedback_no_coauthor.md) — User does not want Co-Authored-By Claude lines in commits

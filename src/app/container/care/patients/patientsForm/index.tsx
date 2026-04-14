@@ -3,8 +3,9 @@
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import SelectAutocomplete from "@/components/select";
-import { Button, Divider, Spin } from "antd";
+import { Button, Divider } from "antd";
 import { usePatientForm } from "./usePatientForm";
+import PatientFormSkeleton from "./patientFormSkeleton";
 
 interface PatientsFormProps {
   setOpen: (open: boolean) => void;
@@ -47,14 +48,11 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
     bloodGroupsOptions,
     rhFactorsOptions,
     maritalStatusesOptions,
+    isLoadingOptions,
   } = usePatientForm({ setOpen, editPatientId, setEditPatientId });
 
-  if (isEditing && loadingPatient) {
-    return (
-      <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
-        <Spin size="large" />
-      </div>
-    );
+  if (isLoadingOptions || (isEditing && loadingPatient)) {
+    return <PatientFormSkeleton />;
   }
 
   return (

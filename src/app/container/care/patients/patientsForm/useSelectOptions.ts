@@ -18,18 +18,32 @@ interface UseSelectOptionsParams {
 }
 
 export function useSelectOptions({ residenceCountryId, stateId }: UseSelectOptionsParams = {}) {
-  const { data: dataDocumentType } = useUserDocumentType();
-  const { data: dataCountries } = useCountries();
-  const { data: dataStates } = useStates();
-  const { data: dataCities } = useCities();
-  const { data: dataInsurers } = useInsurers();
-  const { data: dataContracts } = useContracts();
-  const { data: dataSexes } = useSexes();
-  const { data: dataDisabilities } = useDisabilities();
-  const { data: dataZones } = useZones();
-  const { data: dataBloodGroups } = useBloodGroups();
-  const { data: dataRhFactors } = useRhFactors();
-  const { data: dataMaritalStatuses } = useMaritalStatuses();
+  const { data: dataDocumentType, isLoading: loadingDocumentType } = useUserDocumentType();
+  const { data: dataCountries, isLoading: loadingCountries } = useCountries();
+  const { data: dataStates, isLoading: loadingStates } = useStates();
+  const { data: dataCities, isLoading: loadingCities } = useCities();
+  const { data: dataInsurers, isLoading: loadingInsurers } = useInsurers();
+  const { data: dataContracts, isLoading: loadingContracts } = useContracts();
+  const { data: dataSexes, isLoading: loadingSexes } = useSexes();
+  const { data: dataDisabilities, isLoading: loadingDisabilities } = useDisabilities();
+  const { data: dataZones, isLoading: loadingZones } = useZones();
+  const { data: dataBloodGroups, isLoading: loadingBloodGroups } = useBloodGroups();
+  const { data: dataRhFactors, isLoading: loadingRhFactors } = useRhFactors();
+  const { data: dataMaritalStatuses, isLoading: loadingMaritalStatuses } = useMaritalStatuses();
+
+  const isLoadingOptions =
+    loadingDocumentType ||
+    loadingCountries ||
+    loadingStates ||
+    loadingCities ||
+    loadingInsurers ||
+    loadingContracts ||
+    loadingSexes ||
+    loadingDisabilities ||
+    loadingZones ||
+    loadingBloodGroups ||
+    loadingRhFactors ||
+    loadingMaritalStatuses;
 
   const documentTypesOptions = (dataDocumentType ?? []).map((r) => ({
     value: r.id,
@@ -116,5 +130,6 @@ export function useSelectOptions({ residenceCountryId, stateId }: UseSelectOptio
     bloodGroupsOptions,
     rhFactorsOptions,
     maritalStatusesOptions,
+    isLoadingOptions,
   };
 }

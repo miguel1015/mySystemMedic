@@ -102,16 +102,6 @@ export default function PatientsTable({
       width: 160,
     },
     {
-      title: "Teléfono",
-      dataIndex: "phone",
-      width: 140,
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      width: 220,
-    },
-    {
       title: "Acciones",
       width: 180,
       align: "center",
