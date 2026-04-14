@@ -3,7 +3,7 @@
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import SelectAutocomplete from "@/components/select";
-import { Button, Divider } from "antd";
+import { Button, Divider, Spin } from "antd";
 import { usePatientForm } from "./usePatientForm";
 
 interface PatientsFormProps {
@@ -31,25 +31,52 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
     onSubmit,
     handleCancel,
     isEditing,
+    loadingPatient,
+    isSubmitting,
+    hasCountry,
+    hasState,
     documentTypesOptions,
     countriesOptions,
     statesOptions,
     citiesOptions,
     insurersOptions,
+    contractsOptions,
+    sexesOptions,
+    disabilitiesOptions,
+    zonesOptions,
+    bloodGroupsOptions,
+    rhFactorsOptions,
+    maritalStatusesOptions,
   } = usePatientForm({ setOpen, editPatientId, setEditPatientId });
+
+  if (isEditing && loadingPatient) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {/* ── DATOS GENERALES ── */}
       <p style={sectionTitleStyle}>Datos Generales</p>
       <Divider style={{ margin: "8px 0 16px" }} />
 
-      <GridContainer gap="g-3">
+      <GridContainer columns="col-4" gap="g-3">
         <SelectAutocomplete
-          name="epsId"
+          name="insurerId"
           label="EPS"
           placeholder="Seleccione la EPS"
           control={control}
           options={insurersOptions}
+        />
+        <SelectAutocomplete
+          name="contractId"
+          label="Contrato"
+          placeholder="Seleccione el contrato"
+          control={control}
+          options={contractsOptions}
         />
         <SelectAutocomplete
           name="documentTypeId"
@@ -78,13 +105,13 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
           control={control}
         />
         <Input
-          name="secondName"
+          name="middleName"
           label="Segundo Nombre"
           placeholder="Segundo Nombre"
           control={control}
         />
         <Input
-          name="firstLastName"
+          name="lastName"
           label="Primer Apellido"
           placeholder="Primer Apellido"
           control={control}
@@ -104,25 +131,25 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
           control={control}
         />
         <SelectAutocomplete
-          name="gender"
+          name="sexId"
           label="Sexo"
           placeholder="Seleccione"
           control={control}
-          options={[]}
+          options={sexesOptions}
         />
         <SelectAutocomplete
-          name="maritalStatus"
+          name="maritalStatusId"
           label="Estado civil"
           placeholder="Seleccione"
           control={control}
-          options={[]}
+          options={maritalStatusesOptions}
         />
         <SelectAutocomplete
-          name="disability"
+          name="disabilityId"
           label="Discapacidad"
           placeholder="Seleccione"
           control={control}
-          options={[]}
+          options={disabilitiesOptions}
         />
       </GridContainer>
 
@@ -132,40 +159,42 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
 
       <GridContainer columns="col-4" gap="g-3">
         <SelectAutocomplete
-          name="originCountry"
-          label="País de origen"
+          name="birthCountryId"
+          label="País de nacimiento"
           placeholder="Seleccione"
           control={control}
           options={countriesOptions}
         />
         <SelectAutocomplete
-          name="residenceCountry"
+          name="residenceCountryId"
           label="País de residencia"
           placeholder="Seleccione"
           control={control}
           options={countriesOptions}
         />
         <SelectAutocomplete
-          name="department"
+          name="stateId"
           label="Departamento"
-          placeholder="Seleccione"
+          placeholder={hasCountry ? "Seleccione" : "Seleccione un país primero"}
           control={control}
           options={statesOptions}
+          disabled={!hasCountry}
         />
         <SelectAutocomplete
-          name="city"
+          name="cityId"
           label="Ciudad"
-          placeholder="Seleccione"
+          placeholder={hasState ? "Seleccione" : "Seleccione un departamento primero"}
           control={control}
           options={citiesOptions}
+          disabled={!hasState}
         />
 
         <SelectAutocomplete
-          name="zone"
+          name="zoneId"
           label="Zona"
           placeholder="Seleccione"
           control={control}
-          options={[]}
+          options={zonesOptions}
         />
         <Input
           name="address"
@@ -201,25 +230,32 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
 
       <GridContainer gap="g-3">
         <SelectAutocomplete
-          name="bloodGroup"
+          name="bloodGroupId"
           label="Grupo sanguíneo"
           placeholder="Seleccione"
           control={control}
-          options={[]}
+          options={bloodGroupsOptions}
         />
         <SelectAutocomplete
-          name="rh"
+          name="rhFactorId"
           label="RH"
           placeholder="Seleccione"
           control={control}
-          options={[]}
+          options={rhFactorsOptions}
         />
       </GridContainer>
 
       {/* ── BOTONES ── */}
       <div className="d-flex justify-content-end gap-2 mt-3">
-        <Button onClick={handleCancel}>Cancelar</Button>
-        <Button type="primary" htmlType="submit">
+        <Button onClick={handleCancel} disabled={isSubmitting}>
+          Cancelar
+        </Button>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        >
           {isEditing ? "Actualizar" : "Guardar"}
         </Button>
       </div>

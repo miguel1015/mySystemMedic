@@ -1,107 +1,81 @@
-"use client"
+"use client";
 
-import { Button, Input, Space, Table } from "antd"
-import type { ColumnsType } from "antd/es/table"
-import { useMemo, useState } from "react"
-import { SearchOutlined } from "@ant-design/icons"
-import ModalConfirm from "@/components/modalConfirmation.tsx"
-import toast from "react-hot-toast"
-
-export interface PatientRow {
-  id: number;
-  documentType: string;
-  documentNumber: string;
-  fullName: string;
-  eps: string;
-  phone: string;
-  email: string;
-  birthDate: string;
-}
-
-const MOCK_PATIENTS: PatientRow[] = [
-  {
-    id: 1,
-    documentType: "CC",
-    documentNumber: "1001234567",
-    fullName: "Juan Carlos Pérez López",
-    eps: "Sura EPS",
-    phone: "3001234567",
-    email: "juan.perez@email.com",
-    birthDate: "1990-05-15",
-  },
-  {
-    id: 2,
-    documentType: "CC",
-    documentNumber: "1009876543",
-    fullName: "María Fernanda Gómez Ríos",
-    eps: "Nueva EPS",
-    phone: "3109876543",
-    email: "maria.gomez@email.com",
-    birthDate: "1985-11-22",
-  },
-  {
-    id: 3,
-    documentType: "TI",
-    documentNumber: "1052345678",
-    fullName: "Andrés Felipe Martínez Díaz",
-    eps: "Sanitas",
-    phone: "3201112233",
-    email: "andres.martinez@email.com",
-    birthDate: "2005-03-10",
-  },
-  {
-    id: 4,
-    documentType: "CE",
-    documentNumber: "E123456",
-    fullName: "Laura Sofía Rodríguez Vargas",
-    eps: "Compensar",
-    phone: "3154567890",
-    email: "laura.rodriguez@email.com",
-    birthDate: "1978-08-01",
-  },
-  {
-    id: 5,
-    documentType: "CC",
-    documentNumber: "1007654321",
-    fullName: "Carlos Eduardo Sánchez Ruiz",
-    eps: "Famisanar",
-    phone: "3006543210",
-    email: "carlos.sanchez@email.com",
-    birthDate: "1995-12-30",
-  },
-]
+import { Button, Input, Space, Table, Spin } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useMemo, useState } from "react";
+import { SearchOutlined } from "@ant-design/icons";
+import ModalConfirm from "@/components/modalConfirmation.tsx";
+import toast from "react-hot-toast";
+import { GetPatient } from "@/core/interfaces/care/types";
+import { useDeletePatient } from "@/core/hooks/care/patients/useDeletePatient";
 
 interface PatientsTableProps {
+  data: GetPatient[];
+  isLoading: boolean;
   onEdit: (id: number) => void;
 }
 
-export default function PatientsTable({ onEdit }: PatientsTableProps) {
-  const [search, setSearch] = useState("")
-  const [openConfirm, setOpenConfirm] = useState(false)
-  const [patientToDelete, setPatientToDelete] = useState<number | null>(null)
+export default function PatientsTable({
+  data,
+  isLoading,
+  onEdit,
+}: PatientsTableProps) {
+  const [search, setSearch] = useState("");
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [patientToDelete, setPatientToDelete] = useState<number | null>(null);
+  const deletePatient = useDeletePatient();
+
+  const getFullName = (p: GetPatient) =>
+    [p.firstName, p.middleName, p.lastName, p.secondLastName]
+      .filter(Boolean)
+      .join(" ");
 
   const filteredPatients = useMemo(() => {
-    const term = search.toLowerCase()
-    return MOCK_PATIENTS.filter(
+    const term = search.toLowerCase();
+    return (data ?? []).filter(
       (p) =>
-        p.fullName.toLowerCase().includes(term) ||
-        p.documentNumber.toLowerCase().includes(term) ||
-        p.eps.toLowerCase().includes(term),
-    )
-  }, [search])
+        getFullName(p).toLowerCase().includes(term) ||
+        (p.documentNumber ?? "").toLowerCase().includes(term) ||
+        (p.insurerName ?? "").toLowerCase().includes(term),
+    );
+  }, [search, data]);
 
-  const columns: ColumnsType<PatientRow> = [
+  const handleDelete = () => {
+    if (!patientToDelete) return;
+
+    deletePatient.mutate(patientToDelete, {
+      onSuccess: () => {
+        toast.success("Paciente eliminado correctamente");
+        setOpenConfirm(false);
+        setPatientToDelete(null);
+      },
+      onError: (err: Error) => {
+        toast.error(err.message);
+        setOpenConfirm(false);
+        setPatientToDelete(null);
+      },
+    });
+  };
+
+  const columns: ColumnsType<GetPatient> = [
     {
       title: "#",
       width: 60,
       align: "center",
       render: (_v, _r, index) => (
-        <span style={{ fontWeight: 600, color: "var(--dash-text-secondary, #6b7280)" }}>{index + 1}</span>
+        <span
+          style={{
+            fontWeight: 600,
+            color: "var(--dash-text-secondary, #6b7280)",
+          }}
+        >
+          {index + 1}
+        </span>
       ),
     },
     {
       title: "Tipo Doc.",
-      dataIndex: "documentType",
+      dataIndex: "documentTypeCode",
       width: 100,
     },
     {
@@ -109,21 +83,22 @@ export default function PatientsTable({ onEdit }: PatientsTableProps) {
       dataIndex: "documentNumber",
       width: 140,
       render: (value: string) => (
-        <span style={{ fontFamily: "monospace", fontWeight: 500 }}>{value}</span>
+        <span style={{ fontFamily: "monospace", fontWeight: 500 }}>
+          {value}
+        </span>
       ),
     },
     {
       title: "Nombre completo",
-      dataIndex: "fullName",
       width: 280,
-      sorter: (a, b) => a.fullName.localeCompare(b.fullName),
-      render: (value: string) => (
-        <span style={{ fontWeight: 500 }}>{value}</span>
+      sorter: (a, b) => getFullName(a).localeCompare(getFullName(b)),
+      render: (_, record) => (
+        <span style={{ fontWeight: 500 }}>{getFullName(record)}</span>
       ),
     },
     {
       title: "EPS",
-      dataIndex: "eps",
+      dataIndex: "insurerName",
       width: 160,
     },
     {
@@ -149,8 +124,8 @@ export default function PatientsTable({ onEdit }: PatientsTableProps) {
           <Button
             danger
             onClick={() => {
-              setPatientToDelete(record.id)
-              setOpenConfirm(true)
+              setPatientToDelete(record.id);
+              setOpenConfirm(true);
             }}
           >
             Eliminar
@@ -158,14 +133,26 @@ export default function PatientsTable({ onEdit }: PatientsTableProps) {
         </Space>
       ),
     },
-  ]
+  ];
+
+  if (isLoading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
         <Input
           placeholder="Buscar por nombre, documento o EPS..."
-          prefix={<SearchOutlined style={{ color: "var(--theme-primary, #0F6F5C)" }} />}
+          prefix={
+            <SearchOutlined
+              style={{ color: "var(--theme-primary, #0F6F5C)" }}
+            />
+          }
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           allowClear
@@ -174,7 +161,7 @@ export default function PatientsTable({ onEdit }: PatientsTableProps) {
         />
       </div>
 
-      <Table<PatientRow>
+      <Table<GetPatient>
         size="middle"
         columns={columns}
         dataSource={filteredPatients}
@@ -195,12 +182,8 @@ export default function PatientsTable({ onEdit }: PatientsTableProps) {
         onClose={() => setOpenConfirm(false)}
         title="Eliminar paciente"
         subtitle="¿Estás seguro de eliminar este paciente? Esta acción no se puede deshacer."
-        onConfirm={() => {
-          toast.success("Solo visual: eliminar paciente no disponible aún")
-          setOpenConfirm(false)
-          setPatientToDelete(null)
-        }}
+        onConfirm={handleDelete}
       />
     </div>
-  )
+  );
 }
