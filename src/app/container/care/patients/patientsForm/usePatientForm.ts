@@ -93,7 +93,7 @@ export function usePatientForm({
 
     if (editPatientId) {
       updatePatient.mutate(
-        { id: editPatientId, data },
+        { id: editPatientId, data: { ...data, isActive: true } },
         {
           onSuccess: () => {
             setOpen(false);
@@ -115,7 +115,6 @@ export function usePatientForm({
         toast.success("Paciente creado correctamente");
       },
       onError: (err: Error) => {
-        console.log("🚬🚬🚬", err);
         toast.error(err.message);
       },
     });

@@ -26,6 +26,7 @@ export interface PatientData {
   disabilityId: number;
   bloodGroupId: number;
   rhFactorId: number;
+  isActive?: boolean;
 }
 
 export interface GetPatient extends PatientData {
