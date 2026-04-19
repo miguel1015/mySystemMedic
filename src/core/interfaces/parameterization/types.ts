@@ -13,8 +13,12 @@ export interface Insurance {
 
 export interface TTariffs {
   id?: number;
-  codingId: string;
   name: string;
+  valueMethodId: number;
+  valueMethodDescription?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface TMedicine {

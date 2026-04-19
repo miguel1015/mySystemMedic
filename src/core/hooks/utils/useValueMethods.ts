@@ -1,15 +1,20 @@
-import { getAll } from "@/core/api/baseService"
-import { ENDPOINTS } from "@/core/api/endpoints"
 import { useQuery } from "@tanstack/react-query"
+import { getAll } from "../../api/baseService"
+import { ENDPOINTS } from "../../api/endpoints"
+import {
+  CatalogItem,
+  ContractCatalogs,
+} from "../../interfaces/parameterization/types"
 
-interface TValueMethod {
-  id: number;
-  name: string;
+export const contractCatalogsService = {
+  getAll: () => getAll<ContractCatalogs>(ENDPOINTS.CONTRACT_CATALOGS.GET_ALL),
 }
 
 export function useValueMethods() {
   return useQuery({
-    queryKey: ["value-methods"],
-    queryFn: () => getAll<TValueMethod[]>(ENDPOINTS.VALUE_METHODS.GET_ALL),
+    queryKey: ["contract-catalogs"],
+    queryFn: contractCatalogsService.getAll,
+    staleTime: 5 * 60 * 1000,
+    select: (data): CatalogItem[] => data?.valueMethods ?? [],
   })
 }

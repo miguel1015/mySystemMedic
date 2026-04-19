@@ -41,7 +41,6 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
     statesOptions,
     citiesOptions,
     insurersOptions,
-    contractsOptions,
     sexesOptions,
     disabilitiesOptions,
     zonesOptions,
@@ -68,13 +67,6 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
           placeholder="Seleccione la EPS"
           control={control}
           options={insurersOptions}
-        />
-        <SelectAutocomplete
-          name="contractId"
-          label="Contrato"
-          placeholder="Seleccione el contrato"
-          control={control}
-          options={contractsOptions}
         />
         <SelectAutocomplete
           name="documentTypeId"

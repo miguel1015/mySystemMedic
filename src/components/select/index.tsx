@@ -54,8 +54,9 @@ export default function RHFAntdSelect<T extends FieldValues>({
       )}
 
       <Select
+        getPopupContainer={(trigger) => trigger.parentElement!}
+        dropdownStyle={{ zIndex: 1060 }}
         {...antdProps}
-        // {...(hasValue ? { value: field.value } : {})}
         disabled={disabled}
         placeholder={placeholder}
         options={options}
@@ -67,7 +68,6 @@ export default function RHFAntdSelect<T extends FieldValues>({
         showSearch
         optionFilterProp="label"
         style={{ width: "100%" }}
-        getPopupContainer={(trigger) => trigger.parentElement!}
       />
 
       {error && (

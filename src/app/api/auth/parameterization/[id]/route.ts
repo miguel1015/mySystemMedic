@@ -7,7 +7,7 @@ const TYPE_CONFIG = {
     endpoint: "/api/insurers",
   },
   tariffs: {
-    endpoint: "/api/tariff-schedules",
+    endpoint: "/api/tariffs",
   },
   brokers: {
     endpoint: "/api/brokers",

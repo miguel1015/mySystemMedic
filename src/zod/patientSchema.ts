@@ -2,7 +2,6 @@ import { z } from "zod"
 
 export const patientSchema = z.object({
   insurerId: z.coerce.number().min(1, "EPS es obligatoria"),
-  contractId: z.coerce.number().min(1, "Contrato es obligatorio"),
   documentTypeId: z.coerce.number().min(1, "Tipo de documento es obligatorio"),
   documentNumber: z.string().min(1, "Número de documento es obligatorio"),
   firstName: z.string().min(1, "Primer nombre es obligatorio"),
@@ -29,7 +28,6 @@ export type TPatientForm = z.infer<typeof patientSchema>
 
 export const patientDefaultValues: TPatientForm = {
   insurerId: 0,
-  contractId: 0,
   documentTypeId: 0,
   documentNumber: "",
   firstName: "",

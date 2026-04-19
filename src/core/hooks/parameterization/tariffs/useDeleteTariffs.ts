@@ -3,7 +3,7 @@ import { remove } from "../../../api/baseService";
 import { ENDPOINTS } from "@/core/api/endpoints";
 
 export const tariffsDeleteService = {
-  delete: (id: string | number) => remove(ENDPOINTS.TARIFFS.UPDATE(id)),
+  delete: (id: string | number) => remove(ENDPOINTS.TARIFFS.DELETE(id)),
 };
 
 export function useDeleteTariffs() {

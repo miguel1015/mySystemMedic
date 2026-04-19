@@ -5,7 +5,6 @@ export interface PatientCatalog {
 
 export interface PatientData {
   insurerId: number;
-  contractId: number;
   documentTypeId: number;
   documentNumber: string;
   firstName: string;

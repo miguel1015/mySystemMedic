@@ -4,7 +4,6 @@ import { useCities } from "@/core/hooks/utils/useCities";
 import { useCountries } from "@/core/hooks/utils/useCountries";
 import { useInsurers } from "@/core/hooks/utils/useInsurer";
 import { useStates } from "@/core/hooks/utils/useStates";
-import { useContracts } from "@/core/hooks/parameterization/contracts/useGetAllContracts";
 import { useSexes } from "@/core/hooks/care/patients/useSexes";
 import { useDisabilities } from "@/core/hooks/care/patients/useDisabilities";
 import { useZones } from "@/core/hooks/care/patients/useZones";
@@ -23,7 +22,6 @@ export function useSelectOptions({ residenceCountryId, stateId }: UseSelectOptio
   const { data: dataStates, isLoading: loadingStates } = useStates();
   const { data: dataCities, isLoading: loadingCities } = useCities();
   const { data: dataInsurers, isLoading: loadingInsurers } = useInsurers();
-  const { data: dataContracts, isLoading: loadingContracts } = useContracts();
   const { data: dataSexes, isLoading: loadingSexes } = useSexes();
   const { data: dataDisabilities, isLoading: loadingDisabilities } = useDisabilities();
   const { data: dataZones, isLoading: loadingZones } = useZones();
@@ -37,7 +35,6 @@ export function useSelectOptions({ residenceCountryId, stateId }: UseSelectOptio
     loadingStates ||
     loadingCities ||
     loadingInsurers ||
-    loadingContracts ||
     loadingSexes ||
     loadingDisabilities ||
     loadingZones ||
@@ -82,11 +79,6 @@ export function useSelectOptions({ residenceCountryId, stateId }: UseSelectOptio
     label: r.name,
   }));
 
-  const contractsOptions = (dataContracts ?? []).map((r) => ({
-    value: r.id,
-    label: r.contractName,
-  }));
-
   const sexesOptions = (dataSexes ?? []).map((r) => ({
     value: r.id,
     label: r.name,
@@ -123,7 +115,6 @@ export function useSelectOptions({ residenceCountryId, stateId }: UseSelectOptio
     statesOptions,
     citiesOptions,
     insurersOptions,
-    contractsOptions,
     sexesOptions,
     disabilitiesOptions,
     zonesOptions,

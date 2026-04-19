@@ -45,7 +45,7 @@ export function TariffDistributionChart({ tariffs }: Props) {
   }
 
   const codingGroups = tariffs.reduce<Record<string, number>>((acc, t) => {
-    const group = t.codingId || "Sin codigo"
+    const group = t.valueMethodDescription || "Sin método"
     acc[group] = (acc[group] || 0) + 1
     return acc
   }, {})

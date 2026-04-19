@@ -2,7 +2,7 @@
 
 import { Container } from "@/components/container";
 import ModalConfirm from "@/components/modalConfirmation.tsx";
-import { Button, Input, Space, Table } from "antd";
+import { Button, Input, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
@@ -29,6 +29,7 @@ const TariffsTable = ({ onEdit }: TariffsTableProps) => {
     return dataTariffs.filter(
       (tariffs) =>
         tariffs.name.toLowerCase().includes(term) ||
+        (tariffs.valueMethodDescription ?? "").toLowerCase().includes(term) ||
         String(tariffs.id).includes(term),
     );
   }, [search, dataTariffs]);
@@ -50,6 +51,23 @@ const TariffsTable = ({ onEdit }: TariffsTableProps) => {
       title: "Nombre",
       dataIndex: "name",
       width: 300,
+    },
+    {
+      title: "Método de valoración",
+      dataIndex: "valueMethodDescription",
+      width: 250,
+      render: (value: string | undefined) => value ?? "—",
+    },
+    {
+      title: "Estado",
+      dataIndex: "isActive",
+      width: 120,
+      render: (value: boolean) =>
+        value ? (
+          <Tag color="green">Activo</Tag>
+        ) : (
+          <Tag color="red">Inactivo</Tag>
+        ),
     },
     {
       title: "Acciones",

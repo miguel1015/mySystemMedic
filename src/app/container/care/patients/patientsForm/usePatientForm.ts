@@ -58,14 +58,13 @@ export function usePatientForm({
     if (editPatientId && patientData) {
       reset({
         insurerId: patientData.insurerId ?? 0,
-        contractId: patientData.contractId ?? 0,
         documentTypeId: patientData.documentTypeId ?? 0,
         documentNumber: patientData.documentNumber ?? "",
         firstName: patientData.firstName ?? "",
         middleName: patientData.middleName ?? "",
         lastName: patientData.lastName ?? "",
         secondLastName: patientData.secondLastName ?? "",
-        birthDate: patientData.birthDate ?? "",
+        birthDate: patientData.birthDate?.split("T")[0] ?? "",
         sexId: patientData.sexId ?? 0,
         birthCountryId: patientData.birthCountryId ?? 0,
         residenceCountryId: patientData.residenceCountryId ?? 0,

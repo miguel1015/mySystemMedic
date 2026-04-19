@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../option";
 
 const TYPE_TO_ENDPOINT: Record<string, string> = {
-  tariffs: "/api/tariff-schedules",
+  tariffs: "/api/tariffs",
   "benefit-plans": "/api/benefit-plans",
   contracts: "/api/contracts",
   "contract-details": "/api/contract-details",
