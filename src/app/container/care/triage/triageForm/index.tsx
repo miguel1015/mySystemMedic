@@ -1,14 +1,17 @@
-"use client"
+"use client";
 
-import GridContainer from "@/components/componentLayout"
-import Input from "@/components/input"
+import GridContainer from "@/components/componentLayout";
+import Input from "@/components/input";
 import {
+  Alert,
+  Avatar,
   Button,
   Divider,
   Input as AntdInput,
   Radio,
   Spin,
-} from "antd"
+  Tag,
+} from "antd";
 import {
   SearchOutlined,
   UserOutlined,
@@ -17,13 +20,24 @@ import {
   ClearOutlined,
   SaveOutlined,
   FileSearchOutlined,
-} from "@ant-design/icons"
-import { useController, Control } from "react-hook-form"
-import { useTriageForm, type TriageFormValues } from "./useTriageForm"
+  IdcardOutlined,
+  CalendarOutlined,
+  ManOutlined,
+  WomanOutlined,
+  CheckCircleFilled,
+} from "@ant-design/icons";
+import { useController, Control } from "react-hook-form";
+import {
+  useTriageForm,
+  type TriageFormMode,
+  type TriageFormValues,
+} from "./useTriageForm";
+import {
+  PatientMiniResponse,
+  TriageResponse,
+} from "@/core/interfaces/care/types";
 
-const { TextArea } = AntdInput
-
-/* ── Estilos ── */
+const { TextArea } = AntdInput;
 
 const sectionCardStyle: React.CSSProperties = {
   background: "var(--dash-surface, #ffffff)",
@@ -31,7 +45,7 @@ const sectionCardStyle: React.CSSProperties = {
   borderRadius: 10,
   padding: "20px 24px",
   marginBottom: 20,
-}
+};
 
 const sectionTitleStyle: React.CSSProperties = {
   fontSize: 15,
@@ -42,7 +56,7 @@ const sectionTitleStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   gap: 8,
-}
+};
 
 const emptyStateStyle: React.CSSProperties = {
   textAlign: "center",
@@ -51,7 +65,7 @@ const emptyStateStyle: React.CSSProperties = {
   borderRadius: 10,
   border: "2px dashed var(--dash-border, #e5e7eb)",
   marginTop: 16,
-}
+};
 
 const priorityLabels: Record<number, { label: string; color: string }> = {
   1: { label: "I - Resucitación", color: "#ff4d4f" },
@@ -59,15 +73,22 @@ const priorityLabels: Record<number, { label: string; color: string }> = {
   3: { label: "III - Urgencia", color: "#fadb14" },
   4: { label: "IV - Menos urgente", color: "#52c41a" },
   5: { label: "V - No urgente", color: "#1890ff" },
+};
+
+interface TriageFormProps {
+  mode?: TriageFormMode;
+  initialTriage?: TriageResponse | null;
 }
 
-/* ── Componente principal ── */
-
-export default function TriageForm() {
+export default function TriageForm({
+  mode = "create",
+  initialTriage = null,
+}: TriageFormProps) {
   const {
     control,
     handleSubmit,
     onSubmit,
+    onInvalid,
     handleReset,
     patient,
     searchDoc,
@@ -75,46 +96,110 @@ export default function TriageForm() {
     searchError,
     searching,
     handleSearchPatient,
-  } = useTriageForm()
+    consultationReasonLength,
+    isSubmitting,
+    editingTriage,
+  } = useTriageForm({ mode, initialTriage });
+
+  const isEdit = mode === "edit";
+  const showFormBody = isEdit ? !!editingTriage : !!patient;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      {/* ── BÚSQUEDA DE PACIENTE ── */}
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
       <div style={sectionCardStyle}>
         <p style={sectionTitleStyle}>
-          <FileSearchOutlined />
-          Búsqueda de Paciente
+          {isEdit ? <UserOutlined /> : <FileSearchOutlined />}
+          {isEdit ? "Paciente" : "Búsqueda de Paciente"}
         </p>
         <Divider style={{ margin: "8px 0 16px" }} />
 
-        <div style={{ display: "flex", gap: 8, maxWidth: 480 }}>
-          <AntdInput
-            placeholder="Número de documento"
-            prefix={<SearchOutlined style={{ color: "var(--theme-primary, #0F6F5C)" }} />}
-            value={searchDoc}
-            onChange={(e) => setSearchDoc(e.target.value)}
-            onPressEnter={(e) => {
-              e.preventDefault()
-              handleSearchPatient()
-            }}
-            size="large"
-            style={{ borderRadius: 8 }}
-          />
-          <Button
-            type="primary"
-            size="large"
-            onClick={handleSearchPatient}
-            loading={searching}
-            icon={<SearchOutlined />}
-          >
-            Buscar
-          </Button>
-        </div>
+        {isEdit ? (
+          editingTriage && (
+            <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+              <div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "var(--dash-text-tertiary, #9ca3af)",
+                  }}
+                >
+                  Documento
+                </div>
+                <div style={{ fontWeight: 600, fontFamily: "monospace" }}>
+                  {editingTriage.numeroDocumento}
+                </div>
+              </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "var(--dash-text-tertiary, #9ca3af)",
+                  }}
+                >
+                  Paciente
+                </div>
+                <div style={{ fontWeight: 600 }}>
+                  {editingTriage.nombrePaciente}
+                </div>
+              </div>
+            </div>
+          )
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: 8, maxWidth: 480 }}>
+              <AntdInput
+                placeholder="Número de documento"
+                prefix={
+                  <SearchOutlined
+                    style={{ color: "var(--theme-primary, #0F6F5C)" }}
+                  />
+                }
+                value={searchDoc}
+                onChange={(e) => setSearchDoc(e.target.value)}
+                onPressEnter={(e) => {
+                  e.preventDefault();
+                  handleSearchPatient();
+                }}
+                size="large"
+                style={{ borderRadius: 8 }}
+              />
+              <Button
+                type="primary"
+                size="large"
+                onClick={handleSearchPatient}
+                loading={searching}
+                icon={<SearchOutlined />}
+              >
+                Buscar
+              </Button>
+            </div>
 
-        {searchError && (
-          <div style={{ color: "#ff4d4f", fontSize: 13, marginTop: 10 }}>
-            {searchError}
-          </div>
+            {searchError && (
+              <Alert
+                style={{ marginTop: 12 }}
+                type={searchError.type === "not-found" ? "warning" : "error"}
+                showIcon
+                title={
+                  searchError.type === "not-found"
+                    ? "Paciente no encontrado"
+                    : "No se pudo realizar la búsqueda"
+                }
+                description={
+                  searchError.type === "not-found" ? (
+                    <>
+                      {searchError.message} Verifica el número o{" "}
+                      <strong>regístralo desde el módulo de Pacientes</strong>{" "}
+                      antes de continuar con el triaje.
+                    </>
+                  ) : (
+                    searchError.message
+                  )
+                }
+              />
+            )}
+
+            {patient && <PatientCard patient={patient} />}
+          </>
         )}
       </div>
 
@@ -124,69 +209,30 @@ export default function TriageForm() {
         </div>
       )}
 
-      {/* ── EMPTY STATE ── */}
-      {!patient && !searching && (
+      {!showFormBody && !searching && !isEdit && (
         <div style={emptyStateStyle}>
-          <UserOutlined style={{ fontSize: 40, color: "var(--dash-text-tertiary, #9ca3af)", marginBottom: 12 }} />
-          <p style={{ fontSize: 15, margin: 0, color: "var(--dash-text-tertiary, #9ca3af)" }}>
-            Ingrese un número de documento y presione <strong>Buscar</strong> para
-            comenzar el registro de triage.
+          <UserOutlined
+            style={{
+              fontSize: 40,
+              color: "var(--dash-text-tertiary, #9ca3af)",
+              marginBottom: 12,
+            }}
+          />
+          <p
+            style={{
+              fontSize: 15,
+              margin: 0,
+              color: "var(--dash-text-tertiary, #9ca3af)",
+            }}
+          >
+            Ingrese un número de documento y presione <strong>Buscar</strong>{" "}
+            para comenzar el registro de triage.
           </p>
         </div>
       )}
 
-      {/* ── DATOS DEL PACIENTE (Solo lectura) ── */}
-      {patient && (
+      {showFormBody && (
         <>
-          <div style={sectionCardStyle}>
-            <p style={sectionTitleStyle}>
-              <UserOutlined />
-              Datos del Paciente
-            </p>
-            <Divider style={{ margin: "8px 0 16px" }} />
-
-            <GridContainer columns="col-4" gap="g-3">
-              <Input
-                name="firstName"
-                label="Primer Nombre"
-                control={control}
-                disabled
-              />
-              <Input
-                name="secondName"
-                label="Segundo Nombre"
-                control={control}
-                disabled
-              />
-              <Input
-                name="firstLastName"
-                label="Primer Apellido"
-                control={control}
-                disabled
-              />
-              <Input
-                name="secondLastName"
-                label="Segundo Apellido"
-                control={control}
-                disabled
-              />
-              <Input
-                type="date"
-                name="birthDate"
-                label="Fecha de Nacimiento"
-                control={control}
-                disabled
-              />
-              <Input
-                name="gender"
-                label="Sexo"
-                control={control}
-                disabled
-              />
-            </GridContainer>
-          </div>
-
-          {/* ── TRIAGE ── */}
           <div style={sectionCardStyle}>
             <p style={sectionTitleStyle}>
               <MedicineBoxOutlined />
@@ -216,10 +262,12 @@ export default function TriageForm() {
               <PrioritySelector control={control} />
             </div>
 
-            <ConsultationReasonField control={control} />
+            <ConsultationReasonField
+              control={control}
+              length={consultationReasonLength}
+            />
           </div>
 
-          {/* ── SIGNOS VITALES ── */}
           <div style={sectionCardStyle}>
             <p style={sectionTitleStyle}>
               <HeartOutlined />
@@ -232,6 +280,7 @@ export default function TriageForm() {
                 name="bloodPressure"
                 label="Tensión Arterial"
                 placeholder="Ej: 120/80"
+                maxLength={30}
                 control={control}
               />
               <Input
@@ -252,14 +301,16 @@ export default function TriageForm() {
                 type="number"
                 name="weight"
                 label="Peso (kg)"
-                placeholder="Ej: 70"
+                placeholder="Ej: 70.5"
+                step="0.1"
                 control={control}
               />
               <Input
                 type="number"
                 name="height"
                 label="Talla (cm)"
-                placeholder="Ej: 170"
+                placeholder="Ej: 170.5"
+                step="0.1"
                 control={control}
               />
               <Input
@@ -267,6 +318,7 @@ export default function TriageForm() {
                 name="temperature"
                 label="Temperatura (°C)"
                 placeholder="Ej: 36.5"
+                step="0.1"
                 control={control}
               />
               <Input
@@ -279,28 +331,31 @@ export default function TriageForm() {
             </GridContainer>
           </div>
 
-          {/* ── BOTONES ── */}
           <div className="d-flex justify-content-end gap-2 mt-3">
             <Button icon={<ClearOutlined />} onClick={handleReset}>
-              Limpiar
+              {isEdit ? "Cancelar" : "Limpiar"}
             </Button>
-            <Button type="primary" htmlType="submit" icon={<SaveOutlined />}>
-              Guardar Triage
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<SaveOutlined />}
+              loading={isSubmitting}
+              disabled={isSubmitting}
+            >
+              {isEdit ? "Actualizar Triage" : "Guardar Triage"}
             </Button>
           </div>
         </>
       )}
     </form>
-  )
+  );
 }
-
-/* ── Componente de selección de prioridad ── */
 
 function PrioritySelector({ control }: { control: Control<TriageFormValues> }) {
   const {
     field,
     fieldState: { error },
-  } = useController({ name: "priority", control })
+  } = useController({ name: "priority", control });
 
   return (
     <div>
@@ -310,15 +365,19 @@ function PrioritySelector({ control }: { control: Control<TriageFormValues> }) {
         style={{ display: "flex", flexWrap: "wrap", gap: 8 }}
       >
         {[1, 2, 3, 4, 5].map((level) => {
-          const isSelected = field.value === level
+          const isSelected = field.value === level;
           return (
             <Radio.Button
               key={level}
               value={level}
               style={{
-                borderColor: isSelected ? priorityLabels[level].color : undefined,
+                borderColor: isSelected
+                  ? priorityLabels[level].color
+                  : undefined,
                 color: isSelected ? "#fff" : priorityLabels[level].color,
-                background: isSelected ? priorityLabels[level].color : undefined,
+                background: isSelected
+                  ? priorityLabels[level].color
+                  : undefined,
                 fontWeight: 600,
                 minWidth: 160,
                 textAlign: "center",
@@ -328,7 +387,7 @@ function PrioritySelector({ control }: { control: Control<TriageFormValues> }) {
             >
               {priorityLabels[level].label}
             </Radio.Button>
-          )
+          );
         })}
       </Radio.Group>
       {error && (
@@ -337,31 +396,245 @@ function PrioritySelector({ control }: { control: Control<TriageFormValues> }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-/* ── Componente de motivo de consulta (TextArea) ── */
+function calculateAge(birthDate: string): number | null {
+  const birth = new Date(birthDate);
+  if (Number.isNaN(birth.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age >= 0 ? age : null;
+}
 
-function ConsultationReasonField({ control }: { control: Control<TriageFormValues> }) {
+function getSexIcon(sexo?: string | null) {
+  if (!sexo) return <UserOutlined />;
+  const normalized = sexo.toLowerCase();
+  if (normalized.startsWith("f") || normalized.includes("mujer")) {
+    return <WomanOutlined />;
+  }
+  if (normalized.startsWith("m") || normalized.includes("hombre")) {
+    return <ManOutlined />;
+  }
+  return <UserOutlined />;
+}
+
+function PatientChip({
+  icon,
+  label,
+  value,
+  mono,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "8px 12px",
+        background: "var(--dash-surface, #ffffff)",
+        border: "1px solid var(--dash-border-subtle, #e5e7eb)",
+        borderRadius: 8,
+        minWidth: 150,
+      }}
+    >
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 30,
+          height: 30,
+          borderRadius: 6,
+          background: "rgba(15, 111, 92, 0.1)",
+          color: "var(--theme-primary, #0F6F5C)",
+          fontSize: 14,
+        }}
+      >
+        {icon}
+      </span>
+      <div
+        style={{ display: "flex", flexDirection: "column", lineHeight: 1.3 }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            color: "var(--dash-text-tertiary, #9ca3af)",
+            textTransform: "uppercase",
+            letterSpacing: 0.3,
+          }}
+        >
+          {label}
+        </span>
+        <span
+          style={{
+            fontWeight: 600,
+            fontSize: 14,
+            fontFamily: mono ? "monospace" : undefined,
+          }}
+        >
+          {value}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function PatientCard({ patient }: { patient: PatientMiniResponse }) {
+  const fullName = [
+    patient.primerNombre,
+    patient.segundoNombre,
+    patient.primerApellido,
+    patient.segundoApellido,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const initials = [patient.primerNombre, patient.primerApellido]
+    .filter(Boolean)
+    .map((n) => n!.charAt(0).toUpperCase())
+    .join("");
+
+  const age = patient.fechaNacimiento
+    ? calculateAge(patient.fechaNacimiento)
+    : null;
+
+  return (
+    <div
+      style={{
+        marginTop: 16,
+        padding: 16,
+        borderRadius: 12,
+        border: "1px solid rgba(82, 196, 26, 0.35)",
+        background:
+          "linear-gradient(135deg, rgba(82, 196, 26, 0.08) 0%, rgba(15, 111, 92, 0.04) 100%)",
+        borderLeft: "4px solid #52c41a",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          marginBottom: 12,
+          color: "#389e0d",
+          fontSize: 12,
+          fontWeight: 600,
+          textTransform: "uppercase",
+          letterSpacing: 0.4,
+        }}
+      >
+        <CheckCircleFilled />
+        Paciente encontrado
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <Avatar
+          size={64}
+          style={{
+            background: "var(--theme-primary, #0F6F5C)",
+            color: "#fff",
+            fontSize: 22,
+            fontWeight: 700,
+            flexShrink: 0,
+          }}
+        >
+          {initials || <UserOutlined />}
+        </Avatar>
+
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: 700,
+              color: "var(--dash-text-primary, #111827)",
+              marginBottom: 4,
+            }}
+          >
+            {fullName}
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <Tag color="success" style={{ margin: 0 }}>
+              Activo
+            </Tag>
+            {age !== null && (
+              <Tag color="blue" style={{ margin: 0 }}>
+                {age} {age === 1 ? "año" : "años"}
+              </Tag>
+            )}
+            {patient.sexo && (
+              <Tag
+                color="geekblue"
+                icon={getSexIcon(patient.sexo)}
+                style={{ margin: 0 }}
+              >
+                {patient.sexo}
+              </Tag>
+            )}
+            {patient.fechaNacimiento && (
+              <Tag icon={<CalendarOutlined />} style={{ margin: 0 }}>
+                {new Date(patient.fechaNacimiento).toLocaleDateString()}
+              </Tag>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConsultationReasonField({
+  control,
+  length,
+}: {
+  control: Control<TriageFormValues>;
+  length: number;
+}) {
   const {
     field,
     fieldState: { error },
-  } = useController({ name: "consultationReason", control })
+  } = useController({ name: "consultationReason", control });
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <label
+      <div
         style={{
-          display: "block",
+          display: "flex",
+          justifyContent: "space-between",
           marginBottom: 4,
-          fontWeight: 500,
         }}
       >
-        Motivo de Consulta
-      </label>
+        <label style={{ fontWeight: 500 }}>Motivo de Consulta</label>
+        <span
+          style={{
+            fontSize: 12,
+            color:
+              length > 500 ? "#ff4d4f" : "var(--dash-text-tertiary, #9ca3af)",
+          }}
+        >
+          {length}/500
+        </span>
+      </div>
       <TextArea
         {...field}
         rows={3}
+        maxLength={500}
         placeholder="Describa el motivo de consulta del paciente..."
         status={error ? "error" : undefined}
         value={field.value ?? ""}
@@ -373,5 +646,5 @@ function ConsultationReasonField({ control }: { control: Control<TriageFormValue
         </div>
       )}
     </div>
-  )
+  );
 }

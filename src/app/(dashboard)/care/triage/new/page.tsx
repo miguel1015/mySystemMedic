@@ -3,14 +3,12 @@
 import { Container } from "@/components/container"
 import Title from "@/components/title"
 import { Button } from "antd"
-import { MedicineBoxOutlined } from "@ant-design/icons"
+import { ArrowLeftOutlined, MedicineBoxOutlined } from "@ant-design/icons"
 import { useRouter } from "next/navigation"
-import TriageTable from "./table"
-import { useGetAllTriages } from "@/core/hooks/care/triage/useGetAllTriages"
+import TriageForm from "@/app/container/care/triage/triageForm"
 
-export default function TriageContainer() {
+export default function NewTriagePage() {
   const router = useRouter()
-  const { data: triages, isLoading } = useGetAllTriages()
 
   return (
     <Container>
@@ -20,20 +18,25 @@ export default function TriageContainer() {
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: 16,
+          flexWrap: "wrap",
+          gap: 12,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <MedicineBoxOutlined
             style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }}
           />
-          <Title level={3}>Triage</Title>
+          <Title level={3}>Registrar Triage</Title>
         </div>
-        <Button type="primary" onClick={() => router.push("/care/triage/new")}>
-          Registrar triaje
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => router.push("/care/triage")}
+        >
+          Volver
         </Button>
       </div>
 
-      <TriageTable data={triages ?? []} isLoading={isLoading} />
+      <TriageForm mode="create" />
     </Container>
   )
 }

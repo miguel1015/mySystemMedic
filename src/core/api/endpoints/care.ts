@@ -5,8 +5,11 @@ export const CARE_ENDPOINTS = {
     GET_ALL: "/api/auth/care/getAll?type=active-admissions",
   },
   TRIAGE: {
-    SEARCH_PATIENT: "/api/auth/care/getAll?type=triage-patient",
-    CREATE: "/api/auth/care/triage/create",
+    GET_ALL: "/api/auth/care/triage",
+    CREATE: "/api/auth/care/triage",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/triage/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/triage/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/triage/${id}`,
   },
   PATIENTS: {
     GET_ALL: "/api/auth/care/patients",
@@ -14,6 +17,8 @@ export const CARE_ENDPOINTS = {
     GET_BY_ID: (id: IdParam) => `/api/auth/care/patients/${id}`,
     UPDATE: (id: IdParam) => `/api/auth/care/patients/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/patients/${id}`,
+    BY_DOCUMENT: (doc: string) =>
+      `/api/auth/care/patients/by-document/${encodeURIComponent(doc)}`,
   },
   PATIENT_CATALOGS: {
     SEXES: "/api/auth/care/getAll?type=sexes",

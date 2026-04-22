@@ -27,9 +27,21 @@ export const authOptions: NextAuthOptions = {
 
           if (!data?.accessToken) return null;
 
+          const { data: me } = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
+            { headers: { Authorization: `Bearer ${data.accessToken}` } }
+          );
+
           return {
-            id: email,
-            email,
+            id: String(me.id),
+            email: me.email,
+            username: me.username,
+            firstName: me.firstName,
+            lastName: me.lastName,
+            role: me.userRoleId,
+            profileId: me.userProfileId,
+            userProfileName: me.userProfileName,
+            statusId: me.userStatusId,
             accessToken: data.accessToken,
             expiresAt: data.expiresAt,
           };
@@ -48,18 +60,14 @@ export const authOptions: NextAuthOptions = {
      * ===================================================== */
     async jwt({ token, user }) {
       if (user) {
+        token.user = user;
         token.accessToken = user.accessToken;
         token.expiresAt = user.expiresAt;
         return token;
       }
 
       const expiresAt = token.expiresAt as string | undefined;
-      if (!expiresAt) {
-        token.expired = true;
-        return token;
-      }
-
-      if (new Date(expiresAt) < new Date()) {
+      if (!expiresAt || new Date(expiresAt) < new Date()) {
         token.expired = true;
       }
 
@@ -67,39 +75,20 @@ export const authOptions: NextAuthOptions = {
     },
 
     /* =====================================================
-     * 🔹 SESSION CALLBACK — AQUÍ CIERRAS SESIÓN
+     * 🔹 SESSION CALLBACK — SOLO LEE DEL TOKEN, SIN HTTP
      * ===================================================== */
     async session({ session, token }) {
-      if (token.expired || !token.accessToken) {
-        return null;
-      }
-
-      try {
-        const { data: me } = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
-          {
-            headers: { Authorization: `Bearer ${token.accessToken}` },
-          }
-        );
-
-        session.user = {
-          id: me.id,
-          email: me.email,
-          username: me.username,
-          firstName: me.firstName,
-          lastName: me.lastName,
-          role: me.userRoleId,
-          profileId: me.userProfileId,
-          userProfileName: me.userProfileName,
-          statusId: me.userStatusId,
-          accessToken: String(token.accessToken),
-          expiresAt: String(token.expiresAt),
-        };
-
+      if (token.expired || !token.accessToken || !token.user) {
         return session;
-      } catch {
-        return null as any;
       }
+
+      session.user = {
+        ...token.user,
+        accessToken: String(token.accessToken),
+        expiresAt: String(token.expiresAt),
+      };
+
+      return session;
     },
   },
 

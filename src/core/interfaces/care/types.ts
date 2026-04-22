@@ -66,29 +66,63 @@ export interface TriagePatient {
   gender: string;
 }
 
-export interface TriageVitalSigns {
-  bloodPressure: string;
-  heartRate: number;
-  respiratoryRate: number;
-  weight: number;
-  height: number;
-  temperature: number;
-  glasgow: number;
-}
-
-export interface TriageFormData {
-  documentNumber: string;
-  dateTime: string;
-  priority: number;
-  consultationReason: string;
-  vitalSigns: TriageVitalSigns;
-}
-
-export interface TriageRecord {
+export interface PatientMiniResponse {
   id: number;
-  patientId: number;
-  dateTime: string;
-  priority: number;
-  consultationReason: string;
-  vitalSigns: TriageVitalSigns;
+  numeroDocumento: string;
+  primerNombre: string;
+  segundoNombre?: string | null;
+  primerApellido: string;
+  segundoApellido?: string | null;
+  fechaNacimiento?: string | null;
+  sexo?: string | null;
+}
+
+export type TriagePriority = "I" | "II" | "III" | "IV" | "V";
+
+export interface VitalSignsDto {
+  tensionArterial?: string | null;
+  frecuenciaCardiaca?: number | null;
+  frecuenciaRespiratoria?: number | null;
+  peso?: number | null;
+  talla?: number | null;
+  temperatura?: number | null;
+  glasgow?: number | null;
+}
+
+export interface TriageResponse {
+  id: number;
+  pacienteId: number;
+  numeroDocumento: string;
+  nombrePaciente: string;
+  fechaHora: string;
+  prioridad: TriagePriority;
+  motivoConsulta: string;
+  signosVitales: VitalSignsDto;
+  isActive: boolean;
+}
+
+export interface VitalSignsRequestDto {
+  TensionArterial?: string | null;
+  FrecuenciaCardiaca?: number | null;
+  FrecuenciaRespiratoria?: number | null;
+  Peso?: number | null;
+  Talla?: number | null;
+  Temperatura?: number | null;
+  Glasgow?: number | null;
+}
+
+export interface TriageCreateRequest {
+  NumeroDocumento: string;
+  FechaHora: string;
+  Prioridad: TriagePriority;
+  MotivoConsulta: string;
+  SignosVitales: VitalSignsRequestDto;
+}
+
+export interface TriageUpdateRequest {
+  FechaHora: string;
+  Prioridad: TriagePriority;
+  MotivoConsulta: string;
+  SignosVitales: VitalSignsRequestDto;
+  IsActive: boolean;
 }

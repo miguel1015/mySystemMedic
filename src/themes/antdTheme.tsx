@@ -137,7 +137,9 @@ export default function AntdThemeProvider({
             },
             Input: {
               colorBgContainer: isDark ? "#020617" : "#ffffff",
+              colorBgContainerDisabled: isDark ? "#0f172a" : "#f3f4f6",
               colorText: isDark ? "#e5e7eb" : "#111827",
+              colorTextDisabled: isDark ? "#cbd5e1" : "#374151",
               activeBorderColor: isDark ? "#1f2937" : "#d1d5db",
               hoverBorderColor: isDark ? "#1f2937" : "#9ca3af",
               colorBorder: isDark ? "#1f2937" : "#d1d5db",
@@ -145,7 +147,9 @@ export default function AntdThemeProvider({
             },
             Select: {
               colorBgContainer: isDark ? "#020617" : "#ffffff",
+              colorBgContainerDisabled: isDark ? "#0f172a" : "#f3f4f6",
               colorText: isDark ? "#e5e7eb" : "#111827",
+              colorTextDisabled: isDark ? "#cbd5e1" : "#374151",
               activeBorderColor: isDark ? "#1f2937" : "#d1d5db",
               hoverBorderColor: isDark ? "#1f2937" : "#9ca3af",
               colorBorder: isDark ? "#1f2937" : "#d1d5db",
