@@ -49,72 +49,6 @@ const emptyStateStyle: React.CSSProperties = {
   marginTop: 16,
 }
 
-/* ── Opciones mock para selects ── */
-
-const careModalityOptions = [
-  { value: 1, label: "Intramural" },
-  { value: 2, label: "Extramural" },
-  { value: 3, label: "Telemedicina" },
-]
-
-const careReasonOptions = [
-  { value: 1, label: "Enfermedad general" },
-  { value: 2, label: "Accidente de trabajo" },
-  { value: 3, label: "Accidente de tránsito" },
-  { value: 4, label: "Evento catastrófico" },
-  { value: 5, label: "Otro" },
-]
-
-const serviceClassificationOptions = [
-  { value: 1, label: "Urgencias" },
-  { value: 2, label: "Consulta externa" },
-  { value: 3, label: "Hospitalización" },
-  { value: 4, label: "Quirúrgico" },
-]
-
-const serviceGroupOptions = [
-  { value: 1, label: "Medicina general" },
-  { value: 2, label: "Medicina especializada" },
-  { value: 3, label: "Odontología" },
-  { value: 4, label: "Enfermería" },
-  { value: 5, label: "Terapias" },
-]
-
-const admissionTypeOptions = [
-  { value: 1, label: "Remitido" },
-  { value: 2, label: "Espontáneo" },
-  { value: 3, label: "Referido" },
-]
-
-const careScopeOptions = [
-  { value: 1, label: "Ambulatorio" },
-  { value: 2, label: "Hospitalario" },
-  { value: 3, label: "Domiciliario" },
-  { value: 4, label: "Urgencias" },
-]
-
-const carePurposeOptions = [
-  { value: 1, label: "Diagnóstico" },
-  { value: 2, label: "Terapéutico" },
-  { value: 3, label: "Rehabilitación" },
-  { value: 4, label: "Promoción y prevención" },
-  { value: 5, label: "Paliativo" },
-]
-
-const insurerOptions = [
-  { value: 1, label: "Sura EPS" },
-  { value: 2, label: "Nueva EPS" },
-  { value: 3, label: "Sanitas" },
-  { value: 4, label: "Compensar" },
-  { value: 5, label: "Famisanar" },
-]
-
-const agreementOptions = [
-  { value: 1, label: "Convenio general" },
-  { value: 2, label: "Convenio especial" },
-  { value: 3, label: "Convenio empresarial" },
-]
-
 /* ── Componente principal ── */
 
 export default function AdmissionsForm() {
@@ -129,6 +63,17 @@ export default function AdmissionsForm() {
     searchError,
     searching,
     handleSearchPatient,
+    isLoadingCatalogs,
+    hasServiceClassification,
+    careModalityOptions,
+    careReasonOptions,
+    serviceClassificationOptions,
+    serviceGroupOptions,
+    admissionTypeOptions,
+    careScopeOptions,
+    carePurposeOptions,
+    insurerOptions,
+    agreementOptions,
   } = useAdmissionForm()
 
   return (
@@ -255,6 +200,7 @@ export default function AdmissionsForm() {
                 placeholder="Seleccione"
                 control={control}
                 options={careModalityOptions}
+                loading={isLoadingCatalogs}
               />
               <SelectAutocomplete
                 name="careReason"
@@ -262,6 +208,7 @@ export default function AdmissionsForm() {
                 placeholder="Seleccione"
                 control={control}
                 options={careReasonOptions}
+                loading={isLoadingCatalogs}
               />
               <SelectAutocomplete
                 name="serviceClassification"
@@ -269,13 +216,20 @@ export default function AdmissionsForm() {
                 placeholder="Seleccione"
                 control={control}
                 options={serviceClassificationOptions}
+                loading={isLoadingCatalogs}
               />
               <SelectAutocomplete
                 name="serviceGroup"
                 label="Grupo servicio"
-                placeholder="Seleccione"
+                placeholder={
+                  hasServiceClassification
+                    ? "Seleccione"
+                    : "Seleccione una clasificación primero"
+                }
                 control={control}
                 options={serviceGroupOptions}
+                loading={isLoadingCatalogs}
+                disabled={!hasServiceClassification}
               />
               <SelectAutocomplete
                 name="admissionType"
@@ -283,6 +237,7 @@ export default function AdmissionsForm() {
                 placeholder="Seleccione"
                 control={control}
                 options={admissionTypeOptions}
+                loading={isLoadingCatalogs}
               />
               <SelectAutocomplete
                 name="careScope"
@@ -290,6 +245,7 @@ export default function AdmissionsForm() {
                 placeholder="Seleccione"
                 control={control}
                 options={careScopeOptions}
+                loading={isLoadingCatalogs}
               />
               <SelectAutocomplete
                 name="carePurpose"
@@ -297,6 +253,7 @@ export default function AdmissionsForm() {
                 placeholder="Seleccione"
                 control={control}
                 options={carePurposeOptions}
+                loading={isLoadingCatalogs}
               />
               <SelectAutocomplete
                 name="insurerId"
@@ -304,6 +261,7 @@ export default function AdmissionsForm() {
                 placeholder="Seleccione"
                 control={control}
                 options={insurerOptions}
+                loading={isLoadingCatalogs}
               />
               <SelectAutocomplete
                 name="agreementId"
@@ -311,6 +269,7 @@ export default function AdmissionsForm() {
                 placeholder="Seleccione"
                 control={control}
                 options={agreementOptions}
+                loading={isLoadingCatalogs}
               />
             </GridContainer>
           </div>

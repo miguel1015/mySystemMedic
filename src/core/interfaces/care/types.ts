@@ -56,6 +56,27 @@ export interface ActiveAdmission {
   patientId: number;
 }
 
+export interface AdmissionCatalogItem {
+  id: number;
+  name: string;
+  isActive: boolean;
+}
+
+export interface AdmissionServiceGroup extends AdmissionCatalogItem {
+  serviceClassificationId: number;
+  serviceClassificationName: string;
+}
+
+export interface AdmissionCatalogs {
+  careModalities: AdmissionCatalogItem[];
+  careScopes: AdmissionCatalogItem[];
+  careReasons: AdmissionCatalogItem[];
+  admissionTypes: AdmissionCatalogItem[];
+  carePurposes: AdmissionCatalogItem[];
+  serviceClassifications: AdmissionCatalogItem[];
+  serviceGroups: AdmissionServiceGroup[];
+}
+
 export interface TriagePatient {
   id: number;
   firstName: string;
