@@ -93,6 +93,8 @@ export default function AdmissionsForm({
     carePurposeOptions,
     insurerOptions,
     agreementOptions,
+    handleAgreementChange,
+    handleAgreementClear,
   } = useAdmissionForm({ initialAdmission, onDone })
 
   const showFormBody = isEdit || !!patient
@@ -312,7 +314,9 @@ export default function AdmissionsForm({
                 control={control}
                 options={agreementOptions}
                 loading={isLoadingCatalogs}
-                disabled={!isEdit && !hasSelectedInsurer}
+                disabled={!hasSelectedInsurer}
+                onChange={handleAgreementChange}
+                onClear={handleAgreementClear}
               />
             </GridContainer>
           </div>

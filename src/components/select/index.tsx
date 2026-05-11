@@ -11,13 +11,15 @@ export interface SelectOption {
 }
 
 export interface RHFAntdSelectProps<T extends FieldValues>
-  extends Omit<SelectProps, "options" | "value" | "onChange" | "mode"> {
+  extends Omit<SelectProps, "options" | "value" | "onChange" | "onClear" | "mode"> {
   name: Path<T>;
   control: Control<T>;
   label?: string;
   helperText?: string;
   options: SelectOption[];
   isMulti?: boolean;
+  onChange?: SelectProps["onChange"];
+  onClear?: SelectProps["onClear"];
 }
 
 export default function RHFAntdSelect<T extends FieldValues>({
@@ -29,6 +31,8 @@ export default function RHFAntdSelect<T extends FieldValues>({
   isMulti = false,
   disabled,
   placeholder,
+  onChange,
+  onClear,
   ...antdProps
 }: RHFAntdSelectProps<T>) {
   const {
@@ -62,8 +66,15 @@ export default function RHFAntdSelect<T extends FieldValues>({
         options={options}
         mode={isMulti ? "multiple" : undefined}
         status={error ? "error" : undefined}
-        value={field.value || undefined}
-        onChange={(val) => field.onChange(val)}
+        value={field.value ?? undefined}
+        onChange={(val, option) => {
+          field.onChange(val ?? null);
+          onChange?.(val, option);
+        }}
+        onClear={() => {
+          field.onChange(isMulti ? [] : null);
+          onClear?.();
+        }}
         allowClear
         showSearch
         optionFilterProp="label"

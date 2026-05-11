@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
   AdmissionCatalogItem,
@@ -28,7 +28,20 @@ interface SearchErrorState {
   message: string;
 }
 
-const admissionSchema = z.object({
+const normalizeClearedSelectValues = (value: unknown) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, fieldValue]) => [
+      key,
+      fieldValue === null ? undefined : fieldValue,
+    ]),
+  );
+};
+
+const admissionSchema = z.preprocess(normalizeClearedSelectValues, z.object({
   firstName: z.string().optional(),
   secondName: z.string().optional(),
   firstLastName: z.string().optional(),
@@ -62,7 +75,7 @@ const admissionSchema = z.object({
   agreementId: z
     .number({ required_error: "El convenio es obligatorio" })
     .min(1, "Seleccione un convenio"),
-});
+}));
 
 export type AdmissionFormValues = z.infer<typeof admissionSchema>;
 
@@ -107,6 +120,8 @@ export function useAdmissionForm({
   const [searchError, setSearchError] = useState<SearchErrorState | null>(null);
   const [searching, setSearching] = useState(false);
   const isEdit = !!initialAdmission;
+  const [hasLoadedInitialEditData, setHasLoadedInitialEditData] =
+    useState(!isEdit);
 
   const { control, handleSubmit, reset, setValue, watch } =
     useForm<AdmissionFormValues>({
@@ -116,6 +131,11 @@ export function useAdmissionForm({
 
   const selectedServiceClassification = watch("serviceClassification");
   const selectedInsurerId = watch("insurerId");
+  const selectedAgreementId = watch("agreementId");
+  const previousSelectedInsurerRef = useRef<number | undefined>(undefined);
+  const hasInitializedInsurerRef = useRef(false);
+  const initializedAdmissionIdRef = useRef<number | null>(null);
+  const userTouchedAgreementRef = useRef(false);
   const { data: contracts, isLoading: loadingContracts } =
     useContractsByInsurer(selectedInsurerId);
 
@@ -126,9 +146,26 @@ export function useAdmissionForm({
   }, [isEdit, selectedServiceClassification, setValue]);
 
   useEffect(() => {
-    if (isEdit) return;
-    setValue("agreementId", undefined as unknown as number);
-  }, [isEdit, selectedInsurerId, setValue]);
+    const previousSelectedInsurer = previousSelectedInsurerRef.current;
+
+    if (!hasInitializedInsurerRef.current) {
+      previousSelectedInsurerRef.current = selectedInsurerId;
+      hasInitializedInsurerRef.current = true;
+      return;
+    }
+
+    if (
+      previousSelectedInsurer !== undefined &&
+      previousSelectedInsurer !== selectedInsurerId
+    ) {
+      setValue("agreementId", null as unknown as number, {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+    }
+
+    previousSelectedInsurerRef.current = selectedInsurerId;
+  }, [selectedInsurerId, setValue]);
 
   const catalogOptions = useMemo(() => {
     const admissionOptions = (data: AdmissionCatalogItem[] | undefined) =>
@@ -157,6 +194,8 @@ export function useAdmissionForm({
         contract.contractStatusDescription ?? contract.status ?? "";
       return !status || status.toLowerCase() === "activo";
     });
+    const shouldIncludeCurrentAgreement =
+      !!initialAdmission && selectedInsurerId === initialAdmission.epsId;
 
     const careModalityOptions = admissionOptions(catalogs?.careModalities);
     const careReasonOptions = admissionOptions(catalogs?.careReasons);
@@ -216,22 +255,87 @@ export function useAdmissionForm({
         initialAdmission?.epsId,
         initialAdmission?.epsNombre,
       ),
-      agreementOptions: withCurrentOption(
-        agreementOptions,
-        initialAdmission?.convenioId,
-        initialAdmission?.convenioNombre,
-      ),
+      agreementOptions: shouldIncludeCurrentAgreement
+        ? withCurrentOption(
+            agreementOptions,
+            initialAdmission?.convenioId,
+            initialAdmission?.convenioNombre ??
+              (initialAdmission?.convenioId
+                ? `Convenio ${initialAdmission.convenioId}`
+                : undefined),
+          )
+        : agreementOptions,
     };
   }, [
     catalogs,
     contracts,
     initialAdmission,
     insurers,
+    selectedInsurerId,
     selectedServiceClassification,
   ]);
 
   useEffect(() => {
-    if (!initialAdmission) return;
+    if (!selectedAgreementId || loadingContracts) return;
+
+    const isInitialAdmissionAgreement =
+      !!initialAdmission &&
+      Number(selectedInsurerId) === initialAdmission.epsId &&
+      Number(selectedAgreementId) === initialAdmission.convenioId;
+
+    if (isInitialAdmissionAgreement) return;
+
+    const agreementBelongsToSelectedInsurer = catalogOptions.agreementOptions.some(
+      (option) => Number(option.value) === Number(selectedAgreementId),
+    );
+
+    if (!agreementBelongsToSelectedInsurer) {
+      setValue("agreementId", null as unknown as number, {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+    }
+  }, [
+    catalogOptions.agreementOptions,
+    initialAdmission,
+    loadingContracts,
+    selectedAgreementId,
+    selectedInsurerId,
+    setValue,
+  ]);
+
+  useEffect(() => {
+    if (!initialAdmission || loadingContracts || selectedAgreementId) return;
+    if (userTouchedAgreementRef.current) return;
+    if (Number(selectedInsurerId) !== initialAdmission.epsId) return;
+    if (!initialAdmission.convenioId) return;
+
+    const currentAgreementIsAvailable = catalogOptions.agreementOptions.some(
+      (option) => Number(option.value) === initialAdmission.convenioId,
+    );
+
+    if (!currentAgreementIsAvailable) return;
+
+    setValue("agreementId", initialAdmission.convenioId, {
+      shouldDirty: false,
+      shouldValidate: false,
+    });
+  }, [
+    catalogOptions.agreementOptions,
+    initialAdmission,
+    loadingContracts,
+    selectedAgreementId,
+    selectedInsurerId,
+    setValue,
+  ]);
+
+  useEffect(() => {
+    if (!initialAdmission) {
+      initializedAdmissionIdRef.current = null;
+      return;
+    }
+
+    if (initializedAdmissionIdRef.current === initialAdmission.id) return;
 
     const resetValues: AdmissionFormValues = {
       ...emptyValues,
@@ -246,18 +350,22 @@ export function useAdmissionForm({
       agreementId: initialAdmission.convenioId,
     };
 
+    initializedAdmissionIdRef.current = initialAdmission.id;
+    previousSelectedInsurerRef.current = initialAdmission.epsId;
+    hasInitializedInsurerRef.current = true;
+    userTouchedAgreementRef.current = false;
     reset(resetValues);
     setSearchDoc(String(initialAdmission.documentoPatiente));
     setPatient(null);
     setSearchError(null);
-  }, [catalogOptions, catalogs?.serviceGroups, initialAdmission, reset]);
+  }, [initialAdmission, reset]);
 
   const hasOptionValue = (
     options: { value: number | string; label: string }[],
     value: number,
   ) => options.some((option) => Number(option.value) === value);
 
-  const isEditDataReady =
+  const canLoadInitialEditData =
     !isEdit ||
     (!loadingAdmissionCatalogs &&
       !loadingInsurers &&
@@ -292,7 +400,20 @@ export function useAdmissionForm({
         initialAdmission.carePurposeId,
       ) &&
       hasOptionValue(catalogOptions.insurerOptions, initialAdmission.epsId) &&
-      hasOptionValue(catalogOptions.agreementOptions, initialAdmission.convenioId));
+      (!!initialAdmission.convenioId ||
+        hasOptionValue(catalogOptions.agreementOptions, initialAdmission.convenioId)));
+
+  useEffect(() => {
+    setHasLoadedInitialEditData(!isEdit);
+  }, [initialAdmission?.id, isEdit]);
+
+  useEffect(() => {
+    if (canLoadInitialEditData) {
+      setHasLoadedInitialEditData(true);
+    }
+  }, [canLoadInitialEditData]);
+
+  const isEditDataReady = !isEdit || hasLoadedInitialEditData;
 
   const buildPayload = (data: AdmissionFormValues): AdmissionUpdateRequest => ({
     careModalityId: data.careModality,
@@ -402,10 +523,19 @@ export function useAdmissionForm({
   };
 
   const handleReset = () => {
+    userTouchedAgreementRef.current = false;
     reset(emptyValues);
     setPatient(null);
     setSearchDoc("");
     setSearchError(null);
+  };
+
+  const handleAgreementChange = () => {
+    userTouchedAgreementRef.current = true;
+  };
+
+  const handleAgreementClear = () => {
+    userTouchedAgreementRef.current = true;
   };
 
   return {
@@ -427,6 +557,8 @@ export function useAdmissionForm({
     isEditDataReady,
     hasServiceClassification: !!selectedServiceClassification,
     hasSelectedInsurer: !!selectedInsurerId,
+    handleAgreementChange,
+    handleAgreementClear,
     ...catalogOptions,
   };
 }
