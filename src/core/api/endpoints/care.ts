@@ -7,6 +7,13 @@ export const CARE_ENDPOINTS = {
   ADMISSION_CATALOGS: {
     GET_ALL: "/api/auth/care/getAll?type=admission-catalogs",
   },
+  ADMISSIONS: {
+    GET_ALL: "/api/auth/care/admissions",
+    CREATE: "/api/auth/care/admissions",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/admissions/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/admissions/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/admissions/${id}`,
+  },
   TRIAGE: {
     GET_ALL: "/api/auth/care/triage",
     CREATE: "/api/auth/care/triage",

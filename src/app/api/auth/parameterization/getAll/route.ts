@@ -6,6 +6,7 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   tariffs: "/api/tariffs",
   "benefit-plans": "/api/benefit-plans",
   contracts: "/api/contracts",
+  "contracts-by-insurer": "/api/contracts/by-insurer",
   "contract-details": "/api/contract-details",
   medicines: "/api/medicines",
   "contract-catalogs": "/api/contracts/catalogs",
@@ -33,8 +34,21 @@ export async function GET(request: Request) {
       );
     }
 
+    const insurerId = searchParams.get("insurerId");
+    const endpoint =
+      type === "contracts-by-insurer"
+        ? `${TYPE_TO_ENDPOINT[type]}/${insurerId}`
+        : TYPE_TO_ENDPOINT[type];
+
+    if (type === "contracts-by-insurer" && !insurerId) {
+      return NextResponse.json(
+        { error: "insurerId parameter is required" },
+        { status: 400 },
+      );
+    }
+
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${TYPE_TO_ENDPOINT[type]}`,
+      `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
       {
         headers: {
           Authorization: `Bearer ${session.user.accessToken}`,

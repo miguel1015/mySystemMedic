@@ -113,6 +113,8 @@ export interface Contract {
 export interface TContract extends Contract {
   id: number;
   status: string;
+  insurerName?: string;
+  contractStatusDescription?: string;
 }
 
 export interface ContractDetail {

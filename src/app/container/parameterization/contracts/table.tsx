@@ -24,7 +24,6 @@ const STATUS_COLORS: Record<string, string> = {
 const ContractsTable = ({ onEdit }: ContractsTableProps) => {
   const { data: dataContracts = [], isLoading } = useContracts();
   const deleteContract = useDeleteContract();
-  console.log("🤩🤩🤩", dataContracts);
 
   const [search, setSearch] = useState("");
   const [openConfirm, setOpenConfirm] = useState(false);

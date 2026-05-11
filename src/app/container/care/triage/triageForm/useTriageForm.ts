@@ -212,7 +212,9 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
     // eslint-disable-next-line no-console
     console.warn("[TriageForm] validación fallida:", errors);
 
-    const firstKey = Object.keys(errors)[0] as keyof TriageFormValues | undefined;
+    const firstKey = Object.keys(errors)[0] as
+      | keyof TriageFormValues
+      | undefined;
     const firstMessage = firstKey
       ? (errors[firstKey]?.message as string | undefined)
       : undefined;
@@ -223,8 +225,7 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
     }
 
     toast.error(
-      firstMessage ??
-        "Revisa los campos obligatorios y vuelve a intentarlo.",
+      firstMessage ?? "Revisa los campos obligatorios y vuelve a intentarlo.",
     );
   };
 
@@ -239,12 +240,6 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
         return;
       }
 
-      // eslint-disable-next-line no-console
-      console.log(
-        "[TriageForm] paciente seleccionado:\n" +
-          JSON.stringify(patient, null, 2),
-      );
-
       const numeroDocumento =
         patient.numeroDocumento?.trim() || searchDoc.trim();
 
@@ -255,12 +250,6 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
         MotivoConsulta: data.consultationReason,
         SignosVitales: signosVitales,
       };
-
-      // eslint-disable-next-line no-console
-      console.log(
-        "[TriageForm] POST /api/triage payload:\n" +
-          JSON.stringify(payload, null, 2),
-      );
 
       createMutation.mutate(payload, {
         onSuccess: () => {
@@ -283,12 +272,6 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
       SignosVitales: signosVitales,
       IsActive: initialTriage.isActive,
     };
-
-    // eslint-disable-next-line no-console
-    console.log(
-      `[TriageForm] PUT /api/triage/${initialTriage.id} payload:\n` +
-        JSON.stringify(payload, null, 2),
-    );
 
     updateMutation.mutate(
       { id: initialTriage.id, data: payload },

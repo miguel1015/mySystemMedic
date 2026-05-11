@@ -44,10 +44,6 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    console.log(
-      "📤 [POST /patients] Body enviado al backend:",
-      JSON.stringify(body, null, 2),
-    );
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}${BACKEND_ENDPOINT}`,
@@ -61,17 +57,10 @@ export async function POST(req: Request) {
       },
     );
 
-    console.log("📥 [POST /patients] Status del backend:", res.status);
-
     const contentType = res.headers.get("content-type") || "";
     const backendResponse = contentType.includes("application/json")
       ? await res.json().catch(() => null)
       : await res.text().catch(() => null);
-
-    console.log(
-      "📥 [POST /patients] Respuesta del backend:",
-      JSON.stringify(backendResponse, null, 2),
-    );
 
     if (!res.ok) {
       const errorMessage =

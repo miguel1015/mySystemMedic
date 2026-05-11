@@ -77,6 +77,51 @@ export interface AdmissionCatalogs {
   serviceGroups: AdmissionServiceGroup[];
 }
 
+export interface AdmissionCreateRequest {
+  document: string;
+  careModalityId: number;
+  careReasonId: number;
+  serviceClassificationId: number;
+  serviceGroupId: number;
+  admissionTypeId: number;
+  careScopeId: number;
+  carePurposeId: number;
+  epsId: number;
+  convenioId: number;
+}
+
+export type AdmissionUpdateRequest = Omit<AdmissionCreateRequest, "document">;
+
+export interface AdmissionResponse {
+  id: number;
+  patientId: number;
+  documentoPatiente: string;
+  nombrePaciente: string;
+  triageId: number;
+  triagePrioridad: string;
+  triageFechaHora: string;
+  careModalityId: number;
+  careModalityName: string;
+  careReasonId: number;
+  careReasonName: string;
+  serviceClassificationId: number;
+  serviceClassificationName: string;
+  serviceGroupId: number;
+  serviceGroupName: string;
+  admissionTypeId: number;
+  admissionTypeName: string;
+  careScopeId: number;
+  careScopeName: string;
+  carePurposeId: number;
+  carePurposeName: string;
+  epsId: number;
+  epsNombre: string;
+  convenioId: number;
+  convenioNombre: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
 export interface TriagePatient {
   id: number;
   firstName: string;

@@ -12,7 +12,11 @@ export const PARAMETERIZATION_ENDPOINTS = {
     GET_ALL: "/api/auth/parameterization/getAll?type=benefit-plans",
   },
   TARIFFS: makeParamCrud("tariffs"),
-  CONTRACTS: makeParamCrud("contracts"),
+  CONTRACTS: {
+    ...makeParamCrud("contracts"),
+    BY_INSURER: (insurerId: string | number) =>
+      `/api/auth/parameterization/getAll?type=contracts-by-insurer&insurerId=${insurerId}`,
+  },
   CONTRACT_CATALOGS: {
     GET_ALL: "/api/auth/parameterization/getAll?type=contract-catalogs",
   },
