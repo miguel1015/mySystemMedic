@@ -22,7 +22,6 @@ const TariffsTable = ({ onEdit }: TariffsTableProps) => {
   const [openConfirm, setOpenConfirm] = useState(false);
   const [tariffsDelete, setTariffsDelete] = useState<number | null>(null);
 
-  // ---------- FILTRO ----------
   const filteredTariffs = useMemo<TTariffs[]>(() => {
     const term = search.toLowerCase();
 
@@ -30,38 +29,46 @@ const TariffsTable = ({ onEdit }: TariffsTableProps) => {
       (tariffs) =>
         tariffs.name.toLowerCase().includes(term) ||
         (tariffs.valueMethodDescription ?? "").toLowerCase().includes(term) ||
+        (tariffs.tariffDetailDescription ?? "").toLowerCase().includes(term) ||
+        (tariffs.contractName ?? "").toLowerCase().includes(term) ||
         String(tariffs.id).includes(term),
     );
   }, [search, dataTariffs]);
 
-  // ---------- COLUMNAS ----------
   const columns: ColumnsType<TTariffs> = [
     {
       title: "#",
-      width: 80,
+      width: 50,
       render: (_value, _record, index) => index + 1,
     },
     {
       title: "ID",
       dataIndex: "id",
-      width: 120,
+      width: 50,
       sorter: (a, b) => a.id! - b.id!,
     },
     {
       title: "Nombre",
       dataIndex: "name",
+      width: 200,
+    },
+    {
+      title: "Contrato",
+      dataIndex: "contractName",
       width: 300,
+      render: (value: string | undefined) => value ?? "-",
     },
     {
       title: "Método de valoración",
       dataIndex: "valueMethodDescription",
-      width: 250,
-      render: (value: string | undefined) => value ?? "—",
+      width: 200,
+      render: (_value: string | undefined, record) =>
+        record.valueMethodDescription ?? record.tariffDetailDescription ?? "-",
     },
     {
       title: "Estado",
       dataIndex: "isActive",
-      width: 120,
+      width: 100,
       render: (value: boolean) =>
         value ? (
           <Tag color="green">Activo</Tag>
@@ -108,7 +115,6 @@ const TariffsTable = ({ onEdit }: TariffsTableProps) => {
 
   return (
     <Container className="py-4">
-      {/* Buscador */}
       <div className="mb-3">
         <Input
           placeholder="Buscar tarifario..."
@@ -120,7 +126,6 @@ const TariffsTable = ({ onEdit }: TariffsTableProps) => {
         />
       </div>
 
-      {/* Tabla */}
       <Table<TTariffs>
         size="small"
         columns={columns}
@@ -131,7 +136,6 @@ const TariffsTable = ({ onEdit }: TariffsTableProps) => {
         scroll={{ x: "max-content" }}
       />
 
-      {/* Confirmación */}
       <ModalConfirm
         open={openConfirm}
         onClose={() => {

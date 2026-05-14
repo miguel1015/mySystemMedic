@@ -1,15 +1,10 @@
 "use client"
 
+import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js"
+import { Inbox } from "lucide-react"
 import { Doughnut } from "react-chartjs-2"
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from "chart.js"
 import { TTariffs } from "@/core/interfaces/parameterization/types"
 import { useAppTheme } from "@/themes/antdTheme"
-import { Inbox } from "lucide-react"
 import styles from "../dashboard.module.scss"
 
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -45,7 +40,8 @@ export function TariffDistributionChart({ tariffs }: Props) {
   }
 
   const codingGroups = tariffs.reduce<Record<string, number>>((acc, t) => {
-    const group = t.valueMethodDescription || "Sin método"
+    const group =
+      t.tariffDetailDescription || t.valueMethodDescription || "Sin método"
     acc[group] = (acc[group] || 0) + 1
     return acc
   }, {})
@@ -63,7 +59,9 @@ export function TariffDistributionChart({ tariffs }: Props) {
       {
         data: values,
         backgroundColor: colorPalette.slice(0, labels.length),
-        hoverBackgroundColor: colorPalette.slice(0, labels.length).map((c) => c + "DD"),
+        hoverBackgroundColor: colorPalette
+          .slice(0, labels.length)
+          .map((c) => c + "DD"),
         borderWidth: 0,
         spacing: 3,
         borderRadius: 4,

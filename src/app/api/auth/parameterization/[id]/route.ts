@@ -21,6 +21,9 @@ const TYPE_CONFIG = {
   "contract-details": {
     endpoint: "/api/contract-details",
   },
+  tariffdetails: {
+    endpoint: "/api/tariffdetails",
+  },
   providers: {
     endpoint: "/api/providers",
   },

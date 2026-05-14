@@ -51,7 +51,7 @@ export default function TariffsFormSkeleton() {
       <div>
         {/* Inputs */}
         <GridContainer columns="col-4" gap="g-3" container>
-          {Array.from({ length: 2 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <div key={i}>
               {/* Label */}
               <div

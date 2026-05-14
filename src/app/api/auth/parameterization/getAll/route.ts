@@ -8,6 +8,7 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   contracts: "/api/contracts",
   "contracts-by-insurer": "/api/contracts/by-insurer",
   "contract-details": "/api/contract-details",
+  tariffdetails: "/api/tariffdetails",
   medicines: "/api/medicines",
   "contract-catalogs": "/api/contracts/catalogs",
 };

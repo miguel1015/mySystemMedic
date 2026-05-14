@@ -14,11 +14,28 @@ export interface Insurance {
 export interface TTariffs {
   id?: number;
   name: string;
-  valueMethodId: number;
+  valueMethodId?: number;
   valueMethodDescription?: string;
+  tariffDetailId: number;
+  tariffDetailDescription?: string;
+  contractId: number;
+  contractName?: string;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface TTariffDetail {
+  id: number;
+  referenceCode: number;
+  description: string;
+  value: number;
+  isSurgicalProcedure: boolean;
+  factors: number;
+  tariffId: number;
+  tariffName?: string;
+  surgicalGroupId: number;
+  surgicalGroupReferenceCode?: string;
 }
 
 export interface TMedicine {
