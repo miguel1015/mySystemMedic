@@ -30,7 +30,7 @@ import {
   ProgressBar,
 } from "react-bootstrap";
 import HeaderNavSettings from "./HeaderNavSettings";
-import { getPreferredTheme } from "@/themes/theme";
+import getTheme from "@/themes/theme";
 
 type ItemWithIconProps = {
   icon: IconDefinition;
@@ -50,7 +50,7 @@ const ItemWithIcon = (props: ItemWithIconProps) => {
 export default async function HeaderNotificationNav() {
   const dict = await getDictionary();
   const locale = getLocale();
-  const preferredTheme = getPreferredTheme();
+  const preferredTheme = getTheme();
   return (
     <Nav>
       <NavItem className="d-none d-sm-block">

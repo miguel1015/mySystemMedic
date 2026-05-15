@@ -23,18 +23,19 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const dictionary = await getDictionary();
+  const currentTheme = getTheme();
 
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "";
   const vercelAnalytics = process.env.NEXT_PUBLIC_VERCEL_ANALYTICS === "true";
   const googleAdsenseId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID ?? "";
 
   return (
-    <html lang="en" data-bs-theme={getTheme()}>
+    <html lang="en" data-bs-theme={currentTheme}>
       <body>
         <ProgressBar />
         <ToasterProvider />
         <ReactQueryProvider>
-          <AntdThemeProvider>
+          <AntdThemeProvider initialTheme={currentTheme}>
             <DictionaryProvider dictionary={dictionary}>
               {children}
             </DictionaryProvider>

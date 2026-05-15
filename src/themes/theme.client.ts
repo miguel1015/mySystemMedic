@@ -2,16 +2,26 @@
 
 import { Theme } from "@/themes/enum";
 
-export const getPreferredThemeClient = (): Theme => {
-  if (typeof document === "undefined") return Theme.Auto;
+const isThemeMode = (value: string | undefined): value is Theme.Light | Theme.Dark =>
+  value === Theme.Light || value === Theme.Dark;
 
-  const cookie = document.cookie
+const getCookie = (name: string) =>
+  document.cookie
     .split("; ")
-    .find((c) => c.startsWith("preferred_theme="));
+    .find((c) => c.startsWith(`${name}=`))
+    ?.split("=")[1];
 
-  if (!cookie) return Theme.Auto;
+export const getThemeClient = (): Theme.Light | Theme.Dark => {
+  if (typeof document === "undefined") return Theme.Light;
 
-  const value = cookie.split("=")[1] as Theme;
+  const storedTheme = localStorage.getItem("theme") ?? undefined;
+  if (isThemeMode(storedTheme)) return storedTheme;
 
-  return Object.values(Theme).includes(value) ? value : Theme.Auto;
+  const themeCookie = getCookie("theme");
+  if (isThemeMode(themeCookie)) return themeCookie;
+
+  const legacyPreferredThemeCookie = getCookie("preferred_theme");
+  if (isThemeMode(legacyPreferredThemeCookie)) return legacyPreferredThemeCookie;
+
+  return Theme.Light;
 };

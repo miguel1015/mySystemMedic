@@ -3,16 +3,16 @@
 import Modal from "@/components/modal"
 import { ActiveAdmission } from "@/core/interfaces/care/types"
 import {
-  FileTextOutlined,
-  MedicineBoxOutlined,
-  ExperimentOutlined,
-  ScissorOutlined,
   AlertOutlined,
+  ExperimentOutlined,
+  FileTextOutlined,
   FormOutlined,
   InboxOutlined,
+  MedicineBoxOutlined,
   RadarChartOutlined,
+  ScissorOutlined,
 } from "@ant-design/icons"
-import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
 
 interface ActionsModalProps {
   open: boolean;
@@ -23,42 +23,42 @@ interface ActionsModalProps {
 const actions = [
   {
     key: "evolve",
-    label: "Evolucionar Historia Clínica",
+    label: "Evolucionar Historia Clinica",
     icon: <FileTextOutlined style={{ fontSize: 28 }} />,
     path: "/care/careManagement",
     color: "var(--theme-primary, #0F6F5C)",
   },
   {
     key: "expense-urgency",
-    label: "Hoja de Gastos Urgencia",
+    label: "Hoja de Gastos de Urgencias",
     icon: <AlertOutlined style={{ fontSize: 28 }} />,
     path: "/care/expenseSheet/urgency",
     color: "#d4380d",
   },
   {
     key: "expense-hospitalization",
-    label: "Hoja de Gastos Hospitalización",
+    label: "Hoja de Gastos Hospitalizacion",
     icon: <InboxOutlined style={{ fontSize: 28 }} />,
     path: "/care/expenseSheet/hospitalization",
     color: "#1677ff",
   },
   {
     key: "expense-surgery",
-    label: "Hoja de Gastos Cirugía",
+    label: "Hoja Gastos de Cirugia",
     icon: <ScissorOutlined style={{ fontSize: 28 }} />,
     path: "/care/expenseSheet/surgery",
     color: "#531dab",
   },
   {
     key: "lab-sheet",
-    label: "Hoja de Laboratorio",
+    label: "Laboratorios",
     icon: <ExperimentOutlined style={{ fontSize: 28 }} />,
     path: "/care/labSheet",
     color: "#08979c",
   },
   {
     key: "medication",
-    label: "Aplicación de Medicamentos",
+    label: "Aplicacion de Medicamentos",
     icon: <MedicineBoxOutlined style={{ fontSize: 28 }} />,
     path: "/care/medicationApplication",
     color: "#389e0d",
@@ -80,8 +80,21 @@ const actions = [
 ]
 
 const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
-  const handleAction = () => {
-    toast("Vista solo visual", { icon: "ℹ️" })
+  const router = useRouter()
+
+  const handleAction = (path: string) => {
+    if (!patient) return
+
+    const params = new URLSearchParams({
+      admissionId: String(patient.id),
+      patientId: String(patient.patientId),
+      patientName: patient.patientFullName,
+      documentNumber: patient.documentNumber,
+      careScope: patient.careScope,
+      admissionDate: patient.admissionDate,
+    })
+
+    router.push(`${path}?${params.toString()}`)
     onClose()
   }
 
@@ -116,7 +129,7 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
         {actions.map((action) => (
           <button
             key={action.key}
-            onClick={() => handleAction()}
+            onClick={() => handleAction(action.path)}
             style={{
               display: "flex",
               flexDirection: "column",

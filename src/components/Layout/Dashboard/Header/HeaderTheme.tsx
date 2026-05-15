@@ -1,8 +1,7 @@
 "use client";
 
 import Cookies from "js-cookie";
-import React, { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useCallback, useState } from "react";
 import {
   Dropdown,
   DropdownItem,
@@ -12,13 +11,11 @@ import {
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCircleHalfStroke,
   faMoon,
   faSun,
 } from "@fortawesome/free-solid-svg-icons";
 import { Theme } from "@/themes/enum";
 import useDictionary from "@/locales/dictionary-hook";
-import { useMediaQuery } from "react-responsive";
 import { useAppTheme, useThemeColor } from "../../../../themes/antdTheme";
 
 const themeOptions = [
@@ -31,11 +28,6 @@ const themeOptions = [
     key: Theme.Dark,
     labelKey: "dark",
     icon: faMoon,
-  },
-  {
-    key: Theme.Auto,
-    labelKey: "auto",
-    icon: faCircleHalfStroke,
   },
 ] as const;
 
@@ -52,8 +44,7 @@ const getItemStyle = (active: boolean, brandColor: string): React.CSSProperties 
  * ------------------------------------- */
 const CurrentTheme = ({ theme }: { theme: Theme }) => {
   if (theme === Theme.Light) return <FontAwesomeIcon icon={faSun} size="lg" />;
-  if (theme === Theme.Dark) return <FontAwesomeIcon icon={faMoon} size="lg" />;
-  return <FontAwesomeIcon icon={faCircleHalfStroke} size="lg" />;
+  return <FontAwesomeIcon icon={faMoon} size="lg" />;
 };
 
 export default function HeaderTheme({
@@ -62,47 +53,23 @@ export default function HeaderTheme({
   currentPreferredTheme: Theme;
 }) {
   const dict = useDictionary();
-  const router = useRouter();
   const { setTheme } = useAppTheme();
   const { palette } = useThemeColor();
 
   const [preferredTheme, setPreferredTheme] = useState<Theme>(
-    currentPreferredTheme,
+    currentPreferredTheme === Theme.Dark ? Theme.Dark : Theme.Light,
   );
 
-  const isDarkMode = useMediaQuery({
-    query: "(prefers-color-scheme: dark)",
-  });
-
   const changePreferredTheme = useCallback(
-    (theme: Theme) => {
+    (theme: Theme.Light | Theme.Dark) => {
       setPreferredTheme(theme);
-      Cookies.set("preferred_theme", theme);
-
-      let resolvedTheme = theme;
-
-      if (theme === Theme.Auto) {
-        resolvedTheme = window.matchMedia("(prefers-color-scheme: dark)")
-          .matches
-          ? Theme.Dark
-          : Theme.Light;
-      }
-
-      Cookies.set("theme", resolvedTheme);
-      setTheme(resolvedTheme as "light" | "dark");
+      localStorage.setItem("theme", theme);
+      Cookies.set("theme", theme, { expires: 365, path: "/" });
+      Cookies.remove("preferred_theme", { path: "/" });
+      setTheme(theme);
     },
     [setTheme],
   );
-
-  /* ----------------------------------------
-   * Auto theme sync
-   * ------------------------------------- */
-  useEffect(() => {
-    if (preferredTheme !== Theme.Auto) return;
-
-    Cookies.set("theme", isDarkMode ? Theme.Dark : Theme.Light);
-    router.refresh();
-  }, [isDarkMode, preferredTheme, router]);
 
   /* ----------------------------------------
    * Render

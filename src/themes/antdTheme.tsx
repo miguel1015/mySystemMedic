@@ -2,7 +2,8 @@
 
 import { ConfigProvider, theme } from "antd"
 import { createContext, useEffect, useState, useContext, useMemo } from "react"
-import { getPreferredThemeClient } from "./theme.client"
+import { Theme } from "./enum"
+import { getThemeClient } from "./theme.client"
 import {
   type ThemeColorPalette,
   COLOR_PALETTES,
@@ -11,7 +12,7 @@ import {
   hexToRgb,
 } from "./colorPalettes"
 
-type ThemeMode = "light" | "dark"
+type ThemeMode = Theme.Light | Theme.Dark
 
 const ThemeContext = createContext<{
   theme: ThemeMode;
@@ -20,7 +21,7 @@ const ThemeContext = createContext<{
   setThemeColor: (c: string) => void;
   palette: ThemeColorPalette;
 }>({
-  theme: "light",
+  theme: Theme.Light,
   setTheme: () => {},
   themeColor: COLOR_PALETTES[DEFAULT_THEME_COLOR].primary,
   setThemeColor: () => {},
@@ -35,10 +36,12 @@ export const useThemeColor = () => {
 
 export default function AntdThemeProvider({
   children,
+  initialTheme = Theme.Light,
 }: {
   children: React.ReactNode;
+  initialTheme?: ThemeMode;
 }) {
-  const [currentTheme, setCurrentTheme] = useState<ThemeMode>("light")
+  const [currentTheme, setCurrentTheme] = useState<ThemeMode>(initialTheme)
   const [themeColor, setThemeColorState] = useState(
     COLOR_PALETTES[DEFAULT_THEME_COLOR].primary,
   )
@@ -46,9 +49,11 @@ export default function AntdThemeProvider({
   const palette = useMemo(() => getPaletteByPrimary(themeColor), [themeColor])
 
   useEffect(() => {
-    const preferred = getPreferredThemeClient() as ThemeMode
-    setCurrentTheme(preferred)
-    document.documentElement.setAttribute("data-bs-theme", preferred)
+    const storedTheme = getThemeClient()
+    setCurrentTheme(storedTheme)
+    localStorage.setItem("theme", storedTheme)
+    document.cookie = `theme=${storedTheme}; path=/; max-age=31536000`
+    document.documentElement.setAttribute("data-bs-theme", storedTheme)
   }, [])
 
   useEffect(() => {
@@ -65,6 +70,7 @@ export default function AntdThemeProvider({
 
   const updateTheme = (newTheme: ThemeMode) => {
     setCurrentTheme(newTheme)
+    localStorage.setItem("theme", newTheme)
     document.cookie = `theme=${newTheme}; path=/; max-age=31536000`
     document.documentElement.setAttribute("data-bs-theme", newTheme)
   }

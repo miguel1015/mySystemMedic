@@ -13,6 +13,7 @@ import Modal from "../../../../components/modal";
 import Epicrisis from "./epicrisis";
 import Acto from "./acto";
 import Title from "antd/es/typography/Title";
+import { useSearchParams } from "next/navigation";
 
 interface Especialidad {
   id: number;
@@ -27,12 +28,16 @@ const especialidades: Especialidad[] = [
 ];
 
 const CareManagementContainer = () => {
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [openActo, setOpenActo] = useState(false);
   const [especialidadBusqueda, setEspecialidadBusqueda] = useState("");
-  const [paciente] = useState({
-    nombre: "JONATHAN RODRIGUEZ QUINTERO",
-  });
+  const paciente = {
+    nombre: searchParams.get("patientName") || "JONATHAN RODRIGUEZ QUINTERO",
+    documento: searchParams.get("documentNumber"),
+    ambito: searchParams.get("careScope"),
+    admissionId: searchParams.get("admissionId"),
+  };
 
   return (
     <Container>
@@ -87,6 +92,13 @@ const CareManagementContainer = () => {
         }}
       >
         <Title level={5}>PACIENTE: {paciente.nombre}</Title>
+        {(paciente.documento || paciente.ambito || paciente.admissionId) && (
+          <div style={{ color: "#ffffff", fontSize: 13, marginTop: 4 }}>
+            {paciente.documento && <span>Documento: {paciente.documento}</span>}
+            {paciente.ambito && <span style={{ marginLeft: 12 }}>Ambito: {paciente.ambito}</span>}
+            {paciente.admissionId && <span style={{ marginLeft: 12 }}>Admision: {paciente.admissionId}</span>}
+          </div>
+        )}
       </div>
 
       {/* Tabla de especialidades */}
