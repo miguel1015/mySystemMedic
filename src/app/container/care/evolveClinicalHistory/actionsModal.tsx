@@ -13,6 +13,7 @@ import {
   ScissorOutlined,
 } from "@ant-design/icons"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 interface ActionsModalProps {
   open: boolean;
@@ -23,7 +24,7 @@ interface ActionsModalProps {
 const actions = [
   {
     key: "evolve",
-    label: "Evolucionar Historia Clinica",
+    label: "Evolucionar Historia Clínica",
     icon: <FileTextOutlined style={{ fontSize: 28 }} />,
     path: "/care/careManagement",
     color: "var(--theme-primary, #0F6F5C)",
@@ -103,13 +104,39 @@ const actions = [
   },
 ]
 
+const clinicalEvolutionOptions = [
+  { key: "initial-clinical-history", label: "Historia clínica inicial" },
+  { key: "evolutions", label: "Evoluciones" },
+  { key: "surgical-description", label: "Descripción quirúrgica" },
+  { key: "discharge-note", label: "Nota de egreso" },
+  { key: "nursing-notes", label: "Notas de enfermería" },
+  { key: "minor-procedures", label: "Procedimientos menores" },
+  { key: "medical-note", label: "Nota médica" },
+  { key: "diagnostic-procedures", label: "Procedimientos diagnósticos" },
+  { key: "non-surgical-procedures", label: "Procedimientos no quirúrgicos" },
+  { key: "radiology-study", label: "Estudio radiólogo" },
+]
+
+const patientSummaryStyle = {
+  backgroundColor: "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)",
+  borderLeft: "4px solid var(--theme-primary, #0F6F5C)",
+  padding: "12px 16px",
+  borderRadius: "0 8px 8px 0",
+}
+
 const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
   const router = useRouter()
+  const [evolutionModalOpen, setEvolutionModalOpen] = useState(false)
 
-  const handleAction = (path: string) => {
-    if (!patient) return
+  const closeActionsModal = () => {
+    setEvolutionModalOpen(false)
+    onClose()
+  }
 
-    const params = new URLSearchParams({
+  const buildPatientParams = () => {
+    if (!patient) return null
+
+    return new URLSearchParams({
       admissionId: String(patient.id),
       patientId: String(patient.patientId),
       patientName: patient.patientFullName,
@@ -117,99 +144,172 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
       careScope: patient.careScope,
       admissionDate: patient.admissionDate,
     })
+  }
 
-    router.push(`${path}?${params.toString()}`)
-    onClose()
+  const handleAction = (action: (typeof actions)[number]) => {
+    if (action.key === "evolve") {
+      setEvolutionModalOpen(true)
+      return
+    }
+
+    const params = buildPatientParams()
+    if (!params) return
+
+    router.push(`${action.path}?${params.toString()}`)
+    closeActionsModal()
+  }
+
+  const handleEvolutionOption = (option: (typeof clinicalEvolutionOptions)[number]) => {
+    const params = buildPatientParams()
+    if (!params) return
+
+    params.set("recordType", option.key)
+    params.set("recordLabel", option.label)
+
+    router.push(`/care/careManagement?${params.toString()}`)
+    closeActionsModal()
+  }
+
+  const renderPatientSummary = () => {
+    if (!patient) return null
+
+    return (
+      <div style={{ marginBottom: 20 }}>
+        <div style={patientSummaryStyle}>
+          <span style={{ fontWeight: 600, color: "var(--theme-primary, #0F6F5C)" }}>Paciente: </span>
+          <span style={{ fontWeight: 500 }}>{patient.patientFullName}</span>
+          <span style={{ color: "var(--dash-text-secondary, #6b7280)", marginLeft: 12 }}>
+            Doc: {patient.documentNumber}
+          </span>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Acciones del Paciente" size="lg">
-      {patient && (
-        <div style={{ marginBottom: 20 }}>
-          <div
-            style={{
-              backgroundColor: "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)",
-              borderLeft: "4px solid var(--theme-primary, #0F6F5C)",
-              padding: "12px 16px",
-              borderRadius: "0 8px 8px 0",
-            }}
-          >
-            <span style={{ fontWeight: 600, color: "var(--theme-primary, #0F6F5C)" }}>Paciente: </span>
-            <span style={{ fontWeight: 500 }}>{patient.patientFullName}</span>
-            <span style={{ color: "var(--dash-text-secondary, #6b7280)", marginLeft: 12 }}>
-              Doc: {patient.documentNumber}
-            </span>
-          </div>
-        </div>
-      )}
+    <>
+      <Modal open={open && !evolutionModalOpen} onClose={closeActionsModal} title="Acciones del Paciente" size="lg">
+        {renderPatientSummary()}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-          gap: 16,
-        }}
-      >
-        {actions.map((action) => (
-          <button
-            key={action.key}
-            onClick={() => handleAction(action.path)}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 12,
-              padding: "24px 16px",
-              border: "1px solid var(--dash-border, #e5e7eb)",
-              borderRadius: 12,
-              backgroundColor: "var(--dash-surface, #ffffff)",
-              cursor: "pointer",
-              transition: "all 0.25s ease",
-              minHeight: 140,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = action.hoverBackground
-              e.currentTarget.style.borderColor = action.color
-              e.currentTarget.style.transform = "translateY(1px)"
-              e.currentTarget.style.boxShadow = `inset 0 2px 5px ${action.shadowColor}`
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--dash-surface, #ffffff)"
-              e.currentTarget.style.borderColor = "var(--dash-border, #e5e7eb)"
-              e.currentTarget.style.transform = "translateY(0)"
-              e.currentTarget.style.boxShadow = "none"
-            }}
-          >
-            <div
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+            gap: 16,
+          }}
+        >
+          {actions.map((action) => (
+            <button
+              key={action.key}
+              onClick={() => handleAction(action)}
               style={{
-                width: 56,
-                height: 56,
-                borderRadius: "50%",
-                backgroundColor: action.iconBackground,
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                color: action.color,
+                gap: 12,
+                padding: "24px 16px",
+                border: "1px solid var(--dash-border, #e5e7eb)",
+                borderRadius: 12,
+                backgroundColor: "var(--dash-surface, #ffffff)",
+                cursor: "pointer",
+                transition: "all 0.25s ease",
+                minHeight: 140,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = action.hoverBackground
+                e.currentTarget.style.borderColor = action.color
+                e.currentTarget.style.transform = "translateY(1px)"
+                e.currentTarget.style.boxShadow = `inset 0 2px 5px ${action.shadowColor}`
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--dash-surface, #ffffff)"
+                e.currentTarget.style.borderColor = "var(--dash-border, #e5e7eb)"
+                e.currentTarget.style.transform = "translateY(0)"
+                e.currentTarget.style.boxShadow = "none"
               }}
             >
-              {action.icon}
-            </div>
-            <span
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  backgroundColor: action.iconBackground,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: action.color,
+                }}
+              >
+                {action.icon}
+              </div>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  textAlign: "center",
+                  color: "var(--dash-text-primary, #111827)",
+                  lineHeight: 1.3,
+                }}
+              >
+                {action.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </Modal>
+
+      <Modal
+        open={open && evolutionModalOpen}
+        onClose={() => setEvolutionModalOpen(false)}
+        title="Evolucionar historia clínica"
+        size="lg"
+      >
+        {renderPatientSummary()}
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+            gap: 12,
+          }}
+        >
+          {clinicalEvolutionOptions.map((option) => (
+            <button
+              key={option.key}
+              onClick={() => handleEvolutionOption(option)}
               style={{
-                fontSize: 13,
-                fontWeight: 600,
-                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                minHeight: 64,
+                padding: "14px 16px",
+                border: "1px solid var(--dash-border, #e5e7eb)",
+                borderRadius: 8,
+                backgroundColor: "var(--dash-surface, #ffffff)",
                 color: "var(--dash-text-primary, #111827)",
-                lineHeight: 1.3,
+                cursor: "pointer",
+                fontSize: 14,
+                fontWeight: 600,
+                textAlign: "left",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)"
+                e.currentTarget.style.borderColor = "var(--theme-primary, #0F6F5C)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--dash-surface, #ffffff)"
+                e.currentTarget.style.borderColor = "var(--dash-border, #e5e7eb)"
               }}
             >
-              {action.label}
-            </span>
-          </button>
-        ))}
-      </div>
-    </Modal>
+              <FileTextOutlined style={{ color: "var(--theme-primary, #0F6F5C)", fontSize: 20 }} />
+              <span>{option.label}</span>
+            </button>
+          ))}
+        </div>
+      </Modal>
+    </>
   )
 }
 

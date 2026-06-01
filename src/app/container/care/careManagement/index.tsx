@@ -37,6 +37,8 @@ const CareManagementContainer = () => {
     documento: searchParams.get("documentNumber"),
     ambito: searchParams.get("careScope"),
     admissionId: searchParams.get("admissionId"),
+    recordType: searchParams.get("recordType"),
+    recordLabel: searchParams.get("recordLabel"),
   };
 
   return (
@@ -100,6 +102,31 @@ const CareManagementContainer = () => {
           </div>
         )}
       </div>
+
+      {paciente.recordLabel && (
+        <div
+          style={{
+            border: "1px solid var(--dash-border, #e5e7eb)",
+            borderLeft: "4px solid var(--theme-primary, #0F6F5C)",
+            borderRadius: 8,
+            padding: "14px 16px",
+            marginBottom: 18,
+            backgroundColor: "var(--dash-surface, #ffffff)",
+          }}
+        >
+          <div style={{ color: "var(--dash-text-secondary, #6b7280)", fontSize: 12, fontWeight: 600 }}>
+            Vista seleccionada
+          </div>
+          <div style={{ color: "var(--dash-text-primary, #111827)", fontSize: 16, fontWeight: 700 }}>
+            {paciente.recordLabel}
+          </div>
+          {paciente.recordType && (
+            <div style={{ color: "var(--dash-text-secondary, #6b7280)", fontSize: 12, marginTop: 2 }}>
+              Tipo: {paciente.recordType}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Tabla de especialidades */}
       <div className="table-responsive" style={{ marginBottom: "24px" }}>

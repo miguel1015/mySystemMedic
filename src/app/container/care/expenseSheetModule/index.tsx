@@ -473,15 +473,16 @@ const ExpenseSheetModule = ({ title, description, context }: ExpenseSheetModuleP
               }}
             >
               <div
+                className="expense-control-grid"
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                  gap: 14,
+                  gridTemplateColumns: "minmax(180px, 0.8fr) minmax(280px, 1.4fr) minmax(180px, 0.8fr)",
+                  gap: 16,
                   alignItems: "end",
                 }}
               >
-                <label style={{ display: "grid", gap: 6, fontWeight: 700 }}>
-                  Fecha y hora
+                <label className="expense-control-field">
+                  <span>Fecha y hora</span>
                   <Input
                     type="datetime-local"
                     value={dateTime}
@@ -490,14 +491,21 @@ const ExpenseSheetModule = ({ title, description, context }: ExpenseSheetModuleP
                   />
                 </label>
 
-                <label style={{ display: "grid", gap: 6, fontWeight: 700 }}>
-                  Asistencial que firma
-                  <Select value={assistant} onChange={setAssistant} options={careAssistants.map((value) => ({ value, label: value }))} />
+                <label className="expense-control-field expense-control-field-signature">
+                  <span>Asistencial que firma</span>
+                  <Select
+                    className="expense-control-select"
+                    value={assistant}
+                    onChange={setAssistant}
+                    options={careAssistants.map((value) => ({ value, label: value }))}
+                    popupMatchSelectWidth={false}
+                  />
                 </label>
 
-                <label style={{ display: "grid", gap: 6, fontWeight: 700 }}>
-                  Tipo de servicio
+                <label className="expense-control-field">
+                  <span>Tipo de servicio</span>
                   <Select
+                    className="expense-control-select"
                     value={serviceType}
                     onChange={setServiceType}
                     options={serviceOptions}
@@ -717,6 +725,61 @@ const ExpenseSheetModule = ({ title, description, context }: ExpenseSheetModuleP
           display: none;
         }
 
+        .expense-control-grid {
+          min-width: 0;
+        }
+
+        .expense-control-field {
+          display: grid;
+          gap: 8px;
+          min-width: 0;
+          padding: 12px;
+          border: 1px solid var(--dash-border, #e5e7eb);
+          border-radius: 8px;
+          background: rgba(var(--theme-primary-rgb, 15,111,92), 0.03);
+        }
+
+        .expense-control-field > span {
+          min-width: 0;
+          color: var(--dash-text-primary, #111827);
+          font-size: 13px;
+          font-weight: 800;
+          line-height: 1.25;
+        }
+
+        .expense-control-field-signature {
+          background: rgba(var(--theme-primary-rgb, 15,111,92), 0.06);
+          border-color: rgba(var(--theme-primary-rgb, 15,111,92), 0.24);
+        }
+
+        .expense-control-field .ant-input-affix-wrapper,
+        .expense-control-field .ant-picker,
+        .expense-control-field .ant-select,
+        .expense-control-select {
+          width: 100%;
+          min-width: 0;
+        }
+
+        .expense-control-field .ant-select-selector {
+          min-width: 0;
+        }
+
+        .expense-control-field .ant-select-selection-item {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        @media (max-width: 980px) {
+          .expense-control-grid {
+            grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) !important;
+          }
+
+          .expense-control-field-signature {
+            grid-column: 1 / -1;
+          }
+        }
+
         @media (max-width: 640px) {
           .expense-actions {
             width: 100%;
@@ -728,6 +791,14 @@ const ExpenseSheetModule = ({ title, description, context }: ExpenseSheetModuleP
 
           .expense-print-area [style*="grid-template-columns: minmax(220px, 1fr) auto"] {
             grid-template-columns: 1fr !important;
+          }
+
+          .expense-control-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .expense-control-field-signature {
+            grid-column: auto;
           }
         }
 
