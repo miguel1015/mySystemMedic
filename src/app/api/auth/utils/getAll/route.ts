@@ -13,6 +13,8 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   "pharmaceutical-forms": "/api/medicines/pharmaceutical-forms",
   presentations: "/api/medicines/presentations",
   "medicine-groups": "/api/medicines/medicine-groups",
+  "element-types": "/api/medicines/catalogs/element-types",
+  "element-usages": "/api/medicines/catalogs/element-usages",
   "value-methods": "/api/value-methods",
   "contract-types": "/api/contract-types",
   "eps-regimens": "/api/eps-regimens",

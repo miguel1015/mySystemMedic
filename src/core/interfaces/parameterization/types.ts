@@ -60,6 +60,27 @@ export interface TTableMedicine {
   name: string;
 }
 
+export interface TMedicalDevice {
+  id?: number;
+  elementName: string;
+  elementTypeId: number;
+  elementTypeName?: string;
+  elementUsageId: number;
+  elementUsageName?: string;
+  ripsCode: string;
+  isReusable: boolean;
+  isInvasive: boolean;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface TElementCatalog {
+  id: number;
+  description?: string;
+  name?: string;
+}
+
 export interface TMeasurementUnit {
   sidamId: string;
   unitCode: string;

@@ -3,77 +3,104 @@
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import SelectAutocomplete from "@/components/select";
-import { Button } from "antd";
-import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
+import { Button, Spin } from "antd";
 import { TUtils } from "../../../../../types/utils";
+import { useMedicalDeviceForm } from "./useMedicalDeviceForm";
+import { useSelectOptions } from "./useSelectOptions";
 
-const MedicalDevicesForm: React.FC<TUtils> = ({ setOpen }) => {
-  const { control, handleSubmit } = useForm({
-    /*     resolver: zodResolver(insuranceCompaniesSchema),
-    defaultValues: TDefaultValues, */
-  });
+const yesNoOptions = [
+  { value: "true", label: "Sí" },
+  { value: "false", label: "No" },
+];
 
-  const onSubmit = () => {
-    toast.success("Formulario solo visual");
-  };
+const MedicalDevicesForm: React.FC<TUtils> = ({
+  setOpen,
+  editUserId,
+  setEditUserId,
+}) => {
+  const {
+    control,
+    handleSubmit,
+    onSubmit,
+    loadingMedicalDevice,
+    isSubmitting,
+  } = useMedicalDeviceForm({ setOpen, editUserId, setEditUserId });
+
+  const {
+    elementTypeOptions,
+    elementUsageOptions,
+    isLoading: loadingOptions,
+  } = useSelectOptions();
+
+  if (loadingOptions || (editUserId && loadingMedicalDevice)) {
+    return (
+      <div style={{ textAlign: "center", padding: 40 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {/* NOMBRES */}
       <GridContainer columns="col-4" gap="g-3">
         <Input
-          name="medicineName"
-          label="Nombre elemento"
-          placeholder="Nombre elemento"
+          name="elementName"
+          label="Nombre de elemento"
+          placeholder="Nombre de elemento"
           control={control}
         />
 
         <SelectAutocomplete
-          name="gender"
+          name="elementTypeId"
           label="Tipo de elemento"
           placeholder="Tipo de elemento"
           control={control}
-          options={[]}
+          options={elementTypeOptions}
         />
 
-        {/* PAÍSES */}
         <SelectAutocomplete
-          name="residenceCountry"
+          name="elementUsageId"
           label="Uso del elemento"
           placeholder="Uso del elemento"
           control={control}
-          options={[]}
+          options={elementUsageOptions}
         />
 
         <Input
-          name="Concentración"
-          label="Concentración"
-          placeholder="Concentración"
+          name="ripsCode"
+          label="Código RIPS"
+          placeholder="Código RIPS"
           control={control}
         />
+
         <SelectAutocomplete
-          name="originCountry"
+          name="isReusable"
           label="Reintegrable"
           placeholder="Reintegrable"
           control={control}
-          options={[]}
+          options={yesNoOptions}
         />
 
         <SelectAutocomplete
-          name="department"
-          label="Invasivo "
-          placeholder="Invasivo "
+          name="isInvasive"
+          label="Invasivo"
+          placeholder="Invasivo"
           control={control}
-          options={[]}
+          options={yesNoOptions}
         />
       </GridContainer>
 
-      {/* BOTONES */}
       <div className="d-flex justify-content-end gap-2 mt-3">
-        <Button onClick={() => setOpen(false)}>Cancelar</Button>
-        <Button type="primary" htmlType="submit">
-          Guardar
+        <Button onClick={() => setOpen(false)} disabled={isSubmitting}>
+          Cancelar
+        </Button>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        >
+          {editUserId ? "Actualizar" : "Guardar"}
         </Button>
       </div>
     </form>

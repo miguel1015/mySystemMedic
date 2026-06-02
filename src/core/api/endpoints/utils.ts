@@ -26,6 +26,12 @@ export const UTILS_ENDPOINTS = {
   MEDICINE_GROUPS: {
     GET_ALL: "/api/auth/utils/getAll?type=medicine-groups",
   },
+  ELEMENT_TYPES: {
+    GET_ALL: "/api/auth/utils/getAll?type=element-types",
+  },
+  ELEMENT_USAGES: {
+    GET_ALL: "/api/auth/utils/getAll?type=element-usages",
+  },
   VALUE_METHODS: {
     GET_ALL: "/api/auth/utils/getAll?type=value-methods",
   },

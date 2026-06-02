@@ -29,4 +29,5 @@ export const PARAMETERIZATION_ENDPOINTS = {
       `/api/auth/parameterization/${id}?type=providers`,
   },
   MEDICINES: makeParamCrud("medicines"),
+  MEDICAL_DEVICES: makeParamCrud("medical-devices"),
 }

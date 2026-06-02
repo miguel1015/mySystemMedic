@@ -23,15 +23,20 @@ export default function MedicalDevicesContainer() {
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Title children="Dispositivos médicos" level={3} />
         <Button onClick={() => setOpen(true)} type="primary">
-          Crear dispositivo medico
+          Crear dispositivo médico
         </Button>
 
         <Modal
           open={open}
           onClose={() => {
-            (setOpen(false), setEditUserId(null));
+            setOpen(false);
+            setEditUserId(null);
           }}
-          title={editUserId ? "Editar medicamento" : "Crear medicamento"}
+          title={
+            editUserId
+              ? "Editar dispositivo médico"
+              : "Crear dispositivo médico"
+          }
           size="xl"
         >
           <MedicalDevicesForm
