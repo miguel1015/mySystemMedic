@@ -15,33 +15,21 @@ import {
 } from "react-bootstrap";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { usePathname } from "next/navigation";
-import { useSidebar } from "@/components/Layout/Dashboard/SidebarProvider";
 
 type SidebarNavGroupToggleProps = {
   eventKey: string;
   icon?: IconDefinition;
   setIsShow: (isShow: boolean) => void;
-  hasActiveChild?: boolean;
-  sidebarColor?: string;
 } & PropsWithChildren;
 
 const SidebarNavGroupToggle = (props: SidebarNavGroupToggleProps) => {
-  // https://react-bootstrap.github.io/components/accordion/#custom-toggle-with-expansion-awareness
   const { activeEventKey } = useContext(AccordionContext);
-  const {
-    eventKey,
-    icon,
-    children,
-    setIsShow,
-    hasActiveChild = false,
-    sidebarColor,
-  } = props;
+  const { eventKey, icon, children, setIsShow } = props;
 
   const decoratedOnClick = useAccordionButton(eventKey);
 
-  const isCurrentEventKey = activeEventKey === eventKey;
   useEffect(() => {
     setIsShow(activeEventKey === eventKey);
   }, [activeEventKey, eventKey, setIsShow]);
@@ -50,47 +38,32 @@ const SidebarNavGroupToggle = (props: SidebarNavGroupToggleProps) => {
     <Button
       variant="link"
       type="button"
-      className={classNames(
-        "rounded-0 nav-link px-3 py-2 d-flex align-items-center flex-fill w-100 shadow-none",
-        { collapsed: !isCurrentEventKey }
-      )}
-      style={{
-        borderLeft: hasActiveChild
-          ? `3px solid ${sidebarColor}`
-          : "3px solid transparent",
-        color: hasActiveChild ? "#fff" : undefined,
-        transition: "all 0.25s ease",
-      }}
+      className="nav-link shadow-none"
       onClick={decoratedOnClick}
     >
-      {icon && <FontAwesomeIcon className="nav-icon ms-n3" icon={icon} />}
-
+      {icon && (
+        <span className="nav-icon">
+          <FontAwesomeIcon icon={icon} />
+        </span>
+      )}
       <span className="nav-text text-truncate">{children}</span>
-
-      <div className="nav-chevron ms-auto text-end">
-        <FontAwesomeIcon
-          size="xs"
-          icon={faChevronUp}
-          style={{
-            transition: "transform 0.25s ease",
-            transform: !isCurrentEventKey ? "rotate(0deg)" : "rotate(180deg)",
-          }}
-        />
-      </div>
+      <span className="nav-chevron">
+        <FontAwesomeIcon size="xs" icon={faChevronDown} />
+      </span>
     </Button>
   );
 };
 
 function extractHrefs(children: React.ReactNode): string[] {
-  const hrefs: string[] = []
+  const hrefs: string[] = [];
   React.Children.forEach(children, (child) => {
     if (React.isValidElement(child)) {
-      if ((child.props as any).href) hrefs.push((child.props as any).href)
+      if ((child.props as any).href) hrefs.push((child.props as any).href);
       if ((child.props as any).children)
-        hrefs.push(...extractHrefs((child.props as any).children))
+        hrefs.push(...extractHrefs((child.props as any).children));
     }
-  })
-  return hrefs
+  });
+  return hrefs;
 }
 
 type SidebarNavGroupProps = {
@@ -102,12 +75,11 @@ type SidebarNavGroupProps = {
 export default function SidebarNavGroup(props: SidebarNavGroupProps) {
   const { toggleIcon, toggleText, children, level = 0 } = props;
   const pathname = usePathname();
-  const { sidebarColor } = useSidebar();
 
-  const childHrefs = extractHrefs(children)
+  const childHrefs = extractHrefs(children);
   const hasActiveChild = childHrefs.some(
     (href) => pathname === href || pathname.startsWith(`${href}/`)
-  )
+  );
 
   const [isShow, setIsShow] = useState(false);
 
@@ -117,16 +89,12 @@ export default function SidebarNavGroup(props: SidebarNavGroupProps) {
       bsPrefix="nav-group"
       className={classNames({ show: isShow })}
       defaultActiveKey={hasActiveChild ? "0" : undefined}
-      style={{
-        marginLeft: `${level * 10}px`,
-      }}
+      style={{ marginLeft: `${level * 8}px` }}
     >
       <SidebarNavGroupToggle
         icon={toggleIcon}
         eventKey="0"
         setIsShow={setIsShow}
-        hasActiveChild={hasActiveChild}
-        sidebarColor={sidebarColor}
       >
         {toggleText}
       </SidebarNavGroupToggle>

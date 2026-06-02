@@ -1,15 +1,24 @@
 "use client";
 
-import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Head from "next/head";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
-import CustomButton from "../../../components/button";
+import {
+  Activity,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  HeartPulse,
+  Lock,
+  ShieldCheck,
+  Stethoscope,
+  User,
+} from "lucide-react";
+import styles from "./login.module.scss";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Usuario es requerido"),
@@ -60,192 +69,157 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
     }
 
     toast.success("Bienvenido 👋");
-    router.push("/");
+    router.push(callbackUrl || "/");
   };
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        overflow: "hidden",
-        background: "var(--dash-bg, #f8f9fb)",
-      }}
-    >
-      {/* Fondo izquierdo */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "45%",
-          height: "100%",
-          background: "#9fb1c9",
-          borderTopRightRadius: "50% 20%",
-          borderBottomRightRadius: "40% 30%",
-          zIndex: 1,
-        }}
-      />
-
-      {/* Fondo derecho */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          right: 0,
-          width: "50%",
-          height: "85%",
-          background: "var(--theme-primary, #0F6F5C)",
-          borderTopLeftRadius: "60% 90%",
-          zIndex: 1,
-        }}
-      />
-
-      {/* CARD */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 10,
-          background: "var(--dash-surface, #ffffff)",
-          borderRadius: "30px",
-          padding: "45px 45px",
-          width: "100%",
-          maxWidth: "420px",
-          height: "400px",
-
-          boxShadow:
-            "0 8px 20px rgba(0,0,0,0.08), 0 15px 40px rgba(0,0,0,0.12)",
-
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}
-      >
-        {/* Título */}
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <h2 style={{ color: "var(--theme-primary, #0F6F5C)", fontSize: "30px", margin: 0 }}>
-            Data<span style={{ color: "var(--theme-primary, #0F6F5C)" }}>Medic</span>
-          </h2>
-          <h3
-            style={{
-              color: "var(--dash-text-tertiary, #9ca3af)",
-              fontWeight: 300,
-              marginTop: "4px",
-              fontSize: "18px",
-            }}
-          >
-            Login
-          </h3>
+    <div className={styles.page}>
+      {/* ── Brand panel ── */}
+      <aside className={styles.brand}>
+        <div className={styles.brandTop}>
+          <div className={styles.logoMark}>
+            <HeartPulse size={26} strokeWidth={2.2} />
+          </div>
+          <span className={styles.logoText}>
+            Data<span>Medic</span>
+          </span>
         </div>
 
-        {/* FORM */}
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-            marginTop: "10px",
-          }}
-        >
-          {/* Input usuario */}
-          <input
-            type="text"
-            placeholder="Usuario"
-            {...register("email")}
-            style={{
-              width: "100%",
-              padding: "10px 18px",
-              background: "var(--dash-surface-hover, #f3f4f6)",
-              border: errors.email
-                ? "1px solid #ff4d4d"
-                : "1px solid transparent",
-              borderRadius: "25px",
-              fontSize: "14px",
-              height: "36px",
-              outline: "none",
-              transition: "0.2s",
-            }}
-          />
-          {errors.email && (
-            <span style={{ color: "red", fontSize: "12px" }}>
-              {errors.email.message}
-            </span>
-          )}
+        <div className={styles.brandMid}>
+          <h1 className={styles.headline}>
+            Gestión clínica <em>inteligente</em> para tu institución de salud.
+          </h1>
+          <p className={styles.subhead}>
+            Historias clínicas, admisiones, triage y parametrización en una sola
+            plataforma moderna, segura y confiable.
+          </p>
+        </div>
 
-          {/* Input contraseña */}
-          <div style={{ position: "relative" }}>
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Contraseña"
-              {...register("password")}
-              style={{
-                width: "100%",
-                padding: "10px 18px",
-                paddingRight: "45px",
-                background: "var(--dash-surface-hover, #f3f4f6)",
-                border: errors.password
-                  ? "1px solid #ff4d4d"
-                  : "1px solid transparent",
-                borderRadius: "25px",
-                fontSize: "14px",
-                height: "36px",
-                outline: "none",
-                transition: "0.2s",
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              style={{
-                position: "absolute",
-                right: "14px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--dash-text-tertiary, #9ca3af)",
-                fontSize: "14px",
-              }}
-            >
-              <i className={showPassword ? "far fa-eye-slash" : "far fa-eye"} />
-            </button>
+        <div className={styles.features}>
+          <div className={styles.feature}>
+            <span className={styles.featureIcon}>
+              <ShieldCheck size={18} />
+            </span>
+            Datos protegidos y cifrados de extremo a extremo
           </div>
-          {errors.password && (
-            <span style={{ color: "red", fontSize: "12px" }}>
-              {errors.password.message}
+          <div className={styles.feature}>
+            <span className={styles.featureIcon}>
+              <Activity size={18} />
             </span>
-          )}
+            Indicadores y reportes en tiempo real
+          </div>
+          <div className={styles.feature}>
+            <span className={styles.featureIcon}>
+              <Stethoscope size={18} />
+            </span>
+            Diseñado para el flujo de trabajo asistencial
+          </div>
+        </div>
+      </aside>
 
-          {/* Botón */}
-          <CustomButton loading={loading}>Iniciar</CustomButton>
-        </form>
-      </div>
+      {/* ── Form panel ── */}
+      <section className={styles.formSide}>
+        <div className={styles.card}>
+          <div className={styles.mobileBrand}>
+            <div className={styles.logoMark}>
+              <HeartPulse size={22} strokeWidth={2.2} />
+            </div>
+            <span className={styles.logoText}>
+              Data<span>Medic</span>
+            </span>
+          </div>
 
-      {/* Footer */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "15px",
-          right: "25px",
-          fontSize: "13px",
-          color: "var(--dash-text-secondary, #6b7280)",
-          fontWeight: "500",
-        }}
-      >
-        Version 12.0.024.2221
-      </div>
+          <h2 className={styles.welcome}>Bienvenido de nuevo</h2>
+          <p className={styles.welcomeSub}>
+            Ingresa tus credenciales para acceder al sistema.
+          </p>
 
-      <Head>
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        />
-      </Head>
+          <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="email">
+                Usuario
+              </label>
+              <div className={styles.inputWrap}>
+                <span className={styles.inputIcon}>
+                  <User size={18} />
+                </span>
+                <input
+                  id="email"
+                  type="text"
+                  autoComplete="username"
+                  placeholder="Ingresa tu usuario"
+                  className={`${styles.input} ${errors.email ? styles.error : ""}`}
+                  {...register("email")}
+                />
+              </div>
+              {errors.email && (
+                <span className={styles.errorMsg}>
+                  <AlertCircle size={13} />
+                  {errors.email.message}
+                </span>
+              )}
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="password">
+                Contraseña
+              </label>
+              <div className={styles.inputWrap}>
+                <span className={styles.inputIcon}>
+                  <Lock size={18} />
+                </span>
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="Ingresa tu contraseña"
+                  className={`${styles.input} ${errors.password ? styles.error : ""}`}
+                  {...register("password")}
+                />
+                <button
+                  type="button"
+                  className={styles.eyeBtn}
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {errors.password && (
+                <span className={styles.errorMsg}>
+                  <AlertCircle size={13} />
+                  {errors.password.message}
+                </span>
+              )}
+            </div>
+
+            <div className={styles.row}>
+              <label className={styles.remember}>
+                <input type="checkbox" />
+                Recordarme
+              </label>
+              <button type="button" className={styles.forgot}>
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+
+            <button type="submit" className={styles.submit} disabled={loading}>
+              {loading ? (
+                <>
+                  <span className={styles.spinner} />
+                  Ingresando…
+                </>
+              ) : (
+                "Iniciar sesión"
+              )}
+            </button>
+          </form>
+        </div>
+
+        <div className={styles.footer}>
+          DataMedic · Versión 12.0.024.2221
+        </div>
+      </section>
     </div>
   );
 }

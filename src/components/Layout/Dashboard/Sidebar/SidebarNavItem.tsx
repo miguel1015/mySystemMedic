@@ -7,7 +7,6 @@ import classNames from "classnames";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PropsWithChildren } from "react";
-import { NavItem, NavLink } from "react-bootstrap";
 
 type Props = {
   href: string;
@@ -16,67 +15,33 @@ type Props = {
 } & PropsWithChildren;
 
 export default function SidebarNavItem(props: Props) {
-  const { icon, children, href, level = 0 } = props;
+  const { icon, children, href } = props;
   const pathname = usePathname();
   const {
     showSidebarState: [, setIsShowSidebar],
-    sidebarColor,
   } = useSidebar();
 
-  const isActive = pathname === href || pathname.startsWith(`${href}/`);
-
-  // Colores personalizados
-  const activeTextColor = "#fff"; 
-  const inactiveTextColor = "#adb5bd"; 
-  const hoverBackgroundColor = "rgba(255,255,255,0.1)"; 
+  const isActive =
+    href === "/"
+      ? pathname === "/"
+      : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <NavItem
-      className="sidebar-item-wrapper"
-      style={{
-        marginLeft: `${level * 5}px`,
-      }}
-    >
-      <Link href={href} passHref legacyBehavior>
-        <NavLink
-          onClick={() => setIsShowSidebar(false)}
-          className={classNames(
-            "rounded-1 nav-link px-3 py-2 d-flex align-items-center flex-fill w-100",
-            "transition-all position-relative sidebar-nav-item",
-            { "shadow-sm": isActive }
-          )}
-          style={{
-            marginLeft: "2px",
-            borderRadius: "10px",
-            color: isActive ? activeTextColor : inactiveTextColor,
-            backgroundColor: isActive ? sidebarColor : "transparent",
-            transition: "all 0.25s ease-in-out",
-          }}
-          onMouseEnter={(e) => {
-            if (!isActive) {
-              const el = e.currentTarget as HTMLElement;
-              el.style.backgroundColor = hoverBackgroundColor;
-              el.style.color = activeTextColor;
-              el.style.transform = "translateX(4px)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive) {
-              const el = e.currentTarget as HTMLElement;
-              el.style.backgroundColor = "transparent";
-              el.style.color = inactiveTextColor;
-              el.style.transform = "translateX(0px)";
-            }
-          }}
-        >
-          {icon ? (
-            <FontAwesomeIcon className="nav-icon ms-n3" icon={icon} />
-          ) : (
-            <span className="nav-icon ms-n3" />
-          )}
-          {children}
-        </NavLink>
+    <li className="sidebar-item-wrapper">
+      <Link
+        href={href}
+        onClick={() => setIsShowSidebar(false)}
+        className={classNames("sidebar-nav-item", { active: isActive })}
+      >
+        {icon ? (
+          <span className="nav-icon">
+            <FontAwesomeIcon icon={icon} />
+          </span>
+        ) : (
+          <span className="nav-icon" />
+        )}
+        <span className="nav-label">{children}</span>
       </Link>
-    </NavItem>
+    </li>
   );
 }

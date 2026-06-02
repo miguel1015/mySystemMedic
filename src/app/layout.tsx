@@ -10,7 +10,22 @@ import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/react";
+import { Bricolage_Grotesque, Manrope } from "next/font/google";
 import Script from "next/script";
+
+const fontDisplay = Bricolage_Grotesque({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const fontBody = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-body",
+  display: "swap",
+});
 import ReactQueryProvider from "./api/queryClientProvider";
 import ToasterProvider from "../components/toast/toast";
 import AntdThemeProvider from "../themes/antdTheme";
@@ -30,7 +45,11 @@ export default async function RootLayout({
   const googleAdsenseId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID ?? "";
 
   return (
-    <html lang="en" data-bs-theme={currentTheme}>
+    <html
+      lang="en"
+      data-bs-theme={currentTheme}
+      className={`${fontDisplay.variable} ${fontBody.variable}`}
+    >
       <body>
         <ProgressBar />
         <ToasterProvider />

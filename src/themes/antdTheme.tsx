@@ -110,10 +110,15 @@ export default function AntdThemeProvider({
           algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
 
           token: {
-            colorBgBase: isDark ? "#020617" : "#ffffff",
-            colorBgContainer: isDark ? "#020617" : "#ffffff",
-            colorTextBase: isDark ? "#e5e7eb" : "#111827",
-            colorBorderSecondary: isDark ? "#1f2937" : "#e5e7eb",
+            colorPrimary: palette.primary,
+            colorBgBase: isDark ? "#0a0a0f" : "#ffffff",
+            colorBgContainer: isDark ? "#141419" : "#ffffff",
+            colorTextBase: isDark ? "#f1f1f4" : "#111827",
+            colorBorderSecondary: isDark ? "#23232e" : "#e5e7eb",
+            fontFamily:
+              "var(--font-body), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            borderRadius: 12,
+            controlHeight: 38,
           },
 
           components: {

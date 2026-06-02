@@ -5,7 +5,17 @@ import { useMedicines } from "@/core/hooks/parameterization/medicines/useGetAllM
 import { useTariffs } from "@/core/hooks/parameterization/tariffs/useGetAllTariffs"
 import { useContractCatalogs } from "@/core/hooks/parameterization/contracts/useContractCatalogs"
 import { motion } from "framer-motion"
-import { FileText, Pill, Receipt, Activity, TrendingUp, BarChart3 } from "lucide-react"
+import {
+  FileText,
+  Pill,
+  Receipt,
+  Activity,
+  TrendingUp,
+  BarChart3,
+  CalendarDays,
+  Sparkles,
+} from "lucide-react"
+import { useMemo } from "react"
 import { ContractsByStatusChart } from "./charts/ContractsByStatusChart"
 import { MedicinePriceChart } from "./charts/MedicinePriceChart"
 import { ContractsTimelineChart } from "./charts/ContractsTimelineChart"
@@ -17,41 +27,58 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.06 },
+    transition: { staggerChildren: 0.07 },
   },
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0, y: 14 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
+    transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
   },
 }
 
 function ChartCardSkeleton() {
   return (
     <div className={styles.chartCard}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-        <div className={styles.skeletonIcon} style={{ width: 22, height: 22 }} />
-        <div className={styles.skeleton} style={{ width: 100, height: 12 }} />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+        <div className={styles.skeletonIcon} style={{ width: 32, height: 32, borderRadius: 10 }} />
+        <div className={styles.skeleton} style={{ width: 140, height: 13 }} />
       </div>
       <div className={styles.skeletonChart} />
     </div>
   )
 }
 
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return "Buenos días"
+  if (h < 19) return "Buenas tardes"
+  return "Buenas noches"
+}
+
 export default function DashboardContainer() {
   const { data: contracts, isLoading: loadingContracts } = useContracts()
   const { data: medicines, isLoading: loadingMedicines } = useMedicines()
   const { data: tariffs, isLoading: loadingTariffs } = useTariffs()
-  const { data: catalogs } = useContractCatalogs()
+  useContractCatalogs()
 
   const contractCount = contracts?.length ?? 0
   const medicineCount = medicines?.length ?? 0
   const tariffCount = tariffs?.length ?? 0
   const activeContracts = contracts?.filter((c) => c.status === "Activo").length ?? 0
+
+  const today = useMemo(
+    () =>
+      new Date().toLocaleDateString("es-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }),
+    []
+  )
 
   return (
     <motion.div
@@ -60,11 +87,24 @@ export default function DashboardContainer() {
       initial="hidden"
       animate="visible"
     >
-      {/* Header */}
-      <motion.div className={styles.headerSection} variants={itemVariants}>
-        <h1 className={styles.greeting}>Dashboard</h1>
-        <p className={styles.subtitle}>Resumen general del sistema</p>
-      </motion.div>
+      {/* Hero */}
+      <motion.section className={styles.hero} variants={itemVariants}>
+        <div className={styles.heroContent}>
+          <div>
+            <span className={styles.heroEyebrow}>
+              <Sparkles size={13} /> Panel de control
+            </span>
+            <h1 className={styles.greeting}>{getGreeting()}, bienvenido 👋</h1>
+            <p className={styles.subtitle}>
+              Este es el resumen general del sistema clínico DataMedic.
+            </p>
+          </div>
+          <div className={styles.heroDate}>
+            <CalendarDays size={16} />
+            {today}
+          </div>
+        </div>
+      </motion.section>
 
       {/* Stats */}
       <motion.div variants={itemVariants}>
@@ -74,7 +114,7 @@ export default function DashboardContainer() {
             <StatCardSkeleton />
           ) : (
             <StatCard
-              icon={<FileText size={14} />}
+              icon={<FileText />}
               title="Contratos"
               value={contractCount}
               subtitle={`${activeContracts} activos`}
@@ -87,7 +127,7 @@ export default function DashboardContainer() {
             <StatCardSkeleton />
           ) : (
             <StatCard
-              icon={<Pill size={14} />}
+              icon={<Pill />}
               title="Medicamentos"
               value={medicineCount}
               subtitle="Registrados"
@@ -100,7 +140,7 @@ export default function DashboardContainer() {
             <StatCardSkeleton />
           ) : (
             <StatCard
-              icon={<Receipt size={14} />}
+              icon={<Receipt />}
               title="Tarifarios"
               value={tariffCount}
               subtitle="Configurados"
@@ -126,7 +166,7 @@ export default function DashboardContainer() {
                     className={styles.chartTitleIcon}
                     style={{ background: "rgba(15, 111, 92, 0.1)", color: "#0F6F5C" }}
                   >
-                    <Activity size={12} />
+                    <Activity size={16} />
                   </span>
                   Estado de Contratos
                 </h3>
@@ -145,7 +185,7 @@ export default function DashboardContainer() {
                     className={styles.chartTitleIcon}
                     style={{ background: "rgba(99, 102, 241, 0.1)", color: "#6366F1" }}
                   >
-                    <TrendingUp size={12} />
+                    <TrendingUp size={16} />
                   </span>
                   Contratos por Mes
                 </h3>
@@ -170,7 +210,7 @@ export default function DashboardContainer() {
                     className={styles.chartTitleIcon}
                     style={{ background: "rgba(245, 158, 11, 0.1)", color: "#F59E0B" }}
                   >
-                    <BarChart3 size={12} />
+                    <BarChart3 size={16} />
                   </span>
                   Precios de Medicamentos
                 </h3>
@@ -189,9 +229,9 @@ export default function DashboardContainer() {
                     className={styles.chartTitleIcon}
                     style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10B981" }}
                   >
-                    <Receipt size={14} />
+                    <Receipt size={16} />
                   </span>
-                  Distribucion de Tarifarios
+                  Distribución de Tarifarios
                 </h3>
               </div>
               <TariffDistributionChart tariffs={tariffs ?? []} />
