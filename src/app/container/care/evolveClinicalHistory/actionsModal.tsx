@@ -4,21 +4,25 @@ import Modal from "@/components/modal"
 import { ActiveAdmission } from "@/core/interfaces/care/types"
 import {
   AlertOutlined,
+  AuditOutlined,
   ExperimentOutlined,
   FileTextOutlined,
   FormOutlined,
+  HistoryOutlined,
   InboxOutlined,
+  LogoutOutlined,
   MedicineBoxOutlined,
   RadarChartOutlined,
   ScissorOutlined,
+  ToolOutlined,
 } from "@ant-design/icons"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 interface ActionsModalProps {
-  open: boolean;
-  onClose: () => void;
-  patient: ActiveAdmission | null;
+  open: boolean
+  onClose: () => void
+  patient: ActiveAdmission | null
 }
 
 const actions = [
@@ -105,16 +109,76 @@ const actions = [
 ]
 
 const clinicalEvolutionOptions = [
-  { key: "initial-clinical-history", label: "Historia clínica inicial" },
-  { key: "evolutions", label: "Evoluciones" },
-  { key: "surgical-description", label: "Descripción quirúrgica" },
-  { key: "discharge-note", label: "Nota de egreso" },
-  { key: "nursing-notes", label: "Notas de enfermería" },
-  { key: "minor-procedures", label: "Procedimientos menores" },
-  { key: "medical-note", label: "Nota médica" },
-  { key: "diagnostic-procedures", label: "Procedimientos diagnósticos" },
-  { key: "non-surgical-procedures", label: "Procedimientos no quirúrgicos" },
-  { key: "radiology-study", label: "Estudio radiólogo" },
+  {
+    key: "initial-clinical-history",
+    label: "Historia clínica inicial",
+    icon: <FileTextOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/initialClinicalHistory",
+    color: "var(--theme-primary, #0F6F5C)",
+  },
+  {
+    key: "evolutions",
+    label: "Evoluciones",
+    icon: <HistoryOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/evolutions",
+    color: "#1677ff",
+  },
+  {
+    key: "surgical-description",
+    label: "Descripción quirúrgica",
+    icon: <ScissorOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/surgicalDescription",
+    color: "#531dab",
+  },
+  {
+    key: "discharge-note",
+    label: "Nota de egreso",
+    icon: <LogoutOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/dischargeNote",
+    color: "#d46b08",
+  },
+  {
+    key: "nursing-notes",
+    label: "Notas de enfermería",
+    icon: <MedicineBoxOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/nursingNotes",
+    color: "#389e0d",
+  },
+  {
+    key: "minor-procedures",
+    label: "Procedimientos menores",
+    icon: <ToolOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/minorProcedures",
+    color: "#08979c",
+  },
+  {
+    key: "medical-note",
+    label: "Nota médica",
+    icon: <FormOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/medicalNote",
+    color: "#c41d7f",
+  },
+  {
+    key: "diagnostic-procedures",
+    label: "Procedimientos diagnósticos",
+    icon: <ExperimentOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/diagnosticProcedures",
+    color: "#d4380d",
+  },
+  {
+    key: "non-surgical-procedures",
+    label: "Procedimientos no quirúrgicos",
+    icon: <AuditOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/nonSurgicalProcedures",
+    color: "#722ed1",
+  },
+  {
+    key: "radiology-study",
+    label: "Estudio radiólogo",
+    icon: <RadarChartOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/radiologyStudy",
+    color: "#fa8c16",
+  },
 ]
 
 const patientSummaryStyle = {
@@ -159,14 +223,16 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
     closeActionsModal()
   }
 
-  const handleEvolutionOption = (option: (typeof clinicalEvolutionOptions)[number]) => {
+  const handleEvolutionOption = (
+    option: (typeof clinicalEvolutionOptions)[number],
+  ) => {
     const params = buildPatientParams()
     if (!params) return
 
     params.set("recordType", option.key)
     params.set("recordLabel", option.label)
 
-    router.push(`/care/careManagement?${params.toString()}`)
+    router.push(`${option.path}?${params.toString()}`)
     closeActionsModal()
   }
 
@@ -176,7 +242,9 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
     return (
       <div style={{ marginBottom: 20 }}>
         <div style={patientSummaryStyle}>
-          <span style={{ fontWeight: 600, color: "var(--theme-primary, #0F6F5C)" }}>Paciente: </span>
+          <span style={{ fontWeight: 600, color: "var(--theme-primary, #0F6F5C)" }}>
+            Paciente:{" "}
+          </span>
           <span style={{ fontWeight: 500 }}>{patient.patientFullName}</span>
           <span style={{ color: "var(--dash-text-secondary, #6b7280)", marginLeft: 12 }}>
             Doc: {patient.documentNumber}
@@ -188,7 +256,12 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
 
   return (
     <>
-      <Modal open={open && !evolutionModalOpen} onClose={closeActionsModal} title="Acciones del Paciente" size="lg">
+      <Modal
+        open={open && !evolutionModalOpen}
+        onClose={closeActionsModal}
+        title="Acciones del Paciente"
+        size="lg"
+      >
         {renderPatientSummary()}
 
         <div
@@ -295,15 +368,18 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
                 transition: "all 0.2s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)"
-                e.currentTarget.style.borderColor = "var(--theme-primary, #0F6F5C)"
+                e.currentTarget.style.backgroundColor =
+                  "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)"
+                e.currentTarget.style.borderColor = option.color
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = "var(--dash-surface, #ffffff)"
                 e.currentTarget.style.borderColor = "var(--dash-border, #e5e7eb)"
               }}
             >
-              <FileTextOutlined style={{ color: "var(--theme-primary, #0F6F5C)", fontSize: 20 }} />
+              <span style={{ color: option.color, display: "flex" }}>
+                {option.icon}
+              </span>
               <span>{option.label}</span>
             </button>
           ))}

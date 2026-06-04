@@ -42,42 +42,42 @@ export function usePatientForm({
   // Limpiar departamento y ciudad cuando cambia el país de residencia
   useEffect(() => {
     if (!editPatientId) {
-      setValue("stateId", 0);
-      setValue("cityId", 0);
+      setValue("stateId", undefined as unknown as number);
+      setValue("cityId", undefined as unknown as number);
     }
   }, [residenceCountryId, setValue, editPatientId]);
 
   // Limpiar ciudad cuando cambia el departamento
   useEffect(() => {
     if (!editPatientId) {
-      setValue("cityId", 0);
+      setValue("cityId", undefined as unknown as number);
     }
   }, [stateId, setValue, editPatientId]);
 
   useEffect(() => {
     if (editPatientId && patientData) {
       reset({
-        insurerId: patientData.insurerId ?? 0,
-        documentTypeId: patientData.documentTypeId ?? 0,
+        insurerId: patientData.insurerId ?? undefined,
+        documentTypeId: patientData.documentTypeId ?? undefined,
         documentNumber: patientData.documentNumber ?? "",
         firstName: patientData.firstName ?? "",
         middleName: patientData.middleName ?? "",
         lastName: patientData.lastName ?? "",
         secondLastName: patientData.secondLastName ?? "",
         birthDate: patientData.birthDate?.split("T")[0] ?? "",
-        sexId: patientData.sexId ?? 0,
-        birthCountryId: patientData.birthCountryId ?? 0,
-        residenceCountryId: patientData.residenceCountryId ?? 0,
-        stateId: patientData.stateId ?? 0,
-        cityId: patientData.cityId ?? 0,
-        zoneId: patientData.zoneId ?? 0,
+        sexId: patientData.sexId ?? undefined,
+        birthCountryId: patientData.birthCountryId ?? undefined,
+        residenceCountryId: patientData.residenceCountryId ?? undefined,
+        stateId: patientData.stateId ?? undefined,
+        cityId: patientData.cityId ?? undefined,
+        zoneId: patientData.zoneId ?? undefined,
         address: patientData.address ?? "",
         phone: patientData.phone ?? "",
         email: patientData.email ?? "",
-        maritalStatusId: patientData.maritalStatusId ?? 0,
-        disabilityId: patientData.disabilityId ?? 0,
-        bloodGroupId: patientData.bloodGroupId ?? 0,
-        rhFactorId: patientData.rhFactorId ?? 0,
+        maritalStatusId: patientData.maritalStatusId ?? undefined,
+        disabilityId: patientData.disabilityId ?? undefined,
+        bloodGroupId: patientData.bloodGroupId ?? undefined,
+        rhFactorId: patientData.rhFactorId ?? undefined,
       });
     }
   }, [editPatientId, patientData, reset]);

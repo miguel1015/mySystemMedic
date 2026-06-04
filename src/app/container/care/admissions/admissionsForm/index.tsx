@@ -235,7 +235,7 @@ export default function AdmissionsForm({
             </p>
             <Divider style={{ margin: "8px 0 16px" }} />
 
-            <GridContainer columns="col-3" gap="g-3">
+            <GridContainer columns="col-4" gap="g-4">
               <SelectAutocomplete
                 name="careModality"
                 label="Modalidad de atencion"

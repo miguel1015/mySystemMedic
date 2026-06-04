@@ -64,6 +64,7 @@ const MedicalDevicesForm: React.FC<TUtils> = ({
           placeholder="Uso del elemento"
           control={control}
           options={elementUsageOptions}
+          getPopupContainer={() => document.body}
         />
 
         <Input

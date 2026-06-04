@@ -1,51 +1,66 @@
 import { z } from "zod"
 
+const requiredSelect = (label: string) =>
+  z.preprocess(
+    (value) => {
+      if (value === null || value === "") return undefined
+      if (typeof value === "string") return Number(value)
+      return value
+    },
+    z
+      .number({
+        required_error: `${label} es obligatorio`,
+        invalid_type_error: `${label} es obligatorio`,
+      })
+      .min(1, `${label} es obligatorio`),
+  )
+
 export const patientSchema = z.object({
-  insurerId: z.coerce.number().min(1, "EPS es obligatoria"),
-  documentTypeId: z.coerce.number().min(1, "Tipo de documento es obligatorio"),
+  insurerId: requiredSelect("EPS"),
+  documentTypeId: requiredSelect("Tipo de documento"),
   documentNumber: z.string().min(1, "Número de documento es obligatorio"),
   firstName: z.string().min(1, "Primer nombre es obligatorio"),
   middleName: z.string().optional().default(""),
   lastName: z.string().min(1, "Primer apellido es obligatorio"),
   secondLastName: z.string().optional().default(""),
   birthDate: z.string().min(1, "Fecha de nacimiento es obligatoria"),
-  sexId: z.coerce.number().min(1, "Sexo es obligatorio"),
-  birthCountryId: z.coerce.number().min(1, "País de nacimiento es obligatorio"),
-  residenceCountryId: z.coerce.number().min(1, "País de residencia es obligatorio"),
-  stateId: z.coerce.number().min(1, "Departamento es obligatorio"),
-  cityId: z.coerce.number().min(1, "Ciudad es obligatoria"),
-  zoneId: z.coerce.number().min(1, "Zona es obligatoria"),
+  sexId: requiredSelect("Sexo"),
+  birthCountryId: requiredSelect("País de nacimiento"),
+  residenceCountryId: requiredSelect("País de residencia"),
+  stateId: requiredSelect("Departamento"),
+  cityId: requiredSelect("Ciudad"),
+  zoneId: requiredSelect("Zona"),
   address: z.string().min(1, "Dirección es obligatoria"),
   phone: z.string().min(1, "Teléfono es obligatorio"),
   email: z.string().min(1, "Correo es obligatorio").email("Correo no válido"),
-  maritalStatusId: z.coerce.number().min(1, "Estado civil es obligatorio"),
-  disabilityId: z.coerce.number().min(1, "Discapacidad es obligatoria"),
-  bloodGroupId: z.coerce.number().min(1, "Grupo sanguíneo es obligatorio"),
-  rhFactorId: z.coerce.number().min(1, "RH es obligatorio"),
+  maritalStatusId: requiredSelect("Estado civil"),
+  disabilityId: requiredSelect("Discapacidad"),
+  bloodGroupId: requiredSelect("Grupo sanguíneo"),
+  rhFactorId: requiredSelect("RH"),
 })
 
 export type TPatientForm = z.infer<typeof patientSchema>
 
-export const patientDefaultValues: TPatientForm = {
-  insurerId: 0,
-  documentTypeId: 0,
+export const patientDefaultValues: Partial<TPatientForm> = {
+  insurerId: undefined,
+  documentTypeId: undefined,
   documentNumber: "",
   firstName: "",
   middleName: "",
   lastName: "",
   secondLastName: "",
   birthDate: "",
-  sexId: 0,
-  birthCountryId: 0,
-  residenceCountryId: 0,
-  stateId: 0,
-  cityId: 0,
-  zoneId: 0,
+  sexId: undefined,
+  birthCountryId: undefined,
+  residenceCountryId: undefined,
+  stateId: undefined,
+  cityId: undefined,
+  zoneId: undefined,
   address: "",
   phone: "",
   email: "",
-  maritalStatusId: 0,
-  disabilityId: 0,
-  bloodGroupId: 0,
-  rhFactorId: 0,
+  maritalStatusId: undefined,
+  disabilityId: undefined,
+  bloodGroupId: undefined,
+  rhFactorId: undefined,
 }
