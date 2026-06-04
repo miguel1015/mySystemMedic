@@ -1,64 +1,95 @@
-$header-background: #ffffff;
-$header-background-dark: #141419;
-$header-link-color: rgba(44, 56, 74, 0.681);
-$header-link-color-dark: var(--#{$prefix}body-color);
-$header-link-color-hover: rgba(44, 56, 74, 0.95);
-$header-link-color-hover-dark: #999;
-$header-brand-color: #4f5d73;
-$header-brand-color-dark: var(--#{$prefix}body-color);
-
+/* ══════════════════════════════════════════════
+   DataMedic — Header · Health-Tech Esmeralda
+   ══════════════════════════════════════════════ */
 :root {
-  --header-background: #{$header-background};
-  --header-link-color: #{$header-link-color};
-  --header-link-color-hover: #{$header-link-color-hover};
-  --header-brand-color: #{$header-brand-color};
+  --header-bg: rgba(255, 255, 255, 0.82);
+  --header-border: var(--dash-border, #e4eae8);
+  --header-link-color: #5b6b66;
+  --header-link-color-hover: #0f1f1b;
 }
 
 @include color-mode(dark) {
-  --header-background: #{$header-background-dark};
-  --header-link-color: #{$header-link-color-dark};
-  --header-link-color-hover: #{$header-link-color-hover-dark};
-  --header-brand-color: #{$header-brand-color-dark};
+  --header-bg: rgba(17, 21, 26, 0.82);
+  --header-border: var(--dash-border, #232b33);
+  --header-link-color: #9aa8a3;
+  --header-link-color-hover: #eef2f1;
 }
 
 .header {
-  background: var(--header-background);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: background 0.25s ease, border-color 0.25s ease;
 
   .header-brand {
-    color: var(--header-brand-color);
+    color: var(--theme-primary, #0f6f5c);
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-decoration: none;
   }
 
   .header-navbar {
-    min-height: 3rem;
+    min-height: 3.25rem;
 
     .header-toggler {
       color: var(--header-link-color);
+      width: 40px;
+      height: 40px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: var(--radius-md, 12px);
+      transition: background 0.2s ease, color 0.2s ease;
+
+      &:hover {
+        color: var(--theme-primary, #0f6f5c);
+        background: var(--dash-surface-hover, #f1f5f4);
+      }
     }
 
     .header-nav {
+      align-items: center;
+
       .nav-link {
+        position: relative;
         color: var(--header-link-color);
-        transition: color 0.15s ease;
+        width: 40px;
+        height: 40px;
+        display: inline-grid !important;
+        place-items: center;
+        border-radius: var(--radius-md, 12px);
+        transition: color 0.18s ease, background 0.18s ease;
 
         &:hover {
-          color: var(--header-link-color-hover);
+          color: var(--theme-primary, #0f6f5c);
+          background: var(--dash-surface-hover, #f1f5f4);
+        }
+
+        .badge {
+          top: 4px !important;
+          right: 2px !important;
+          font-size: 9px;
+          min-width: 16px;
+          line-height: 1.1;
+          box-shadow: 0 0 0 2px var(--dash-surface, #fff);
         }
       }
     }
+  }
+
+  .dropdown-menu {
+    border: 1px solid var(--dash-border, #e4eae8);
+    border-radius: var(--radius-lg, 16px);
+    box-shadow: var(--dash-shadow-lg);
+    overflow: hidden;
   }
 
   .breadcrumb {
     min-height: 2rem;
 
-    .breadcrumb-item {
-      a {
-        color: var(--header-link-color);
-
-        &:hover {
-          color: var(--header-link-color-hover);
-        }
-      }
+    .breadcrumb-item a {
+      color: var(--header-link-color);
+      &:hover { color: var(--header-link-color-hover); }
     }
   }
 }

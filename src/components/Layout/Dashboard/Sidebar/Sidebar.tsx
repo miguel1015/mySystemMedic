@@ -2,6 +2,7 @@
 
 import { useSidebar } from "@/components/Layout/Dashboard/SidebarProvider";
 import classNames from "classnames";
+import { HeartPulse } from "lucide-react";
 import React from "react";
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
@@ -15,37 +16,20 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
         show: isShowSidebar,
       })}
       id="sidebar"
-      style={{
-        borderRight: "1px solid rgba(255,255,255,0.1)",
-        boxShadow: "0 0 10px rgba(0,0,0,0.2)",
-      }}
     >
-      <div className="sidebar-brand d-flex d-md-flex align-items-center justify-content-center py-3">
-        <div
-          style={{
-            width: "120px",
-            height: "auto",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <img
-            src="assets/img/avatars/Logo.png"
-            alt="Logo"
-            style={{
-              width: "150%",
-              height: "auto",
-              objectFit: "contain",
-              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-            }}
-          />
+      <div className="sidebar-brand">
+        <div className="sidebar-logo-mark">
+          <HeartPulse size={24} strokeWidth={2.2} />
+        </div>
+        <div className="sidebar-logo-text">
+          <span className="word">
+            Data<span>Medic</span>
+          </span>
+          <span className="tag">Sistema Clínico</span>
         </div>
       </div>
 
-      <div className="sidebar-nav flex-fill border-top border-light-subtle">
-        {children}
-      </div>
+      <div className="sidebar-nav flex-fill">{children}</div>
     </div>
   );
 }

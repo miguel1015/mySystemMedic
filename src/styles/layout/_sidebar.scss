@@ -1,44 +1,17 @@
-/* -------------------------
-   Variables (verde corporativo)
-   ------------------------- */
-$sidebar-background: #1F3D36;
-$sidebar-background-dark: #141F1C;
-$sidebar-text-color: rgba(255, 255, 255, 0.65);
-
-$sidebar-brand-height: 4rem;
-$sidebar-brand-background: rgba(15, 111, 92, 0.25);
-$sidebar-brand-background-dark: rgba(15, 111, 92, 0.35);
-
-$sidebar-border-color: #234B42;
-$sidebar-border-color-dark: rgba(255, 255, 255, 0.08);
-
-$sidebar-nav-group-background: rgba(0, 0, 0, 0.25);
-
-$sidebar-link-color: rgba(255, 255, 255, 0.65);
-$sidebar-link-color-hover: rgba(255, 255, 255, 0.9);
-$sidebar-link-background-hover: rgba(15, 111, 92, 0.18);
-
-$sidebar-toggler-height: 3rem;
-$sidebar-toggler-background: rgba(15, 111, 92, 0.22);
-$sidebar-toggler-background-dark: rgba(15, 111, 92, 0.3);
-$sidebar-toggler-background-hover: rgba(15, 111, 92, 0.35);
-$sidebar-toggler-color: rgba(255, 255, 255, 0.75);
-$sidebar-toggler-color-hover: #ffffff;
-
+/* ══════════════════════════════════════════════
+   DataMedic — Sidebar · Health-Tech Esmeralda
+   ══════════════════════════════════════════════ */
 $sidebar-z-index: $zindex-fixed;
 $sidebar-overlay-z-index: 1025;
 
-/* -------------------------
-   CSS Variables
-   ------------------------- */
 :root {
-  --sidebar-width: 16rem;
-  --sidebar-background: #{$sidebar-background};
-  --sidebar-brand-background: #{$sidebar-brand-background};
-  --sidebar-toggler-background: #{$sidebar-toggler-background};
-  --sidebar-border-color: #{$sidebar-border-color};
-  --sidebar-link-hover-bg: #{$sidebar-link-background-hover};
-  --sidebar-toggler-hover-bg: #{$sidebar-toggler-background-hover};
+  --sidebar-width: 17rem;
+  --sidebar-background: #123129;
+  --sidebar-background-2: #0b201b;
+  --sidebar-border-color: rgba(255, 255, 255, 0.07);
+  --sidebar-link-color: rgba(226, 240, 236, 0.62);
+  --sidebar-link-color-hover: #ffffff;
+  --sidebar-link-hover-bg: rgba(255, 255, 255, 0.06);
   --theme-primary: #0F6F5C;
   --theme-primary-hover: #0d5f4f;
   --theme-primary-active: #0a4f42;
@@ -46,19 +19,16 @@ $sidebar-overlay-z-index: 1025;
 }
 
 @include color-mode(dark) {
-  --sidebar-background: #{$sidebar-background-dark};
-  --sidebar-brand-background: #{$sidebar-brand-background-dark};
-  --sidebar-toggler-background: #{$sidebar-toggler-background-dark};
-  --sidebar-border-color: #{$sidebar-border-color-dark};
+  --sidebar-background: #0c1714;
+  --sidebar-background-2: #060d0b;
+  --sidebar-border-color: rgba(255, 255, 255, 0.06);
 }
 
-/* -------------------------
-   Header toggler (FontAwesome safe)
-   ------------------------- */
+/* ── Header toggler (burger) ── */
 .header {
   .header-navbar {
     .header-toggler {
-      color: var(--header-link-color, rgba(255,255,255,0.65));
+      color: var(--header-link-color, rgba(44, 56, 74, 0.681));
       padding: 0.25rem;
 
       .burger {
@@ -90,144 +60,272 @@ $sidebar-overlay-z-index: 1025;
         transform-origin: center;
       }
 
-      .toggler-icon.open {
-        transform: rotate(90deg) scale(1.05);
-        opacity: 0.95;
-      }
-
-      .toggler-icon.closed {
-        transform: rotate(0deg) scale(1);
-        opacity: 1;
-      }
-
-      &:hover .toggler-icon {
-        transform: scale(1.05);
-      }
+      .toggler-icon.open { transform: rotate(90deg) scale(1.05); opacity: 0.95; }
+      .toggler-icon.closed { transform: rotate(0deg) scale(1); opacity: 1; }
+      &:hover .toggler-icon { transform: scale(1.05); }
     }
   }
 }
 
-/* -------------------------
-   Sidebar (animación suave + scroll)
-   ------------------------- */
+/* ── Sidebar shell ── */
 .sidebar {
   flex: 0 0 var(--sidebar-width);
   width: var(--sidebar-width);
-  background: var(--sidebar-background);
-  color: $sidebar-text-color;
+  color: var(--sidebar-link-color);
   z-index: $sidebar-z-index;
   border-right: 1px solid var(--sidebar-border-color);
+  background:
+    radial-gradient(420px 280px at 80% 0%, rgba(16, 185, 129, 0.16), transparent 60%),
+    linear-gradient(180deg, var(--sidebar-background) 0%, var(--sidebar-background-2) 100%);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
 
   transform: translateX(-100%);
   opacity: 0;
   transition:
     transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.25s ease,
-    box-shadow 0.2s ease;
+    opacity 0.25s ease;
 
-  &.show {
-    transform: translateX(0);
-    opacity: 1;
+  &.show { transform: translateX(0); opacity: 1; }
+
+  /* subtle top texture */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 100% 38px;
+    mask-image: linear-gradient(180deg, black, transparent 40%);
+    pointer-events: none;
   }
 
+  /* ── Brand ── */
   .sidebar-brand {
-    flex: 0 0 $sidebar-brand-height;
-    background: var(--sidebar-brand-background);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--sidebar-border-color);
   }
 
+  .sidebar-logo-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    background: linear-gradient(140deg, #10b981, #0f6f5c);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+  }
+
+  .sidebar-logo-text .word {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  .sidebar-logo-text .word span { color: #6ee7c4; }
+  .sidebar-logo-text .tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(226, 240, 236, 0.4);
+    margin-top: 2px;
+  }
+
+  /* ── Nav scroll area ── */
   .sidebar-nav {
+    position: relative;
+    z-index: 1;
     overflow-x: hidden;
     overflow-y: auto;
-    border-top-color: var(--sidebar-border-color) !important;
+    padding: 12px 12px 24px;
 
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
 
-    &::-webkit-scrollbar { width: 10px; }
+    &::-webkit-scrollbar { width: 8px; }
     &::-webkit-scrollbar-track { background: transparent; }
     &::-webkit-scrollbar-thumb {
-      background: linear-gradient(
-        180deg,
-        rgba(255,255,255,0.06),
-        rgba(255,255,255,0.14)
-      );
+      background: rgba(255, 255, 255, 0.12);
       border-radius: 10px;
       border: 2px solid transparent;
       background-clip: padding-box;
-      transition: background 0.2s ease, transform 0.12s ease;
     }
-    &::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(
-        180deg,
-        rgba(255,255,255,0.14),
-        rgba(255,255,255,0.28)
-      );
-      transform: scale(1.02);
-    }
+    &::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.22); }
 
-    &:before {
-      content: "";
-      position: sticky;
-      top: 0;
-      height: 8px;
-      display: block;
-      pointer-events: none;
-      background: linear-gradient(
-        to bottom,
-        rgba(0,0,0,0.12),
-        transparent
-      );
-      z-index: 1;
-    }
-
-    .nav-title { font-size: 80%; }
-
-    .nav-link {
-      color: $sidebar-link-color;
-      transition: background 0.18s ease, color 0.18s ease;
-
-      &:hover {
-        color: $sidebar-link-color-hover;
-        background: var(--sidebar-link-hover-bg, #{$sidebar-link-background-hover});
-        text-decoration: none;
-      }
-
-      .nav-icon { flex: 0 0 4rem; }
-    }
-
-    .nav-group {
-      &.show { background: $sidebar-nav-group-background; }
-
-      .nav-link {
-        &:focus { box-shadow: none; }
-
-        .nav-chevron {
-          transition: transform 0.2s cubic-bezier(0.25,1,0.5,1);
-        }
-
-        &.collapsed .nav-chevron {
-          transform: rotate(180deg);
-        }
-      }
-    }
+    ul { margin: 0; padding: 0; }
   }
+}
 
-  .sidebar-toggler {
-    flex: 0 0 $sidebar-toggler-height;
-    background: var(--sidebar-toggler-background);
-    color: $sidebar-toggler-color;
-    border-top-color: var(--sidebar-border-color) !important;
+/* ── Module group (accordion) ── */
+.nav-group {
+  margin: 2px 0;
+
+  /* section label / toggle */
+  > .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px !important;
+    border: none;
+    border-radius: var(--radius-md, 12px);
+    color: rgba(226, 240, 236, 0.5);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: color 0.2s ease, background 0.2s ease;
+
+    .nav-icon {
+      width: 18px;
+      text-align: center;
+      flex: 0 0 18px;
+      font-size: 13px;
+    }
+
+    .nav-text { flex: 1 1 auto; text-align: left; }
+
+    .nav-chevron {
+      opacity: 0.6;
+      transition: transform 0.25s ease;
+    }
 
     &:hover {
-      background: var(--sidebar-toggler-hover-bg, #{$sidebar-toggler-background-hover});
-      color: $sidebar-toggler-color-hover;
-    }
-
-    .sidebar-toggler-chevron {
-      transition: transform 0.2s ease;
+      color: rgba(255, 255, 255, 0.85);
+      background: var(--sidebar-link-hover-bg);
     }
   }
 
+  &.show > .nav-link {
+    color: #8ff0d4;
+    .nav-chevron { transform: rotate(180deg); }
+  }
+
+  .nav-group-items {
+    padding: 2px 0 6px 0 !important;
+    margin: 0;
+    list-style: none;
+  }
+}
+
+/* ── Nav item (link) ── */
+.sidebar-item-wrapper { list-style: none; }
+
+.sidebar-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9.5px 12px !important;
+  margin: 2px 0;
+  border-radius: var(--radius-md, 12px);
+  color: var(--sidebar-link-color);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.18s ease;
+
+  .nav-icon {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(226, 240, 236, 0.78);
+    transition: all 0.2s ease;
+  }
+
+  /* leftover empty icon spacer for sub-items */
+  span.nav-icon { background: transparent; }
+
+  &:hover {
+    color: #fff;
+    background: var(--sidebar-link-hover-bg);
+    transform: translateX(3px);
+
+    .nav-icon {
+      background: rgba(16, 185, 129, 0.18);
+      color: #8ff0d4;
+    }
+  }
+
+  /* active state — emerald pill with glow + indicator */
+  &.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(15, 111, 92, 0.9), rgba(16, 185, 129, 0.75));
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+
+    .nav-icon {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 22px;
+      border-radius: 0 4px 4px 0;
+      background: #6ee7c4;
+      box-shadow: 0 0 12px #6ee7c4;
+    }
+  }
+}
+
+/* ── Submenu items (no icon chip) ── */
+.nav-group-items .sidebar-nav-item {
+  padding-left: 42px !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(226, 240, 236, 0.5);
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+    transition: background 0.2s ease;
+  }
+
+  &:hover { transform: translateX(3px); }
+  &:hover::after { background: #6ee7c4; }
+
+  &.active {
+    background: rgba(16, 185, 129, 0.16);
+    box-shadow: none;
+    color: #aef3dc;
+    &::after { background: #6ee7c4; box-shadow: 0 0 8px #6ee7c4; }
+  }
+}
+
+/* ── Sidebar responsive behaviour ── */
+.sidebar {
   @include media-breakpoint-up(md) {
     transform: translateX(0);
     opacity: 1;
@@ -242,19 +340,13 @@ $sidebar-overlay-z-index: 1025;
       transition: padding 0.35s ease;
     }
 
-    &.show + .wrapper {
-      padding-left: 0;
-    }
+    &.show + .wrapper { padding-left: 0; }
   }
 }
 
-/* -------------------------
-   Sidebar overlay (mobile)
-   ------------------------- */
+/* ── Overlay (mobile) ── */
 .sidebar-overlay {
   z-index: $sidebar-overlay-z-index;
 
-  @include media-breakpoint-up(md) {
-    display: none;
-  }
+  @include media-breakpoint-up(md) { display: none; }
 }
