@@ -1,11 +1,5 @@
-import ClinicalRecordPlaceholder from "@/app/container/care/clinicalRecordPlaceholder"
-import { FileTextOutlined } from "@ant-design/icons"
+import InitialClinicalHistoryContainer from "@/app/container/care/clinicalRecords/initialClinicalHistory"
 
 export default function InitialClinicalHistoryPage() {
-  return (
-    <ClinicalRecordPlaceholder
-      title="Historia clínica inicial"
-      icon={<FileTextOutlined />}
-    />
-  )
+  return <InitialClinicalHistoryContainer />
 }
