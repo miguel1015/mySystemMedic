@@ -1,5 +1,4 @@
 import HeaderNotificationNav from "@/components/Layout/Dashboard/Header/HeaderNotificationNav";
-import HeaderProfileNav from "@/components/Layout/Dashboard/Header/HeaderProfileNav";
 import HeaderSidebarToggler from "@/components/Layout/Dashboard/Header/HeaderSidebarToggler";
 import Link from "next/link";
 import { Container } from "react-bootstrap";
@@ -34,9 +33,6 @@ export default function Header() {
 
         <div className="header-nav ms-auto d-flex align-items-center">
           <HeaderNotificationNav />
-        </div>
-        <div className="header-nav ms-1 ms-sm-2">
-          <HeaderProfileNav />
         </div>
       </Container>
     </header>

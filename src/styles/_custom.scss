@@ -3,8 +3,11 @@
    ══════════════════════════════════════════════════ */
 :root {
   /* Typography */
-  --font-display: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display:
+    "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-body:
+    "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   /* Surfaces & neutrals (light) */
   --dash-bg: #f4f7f6;
@@ -22,10 +25,10 @@
   --emerald-50: #e9f6f2;
   --emerald-100: #c9ebe1;
   --emerald-300: #5fc3a8;
-  --emerald-500: #0F6F5C;
+  --emerald-500: #0f6f5c;
   --emerald-600: #0d5f4f;
   --emerald-700: #0a4f42;
-  --mint: #10B981;
+  --mint: #10b981;
 
   /* Radii */
   --radius-sm: 8px;
@@ -35,15 +38,18 @@
   --radius-pill: 999px;
 
   /* Soft layered shadows */
-  --dash-shadow-sm: 0 1px 2px rgba(16, 32, 28, 0.04), 0 1px 3px rgba(16, 32, 28, 0.04);
-  --dash-shadow-md: 0 2px 4px rgba(16, 32, 28, 0.04), 0 8px 20px rgba(16, 32, 28, 0.06);
-  --dash-shadow-lg: 0 4px 8px rgba(16, 32, 28, 0.05), 0 18px 40px rgba(16, 32, 28, 0.10);
+  --dash-shadow-sm:
+    0 1px 2px rgba(16, 32, 28, 0.04), 0 1px 3px rgba(16, 32, 28, 0.04);
+  --dash-shadow-md:
+    0 2px 4px rgba(16, 32, 28, 0.04), 0 8px 20px rgba(16, 32, 28, 0.06);
+  --dash-shadow-lg:
+    0 4px 8px rgba(16, 32, 28, 0.05), 0 18px 40px rgba(16, 32, 28, 0.1);
   --dash-shadow-brand: 0 8px 24px rgba(15, 111, 92, 0.25);
 
   --dash-skeleton-from: #e6ecea;
   --dash-skeleton-to: #f2f6f5;
 
-  --theme-primary: #0F6F5C;
+  --theme-primary: #0f6f5c;
   --theme-primary-hover: #0d5f4f;
   --theme-primary-active: #0a4f42;
   --theme-primary-rgb: 15, 111, 92;
@@ -62,8 +68,10 @@
   --dash-text-tertiary: #6b7a74;
 
   --dash-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --dash-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.35);
-  --dash-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5), 0 18px 48px rgba(0, 0, 0, 0.45);
+  --dash-shadow-md:
+    0 2px 8px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --dash-shadow-lg:
+    0 4px 16px rgba(0, 0, 0, 0.5), 0 18px 48px rgba(0, 0, 0, 0.45);
   --dash-shadow-brand: 0 8px 28px rgba(16, 185, 129, 0.28);
 
   --dash-skeleton-from: #1b222a;
@@ -90,11 +98,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: var(--dash-text-primary);
   background: var(--dash-bg);
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
-h1, h2, h3, h4, h5, h6,
-.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.display-1,
+.display-2,
+.display-3,
+.display-4,
+.display-5,
+.display-6 {
   font-family: var(--font-display);
   letter-spacing: -0.02em;
 }
@@ -108,9 +128,67 @@ h1, h2, h3, h4, h5, h6,
   min-width: 0;
   overflow-x: hidden;
   background:
-    radial-gradient(1200px 600px at 100% -10%, rgba(15, 111, 92, 0.06), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(16, 185, 129, 0.05), transparent 55%),
+    radial-gradient(
+      1200px 600px at 100% -10%,
+      rgba(15, 111, 92, 0.06),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at -10% 110%,
+      rgba(16, 185, 129, 0.05),
+      transparent 55%
+    ),
     var(--dash-bg);
+}
+
+.floating-sidebar-toggler {
+  .header-toggler {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1040;
+    width: 42px;
+    height: 42px;
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--dash-border, #e4eae8);
+    border-radius: 12px !important;
+    color: var(--header-link-color, #5b6b66);
+    background: var(--header-bg, rgba(255, 255, 255, 0.86));
+    box-shadow: var(--dash-shadow-sm, 0 8px 20px rgba(15, 23, 42, 0.08));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition:
+      left 0.35s ease,
+      color 0.18s ease,
+      background 0.18s ease,
+      border-color 0.18s ease,
+      transform 0.18s ease;
+
+    &:hover {
+      color: var(--theme-primary, #0f6f5c);
+      background: var(--dash-surface, #ffffff);
+      transform: translateY(-1px);
+    }
+
+    .toggler-icon {
+      transition:
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.2s;
+      transform-origin: center;
+    }
+
+    .toggler-icon.open {
+      transform: rotate(90deg) scale(1.05);
+      opacity: 0.95;
+    }
+
+    .toggler-icon.closed {
+      transform: rotate(0deg) scale(1);
+      opacity: 1;
+    }
+  }
 }
 
 .dash-content-area {
@@ -119,7 +197,7 @@ h1, h2, h3, h4, h5, h6,
   max-width: 100%;
   min-width: 0;
   overflow-x: hidden;
-  padding: 0.75rem 12px 1.25rem;
+  padding: 4rem 12px 1.25rem;
 }
 
 .dash-content-inner {
@@ -130,14 +208,20 @@ h1, h2, h3, h4, h5, h6,
 }
 
 @media (min-width: 768px) {
+  .floating-sidebar-toggler {
+    .header-toggler:not([aria-expanded="true"]) {
+      left: calc(var(--sidebar-width) + 16px);
+    }
+  }
+
   .dash-content-area {
-    padding: 1rem 22px 1.75rem;
+    padding: 4.25rem 22px 1.75rem;
   }
 }
 
 @media (min-width: 1200px) {
   .dash-content-area {
-    padding: 1.25rem 32px 2rem;
+    padding: 4.5rem 32px 2rem;
   }
 }
 

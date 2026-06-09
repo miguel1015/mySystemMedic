@@ -1,11 +1,13 @@
-import Header from "@/components/Layout/Dashboard/Header/Header";
+import HeaderSidebarToggler from "@/components/Layout/Dashboard/Header/HeaderSidebarToggler";
 import Sidebar from "@/components/Layout/Dashboard/Sidebar/Sidebar";
+import SidebarAccount from "@/components/Layout/Dashboard/Sidebar/SidebarAccount";
 import SidebarNav from "@/components/Layout/Dashboard/Sidebar/SidebarNav";
 import SidebarOverlay from "@/components/Layout/Dashboard/Sidebar/SidebarOverlay";
 import SidebarProvider from "@/components/Layout/Dashboard/SidebarProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/option";
 import LayoutLoading from "./layoutLoading";
+import getTheme from "@/themes/theme";
 
 export default async function Layout({
   children,
@@ -14,16 +16,25 @@ export default async function Layout({
 }) {
   const session = await getServerSession(authOptions);
   const userId = Number(session?.user.id);
+  const currentTheme = getTheme();
 
   return (
     <LayoutLoading userId={userId}>
       <SidebarProvider>
         <SidebarOverlay />
         <Sidebar>
-          <SidebarNav id={userId} />
+          <div className="sidebar-nav flex-fill">
+            <SidebarNav id={userId} />
+          </div>
+          <SidebarAccount
+            initialTheme={currentTheme}
+            user={session?.user ?? {}}
+          />
         </Sidebar>
         <div className="wrapper dash-layout-wrapper">
-          <Header />
+          <div className="floating-sidebar-toggler">
+            <HeaderSidebarToggler />
+          </div>
           <div className="dash-content-area">
             <div className="dash-content-inner">{children}</div>
           </div>

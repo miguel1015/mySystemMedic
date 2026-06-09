@@ -1,4 +1,4 @@
-import { getDictionary, getLocale } from "@/locales/dictionary";
+import { getDictionary } from "@/locales/dictionary";
 import {
   faBell,
   faEnvelope,
@@ -8,7 +8,6 @@ import {
   faBasketShopping,
   faChartBar,
   faGaugeHigh,
-  faList,
   faUserMinus,
   faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
@@ -19,7 +18,6 @@ import { PropsWithChildren } from "react";
 import {
   Badge,
   Dropdown,
-  DropdownDivider,
   DropdownHeader,
   DropdownItem,
   DropdownMenu,
@@ -29,8 +27,6 @@ import {
   NavLink,
   ProgressBar,
 } from "react-bootstrap";
-import HeaderNavSettings from "./HeaderNavSettings";
-import getTheme from "@/themes/theme";
 
 type ItemWithIconProps = {
   icon: IconDefinition;
@@ -49,8 +45,6 @@ const ItemWithIcon = (props: ItemWithIconProps) => {
 
 export default async function HeaderNotificationNav() {
   const dict = await getDictionary();
-  const locale = getLocale();
-  const preferredTheme = getTheme();
   return (
     <Nav>
       <NavItem className="d-none d-sm-block">
@@ -322,7 +316,6 @@ export default async function HeaderNotificationNav() {
           </DropdownMenu>
         </Dropdown>
       </NavItem>
-      <HeaderNavSettings locale={locale} theme={preferredTheme} />
     </Nav>
   );
 }

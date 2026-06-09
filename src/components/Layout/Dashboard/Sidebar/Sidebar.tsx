@@ -29,7 +29,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      <div className="sidebar-nav flex-fill">{children}</div>
+      {children}
     </div>
   );
 }
