@@ -1,6 +1,6 @@
-import HeaderSidebarToggler from "@/components/Layout/Dashboard/Header/HeaderSidebarToggler";
 import Sidebar from "@/components/Layout/Dashboard/Sidebar/Sidebar";
 import SidebarAccount from "@/components/Layout/Dashboard/Sidebar/SidebarAccount";
+import SidebarEdgeTab from "@/components/Layout/Dashboard/Sidebar/SidebarEdgeTab";
 import SidebarNav from "@/components/Layout/Dashboard/Sidebar/SidebarNav";
 import SidebarOverlay from "@/components/Layout/Dashboard/Sidebar/SidebarOverlay";
 import SidebarProvider from "@/components/Layout/Dashboard/SidebarProvider";
@@ -32,13 +32,11 @@ export default async function Layout({
           />
         </Sidebar>
         <div className="wrapper dash-layout-wrapper">
-          <div className="floating-sidebar-toggler">
-            <HeaderSidebarToggler />
-          </div>
           <div className="dash-content-area">
             <div className="dash-content-inner">{children}</div>
           </div>
         </div>
+        <SidebarEdgeTab />
         <SidebarOverlay />
       </SidebarProvider>
     </LayoutLoading>

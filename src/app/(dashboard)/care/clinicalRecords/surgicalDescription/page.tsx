@@ -1,11 +1,5 @@
-import ClinicalRecordPlaceholder from "@/app/container/care/clinicalRecordPlaceholder"
-import { ScissorOutlined } from "@ant-design/icons"
+import { SurgicalDescriptionContainer } from "@/app/container/care/clinicalRecordPlaceholder"
 
 export default function SurgicalDescriptionPage() {
-  return (
-    <ClinicalRecordPlaceholder
-      title="Descripción quirúrgica"
-      icon={<ScissorOutlined />}
-    />
-  )
+  return <SurgicalDescriptionContainer />
 }

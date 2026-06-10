@@ -137,8 +137,35 @@ $sidebar-overlay-z-index: 1025;
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 20px 20px 16px;
+    padding: 14px 14px 14px 20px;
     border-bottom: 1px solid var(--sidebar-border-color);
+  }
+
+  .sidebar-brand-toggler {
+    flex-shrink: 0;
+
+    .header-toggler {
+      color: rgba(226, 240, 236, 0.55) !important;
+      width: 34px;
+      height: 34px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 9px;
+      padding: 0;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      transition: color 0.18s ease, background 0.18s ease;
+
+      &:hover {
+        color: #fff !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .toggler-icon {
+        font-size: 1rem;
+      }
+    }
   }
 
   .sidebar-logo-mark {
@@ -659,5 +686,86 @@ $sidebar-overlay-z-index: 1025;
 
   @include media-breakpoint-up(md) {
     display: none;
+  }
+}
+
+/* ── Edge tab (sidebar re-open trigger) ── */
+@keyframes edgeTabPulse {
+  0%, 100% { box-shadow: 3px 0 16px rgba(16, 185, 129, 0.38); }
+  50%       { box-shadow: 3px 0 28px rgba(16, 185, 129, 0.68); }
+}
+
+@keyframes tabLogobeat {
+  0%, 100% { transform: scale(1); }
+  14%       { transform: scale(1.18); }
+  28%       { transform: scale(1); }
+  42%       { transform: scale(1.12); }
+  56%       { transform: scale(1); }
+}
+
+.sidebar-edge-tab {
+  position: fixed;
+  left: 0;
+  top: 72px;
+  z-index: 1035;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  padding: 0;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+
+  .tab-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    padding: 18px 11px;
+    border-radius: 0 16px 16px 0;
+    color: #fff;
+    background: linear-gradient(160deg, #10b981 0%, #0f6f5c 100%);
+    box-shadow: 3px 0 16px rgba(16, 185, 129, 0.38);
+    animation: edgeTabPulse 3.5s ease-in-out infinite;
+    transition:
+      transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.25s ease;
+  }
+
+  .tab-logo {
+    animation: tabLogobeat 4s ease-in-out infinite;
+  }
+
+  .tab-chevron {
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+      opacity 0.22s ease,
+      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  &:hover .tab-inner {
+    transform: translateX(6px);
+    box-shadow: 5px 0 32px rgba(16, 185, 129, 0.65);
+    animation: none;
+  }
+
+  &:hover .tab-chevron {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* mobile: hide when sidebar is open */
+  @media (max-width: 767.98px) {
+    &[data-sidebar-open="true"] {
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
+  /* desktop: hide when sidebar is visible */
+  @media (min-width: 768px) {
+    &[data-sidebar-open="false"] {
+      display: none;
+    }
   }
 }

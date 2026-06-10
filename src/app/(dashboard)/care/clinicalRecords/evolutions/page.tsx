@@ -1,11 +1,5 @@
-import ClinicalRecordPlaceholder from "@/app/container/care/clinicalRecordPlaceholder"
-import { HistoryOutlined } from "@ant-design/icons"
+import { EvolutionsContainer } from "@/app/container/care/clinicalRecordPlaceholder"
 
 export default function EvolutionsPage() {
-  return (
-    <ClinicalRecordPlaceholder
-      title="Evoluciones"
-      icon={<HistoryOutlined />}
-    />
-  )
+  return <EvolutionsContainer />
 }
