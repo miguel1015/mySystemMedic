@@ -706,7 +706,8 @@ $sidebar-overlay-z-index: 1025;
 .sidebar-edge-tab {
   position: fixed;
   left: 0;
-  top: 72px;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 1035;
   cursor: pointer;
   border: none;

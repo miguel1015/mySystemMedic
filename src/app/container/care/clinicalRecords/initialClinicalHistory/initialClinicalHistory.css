@@ -153,7 +153,7 @@
 
 @media (min-width: 900px) {
   .evolution-workspace {
-    grid-template-columns: 234px 1fr;
+    grid-template-columns: 272px 1fr;
   }
 }
 
@@ -194,10 +194,6 @@
 
 .sidebar-nav-list {
   padding: 6px 8px;
-  overflow-y: auto;
-  max-height: 430px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--dash-border, #e4eae8) transparent;
 }
 
 .sidebar-record-item {
@@ -272,10 +268,45 @@
   flex-shrink: 0;
 }
 
-.sidebar-footer {
-  padding: 9px 12px;
-  border-top: 1px solid var(--dash-border, #e4eae8);
+.sidebar-record-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
+
+.evolution-tab-content--full {
+  border-top: 1px solid var(--dash-border, #e4eae8) !important;
+  border-radius: 10px !important;
+}
+
+/* ════════════════════════════
+   EVOLUCIONES
+════════════════════════════ */
+.evo-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--dash-text-secondary, #667085);
+  margin-left: auto;
+}
+
+.evo-header-sep {
+  opacity: 0.4;
+}
+
+.evo-vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(148px, 100%), 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+.evo-vital-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 
 /* ════════════════════════════
    RIGHT COLUMN
@@ -705,7 +736,7 @@
   .plan-row { align-items: flex-start; }
   .plan-row .ant-btn { margin-left: 0; width: 100%; }
 
-  .sidebar-nav-list { max-height: 300px; }
+  .sidebar-nav-list { max-height: none; }
 }
 
 @media (max-width: 480px) {
