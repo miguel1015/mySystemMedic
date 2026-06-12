@@ -1,11 +1,5 @@
-import ClinicalRecordPlaceholder from "@/app/container/care/clinicalRecordPlaceholder"
-import { MedicineBoxOutlined } from "@ant-design/icons"
+import { NursingNotesContainer } from "@/app/container/care/clinicalRecordPlaceholder"
 
 export default function NursingNotesPage() {
-  return (
-    <ClinicalRecordPlaceholder
-      title="Notas de enfermería"
-      icon={<MedicineBoxOutlined />}
-    />
-  )
+  return <NursingNotesContainer />
 }

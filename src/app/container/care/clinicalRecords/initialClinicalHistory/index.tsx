@@ -9,9 +9,11 @@ import {
   ArrowLeftOutlined,
   CalendarOutlined,
   DeleteOutlined,
+  ExperimentOutlined,
   EyeOutlined,
   FileDoneOutlined,
   FileTextOutlined,
+  FormOutlined,
   HeartOutlined,
   MedicineBoxOutlined,
   PlusOutlined,
@@ -37,6 +39,7 @@ import {
 import type { ColumnsType } from "antd/es/table"
 import { useRouter, useSearchParams } from "next/navigation"
 import { CSSProperties, useEffect, useMemo, useState } from "react"
+import { DischargeNoteContent } from "../dischargeNote/DischargeNoteContent"
 import "./initialClinicalHistory.css"
 
 const { TextArea } = Input
@@ -223,6 +226,13 @@ const InitialClinicalHistoryContainer = () => {
   const [evoPlan, setEvoPlan] = useState("")
   const [evoVitals, setEvoVitals] = useState({ ...defaultEvoVitals })
 
+  // ── Notas de Enfermería state ──
+  const [nursingNota, setNursingNota] = useState("")
+
+  // ── Procedimientos Diagnósticos state ──
+  const [diagEstudios, setDiagEstudios] = useState("")
+  const [diagHallazgos, setDiagHallazgos] = useState("")
+
   // ── Surgical description state ──
   const [qxStartDate, setQxStartDate] = useState<Dayjs | null>(null)
   const [qxEndDate, setQxEndDate] = useState<Dayjs | null>(null)
@@ -321,6 +331,33 @@ const InitialClinicalHistoryContainer = () => {
     setEvoMotivo("")
     setEvoPlan("")
     setEvoVitals({ ...defaultEvoVitals })
+  }
+
+  const resetNursingForm = () => setNursingNota("")
+
+  const validateAndSaveNursing = () => {
+    if (!nursingNota.trim()) {
+      messageApi.error("La nota de enfermería es obligatoria.")
+      return
+    }
+    messageApi.success(`Nota de enfermería guardada para ${patient.name}.`)
+  }
+
+  const resetDiagForm = () => {
+    setDiagEstudios("")
+    setDiagHallazgos("")
+  }
+
+  const validateAndSaveDiag = () => {
+    if (!diagEstudios.trim()) {
+      messageApi.error("El campo Estudios realizados es obligatorio.")
+      return
+    }
+    if (!diagHallazgos.trim()) {
+      messageApi.error("El campo Hallazgos es obligatorio.")
+      return
+    }
+    messageApi.success(`Procedimiento diagnóstico guardado para ${patient.name}.`)
   }
 
   const validateAndSaveEvo = () => {
@@ -526,7 +563,7 @@ const InitialClinicalHistoryContainer = () => {
 
             <div className="sidebar-nav-list">
               {sidebarRecords.map((record) => {
-                const isClickable = ["hci", "quirurgica", "evoluciones"].includes(record.key)
+                const isClickable = ["hci", "quirurgica", "evoluciones", "egreso", "enfermeria", "diagnosticos"].includes(record.key)
                 return (
                   <button
                     key={record.key}
@@ -1003,6 +1040,109 @@ const InitialClinicalHistoryContainer = () => {
                   <Button onClick={resetEvoForm}>Limpiar formulario</Button>
                   <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveEvo}>
                     Guardar evolución
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Nota de Egreso */}
+            {activeSidebarKey === "egreso" && (
+              <DischargeNoteContent messageApi={messageApi} />
+            )}
+
+            {/* Notas de Enfermería */}
+            {activeSidebarKey === "enfermeria" && (
+              <div className="evolution-tab-content evolution-tab-content--full">
+                <div className="qx-form-header">
+                  <FormOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+                  <Typography.Title level={5} style={{ margin: 0 }}>Nueva Nota de Enfermería</Typography.Title>
+                  <div className="evo-header-meta">
+                    <span>{currentDoctor}</span>
+                    <span className="evo-header-sep">·</span>
+                    <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                  </div>
+                </div>
+
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">1</span>
+                    <span className="section-title">Nota de Enfermería</span>
+                  </div>
+                  <label style={labelStyle}>
+                    Nota de enfermería <span className="field-required">*</span>
+                  </label>
+                  <TextArea
+                    rows={16}
+                    value={nursingNota}
+                    onChange={(e) => setNursingNota(e.target.value)}
+                    placeholder="Registre las observaciones, actividades realizadas, novedades y seguimiento clínico del paciente durante su atención de enfermería..."
+                    maxLength={10000}
+                    showCount
+                  />
+                </div>
+
+                <div className="clinical-history-footer-actions">
+                  <Button onClick={resetNursingForm}>Limpiar formulario</Button>
+                  <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveNursing}>
+                    Guardar nota de enfermería
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Procedimientos Diagnósticos */}
+            {activeSidebarKey === "diagnosticos" && (
+              <div className="evolution-tab-content evolution-tab-content--full">
+                <div className="qx-form-header">
+                  <ExperimentOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+                  <Typography.Title level={5} style={{ margin: 0 }}>Nuevo Procedimiento Diagnóstico</Typography.Title>
+                  <div className="evo-header-meta">
+                    <span>{currentDoctor}</span>
+                    <span className="evo-header-sep">·</span>
+                    <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                  </div>
+                </div>
+
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">1</span>
+                    <span className="section-title">Estudios realizados</span>
+                  </div>
+                  <label style={labelStyle}>
+                    Estudios realizados <span className="field-required">*</span>
+                  </label>
+                  <TextArea
+                    rows={8}
+                    value={diagEstudios}
+                    onChange={(e) => setDiagEstudios(e.target.value)}
+                    placeholder="Describa los estudios diagnósticos realizados al paciente (laboratorios, imágenes, electrocardiograma, etc.)..."
+                    maxLength={10000}
+                    showCount
+                  />
+                </div>
+
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">2</span>
+                    <span className="section-title">Hallazgos</span>
+                  </div>
+                  <label style={labelStyle}>
+                    Hallazgos <span className="field-required">*</span>
+                  </label>
+                  <TextArea
+                    rows={8}
+                    value={diagHallazgos}
+                    onChange={(e) => setDiagHallazgos(e.target.value)}
+                    placeholder="Registre los hallazgos obtenidos en los estudios diagnósticos realizados..."
+                    maxLength={10000}
+                    showCount
+                  />
+                </div>
+
+                <div className="clinical-history-footer-actions">
+                  <Button onClick={resetDiagForm}>Limpiar formulario</Button>
+                  <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveDiag}>
+                    Guardar procedimiento diagnóstico
                   </Button>
                 </div>
               </div>

@@ -1,11 +1,5 @@
-import ClinicalRecordPlaceholder from "@/app/container/care/clinicalRecordPlaceholder"
-import { LogoutOutlined } from "@ant-design/icons"
+import DischargeNoteContainer from "@/app/container/care/clinicalRecords/dischargeNote"
 
 export default function DischargeNotePage() {
-  return (
-    <ClinicalRecordPlaceholder
-      title="Nota de egreso"
-      icon={<LogoutOutlined />}
-    />
-  )
+  return <DischargeNoteContainer />
 }

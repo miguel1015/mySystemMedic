@@ -1,11 +1,5 @@
-import ClinicalRecordPlaceholder from "@/app/container/care/clinicalRecordPlaceholder"
-import { ExperimentOutlined } from "@ant-design/icons"
+import { DiagnosticProceduresContainer } from "@/app/container/care/clinicalRecordPlaceholder"
 
 export default function DiagnosticProceduresPage() {
-  return (
-    <ClinicalRecordPlaceholder
-      title="Procedimientos diagnósticos"
-      icon={<ExperimentOutlined />}
-    />
-  )
+  return <DiagnosticProceduresContainer />
 }

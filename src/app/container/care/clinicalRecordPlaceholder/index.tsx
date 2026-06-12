@@ -10,7 +10,9 @@ import {
   ArrowLeftOutlined,
   CalendarOutlined,
   DeleteOutlined,
+  ExperimentOutlined,
   FileDoneOutlined,
+  FormOutlined,
   HeartOutlined,
   MedicineBoxOutlined,
   PlusOutlined,
@@ -843,6 +845,360 @@ export const EvolutionsContainer = () => {
               <Button onClick={resetEvoForm}>Limpiar formulario</Button>
               <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveEvo}>
                 Guardar evolución
+              </Button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </Container>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Nursing Notes page
+// ─────────────────────────────────────────────────────────────
+export const NursingNotesContainer = () => {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [messageApi, contextHolder] = message.useMessage()
+  const { data: me } = useMe()
+
+  const patient = {
+    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    documentType: searchParams.get("documentType") || "CC",
+    documentNumber: searchParams.get("documentNumber") || "1102796382",
+    careScope: searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(searchParams.get("admissionDate")),
+    birthDate: searchParams.get("birthDate") || "2004-08-04",
+    sex: searchParams.get("sex") || "Masculino",
+  }
+
+  const currentNurse = me?.name || "Enf. Maria Gonzalez"
+
+  const [nota, setNota] = useState("")
+
+  const resetForm = () => setNota("")
+
+  const handleSave = () => {
+    if (!nota.trim()) {
+      messageApi.error("La nota de enfermería es obligatoria.")
+      return
+    }
+    messageApi.success(`Nota de enfermería guardada para ${patient.name}.`)
+  }
+
+  return (
+    <Container fluid padding="none" className="clinical-history-shell">
+      {contextHolder}
+      <div className="clinical-history-page">
+
+        {/* ════ HEADER ════ */}
+        <div
+          className="clinical-history-header"
+          style={{
+            border: "1px solid var(--dash-border, #e4eae8)",
+            borderRadius: 10,
+            background: "var(--dash-surface, #fff)",
+            position: "sticky",
+            top: 0,
+            zIndex: 20,
+            overflow: "hidden",
+            boxShadow: "0 4px 16px rgba(15,23,42,0.07)",
+          }}
+        >
+          <div className="clinical-history-header-top">
+            <div className="clinical-history-patient">
+              <div className="patient-avatar">
+                {patient.name.split(" ").slice(0, 2).map((p) => p[0]).join("")}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <Typography.Title level={4} style={{ margin: 0 }} className="clinical-history-patient-title">
+                  {patient.name}
+                </Typography.Title>
+                <div className="patient-meta">
+                  <span className="patient-meta-chip">
+                    {patient.documentType} {patient.documentNumber}
+                  </span>
+                  <span className="patient-meta-chip">
+                    <CalendarOutlined /> {calculateAge(patient.birthDate)}
+                  </span>
+                  <span className="patient-meta-chip">
+                    <UserOutlined /> {patient.sex}
+                  </span>
+                  <span className="patient-meta-chip">{patient.birthDate}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="clinical-history-actions">
+              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
+                Guardar
+              </Button>
+              <Button icon={<PrinterOutlined />}>Imprimir</Button>
+              <Button danger icon={<FileDoneOutlined />}>Cerrar</Button>
+              <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>Volver</Button>
+            </div>
+          </div>
+
+          <div className="clinical-history-summary">
+            <div className="summary-cell">
+              <div className="summary-cell-label">Fecha de ingreso</div>
+              <div className="summary-cell-value">{patient.admissionDate}</div>
+            </div>
+            <div className="summary-cell">
+              <div className="summary-cell-label">Servicio</div>
+              <div className="summary-cell-value">{patient.careScope}</div>
+            </div>
+            <div className="summary-cell">
+              <div className="summary-cell-label">Enfermero/a</div>
+              <div className="summary-cell-value">{currentNurse}</div>
+            </div>
+            <div className="summary-cell">
+              <div className="summary-cell-label">Estado</div>
+              <div className="summary-cell-value">
+                <Tag color="green" style={{ margin: 0 }}>Hospitalizado</Tag>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ════ FORM ════ */}
+        <div
+          style={{
+            marginTop: 14,
+            background: "var(--dash-surface, #fff)",
+            border: "1px solid var(--dash-border, #e4eae8)",
+            borderRadius: 10,
+            overflow: "hidden",
+          }}
+        >
+          <div className="evolution-tab-content evolution-tab-content--full">
+
+            {/* Form header */}
+            <div className="qx-form-header">
+              <FormOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+              <Typography.Title level={5} style={{ margin: 0 }}>Nueva Nota de Enfermería</Typography.Title>
+              <div className="evo-header-meta">
+                <span>{currentNurse}</span>
+                <span className="evo-header-sep">·</span>
+                <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+              </div>
+            </div>
+
+            {/* Sección única: Nota de Enfermería */}
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">1</span>
+                <span className="section-title">Nota de Enfermería</span>
+              </div>
+              <label style={labelStyle}>
+                Nota de enfermería <span className="field-required">*</span>
+              </label>
+              <TextArea
+                rows={16}
+                value={nota}
+                onChange={(e) => setNota(e.target.value)}
+                placeholder="Registre las observaciones, actividades realizadas, novedades y seguimiento clínico del paciente durante su atención de enfermería..."
+                maxLength={10000}
+                showCount
+              />
+            </div>
+
+            <div className="clinical-history-footer-actions">
+              <Button onClick={resetForm}>Limpiar formulario</Button>
+              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
+                Guardar nota de enfermería
+              </Button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </Container>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Diagnostic Procedures page
+// ─────────────────────────────────────────────────────────────
+export const DiagnosticProceduresContainer = () => {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [messageApi, contextHolder] = message.useMessage()
+  const { data: me } = useMe()
+
+  const patient = {
+    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    documentType: searchParams.get("documentType") || "CC",
+    documentNumber: searchParams.get("documentNumber") || "1102796382",
+    careScope: searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(searchParams.get("admissionDate")),
+    birthDate: searchParams.get("birthDate") || "2004-08-04",
+    sex: searchParams.get("sex") || "Masculino",
+  }
+
+  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+
+  const [estudios, setEstudios] = useState("")
+  const [hallazgos, setHallazgos] = useState("")
+
+  const resetForm = () => {
+    setEstudios("")
+    setHallazgos("")
+  }
+
+  const handleSave = () => {
+    if (!estudios.trim()) {
+      messageApi.error("El campo Estudios realizados es obligatorio.")
+      return
+    }
+    if (!hallazgos.trim()) {
+      messageApi.error("El campo Hallazgos es obligatorio.")
+      return
+    }
+    messageApi.success(`Procedimiento diagnóstico guardado para ${patient.name}.`)
+  }
+
+  return (
+    <Container fluid padding="none" className="clinical-history-shell">
+      {contextHolder}
+      <div className="clinical-history-page">
+
+        {/* ════ HEADER ════ */}
+        <div
+          className="clinical-history-header"
+          style={{
+            border: "1px solid var(--dash-border, #e4eae8)",
+            borderRadius: 10,
+            background: "var(--dash-surface, #fff)",
+            position: "sticky",
+            top: 0,
+            zIndex: 20,
+            overflow: "hidden",
+            boxShadow: "0 4px 16px rgba(15,23,42,0.07)",
+          }}
+        >
+          <div className="clinical-history-header-top">
+            <div className="clinical-history-patient">
+              <div className="patient-avatar">
+                {patient.name.split(" ").slice(0, 2).map((p) => p[0]).join("")}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <Typography.Title level={4} style={{ margin: 0 }} className="clinical-history-patient-title">
+                  {patient.name}
+                </Typography.Title>
+                <div className="patient-meta">
+                  <span className="patient-meta-chip">
+                    {patient.documentType} {patient.documentNumber}
+                  </span>
+                  <span className="patient-meta-chip">
+                    <CalendarOutlined /> {calculateAge(patient.birthDate)}
+                  </span>
+                  <span className="patient-meta-chip">
+                    <UserOutlined /> {patient.sex}
+                  </span>
+                  <span className="patient-meta-chip">{patient.birthDate}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="clinical-history-actions">
+              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
+                Guardar
+              </Button>
+              <Button icon={<PrinterOutlined />}>Imprimir</Button>
+              <Button danger icon={<FileDoneOutlined />}>Cerrar</Button>
+              <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>Volver</Button>
+            </div>
+          </div>
+
+          <div className="clinical-history-summary">
+            <div className="summary-cell">
+              <div className="summary-cell-label">Fecha de ingreso</div>
+              <div className="summary-cell-value">{patient.admissionDate}</div>
+            </div>
+            <div className="summary-cell">
+              <div className="summary-cell-label">Servicio</div>
+              <div className="summary-cell-value">{patient.careScope}</div>
+            </div>
+            <div className="summary-cell">
+              <div className="summary-cell-label">Médico tratante</div>
+              <div className="summary-cell-value">{currentDoctor}</div>
+            </div>
+            <div className="summary-cell">
+              <div className="summary-cell-label">Estado</div>
+              <div className="summary-cell-value">
+                <Tag color="green" style={{ margin: 0 }}>Hospitalizado</Tag>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ════ FORM ════ */}
+        <div
+          style={{
+            marginTop: 14,
+            background: "var(--dash-surface, #fff)",
+            border: "1px solid var(--dash-border, #e4eae8)",
+            borderRadius: 10,
+            overflow: "hidden",
+          }}
+        >
+          <div className="evolution-tab-content evolution-tab-content--full">
+
+            <div className="qx-form-header">
+              <ExperimentOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+              <Typography.Title level={5} style={{ margin: 0 }}>Nuevo Procedimiento Diagnóstico</Typography.Title>
+              <div className="evo-header-meta">
+                <span>{currentDoctor}</span>
+                <span className="evo-header-sep">·</span>
+                <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+              </div>
+            </div>
+
+            {/* Sección 1: Estudios realizados */}
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">1</span>
+                <span className="section-title">Estudios realizados</span>
+              </div>
+              <label style={labelStyle}>
+                Estudios realizados <span className="field-required">*</span>
+              </label>
+              <TextArea
+                rows={8}
+                value={estudios}
+                onChange={(e) => setEstudios(e.target.value)}
+                placeholder="Describa los estudios diagnósticos realizados al paciente (laboratorios, imágenes, electrocardiograma, etc.)..."
+                maxLength={10000}
+                showCount
+              />
+            </div>
+
+            {/* Sección 2: Hallazgos */}
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">2</span>
+                <span className="section-title">Hallazgos</span>
+              </div>
+              <label style={labelStyle}>
+                Hallazgos <span className="field-required">*</span>
+              </label>
+              <TextArea
+                rows={8}
+                value={hallazgos}
+                onChange={(e) => setHallazgos(e.target.value)}
+                placeholder="Registre los hallazgos obtenidos en los estudios diagnósticos realizados..."
+                maxLength={10000}
+                showCount
+              />
+            </div>
+
+            <div className="clinical-history-footer-actions">
+              <Button onClick={resetForm}>Limpiar formulario</Button>
+              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
+                Guardar procedimiento diagnóstico
               </Button>
             </div>
           </div>
