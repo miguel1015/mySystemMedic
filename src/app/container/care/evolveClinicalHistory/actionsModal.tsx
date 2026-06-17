@@ -14,6 +14,7 @@ import {
   MedicineBoxOutlined,
   RadarChartOutlined,
   ScissorOutlined,
+  SolutionOutlined,
   ToolOutlined,
 } from "@ant-design/icons"
 import { useRouter } from "next/navigation"
@@ -178,6 +179,13 @@ const clinicalEvolutionOptions = [
     icon: <RadarChartOutlined style={{ fontSize: 20 }} />,
     path: "/care/clinicalRecords/radiologyStudy",
     color: "#fa8c16",
+  },
+  {
+    key: "specialist-evolution",
+    label: "Evolución de especialista",
+    icon: <SolutionOutlined style={{ fontSize: 20 }} />,
+    path: "/care/clinicalRecords/specialistEvolution",
+    color: "#13c2c2",
   },
 ]
 

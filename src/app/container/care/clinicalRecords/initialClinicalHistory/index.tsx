@@ -7,6 +7,7 @@ import { GetUser } from "@/core/interfaces/user/users"
 import type { Dayjs } from "dayjs"
 import {
   ArrowLeftOutlined,
+  AuditOutlined,
   CalendarOutlined,
   DeleteOutlined,
   ExperimentOutlined,
@@ -21,6 +22,8 @@ import {
   RightOutlined,
   SaveOutlined,
   SearchOutlined,
+  SolutionOutlined,
+  ToolOutlined,
   UserOutlined,
 } from "@ant-design/icons"
 import {
@@ -121,6 +124,7 @@ const sidebarRecords: SidebarRecord[] = [
   { key: "medicas", title: "Notas Médicas", date: "", count: 1, active: false },
   { key: "diagnosticos", title: "Procedimientos Diagnósticos", date: "", count: 0, active: false },
   { key: "noquirurgicos", title: "Procedimientos No Quirúrgicos", date: "", count: 0, active: false },
+  { key: "especialista", title: "Evolución de Especialista", date: "", count: 0, active: false },
 ]
 
 const defaultDiagnoses: DiagnosisRow[] = [
@@ -232,6 +236,22 @@ const InitialClinicalHistoryContainer = () => {
   // ── Procedimientos Diagnósticos state ──
   const [diagEstudios, setDiagEstudios] = useState("")
   const [diagHallazgos, setDiagHallazgos] = useState("")
+
+  // ── Procedimientos Menores state ──
+  const [menoresConsulta, setMenoresConsulta] = useState("")
+  const [menoresPlan, setMenoresPlan] = useState("")
+
+  // ── Notas Médicas state ──
+  const [medicasConsulta, setMedicasConsulta] = useState("")
+  const [medicasPlan, setMedicasPlan] = useState("")
+
+  // ── Procedimientos No Quirúrgicos state ──
+  const [noQxConsulta, setNoQxConsulta] = useState("")
+  const [noQxPlan, setNoQxPlan] = useState("")
+
+  // ── Evolución de Especialista state ──
+  const [especialistaConsulta, setEspecialistaConsulta] = useState("")
+  const [especialistaPlan, setEspecialistaPlan] = useState("")
 
   // ── Surgical description state ──
   const [qxStartDate, setQxStartDate] = useState<Dayjs | null>(null)
@@ -346,6 +366,35 @@ const InitialClinicalHistoryContainer = () => {
   const resetDiagForm = () => {
     setDiagEstudios("")
     setDiagHallazgos("")
+  }
+
+  const resetMenoresForm = () => { setMenoresConsulta(""); setMenoresPlan("") }
+  const resetMedicasForm = () => { setMedicasConsulta(""); setMedicasPlan("") }
+  const resetNoQxForm = () => { setNoQxConsulta(""); setNoQxPlan("") }
+  const resetEspecialistaForm = () => { setEspecialistaConsulta(""); setEspecialistaPlan("") }
+
+  const validateAndSaveMenores = () => {
+    if (!menoresConsulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
+    if (!menoresPlan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    messageApi.success(`Procedimiento menor guardado para ${patient.name}.`)
+  }
+
+  const validateAndSaveMedicas = () => {
+    if (!medicasConsulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
+    if (!medicasPlan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    messageApi.success(`Nota médica guardada para ${patient.name}.`)
+  }
+
+  const validateAndSaveNoQx = () => {
+    if (!noQxConsulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
+    if (!noQxPlan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    messageApi.success(`Procedimiento no quirúrgico guardado para ${patient.name}.`)
+  }
+
+  const validateAndSaveEspecialista = () => {
+    if (!especialistaConsulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
+    if (!especialistaPlan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    messageApi.success(`Evolución de especialista guardada para ${patient.name}.`)
   }
 
   const validateAndSaveDiag = () => {
@@ -563,7 +612,7 @@ const InitialClinicalHistoryContainer = () => {
 
             <div className="sidebar-nav-list">
               {sidebarRecords.map((record) => {
-                const isClickable = ["hci", "quirurgica", "evoluciones", "egreso", "enfermeria", "diagnosticos"].includes(record.key)
+                const isClickable = ["hci", "quirurgica", "evoluciones", "egreso", "enfermeria", "menores", "medicas", "diagnosticos", "noquirurgicos", "especialista"].includes(record.key)
                 return (
                   <button
                     key={record.key}
@@ -1143,6 +1192,186 @@ const InitialClinicalHistoryContainer = () => {
                   <Button onClick={resetDiagForm}>Limpiar formulario</Button>
                   <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveDiag}>
                     Guardar procedimiento diagnóstico
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Procedimientos Menores */}
+            {activeSidebarKey === "menores" && (
+              <div className="evolution-tab-content evolution-tab-content--full">
+                <div className="qx-form-header">
+                  <ToolOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+                  <Typography.Title level={5} style={{ margin: 0 }}>Nuevo Procedimiento Menor</Typography.Title>
+                  <div className="evo-header-meta">
+                    <span>{currentDoctor}</span>
+                    <span className="evo-header-sep">·</span>
+                    <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                  </div>
+                </div>
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">1</span>
+                    <span className="section-title">Consulta</span>
+                  </div>
+                  <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+                  <TextArea
+                    rows={8} value={menoresConsulta} onChange={(e) => setMenoresConsulta(e.target.value)}
+                    placeholder="Describa la consulta, motivo y evaluación del procedimiento menor a realizar..."
+                    maxLength={10000} showCount
+                  />
+                </div>
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">2</span>
+                    <span className="section-title">Plan</span>
+                  </div>
+                  <label style={labelStyle}>Plan <span className="field-required">*</span></label>
+                  <TextArea
+                    rows={8} value={menoresPlan} onChange={(e) => setMenoresPlan(e.target.value)}
+                    placeholder="Registre el plan del procedimiento menor, técnica a utilizar, materiales e indicaciones post-procedimiento..."
+                    maxLength={10000} showCount
+                  />
+                </div>
+                <div className="clinical-history-footer-actions">
+                  <Button onClick={resetMenoresForm}>Limpiar formulario</Button>
+                  <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveMenores}>
+                    Guardar procedimiento menor
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Notas Médicas */}
+            {activeSidebarKey === "medicas" && (
+              <div className="evolution-tab-content evolution-tab-content--full">
+                <div className="qx-form-header">
+                  <FormOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+                  <Typography.Title level={5} style={{ margin: 0 }}>Nueva Nota Médica</Typography.Title>
+                  <div className="evo-header-meta">
+                    <span>{currentDoctor}</span>
+                    <span className="evo-header-sep">·</span>
+                    <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                  </div>
+                </div>
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">1</span>
+                    <span className="section-title">Consulta</span>
+                  </div>
+                  <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+                  <TextArea
+                    rows={8} value={medicasConsulta} onChange={(e) => setMedicasConsulta(e.target.value)}
+                    placeholder="Registre los hallazgos de la consulta médica, anamnesis y evaluación clínica del paciente..."
+                    maxLength={10000} showCount
+                  />
+                </div>
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">2</span>
+                    <span className="section-title">Plan</span>
+                  </div>
+                  <label style={labelStyle}>Plan <span className="field-required">*</span></label>
+                  <TextArea
+                    rows={8} value={medicasPlan} onChange={(e) => setMedicasPlan(e.target.value)}
+                    placeholder="Registre el plan médico: medicamentos, indicaciones, controles y seguimiento..."
+                    maxLength={10000} showCount
+                  />
+                </div>
+                <div className="clinical-history-footer-actions">
+                  <Button onClick={resetMedicasForm}>Limpiar formulario</Button>
+                  <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveMedicas}>
+                    Guardar nota médica
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Procedimientos No Quirúrgicos */}
+            {activeSidebarKey === "noquirurgicos" && (
+              <div className="evolution-tab-content evolution-tab-content--full">
+                <div className="qx-form-header">
+                  <AuditOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+                  <Typography.Title level={5} style={{ margin: 0 }}>Nuevo Procedimiento No Quirúrgico</Typography.Title>
+                  <div className="evo-header-meta">
+                    <span>{currentDoctor}</span>
+                    <span className="evo-header-sep">·</span>
+                    <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                  </div>
+                </div>
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">1</span>
+                    <span className="section-title">Consulta</span>
+                  </div>
+                  <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+                  <TextArea
+                    rows={8} value={noQxConsulta} onChange={(e) => setNoQxConsulta(e.target.value)}
+                    placeholder="Describa la consulta, evaluación y justificación del procedimiento no quirúrgico..."
+                    maxLength={10000} showCount
+                  />
+                </div>
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">2</span>
+                    <span className="section-title">Plan</span>
+                  </div>
+                  <label style={labelStyle}>Plan <span className="field-required">*</span></label>
+                  <TextArea
+                    rows={8} value={noQxPlan} onChange={(e) => setNoQxPlan(e.target.value)}
+                    placeholder="Registre el plan del procedimiento no quirúrgico: técnica, materiales, indicaciones y seguimiento..."
+                    maxLength={10000} showCount
+                  />
+                </div>
+                <div className="clinical-history-footer-actions">
+                  <Button onClick={resetNoQxForm}>Limpiar formulario</Button>
+                  <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveNoQx}>
+                    Guardar procedimiento no quirúrgico
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Evolución de Especialista */}
+            {activeSidebarKey === "especialista" && (
+              <div className="evolution-tab-content evolution-tab-content--full">
+                <div className="qx-form-header">
+                  <SolutionOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+                  <Typography.Title level={5} style={{ margin: 0 }}>Nueva Evolución de Especialista</Typography.Title>
+                  <div className="evo-header-meta">
+                    <span>{currentDoctor}</span>
+                    <span className="evo-header-sep">·</span>
+                    <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                  </div>
+                </div>
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">1</span>
+                    <span className="section-title">Consulta</span>
+                  </div>
+                  <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+                  <TextArea
+                    rows={8} value={especialistaConsulta} onChange={(e) => setEspecialistaConsulta(e.target.value)}
+                    placeholder="Registre los hallazgos de la consulta del especialista, evaluación y diagnóstico especializado..."
+                    maxLength={10000} showCount
+                  />
+                </div>
+                <div className="qx-section">
+                  <div className="qx-section-header">
+                    <span className="section-number">2</span>
+                    <span className="section-title">Plan</span>
+                  </div>
+                  <label style={labelStyle}>Plan <span className="field-required">*</span></label>
+                  <TextArea
+                    rows={8} value={especialistaPlan} onChange={(e) => setEspecialistaPlan(e.target.value)}
+                    placeholder="Registre el plan de manejo del especialista: tratamiento, indicaciones y seguimiento especializado..."
+                    maxLength={10000} showCount
+                  />
+                </div>
+                <div className="clinical-history-footer-actions">
+                  <Button onClick={resetEspecialistaForm}>Limpiar formulario</Button>
+                  <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveEspecialista}>
+                    Guardar evolución de especialista
                   </Button>
                 </div>
               </div>

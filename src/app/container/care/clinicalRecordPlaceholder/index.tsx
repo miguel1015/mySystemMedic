@@ -8,6 +8,7 @@ import { GetUser } from "@/core/interfaces/user/users"
 import type { Dayjs } from "dayjs"
 import {
   ArrowLeftOutlined,
+  AuditOutlined,
   CalendarOutlined,
   DeleteOutlined,
   ExperimentOutlined,
@@ -18,6 +19,8 @@ import {
   PlusOutlined,
   PrinterOutlined,
   SaveOutlined,
+  SolutionOutlined,
+  ToolOutlined,
   UserOutlined,
 } from "@ant-design/icons"
 import {
@@ -1204,6 +1207,408 @@ export const DiagnosticProceduresContainer = () => {
           </div>
         </div>
 
+      </div>
+    </Container>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Shared header renderer for simple two-field containers
+// ─────────────────────────────────────────────────────────────
+interface SimpleFormProps {
+  patient: {
+    name: string; documentType: string; documentNumber: string
+    careScope: string; admissionDate: string; birthDate: string; sex: string
+  }
+  currentDoctor: string
+  router: ReturnType<typeof useRouter>
+  onSave: () => void
+}
+
+const PatientHeader = ({ patient, currentDoctor, router, onSave }: SimpleFormProps) => (
+  <div
+    className="clinical-history-header"
+    style={{
+      border: "1px solid var(--dash-border, #e4eae8)",
+      borderRadius: 10,
+      background: "var(--dash-surface, #fff)",
+      position: "sticky",
+      top: 0,
+      zIndex: 20,
+      overflow: "hidden",
+      boxShadow: "0 4px 16px rgba(15,23,42,0.07)",
+    }}
+  >
+    <div className="clinical-history-header-top">
+      <div className="clinical-history-patient">
+        <div className="patient-avatar">
+          {patient.name.split(" ").slice(0, 2).map((p) => p[0]).join("")}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <Typography.Title level={4} style={{ margin: 0 }} className="clinical-history-patient-title">
+            {patient.name}
+          </Typography.Title>
+          <div className="patient-meta">
+            <span className="patient-meta-chip">{patient.documentType} {patient.documentNumber}</span>
+            <span className="patient-meta-chip"><CalendarOutlined /> {calculateAge(patient.birthDate)}</span>
+            <span className="patient-meta-chip"><UserOutlined /> {patient.sex}</span>
+            <span className="patient-meta-chip">{patient.birthDate}</span>
+          </div>
+        </div>
+      </div>
+      <div className="clinical-history-actions">
+        <Button type="primary" icon={<SaveOutlined />} onClick={onSave}>Guardar</Button>
+        <Button icon={<PrinterOutlined />}>Imprimir</Button>
+        <Button danger icon={<FileDoneOutlined />}>Cerrar</Button>
+        <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>Volver</Button>
+      </div>
+    </div>
+    <div className="clinical-history-summary">
+      <div className="summary-cell">
+        <div className="summary-cell-label">Fecha de ingreso</div>
+        <div className="summary-cell-value">{patient.admissionDate}</div>
+      </div>
+      <div className="summary-cell">
+        <div className="summary-cell-label">Servicio</div>
+        <div className="summary-cell-value">{patient.careScope}</div>
+      </div>
+      <div className="summary-cell">
+        <div className="summary-cell-label">Médico tratante</div>
+        <div className="summary-cell-value">{currentDoctor}</div>
+      </div>
+      <div className="summary-cell">
+        <div className="summary-cell-label">Estado</div>
+        <div className="summary-cell-value">
+          <Tag color="green" style={{ margin: 0 }}>Hospitalizado</Tag>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+// ─────────────────────────────────────────────────────────────
+// Minor Procedures page
+// ─────────────────────────────────────────────────────────────
+export const MinorProceduresContainer = () => {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [messageApi, contextHolder] = message.useMessage()
+  const { data: me } = useMe()
+
+  const patient = {
+    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    documentType: searchParams.get("documentType") || "CC",
+    documentNumber: searchParams.get("documentNumber") || "1102796382",
+    careScope: searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(searchParams.get("admissionDate")),
+    birthDate: searchParams.get("birthDate") || "2004-08-04",
+    sex: searchParams.get("sex") || "Masculino",
+  }
+
+  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+  const [consulta, setConsulta] = useState("")
+  const [plan, setPlan] = useState("")
+
+  const resetForm = () => { setConsulta(""); setPlan("") }
+
+  const handleSave = () => {
+    if (!consulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
+    if (!plan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    messageApi.success(`Procedimiento menor guardado para ${patient.name}.`)
+  }
+
+  return (
+    <Container fluid padding="none" className="clinical-history-shell">
+      {contextHolder}
+      <div className="clinical-history-page">
+        <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={handleSave} />
+        <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
+          <div className="evolution-tab-content evolution-tab-content--full">
+            <div className="qx-form-header">
+              <ToolOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+              <Typography.Title level={5} style={{ margin: 0 }}>Nuevo Procedimiento Menor</Typography.Title>
+              <div className="evo-header-meta">
+                <span>{currentDoctor}</span>
+                <span className="evo-header-sep">·</span>
+                <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+              </div>
+            </div>
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">1</span>
+                <span className="section-title">Consulta</span>
+              </div>
+              <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+              <TextArea
+                rows={8} value={consulta} onChange={(e) => setConsulta(e.target.value)}
+                placeholder="Describa la consulta, motivo y evaluación del procedimiento menor a realizar..."
+                maxLength={10000} showCount
+              />
+            </div>
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">2</span>
+                <span className="section-title">Plan</span>
+              </div>
+              <label style={labelStyle}>Plan <span className="field-required">*</span></label>
+              <TextArea
+                rows={8} value={plan} onChange={(e) => setPlan(e.target.value)}
+                placeholder="Registre el plan del procedimiento menor, técnica a utilizar, materiales e indicaciones post-procedimiento..."
+                maxLength={10000} showCount
+              />
+            </div>
+            <div className="clinical-history-footer-actions">
+              <Button onClick={resetForm}>Limpiar formulario</Button>
+              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Guardar procedimiento menor</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Container>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Medical Note page
+// ─────────────────────────────────────────────────────────────
+export const MedicalNoteContainer = () => {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [messageApi, contextHolder] = message.useMessage()
+  const { data: me } = useMe()
+
+  const patient = {
+    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    documentType: searchParams.get("documentType") || "CC",
+    documentNumber: searchParams.get("documentNumber") || "1102796382",
+    careScope: searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(searchParams.get("admissionDate")),
+    birthDate: searchParams.get("birthDate") || "2004-08-04",
+    sex: searchParams.get("sex") || "Masculino",
+  }
+
+  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+  const [consulta, setConsulta] = useState("")
+  const [plan, setPlan] = useState("")
+
+  const resetForm = () => { setConsulta(""); setPlan("") }
+
+  const handleSave = () => {
+    if (!consulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
+    if (!plan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    messageApi.success(`Nota médica guardada para ${patient.name}.`)
+  }
+
+  return (
+    <Container fluid padding="none" className="clinical-history-shell">
+      {contextHolder}
+      <div className="clinical-history-page">
+        <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={handleSave} />
+        <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
+          <div className="evolution-tab-content evolution-tab-content--full">
+            <div className="qx-form-header">
+              <FormOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+              <Typography.Title level={5} style={{ margin: 0 }}>Nueva Nota Médica</Typography.Title>
+              <div className="evo-header-meta">
+                <span>{currentDoctor}</span>
+                <span className="evo-header-sep">·</span>
+                <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+              </div>
+            </div>
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">1</span>
+                <span className="section-title">Consulta</span>
+              </div>
+              <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+              <TextArea
+                rows={8} value={consulta} onChange={(e) => setConsulta(e.target.value)}
+                placeholder="Registre los hallazgos de la consulta médica, anamnesis y evaluación clínica del paciente..."
+                maxLength={10000} showCount
+              />
+            </div>
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">2</span>
+                <span className="section-title">Plan</span>
+              </div>
+              <label style={labelStyle}>Plan <span className="field-required">*</span></label>
+              <TextArea
+                rows={8} value={plan} onChange={(e) => setPlan(e.target.value)}
+                placeholder="Registre el plan médico: medicamentos, indicaciones, controles y seguimiento..."
+                maxLength={10000} showCount
+              />
+            </div>
+            <div className="clinical-history-footer-actions">
+              <Button onClick={resetForm}>Limpiar formulario</Button>
+              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Guardar nota médica</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Container>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Non-Surgical Procedures page
+// ─────────────────────────────────────────────────────────────
+export const NonSurgicalProceduresContainer = () => {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [messageApi, contextHolder] = message.useMessage()
+  const { data: me } = useMe()
+
+  const patient = {
+    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    documentType: searchParams.get("documentType") || "CC",
+    documentNumber: searchParams.get("documentNumber") || "1102796382",
+    careScope: searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(searchParams.get("admissionDate")),
+    birthDate: searchParams.get("birthDate") || "2004-08-04",
+    sex: searchParams.get("sex") || "Masculino",
+  }
+
+  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+  const [consulta, setConsulta] = useState("")
+  const [plan, setPlan] = useState("")
+
+  const resetForm = () => { setConsulta(""); setPlan("") }
+
+  const handleSave = () => {
+    if (!consulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
+    if (!plan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    messageApi.success(`Procedimiento no quirúrgico guardado para ${patient.name}.`)
+  }
+
+  return (
+    <Container fluid padding="none" className="clinical-history-shell">
+      {contextHolder}
+      <div className="clinical-history-page">
+        <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={handleSave} />
+        <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
+          <div className="evolution-tab-content evolution-tab-content--full">
+            <div className="qx-form-header">
+              <AuditOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+              <Typography.Title level={5} style={{ margin: 0 }}>Nuevo Procedimiento No Quirúrgico</Typography.Title>
+              <div className="evo-header-meta">
+                <span>{currentDoctor}</span>
+                <span className="evo-header-sep">·</span>
+                <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+              </div>
+            </div>
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">1</span>
+                <span className="section-title">Consulta</span>
+              </div>
+              <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+              <TextArea
+                rows={8} value={consulta} onChange={(e) => setConsulta(e.target.value)}
+                placeholder="Describa la consulta, evaluación y justificación del procedimiento no quirúrgico..."
+                maxLength={10000} showCount
+              />
+            </div>
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">2</span>
+                <span className="section-title">Plan</span>
+              </div>
+              <label style={labelStyle}>Plan <span className="field-required">*</span></label>
+              <TextArea
+                rows={8} value={plan} onChange={(e) => setPlan(e.target.value)}
+                placeholder="Registre el plan del procedimiento no quirúrgico: técnica, materiales, indicaciones y seguimiento..."
+                maxLength={10000} showCount
+              />
+            </div>
+            <div className="clinical-history-footer-actions">
+              <Button onClick={resetForm}>Limpiar formulario</Button>
+              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Guardar procedimiento no quirúrgico</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Container>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Specialist Evolution page
+// ─────────────────────────────────────────────────────────────
+export const SpecialistEvolutionContainer = () => {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [messageApi, contextHolder] = message.useMessage()
+  const { data: me } = useMe()
+
+  const patient = {
+    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    documentType: searchParams.get("documentType") || "CC",
+    documentNumber: searchParams.get("documentNumber") || "1102796382",
+    careScope: searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(searchParams.get("admissionDate")),
+    birthDate: searchParams.get("birthDate") || "2004-08-04",
+    sex: searchParams.get("sex") || "Masculino",
+  }
+
+  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+  const [consulta, setConsulta] = useState("")
+  const [plan, setPlan] = useState("")
+
+  const resetForm = () => { setConsulta(""); setPlan("") }
+
+  const handleSave = () => {
+    if (!consulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
+    if (!plan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    messageApi.success(`Evolución de especialista guardada para ${patient.name}.`)
+  }
+
+  return (
+    <Container fluid padding="none" className="clinical-history-shell">
+      {contextHolder}
+      <div className="clinical-history-page">
+        <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={handleSave} />
+        <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
+          <div className="evolution-tab-content evolution-tab-content--full">
+            <div className="qx-form-header">
+              <SolutionOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+              <Typography.Title level={5} style={{ margin: 0 }}>Nueva Evolución de Especialista</Typography.Title>
+              <div className="evo-header-meta">
+                <span>{currentDoctor}</span>
+                <span className="evo-header-sep">·</span>
+                <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+              </div>
+            </div>
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">1</span>
+                <span className="section-title">Consulta</span>
+              </div>
+              <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+              <TextArea
+                rows={8} value={consulta} onChange={(e) => setConsulta(e.target.value)}
+                placeholder="Registre los hallazgos de la consulta del especialista, evaluación y diagnóstico especializado..."
+                maxLength={10000} showCount
+              />
+            </div>
+            <div className="qx-section">
+              <div className="qx-section-header">
+                <span className="section-number">2</span>
+                <span className="section-title">Plan</span>
+              </div>
+              <label style={labelStyle}>Plan <span className="field-required">*</span></label>
+              <TextArea
+                rows={8} value={plan} onChange={(e) => setPlan(e.target.value)}
+                placeholder="Registre el plan de manejo del especialista: tratamiento, indicaciones y seguimiento especializado..."
+                maxLength={10000} showCount
+              />
+            </div>
+            <div className="clinical-history-footer-actions">
+              <Button onClick={resetForm}>Limpiar formulario</Button>
+              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Guardar evolución de especialista</Button>
+            </div>
+          </div>
+        </div>
       </div>
     </Container>
   )

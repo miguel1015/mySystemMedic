@@ -1,11 +1,5 @@
-import ClinicalRecordPlaceholder from "@/app/container/care/clinicalRecordPlaceholder"
-import { AuditOutlined } from "@ant-design/icons"
+import { NonSurgicalProceduresContainer } from "@/app/container/care/clinicalRecordPlaceholder"
 
 export default function NonSurgicalProceduresPage() {
-  return (
-    <ClinicalRecordPlaceholder
-      title="Procedimientos no quirúrgicos"
-      icon={<AuditOutlined />}
-    />
-  )
+  return <NonSurgicalProceduresContainer />
 }
