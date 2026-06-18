@@ -1307,13 +1307,11 @@ export const MinorProceduresContainer = () => {
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
   const [consulta, setConsulta] = useState("")
-  const [plan, setPlan] = useState("")
 
-  const resetForm = () => { setConsulta(""); setPlan("") }
+  const resetForm = () => setConsulta("")
 
   const handleSave = () => {
-    if (!consulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
-    if (!plan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    if (!consulta.trim()) { messageApi.error("El campo es obligatorio."); return }
     messageApi.success(`Procedimiento menor guardado para ${patient.name}.`)
   }
 
@@ -1334,26 +1332,10 @@ export const MinorProceduresContainer = () => {
               </div>
             </div>
             <div className="qx-section">
-              <div className="qx-section-header">
-                <span className="section-number">1</span>
-                <span className="section-title">Consulta</span>
-              </div>
-              <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+              <label style={labelStyle}>Procedimiento menor <span className="field-required">*</span></label>
               <TextArea
-                rows={8} value={consulta} onChange={(e) => setConsulta(e.target.value)}
-                placeholder="Describa la consulta, motivo y evaluación del procedimiento menor a realizar..."
-                maxLength={10000} showCount
-              />
-            </div>
-            <div className="qx-section">
-              <div className="qx-section-header">
-                <span className="section-number">2</span>
-                <span className="section-title">Plan</span>
-              </div>
-              <label style={labelStyle}>Plan <span className="field-required">*</span></label>
-              <TextArea
-                rows={8} value={plan} onChange={(e) => setPlan(e.target.value)}
-                placeholder="Registre el plan del procedimiento menor, técnica a utilizar, materiales e indicaciones post-procedimiento..."
+                rows={14} value={consulta} onChange={(e) => setConsulta(e.target.value)}
+                placeholder="Describa el procedimiento menor, motivo, evaluación, técnica utilizada e indicaciones post-procedimiento..."
                 maxLength={10000} showCount
               />
             </div>
@@ -1389,13 +1371,11 @@ export const MedicalNoteContainer = () => {
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
   const [consulta, setConsulta] = useState("")
-  const [plan, setPlan] = useState("")
 
-  const resetForm = () => { setConsulta(""); setPlan("") }
+  const resetForm = () => setConsulta("")
 
   const handleSave = () => {
-    if (!consulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
-    if (!plan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    if (!consulta.trim()) { messageApi.error("El campo es obligatorio."); return }
     messageApi.success(`Nota médica guardada para ${patient.name}.`)
   }
 
@@ -1416,26 +1396,10 @@ export const MedicalNoteContainer = () => {
               </div>
             </div>
             <div className="qx-section">
-              <div className="qx-section-header">
-                <span className="section-number">1</span>
-                <span className="section-title">Consulta</span>
-              </div>
-              <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+              <label style={labelStyle}>Nota médica <span className="field-required">*</span></label>
               <TextArea
-                rows={8} value={consulta} onChange={(e) => setConsulta(e.target.value)}
-                placeholder="Registre los hallazgos de la consulta médica, anamnesis y evaluación clínica del paciente..."
-                maxLength={10000} showCount
-              />
-            </div>
-            <div className="qx-section">
-              <div className="qx-section-header">
-                <span className="section-number">2</span>
-                <span className="section-title">Plan</span>
-              </div>
-              <label style={labelStyle}>Plan <span className="field-required">*</span></label>
-              <TextArea
-                rows={8} value={plan} onChange={(e) => setPlan(e.target.value)}
-                placeholder="Registre el plan médico: medicamentos, indicaciones, controles y seguimiento..."
+                rows={14} value={consulta} onChange={(e) => setConsulta(e.target.value)}
+                placeholder="Registre los hallazgos de la consulta médica, anamnesis, evaluación clínica e indicaciones del paciente..."
                 maxLength={10000} showCount
               />
             </div>
@@ -1471,13 +1435,11 @@ export const NonSurgicalProceduresContainer = () => {
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
   const [consulta, setConsulta] = useState("")
-  const [plan, setPlan] = useState("")
 
-  const resetForm = () => { setConsulta(""); setPlan("") }
+  const resetForm = () => setConsulta("")
 
   const handleSave = () => {
-    if (!consulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
-    if (!plan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    if (!consulta.trim()) { messageApi.error("El campo es obligatorio."); return }
     messageApi.success(`Procedimiento no quirúrgico guardado para ${patient.name}.`)
   }
 
@@ -1498,26 +1460,10 @@ export const NonSurgicalProceduresContainer = () => {
               </div>
             </div>
             <div className="qx-section">
-              <div className="qx-section-header">
-                <span className="section-number">1</span>
-                <span className="section-title">Consulta</span>
-              </div>
-              <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+              <label style={labelStyle}>Procedimiento no quirúrgico <span className="field-required">*</span></label>
               <TextArea
-                rows={8} value={consulta} onChange={(e) => setConsulta(e.target.value)}
-                placeholder="Describa la consulta, evaluación y justificación del procedimiento no quirúrgico..."
-                maxLength={10000} showCount
-              />
-            </div>
-            <div className="qx-section">
-              <div className="qx-section-header">
-                <span className="section-number">2</span>
-                <span className="section-title">Plan</span>
-              </div>
-              <label style={labelStyle}>Plan <span className="field-required">*</span></label>
-              <TextArea
-                rows={8} value={plan} onChange={(e) => setPlan(e.target.value)}
-                placeholder="Registre el plan del procedimiento no quirúrgico: técnica, materiales, indicaciones y seguimiento..."
+                rows={14} value={consulta} onChange={(e) => setConsulta(e.target.value)}
+                placeholder="Describa el procedimiento no quirúrgico, evaluación, justificación, técnica utilizada e indicaciones de seguimiento..."
                 maxLength={10000} showCount
               />
             </div>

@@ -116,15 +116,15 @@ const clinicalTabs = [
 
 const sidebarRecords: SidebarRecord[] = [
   { key: "hci", title: "Historia Clínica Inicial", date: "03/03/2026 20:47", count: 0, active: false },
-  { key: "quirurgica", title: "Descripción Quirúrgica", date: "", count: 0, active: false },
-  { key: "evoluciones", title: "Evoluciones", date: "", count: 3, active: false },
-  { key: "egreso", title: "Nota de Egreso", date: "", count: 0, active: false },
-  { key: "enfermeria", title: "Notas de Enfermería", date: "", count: 2, active: false },
-  { key: "menores", title: "Procedimientos Menores", date: "", count: 0, active: false },
   { key: "medicas", title: "Notas Médicas", date: "", count: 1, active: false },
+  { key: "evoluciones", title: "Evoluciones", date: "", count: 3, active: false },
+  { key: "especialista", title: "Evolución de Especialista", date: "", count: 0, active: false },
+  { key: "quirurgica", title: "Descripción Quirúrgica", date: "", count: 0, active: false },
+  { key: "menores", title: "Procedimientos Menores", date: "", count: 0, active: false },
   { key: "diagnosticos", title: "Procedimientos Diagnósticos", date: "", count: 0, active: false },
   { key: "noquirurgicos", title: "Procedimientos No Quirúrgicos", date: "", count: 0, active: false },
-  { key: "especialista", title: "Evolución de Especialista", date: "", count: 0, active: false },
+  { key: "enfermeria", title: "Notas de Enfermería", date: "", count: 2, active: false },
+  { key: "egreso", title: "Nota de Egreso", date: "", count: 0, active: false },
 ]
 
 const defaultDiagnoses: DiagnosisRow[] = [
@@ -239,15 +239,12 @@ const InitialClinicalHistoryContainer = () => {
 
   // ── Procedimientos Menores state ──
   const [menoresConsulta, setMenoresConsulta] = useState("")
-  const [menoresPlan, setMenoresPlan] = useState("")
 
   // ── Notas Médicas state ──
   const [medicasConsulta, setMedicasConsulta] = useState("")
-  const [medicasPlan, setMedicasPlan] = useState("")
 
   // ── Procedimientos No Quirúrgicos state ──
   const [noQxConsulta, setNoQxConsulta] = useState("")
-  const [noQxPlan, setNoQxPlan] = useState("")
 
   // ── Evolución de Especialista state ──
   const [especialistaConsulta, setEspecialistaConsulta] = useState("")
@@ -368,26 +365,23 @@ const InitialClinicalHistoryContainer = () => {
     setDiagHallazgos("")
   }
 
-  const resetMenoresForm = () => { setMenoresConsulta(""); setMenoresPlan("") }
-  const resetMedicasForm = () => { setMedicasConsulta(""); setMedicasPlan("") }
-  const resetNoQxForm = () => { setNoQxConsulta(""); setNoQxPlan("") }
+  const resetMenoresForm = () => setMenoresConsulta("")
+  const resetMedicasForm = () => setMedicasConsulta("")
+  const resetNoQxForm = () => setNoQxConsulta("")
   const resetEspecialistaForm = () => { setEspecialistaConsulta(""); setEspecialistaPlan("") }
 
   const validateAndSaveMenores = () => {
-    if (!menoresConsulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
-    if (!menoresPlan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    if (!menoresConsulta.trim()) { messageApi.error("El campo es obligatorio."); return }
     messageApi.success(`Procedimiento menor guardado para ${patient.name}.`)
   }
 
   const validateAndSaveMedicas = () => {
-    if (!medicasConsulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
-    if (!medicasPlan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    if (!medicasConsulta.trim()) { messageApi.error("El campo es obligatorio."); return }
     messageApi.success(`Nota médica guardada para ${patient.name}.`)
   }
 
   const validateAndSaveNoQx = () => {
-    if (!noQxConsulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
-    if (!noQxPlan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
+    if (!noQxConsulta.trim()) { messageApi.error("El campo es obligatorio."); return }
     messageApi.success(`Procedimiento no quirúrgico guardado para ${patient.name}.`)
   }
 
@@ -1210,26 +1204,10 @@ const InitialClinicalHistoryContainer = () => {
                   </div>
                 </div>
                 <div className="qx-section">
-                  <div className="qx-section-header">
-                    <span className="section-number">1</span>
-                    <span className="section-title">Consulta</span>
-                  </div>
-                  <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+                  <label style={labelStyle}>Procedimiento menor <span className="field-required">*</span></label>
                   <TextArea
-                    rows={8} value={menoresConsulta} onChange={(e) => setMenoresConsulta(e.target.value)}
-                    placeholder="Describa la consulta, motivo y evaluación del procedimiento menor a realizar..."
-                    maxLength={10000} showCount
-                  />
-                </div>
-                <div className="qx-section">
-                  <div className="qx-section-header">
-                    <span className="section-number">2</span>
-                    <span className="section-title">Plan</span>
-                  </div>
-                  <label style={labelStyle}>Plan <span className="field-required">*</span></label>
-                  <TextArea
-                    rows={8} value={menoresPlan} onChange={(e) => setMenoresPlan(e.target.value)}
-                    placeholder="Registre el plan del procedimiento menor, técnica a utilizar, materiales e indicaciones post-procedimiento..."
+                    rows={14} value={menoresConsulta} onChange={(e) => setMenoresConsulta(e.target.value)}
+                    placeholder="Describa el procedimiento menor, motivo, evaluación, técnica utilizada e indicaciones post-procedimiento..."
                     maxLength={10000} showCount
                   />
                 </div>
@@ -1255,26 +1233,10 @@ const InitialClinicalHistoryContainer = () => {
                   </div>
                 </div>
                 <div className="qx-section">
-                  <div className="qx-section-header">
-                    <span className="section-number">1</span>
-                    <span className="section-title">Consulta</span>
-                  </div>
-                  <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+                  <label style={labelStyle}>Nota médica <span className="field-required">*</span></label>
                   <TextArea
-                    rows={8} value={medicasConsulta} onChange={(e) => setMedicasConsulta(e.target.value)}
-                    placeholder="Registre los hallazgos de la consulta médica, anamnesis y evaluación clínica del paciente..."
-                    maxLength={10000} showCount
-                  />
-                </div>
-                <div className="qx-section">
-                  <div className="qx-section-header">
-                    <span className="section-number">2</span>
-                    <span className="section-title">Plan</span>
-                  </div>
-                  <label style={labelStyle}>Plan <span className="field-required">*</span></label>
-                  <TextArea
-                    rows={8} value={medicasPlan} onChange={(e) => setMedicasPlan(e.target.value)}
-                    placeholder="Registre el plan médico: medicamentos, indicaciones, controles y seguimiento..."
+                    rows={14} value={medicasConsulta} onChange={(e) => setMedicasConsulta(e.target.value)}
+                    placeholder="Registre los hallazgos de la consulta médica, anamnesis, evaluación clínica e indicaciones del paciente..."
                     maxLength={10000} showCount
                   />
                 </div>
@@ -1300,26 +1262,10 @@ const InitialClinicalHistoryContainer = () => {
                   </div>
                 </div>
                 <div className="qx-section">
-                  <div className="qx-section-header">
-                    <span className="section-number">1</span>
-                    <span className="section-title">Consulta</span>
-                  </div>
-                  <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
+                  <label style={labelStyle}>Procedimiento no quirúrgico <span className="field-required">*</span></label>
                   <TextArea
-                    rows={8} value={noQxConsulta} onChange={(e) => setNoQxConsulta(e.target.value)}
-                    placeholder="Describa la consulta, evaluación y justificación del procedimiento no quirúrgico..."
-                    maxLength={10000} showCount
-                  />
-                </div>
-                <div className="qx-section">
-                  <div className="qx-section-header">
-                    <span className="section-number">2</span>
-                    <span className="section-title">Plan</span>
-                  </div>
-                  <label style={labelStyle}>Plan <span className="field-required">*</span></label>
-                  <TextArea
-                    rows={8} value={noQxPlan} onChange={(e) => setNoQxPlan(e.target.value)}
-                    placeholder="Registre el plan del procedimiento no quirúrgico: técnica, materiales, indicaciones y seguimiento..."
+                    rows={14} value={noQxConsulta} onChange={(e) => setNoQxConsulta(e.target.value)}
+                    placeholder="Describa el procedimiento no quirúrgico, evaluación, justificación, técnica utilizada e indicaciones de seguimiento..."
                     maxLength={10000} showCount
                   />
                 </div>
