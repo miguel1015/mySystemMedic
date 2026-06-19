@@ -38,4 +38,7 @@ export const CARE_ENDPOINTS = {
     RH_FACTORS: "/api/auth/care/getAll?type=rh-factors",
     MARITAL_STATUSES: "/api/auth/care/getAll?type=marital-statuses",
   },
+  CIE10: {
+    SEARCH: "/api/auth/care/cie10",
+  },
 }
