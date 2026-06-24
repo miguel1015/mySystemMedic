@@ -13,10 +13,6 @@ export const SubjectiveTab = () => (
         <label style={labelStyle}>Motivo de consulta</label>
         <Input defaultValue="Me accidenté" />
       </div>
-      <div>
-        <label style={labelStyle}>Revisión por sistemas</label>
-        <Input defaultValue="Lo referido en enfermedad actual" />
-      </div>
       <div style={{ gridColumn: "1 / -1" }}>
         <label style={labelStyle}>Enfermedad actual</label>
         <TextArea

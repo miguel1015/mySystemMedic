@@ -1,9 +1,24 @@
 "use client"
 
 import { Input, InputNumber, Typography } from "antd"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { labelStyle, physicalExamSections, sectionCardStyle } from "../../constants"
 import type { VitalsState } from "../../types"
+
+const antecedentesFields = [
+  "Padres",
+  "Personales - Médicos",
+  "Otros Familiares",
+  "Alérgicos",
+  "Quirúrgicos",
+  "Tóxicos",
+  "Transfusiones",
+  "Hábitos",
+  "Traumas",
+] as const
+
+type AntecedentesKey = typeof antecedentesFields[number]
+type AntecedentesState = Record<AntecedentesKey, string>
 
 interface Props {
   vitals: VitalsState
@@ -21,7 +36,13 @@ const vitalsConfig: Array<{ label: string; key: keyof VitalsState; isString?: bo
   { label: "Talla cm", key: "height" },
 ]
 
+const defaultAntecedentes = Object.fromEntries(
+  antecedentesFields.map((f) => [f, ""])
+) as AntecedentesState
+
 export const ObjectiveTab = ({ vitals, onVitalsChange }: Props) => {
+  const [antecedentes, setAntecedentes] = useState<AntecedentesState>(defaultAntecedentes)
+
   const bmi = useMemo(() => {
     const h = vitals.height / 100
     if (!h || !vitals.weight) return ""
@@ -73,6 +94,22 @@ export const ObjectiveTab = ({ vitals, onVitalsChange }: Props) => {
               <label style={labelStyle}>IMC</label>
               <Input value={bmi ? `${bmi} kg/m²` : ""} readOnly />
             </div>
+          </div>
+        </div>
+
+        <div style={{ ...sectionCardStyle, gridColumn: "1 / -1" }}>
+          <Typography.Text strong>Antecedentes Personales y Familiares</Typography.Text>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(200px, 100%), 1fr))", gap: 12, marginTop: 12 }}>
+            {antecedentesFields.map((field) => (
+              <div key={field}>
+                <label style={labelStyle}>{field}</label>
+                <Input
+                  value={antecedentes[field]}
+                  onChange={(e) => setAntecedentes((prev) => ({ ...prev, [field]: e.target.value }))}
+                  placeholder={`Ingrese ${field.toLowerCase()}`}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
