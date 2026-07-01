@@ -2,6 +2,8 @@
 
 import { Container } from "@/components/container"
 import Title from "@/components/title"
+import ClinicalRecordHistoryModal from "@/components/clinicalRecordHistoryModal"
+import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useMe } from "@/core/hooks/users/useMeUser"
 import { useGetUsers } from "@/core/hooks/users/useGetUsers"
 import { GetUser } from "@/core/interfaces/user/users"
@@ -250,6 +252,9 @@ export const SurgicalDescriptionContainer = () => {
     if (!qxProcedureDescription.trim()) { messageApi.error("La descripción del procedimiento es obligatoria."); return }
     messageApi.success("Descripción quirúrgica guardada correctamente.")
   }
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -589,6 +594,16 @@ export const SurgicalDescriptionContainer = () => {
         </div>
 
       </div>
+      <ClinicalRecordHistoryTrigger
+        moduleType="surgical-description"
+        onClick={() => setHistoryOpen(true)}
+      />
+      <ClinicalRecordHistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        moduleType="surgical-description"
+        admissionId={admissionId}
+      />
     </Container>
   )
 }
@@ -660,6 +675,9 @@ export const EvolutionsContainer = () => {
     }
     messageApi.success(`Evolución guardada para ${patient.name}.`)
   }
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -854,6 +872,16 @@ export const EvolutionsContainer = () => {
         </div>
 
       </div>
+      <ClinicalRecordHistoryTrigger
+        moduleType="evolutions"
+        onClick={() => setHistoryOpen(true)}
+      />
+      <ClinicalRecordHistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        moduleType="evolutions"
+        admissionId={admissionId}
+      />
     </Container>
   )
 }
@@ -890,6 +918,9 @@ export const NursingNotesContainer = () => {
     }
     messageApi.success(`Nota de enfermería guardada para ${patient.name}.`)
   }
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -1018,6 +1049,16 @@ export const NursingNotesContainer = () => {
         </div>
 
       </div>
+      <ClinicalRecordHistoryTrigger
+        moduleType="nursing-notes"
+        onClick={() => setHistoryOpen(true)}
+      />
+      <ClinicalRecordHistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        moduleType="nursing-notes"
+        admissionId={admissionId}
+      />
     </Container>
   )
 }
@@ -1062,6 +1103,9 @@ export const DiagnosticProceduresContainer = () => {
     }
     messageApi.success(`Procedimiento diagnóstico guardado para ${patient.name}.`)
   }
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -1208,6 +1252,16 @@ export const DiagnosticProceduresContainer = () => {
         </div>
 
       </div>
+      <ClinicalRecordHistoryTrigger
+        moduleType="diagnostic-procedures"
+        onClick={() => setHistoryOpen(true)}
+      />
+      <ClinicalRecordHistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        moduleType="diagnostic-procedures"
+        admissionId={admissionId}
+      />
     </Container>
   )
 }
@@ -1306,7 +1360,9 @@ export const MinorProceduresContainer = () => {
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+  const admissionId = searchParams.get("admissionId") || undefined
   const [consulta, setConsulta] = useState("")
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   const resetForm = () => setConsulta("")
 
@@ -1346,6 +1402,16 @@ export const MinorProceduresContainer = () => {
           </div>
         </div>
       </div>
+      <ClinicalRecordHistoryTrigger
+        moduleType="minor-procedures"
+        onClick={() => setHistoryOpen(true)}
+      />
+      <ClinicalRecordHistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        moduleType="minor-procedures"
+        admissionId={admissionId}
+      />
     </Container>
   )
 }
@@ -1370,7 +1436,9 @@ export const MedicalNoteContainer = () => {
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+  const admissionId = searchParams.get("admissionId") || undefined
   const [consulta, setConsulta] = useState("")
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   const resetForm = () => setConsulta("")
 
@@ -1410,6 +1478,16 @@ export const MedicalNoteContainer = () => {
           </div>
         </div>
       </div>
+      <ClinicalRecordHistoryTrigger
+        moduleType="medical-note"
+        onClick={() => setHistoryOpen(true)}
+      />
+      <ClinicalRecordHistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        moduleType="medical-note"
+        admissionId={admissionId}
+      />
     </Container>
   )
 }
@@ -1434,7 +1512,9 @@ export const NonSurgicalProceduresContainer = () => {
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+  const admissionId = searchParams.get("admissionId") || undefined
   const [consulta, setConsulta] = useState("")
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   const resetForm = () => setConsulta("")
 
@@ -1474,6 +1554,16 @@ export const NonSurgicalProceduresContainer = () => {
           </div>
         </div>
       </div>
+      <ClinicalRecordHistoryTrigger
+        moduleType="non-surgical-procedures"
+        onClick={() => setHistoryOpen(true)}
+      />
+      <ClinicalRecordHistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        moduleType="non-surgical-procedures"
+        admissionId={admissionId}
+      />
     </Container>
   )
 }
@@ -1498,8 +1588,10 @@ export const SpecialistEvolutionContainer = () => {
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+  const admissionId = searchParams.get("admissionId") || undefined
   const [consulta, setConsulta] = useState("")
   const [plan, setPlan] = useState("")
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   const resetForm = () => { setConsulta(""); setPlan("") }
 
@@ -1556,6 +1648,16 @@ export const SpecialistEvolutionContainer = () => {
           </div>
         </div>
       </div>
+      <ClinicalRecordHistoryTrigger
+        moduleType="specialist-evolution"
+        onClick={() => setHistoryOpen(true)}
+      />
+      <ClinicalRecordHistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        moduleType="specialist-evolution"
+        admissionId={admissionId}
+      />
     </Container>
   )
 }
