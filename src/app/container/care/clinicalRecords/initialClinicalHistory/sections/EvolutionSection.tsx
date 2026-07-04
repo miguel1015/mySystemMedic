@@ -4,10 +4,12 @@ import { HeartOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, Input, InputNumber, Tag, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useMemo, useState } from "react"
+import { useCreateEvolucion } from "@/core/hooks/care/evoluciones/useCreateEvolucion"
 import { defaultEvoVitals, labelStyle } from "../constants"
 import type { EvoVitalsState } from "../types"
 
 interface Props {
+  admissionId?: string | number
   selectedDoctor: string
   patientName: string
   messageApi: MessageInstance
@@ -25,10 +27,12 @@ const vitalsConfig: Array<{ label: string; key: keyof EvoVitalsState; isString?:
   { label: "Talla (cm)", key: "height", placeholder: "175" },
 ]
 
-export const EvolutionSection = ({ selectedDoctor, patientName, messageApi }: Props) => {
+export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, messageApi }: Props) => {
   const [evoMotivo, setEvoMotivo] = useState("")
   const [evoPlan, setEvoPlan] = useState("")
   const [evoVitals, setEvoVitals] = useState<EvoVitalsState>({ ...defaultEvoVitals })
+
+  const createEvolucion = useCreateEvolucion()
 
   const evoBmi = useMemo(() => {
     const h = evoVitals.height / 100
@@ -42,7 +46,7 @@ export const EvolutionSection = ({ selectedDoctor, patientName, messageApi }: Pr
     setEvoVitals({ ...defaultEvoVitals })
   }
 
-  const validateAndSave = () => {
+  const validateAndSave = async () => {
     const motivo = evoMotivo.trim()
     if (!motivo || motivo.length < 10) {
       messageApi.error("El motivo de consulta debe tener mínimo 10 caracteres.")
@@ -52,7 +56,30 @@ export const EvolutionSection = ({ selectedDoctor, patientName, messageApi }: Pr
       messageApi.error("El campo Plan es obligatorio.")
       return
     }
-    messageApi.success(`Evolución guardada para ${patientName}.`)
+    if (!admissionId) {
+      messageApi.error("No se encontró la admisión asociada a esta evolución.")
+      return
+    }
+
+    try {
+      await createEvolucion.mutateAsync({
+        admissionId: Number(admissionId),
+        motivoConsulta: motivo,
+        tensionArterial: evoVitals.ta || null,
+        frecuenciaCardiaca: evoVitals.fc || null,
+        frecuenciaRespiratoria: evoVitals.fr || null,
+        temperatura: evoVitals.temperature || null,
+        saturacionOxigeno: evoVitals.saturation || null,
+        glasgow: null,
+        peso: evoVitals.weight || null,
+        talla: evoVitals.height ? evoVitals.height / 100 : null,
+        plan: evoPlan.trim(),
+      })
+      messageApi.success(`Evolución guardada para ${patientName}.`)
+      reset()
+    } catch (err) {
+      messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la evolución.")
+    }
   }
 
   return (
@@ -143,7 +170,7 @@ export const EvolutionSection = ({ selectedDoctor, patientName, messageApi }: Pr
 
       <div className="clinical-history-footer-actions">
         <Button onClick={reset}>Limpiar formulario</Button>
-        <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSave}>
+        <Button type="primary" icon={<SaveOutlined />} loading={createEvolucion.isPending} onClick={validateAndSave}>
           Guardar evolución
         </Button>
       </div>

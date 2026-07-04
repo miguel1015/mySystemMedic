@@ -21,7 +21,7 @@ export async function GET(_req: Request, { params }: { params: Params }) {
     )
 
     const contentType = res.headers.get("content-type") ?? ""
-    const data = contentType.includes("application/json")
+    const data = contentType.includes("json")
       ? await res.json().catch(() => null)
       : await res.text().catch(() => null)
 

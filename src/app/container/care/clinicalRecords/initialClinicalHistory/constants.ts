@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react"
-import type { EvoVitalsState } from "./types"
+import type { AntecedentesState, EvoVitalsState, PhysicalExamState } from "./types"
 
 export const cie10Options = [
   { value: "S202", label: "S202 - Contusion del torax", diagnosis: "Contusion del torax" },
@@ -31,10 +31,49 @@ export const anesthesiaTypeOptions = [
   { value: "combinada", label: "Combinada (general + regional)" },
 ]
 
-export const physicalExamSections = [
-  "Cabeza y cuello", "Torax", "Abdomen", "Extremidades",
-  "Sistema nervioso", "Organos de los sentidos", "Genitourinario",
+export const physicalExamFields: Array<{ key: keyof PhysicalExamState; label: string }> = [
+  { key: "cabezaCuello", label: "Cabeza y cuello" },
+  { key: "torax", label: "Torax" },
+  { key: "abdomen", label: "Abdomen" },
+  { key: "extremidades", label: "Extremidades" },
+  { key: "sistemaNervioso", label: "Sistema nervioso" },
+  { key: "organosSentidos", label: "Organos de los sentidos" },
+  { key: "genitourinario", label: "Genitourinario" },
 ]
+
+export const antecedentesFields: Array<{ key: keyof AntecedentesState; label: string }> = [
+  { key: "padres", label: "Padres" },
+  { key: "personalesMedicos", label: "Personales - Médicos" },
+  { key: "otrosFamiliares", label: "Otros Familiares" },
+  { key: "alergicos", label: "Alérgicos" },
+  { key: "quirurgicos", label: "Quirúrgicos" },
+  { key: "toxicos", label: "Tóxicos" },
+  { key: "transfusiones", label: "Transfusiones" },
+  { key: "habitos", label: "Hábitos" },
+  { key: "traumas", label: "Traumas" },
+]
+
+export const defaultPhysicalExam: PhysicalExamState = {
+  cabezaCuello: "",
+  torax: "",
+  abdomen: "",
+  extremidades: "",
+  sistemaNervioso: "",
+  organosSentidos: "",
+  genitourinario: "",
+}
+
+export const defaultAntecedentes: AntecedentesState = {
+  padres: "",
+  personalesMedicos: "",
+  otrosFamiliares: "",
+  alergicos: "",
+  quirurgicos: "",
+  transfusiones: "",
+  toxicos: "",
+  habitos: "",
+  traumas: "",
+}
 
 export const clinicalTabs = [
   { key: "subjective", label: "1. Subjetivo" },

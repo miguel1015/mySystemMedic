@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     );
 
     const contentType = res.headers.get("content-type") || "";
-    const backendResponse = contentType.includes("application/json")
+    const backendResponse = contentType.includes("json")
       ? await res.json().catch(() => null)
       : await res.text().catch(() => null);
 

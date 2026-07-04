@@ -17,13 +17,11 @@ export const authOptions: NextAuthOptions = {
         try {
           const { email, password } = credentials;
 
-          const { data } = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
-            {
-              Email: email,
-              Password: password,
-            }
-          );
+          const loginUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`;
+          const { data } = await axios.post(loginUrl, {
+            Email: email,
+            Password: password,
+          });
 
           if (!data?.accessToken) return null;
 
@@ -45,7 +43,17 @@ export const authOptions: NextAuthOptions = {
             accessToken: data.accessToken,
             expiresAt: data.expiresAt,
           };
-        } catch {
+        } catch (error) {
+          if (axios.isAxiosError(error)) {
+            console.error("[authorize] login failed:", {
+              url: `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+              status: error.response?.status,
+              data: error.response?.data,
+              message: error.message,
+            });
+          } else {
+            console.error("[authorize] unexpected error:", error);
+          }
           throw new Error("Usuario o contraseña inválidos");
         }
       },

@@ -77,6 +77,8 @@ const InitialClinicalHistoryContainer = () => {
   const { data: me } = useMe()
   const { data: users = [] } = useGetUsers()
 
+  const admissionId = searchParams.get("admissionId") || undefined
+
   const patient = {
     name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
@@ -267,6 +269,7 @@ const InitialClinicalHistoryContainer = () => {
           <div className="evolution-right">
             {activeSidebarKey === "hci" && (
               <HciSection
+                admissionId={admissionId}
                 diagnoses={diagnoses}
                 onDiagnosesChange={setDiagnoses}
                 patientName={patient.name}
@@ -284,6 +287,7 @@ const InitialClinicalHistoryContainer = () => {
 
             {activeSidebarKey === "evoluciones" && (
               <EvolutionSection
+                admissionId={admissionId}
                 selectedDoctor={selectedDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
@@ -336,6 +340,7 @@ const InitialClinicalHistoryContainer = () => {
 
             {activeSidebarKey === "especialista" && (
               <SpecialistEvolutionSection
+                admissionId={admissionId}
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}

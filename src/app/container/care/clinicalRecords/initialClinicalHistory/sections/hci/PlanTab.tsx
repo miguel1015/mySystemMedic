@@ -4,7 +4,12 @@ import { Button, Input, Typography } from "antd"
 
 const { TextArea } = Input
 
-export const PlanTab = () => (
+interface Props {
+  value: string
+  onChange: (value: string) => void
+}
+
+export const PlanTab = ({ value, onChange }: Props) => (
   <div className="tab-section-inner">
     <Typography.Title level={5} style={{ marginTop: 0 }}>5. Plan</Typography.Title>
     <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
@@ -15,6 +20,9 @@ export const PlanTab = () => (
     </div>
     <TextArea
       rows={8}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      maxLength={1000}
       placeholder="Describa el plan de manejo terapéutico, indicaciones, medicamentos y seguimiento..."
     />
   </div>

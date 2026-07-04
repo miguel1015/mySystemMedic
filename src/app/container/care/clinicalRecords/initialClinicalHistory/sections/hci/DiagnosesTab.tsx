@@ -2,70 +2,59 @@
 
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
+  AutoComplete,
   Button,
   Checkbox,
-  Select,
   Spin,
   Table,
-  Tag,
   Tooltip,
   Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useSearchCie10 } from "@/core/hooks/care/cie10/useSearchCie10";
 import { useRef, useState } from "react";
-import type { DiagnosisRow, DiagnosisType } from "../../types";
-
-interface Cie10Option {
-  value: string;
-  label: string;
-  diagnosis: string;
-}
+import type { DiagnosisRow } from "../../types";
 
 interface Cie10SelectProps {
-  value: string;
-  diagnosis: string;
-  onChange: (code: string, diagnosis: string) => void;
+  code: string;
+  onSelect: (cie10Id: number, codigo: string, descripcion: string) => void;
+  onCodeChange: (codigo: string) => void;
 }
 
-const Cie10Select = ({ value, diagnosis, onChange }: Cie10SelectProps) => {
+const Cie10AutoComplete = ({ code, onSelect, onCodeChange }: Cie10SelectProps) => {
   const [search, setSearch] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data, isFetching } = useSearchCie10(search);
 
   const handleSearch = (query: string) => {
+    onCodeChange(query);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setSearch(query.trim());
     }, 400);
   };
 
-  const options: Cie10Option[] = data
-    ? data.map((item) => ({
-        value: item.cod4,
-        label: `${item.cod4} - ${item.descripcionCodigoCuatroCaracteres}`,
-        diagnosis: item.descripcionCodigoCuatroCaracteres,
-      }))
-    : value
-    ? [{ value, label: `${value} - ${diagnosis}`, diagnosis }]
-    : [];
+  const options = (data ?? []).map((item) => ({
+    value: item.codigo,
+    label: `${item.codigo} — ${item.descripcion}`,
+    item,
+  }));
 
   const notFound = !isFetching && search.length >= 2 && (!data || data.length === 0);
 
-  const handleChange = (val: string, opt: unknown) => {
-    const selected = opt as Cie10Option;
-    onChange(val, selected?.diagnosis ?? "");
+  const handleSelect = (_value: string, option: (typeof options)[number]) => {
+    onSelect(option.item.id, option.item.codigo, option.item.descripcion);
   };
 
   return (
-    <Select
-      showSearch={{ filterOption: false, onSearch: handleSearch }}
-      value={value || undefined}
+    <AutoComplete
+      value={code}
       options={options}
-      loading={isFetching}
-      onChange={handleChange}
-      placeholder="Buscar código CIE-10"
+      onSearch={handleSearch}
+      onSelect={handleSelect}
+      onChange={onCodeChange}
+      placeholder="Escriba el código CIE-10"
       style={{ width: "100%" }}
       notFoundContent={
         isFetching ? (
@@ -102,11 +91,10 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange }: Props) => {
       ...diagnoses,
       {
         id: Date.now(),
+        cie10Id: null,
         code: "",
         diagnosis: "",
-        type: "Secundario" as DiagnosisType,
         main: false,
-        required: false,
       },
     ]);
   };
@@ -119,13 +107,13 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange }: Props) => {
     {
       title: "Código CIE-10",
       dataIndex: "code",
-      width: 280,
+      width: 320,
       render: (_v, record) => (
-        <Cie10Select
-          value={record.code}
-          diagnosis={record.diagnosis}
-          onChange={(code, diag) =>
-            update(record.id, { code, diagnosis: diag })
+        <Cie10AutoComplete
+          code={record.code}
+          onCodeChange={(codigo) => update(record.id, { code: codigo, diagnosis: "", cie10Id: null })}
+          onSelect={(cie10Id, codigo, descripcion) =>
+            update(record.id, { cie10Id, code: codigo, diagnosis: descripcion })
           }
         />
       ),
@@ -145,23 +133,6 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange }: Props) => {
       ),
     },
     {
-      title: "Tipo",
-      dataIndex: "type",
-      width: 160,
-      render: (_v, record) => (
-        <Select
-          value={record.type}
-          style={{ width: "100%" }}
-          options={[
-            { value: "Principal", label: "Principal" },
-            { value: "Relacionado", label: "Relacionado" },
-            { value: "Secundario", label: "Secundario" },
-          ]}
-          onChange={(value) => update(record.id, { type: value })}
-        />
-      ),
-    },
-    {
       title: "Principal",
       dataIndex: "main",
       width: 105,
@@ -171,17 +142,6 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange }: Props) => {
           checked={record.main}
           onChange={(e) => update(record.id, { main: e.target.checked })}
         />
-      ),
-    },
-    {
-      title: "Obligatorio",
-      dataIndex: "required",
-      width: 115,
-      align: "center",
-      render: (_v, record) => (
-        <Tag color={record.required || record.main ? "blue" : "default"}>
-          {record.required || record.main ? "Sí" : "Opcional"}
-        </Tag>
       ),
     },
     {
@@ -226,7 +186,7 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange }: Props) => {
           dataSource={diagnoses}
           rowKey="id"
           pagination={false}
-          scroll={{ x: 900 }}
+          scroll={{ x: 700 }}
         />
       </div>
     </div>

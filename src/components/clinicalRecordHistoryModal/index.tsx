@@ -14,6 +14,7 @@ import {
   type ClinicalRecordModuleType,
 } from "@/core/constants/clinicalRecordModules"
 import { useClinicalRecordHistory } from "@/core/hooks/care/records/useClinicalRecordHistory"
+import { HciInicialOverview } from "./HciInicialOverview"
 import "./clinicalRecordHistoryModal.css"
 
 export interface ClinicalRecordHistoryModalProps {
@@ -55,6 +56,7 @@ const ClinicalRecordHistoryModal = ({
     () => CLINICAL_RECORD_MODULES.find((module) => module.key === moduleType),
     [moduleType],
   )
+  const isHciInicial = moduleType === "initial-clinical-history"
   const [search, setSearch] = useState("")
   const [selectedId, setSelectedId] = useState<number | null>(null)
 
@@ -63,7 +65,7 @@ const ClinicalRecordHistoryModal = ({
     isLoading,
     isError,
     refetch,
-  } = useClinicalRecordHistory({ moduleType, admissionId, enabled: open })
+  } = useClinicalRecordHistory({ moduleType, admissionId, enabled: open && !isHciInicial })
 
   const filteredRecords = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -86,6 +88,24 @@ const ClinicalRecordHistoryModal = ({
     setSelectedId(null)
   }
 
+  if (isHciInicial) {
+    return (
+      <Modal
+        open={open}
+        onClose={handleClose}
+        size="xl"
+        title={
+          <span className="chrm-title">
+            <span style={{ color: moduleInfo?.color }}>{moduleInfo?.icon}</span>
+            {moduleInfo?.label ?? "Historia clínica inicial"} · Resumen completo
+          </span>
+        }
+      >
+        <HciInicialOverview admissionId={admissionId} />
+      </Modal>
+    )
+  }
+
   return (
     <Modal
       open={open}
@@ -94,7 +114,7 @@ const ClinicalRecordHistoryModal = ({
       title={
         <span className="chrm-title">
           <ClockCircleOutlined style={{ color: moduleInfo?.color }} />
-          Historial de {moduleInfo?.label ?? "Registros"}
+          Historial partode {moduleInfo?.label ?? "Registros"}
           {!isLoading && !isError && <Tag className="chrm-count-tag">{records.length}</Tag>}
         </span>
       }

@@ -1,12 +1,9 @@
-export type DiagnosisType = "Principal" | "Relacionado" | "Secundario"
-
 export interface DiagnosisRow {
   id: number
+  cie10Id: number | null
   code: string
   diagnosis: string
-  type: DiagnosisType
   main: boolean
-  required: boolean
 }
 
 export interface QxSearchItem {
@@ -33,4 +30,31 @@ export interface EvoVitalsState {
   saturation: number
   weight: number
   height: number
+}
+
+export interface SubjectiveState {
+  motivoConsulta: string
+  enfermedadActual: string
+}
+
+export interface PhysicalExamState {
+  cabezaCuello: string
+  torax: string
+  abdomen: string
+  extremidades: string
+  sistemaNervioso: string
+  organosSentidos: string
+  genitourinario: string
+}
+
+export interface AntecedentesState {
+  padres: string
+  personalesMedicos: string
+  otrosFamiliares: string
+  alergicos: string
+  quirurgicos: string
+  toxicos: string
+  transfusiones: string
+  habitos: string
+  traumas: string
 }

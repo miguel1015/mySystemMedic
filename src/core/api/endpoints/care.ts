@@ -41,4 +41,37 @@ export const CARE_ENDPOINTS = {
   CIE10: {
     SEARCH: "/api/auth/care/cie10",
   },
+  HCINICIAL: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/hci-inicial/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/hci-inicial",
+    UPDATE: (id: IdParam) => `/api/auth/care/hci-inicial/${id}`,
+  },
+  SUBJETIVO_HCINICIAL: {
+    CREATE: "/api/auth/care/subjetivo-hcinicial",
+    UPDATE: (id: IdParam) => `/api/auth/care/subjetivo-hcinicial/${id}`,
+  },
+  OBJETIVO_HCINICIAL: {
+    CREATE: "/api/auth/care/objetivo-hcinicial",
+    UPDATE: (id: IdParam) => `/api/auth/care/objetivo-hcinicial/${id}`,
+  },
+  SIGNOS_VITALES_HCINICIAL: {
+    CREATE: "/api/auth/care/signos-vitales-hcinicial",
+    UPDATE: (id: IdParam) => `/api/auth/care/signos-vitales-hcinicial/${id}`,
+  },
+  ANALISIS_DIAGNOSTICOS_PLAN_HCINICIAL: {
+    CREATE: "/api/auth/care/analisis-diagnosticos-plan-hcinicial",
+    UPDATE: (id: IdParam) =>
+      `/api/auth/care/analisis-diagnosticos-plan-hcinicial/${id}`,
+  },
+  EVOLUCIONES: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/evoluciones/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/evoluciones",
+  },
+  EVOLUCION_ESPECIALISTAS: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/evolucion-especialistas/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/evolucion-especialistas",
+  },
 }

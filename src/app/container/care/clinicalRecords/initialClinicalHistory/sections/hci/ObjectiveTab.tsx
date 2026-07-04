@@ -1,48 +1,45 @@
 "use client"
 
 import { Input, InputNumber, Typography } from "antd"
-import { useMemo, useState } from "react"
-import { labelStyle, physicalExamSections, sectionCardStyle } from "../../constants"
-import type { VitalsState } from "../../types"
-
-const antecedentesFields = [
-  "Padres",
-  "Personales - Médicos",
-  "Otros Familiares",
-  "Alérgicos",
-  "Quirúrgicos",
-  "Tóxicos",
-  "Transfusiones",
-  "Hábitos",
-  "Traumas",
-] as const
-
-type AntecedentesKey = typeof antecedentesFields[number]
-type AntecedentesState = Record<AntecedentesKey, string>
+import { useMemo } from "react"
+import { antecedentesFields, labelStyle, physicalExamFields, sectionCardStyle } from "../../constants"
+import type { AntecedentesState, PhysicalExamState, VitalsState } from "../../types"
 
 interface Props {
   vitals: VitalsState
   onVitalsChange: (vitals: VitalsState) => void
+  physicalExam: PhysicalExamState
+  onPhysicalExamChange: (physicalExam: PhysicalExamState) => void
+  antecedentes: AntecedentesState
+  onAntecedentesChange: (antecedentes: AntecedentesState) => void
 }
 
-const vitalsConfig: Array<{ label: string; key: keyof VitalsState; isString?: boolean }> = [
+const vitalsConfig: Array<{
+  label: string
+  key: keyof VitalsState
+  isString?: boolean
+  min?: number
+  max?: number
+  step?: number
+}> = [
   { label: "TA", key: "ta", isString: true },
-  { label: "FC", key: "fc" },
-  { label: "FR", key: "fr" },
-  { label: "Temp.", key: "temperature" },
-  { label: "Sat. O₂", key: "saturation" },
-  { label: "Glasgow", key: "glasgow" },
-  { label: "Peso kg", key: "weight" },
-  { label: "Talla cm", key: "height" },
+  { label: "FC", key: "fc", min: 0, max: 300 },
+  { label: "FR", key: "fr", min: 0, max: 100 },
+  { label: "Temp.", key: "temperature", min: 0, max: 50, step: 0.1 },
+  { label: "Sat. O₂", key: "saturation", min: 0, max: 100 },
+  { label: "Glasgow", key: "glasgow", min: 0, max: 15 },
+  { label: "Peso kg", key: "weight", min: 0, max: 500, step: 0.1 },
+  { label: "Talla cm", key: "height", min: 0, max: 300 },
 ]
 
-const defaultAntecedentes = Object.fromEntries(
-  antecedentesFields.map((f) => [f, ""])
-) as AntecedentesState
-
-export const ObjectiveTab = ({ vitals, onVitalsChange }: Props) => {
-  const [antecedentes, setAntecedentes] = useState<AntecedentesState>(defaultAntecedentes)
-
+export const ObjectiveTab = ({
+  vitals,
+  onVitalsChange,
+  physicalExam,
+  onPhysicalExamChange,
+  antecedentes,
+  onAntecedentesChange,
+}: Props) => {
   const bmi = useMemo(() => {
     const h = vitals.height / 100
     if (!h || !vitals.weight) return ""
@@ -56,14 +53,15 @@ export const ObjectiveTab = ({ vitals, onVitalsChange }: Props) => {
         <div style={sectionCardStyle}>
           <Typography.Text strong>Examen físico</Typography.Text>
           <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-            {physicalExamSections.map((section) => (
-              <div className="physical-exam-row" key={section}>
+            {physicalExamFields.map(({ key, label }) => (
+              <div className="physical-exam-row" key={key}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "var(--dash-text-secondary, #344054)" }}>
-                  {section}
+                  {label}
                 </span>
                 <Input
                   size="small"
-                  defaultValue={section === "Abdomen" ? "Blando, depresible, dolor a la palpación" : "Sin alteraciones aparentes"}
+                  value={physicalExam[key]}
+                  onChange={(e) => onPhysicalExamChange({ ...physicalExam, [key]: e.target.value })}
                 />
               </div>
             ))}
@@ -73,7 +71,7 @@ export const ObjectiveTab = ({ vitals, onVitalsChange }: Props) => {
         <div style={sectionCardStyle}>
           <Typography.Text strong>Signos vitales</Typography.Text>
           <div className="vital-signs-grid">
-            {vitalsConfig.map(({ label, key, isString }) => (
+            {vitalsConfig.map(({ label, key, isString, min, max, step }) => (
               <div key={key}>
                 <label style={labelStyle}>{label}</label>
                 {isString ? (
@@ -85,6 +83,9 @@ export const ObjectiveTab = ({ vitals, onVitalsChange }: Props) => {
                   <InputNumber
                     style={{ width: "100%" }}
                     value={vitals[key] as number}
+                    min={min}
+                    max={max}
+                    step={step ?? 1}
                     onChange={(v) => onVitalsChange({ ...vitals, [key]: Number(v) || 0 })}
                   />
                 )}
@@ -100,13 +101,13 @@ export const ObjectiveTab = ({ vitals, onVitalsChange }: Props) => {
         <div style={{ ...sectionCardStyle, gridColumn: "1 / -1" }}>
           <Typography.Text strong>Antecedentes Personales y Familiares</Typography.Text>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(200px, 100%), 1fr))", gap: 12, marginTop: 12 }}>
-            {antecedentesFields.map((field) => (
-              <div key={field}>
-                <label style={labelStyle}>{field}</label>
+            {antecedentesFields.map(({ key, label }) => (
+              <div key={key}>
+                <label style={labelStyle}>{label}</label>
                 <Input
-                  value={antecedentes[field]}
-                  onChange={(e) => setAntecedentes((prev) => ({ ...prev, [field]: e.target.value }))}
-                  placeholder={`Ingrese ${field.toLowerCase()}`}
+                  value={antecedentes[key]}
+                  onChange={(e) => onAntecedentesChange({ ...antecedentes, [key]: e.target.value })}
+                  placeholder={`Ingrese ${label.toLowerCase()}`}
                 />
               </div>
             ))}

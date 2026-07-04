@@ -5,14 +5,30 @@ import { BackendMenu } from "@/types/typeModules";
 import {
   faArrowsTurnRight,
   faBoxesStacked,
+  faCalculator,
   faCapsules,
   faCashRegister,
+  faChartBar,
+  faChartPie,
+  faClipboardList,
+  faDoorClosed,
+  faDoorOpen,
   faFileContract,
+  faFileInvoice,
+  faFileInvoiceDollar,
+  faFileMedical,
+  faFlag,
   faHandHoldingMedical,
+  faHeartPulse,
   faHome,
   faHospital,
+  faHospitalUser,
   faInbox,
   faClipboardUser,
+  faKitMedical,
+  faMoneyBillWave,
+  faNotesMedical,
+  faPaperclip,
   faScrewdriverWrench,
   faShieldHeart,
   faStethoscope,
@@ -20,6 +36,7 @@ import {
   faTags,
   faTruckMedical,
   faUserDoctor,
+  faUserInjured,
   faUsersGear,
   faVials,
   faWallet,
@@ -58,6 +75,23 @@ export default function SidebarNav({ id }: SidebarNavProps) {
     faWarehouse: faWarehouse,
     faScrewdriverWrench: faScrewdriverWrench,
     faWallet: faWallet,
+    faClipboardList: faClipboardList,
+    faDoorOpen: faDoorOpen,
+    faUserInjured: faUserInjured,
+    faHeartPulse: faHeartPulse,
+    faHospitalUser: faHospitalUser,
+    faFileMedical: faFileMedical,
+    faNotesMedical: faNotesMedical,
+    faKitMedical: faKitMedical,
+    faDoorClosed: faDoorClosed,
+    faFileInvoice: faFileInvoice,
+    faPaperclip: faPaperclip,
+    faFileInvoiceDollar: faFileInvoiceDollar,
+    faChartBar: faChartBar,
+    faChartPie: faChartPie,
+    faMoneyBillWave: faMoneyBillWave,
+    faFlag: faFlag,
+    faCalculator: faCalculator,
   };
 
   const getIcon = (icon?: string): IconDefinition | undefined =>
@@ -89,7 +123,11 @@ export default function SidebarNav({ id }: SidebarNavProps) {
               {menu.subMenus
                 .sort((a, b) => a.sortOrder - b.sortOrder)
                 .map((sub) => (
-                  <SidebarNavItem key={sub.id} href={normalizeRoute(sub.route)}>
+                  <SidebarNavItem
+                    key={sub.id}
+                    href={normalizeRoute(sub.route)}
+                    icon={getIcon(sub.icon)}
+                  >
                     {sub.name}
                   </SidebarNavItem>
                 ))}

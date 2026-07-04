@@ -4,9 +4,11 @@ import { SaveOutlined, SolutionOutlined } from "@ant-design/icons"
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useState } from "react"
+import { useCreateEvolucionEspecialista } from "@/core/hooks/care/evolucionEspecialista/useCreateEvolucionEspecialista"
 import { labelStyle } from "../constants"
 
 interface Props {
+  admissionId?: string | number
   currentDoctor: string
   patientName: string
   messageApi: MessageInstance
@@ -14,19 +16,33 @@ interface Props {
 
 const { TextArea } = Input
 
-export const SpecialistEvolutionSection = ({ currentDoctor, patientName, messageApi }: Props) => {
+export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patientName, messageApi }: Props) => {
   const [consulta, setConsulta] = useState("")
   const [plan, setPlan] = useState("")
+
+  const createEvolucionEspecialista = useCreateEvolucionEspecialista()
 
   const reset = () => {
     setConsulta("")
     setPlan("")
   }
 
-  const validateAndSave = () => {
+  const validateAndSave = async () => {
     if (!consulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
     if (!plan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
-    messageApi.success(`Evolución de especialista guardada para ${patientName}.`)
+    if (!admissionId) { messageApi.error("No se encontró la admisión asociada a esta evolución."); return }
+
+    try {
+      await createEvolucionEspecialista.mutateAsync({
+        admissionId: Number(admissionId),
+        motivoConsulta: consulta.trim(),
+        plan: plan.trim(),
+      })
+      messageApi.success(`Evolución de especialista guardada para ${patientName}.`)
+      reset()
+    } catch (err) {
+      messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la evolución de especialista.")
+    }
   }
 
   return (
@@ -75,7 +91,7 @@ export const SpecialistEvolutionSection = ({ currentDoctor, patientName, message
 
       <div className="clinical-history-footer-actions">
         <Button onClick={reset}>Limpiar formulario</Button>
-        <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSave}>
+        <Button type="primary" icon={<SaveOutlined />} loading={createEvolucionEspecialista.isPending} onClick={validateAndSave}>
           Guardar evolución de especialista
         </Button>
       </div>

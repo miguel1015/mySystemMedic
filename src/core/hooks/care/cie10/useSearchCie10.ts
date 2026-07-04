@@ -1,11 +1,9 @@
 import { getAll } from "@/core/api/baseService"
 import { ENDPOINTS } from "@/core/api/endpoints"
+import type { Cie10CodeResponse } from "@/core/interfaces/care/hciInicial"
 import { useQuery } from "@tanstack/react-query"
 
-export interface Cie10Item {
-  cod4: string
-  descripcionCodigoCuatroCaracteres: string
-}
+export type Cie10Item = Cie10CodeResponse
 
 export const cie10Services = {
   search: (search: string) =>

@@ -2,6 +2,7 @@ export interface BackendSubMenu {
   id: number;
   name: string;
   route: string;
+  icon?: string;
   sortOrder: number;
 }
 

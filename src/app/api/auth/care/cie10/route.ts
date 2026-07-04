@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const search = searchParams.get("search") ?? ""
 
     const backendUrl = search
-      ? `${process.env.NEXT_PUBLIC_API_URL}/api/cie10codes?search=${encodeURIComponent(search)}`
+      ? `${process.env.NEXT_PUBLIC_API_URL}/api/cie10codes/buscar?q=${encodeURIComponent(search)}`
       : `${process.env.NEXT_PUBLIC_API_URL}/api/cie10codes`
 
     const res = await fetch(backendUrl, {
