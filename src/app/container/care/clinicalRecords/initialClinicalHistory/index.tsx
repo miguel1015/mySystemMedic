@@ -1,9 +1,11 @@
-"use client"
+"use client";
 
-import { Container } from "@/components/container"
-import { useMe } from "@/core/hooks/users/useMeUser"
-import { useGetUsers } from "@/core/hooks/users/useGetUsers"
-import { GetUser } from "@/core/interfaces/user/users"
+import { Container } from "@/components/container";
+import { useMe } from "@/core/hooks/users/useMeUser";
+import { useGetUsers } from "@/core/hooks/users/useGetUsers";
+import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission";
+import { useUpdateHCInicial } from "@/core/hooks/care/hciInicial/useSaveHCInicial";
+import { GetUser } from "@/core/interfaces/user/users";
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -14,120 +16,195 @@ import {
   RightOutlined,
   SearchOutlined,
   UserOutlined,
-} from "@ant-design/icons"
-import {
-  Button,
-  Input,
-  Select,
-  Tag,
-  Typography,
-  message,
-} from "antd"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
-import { DischargeNoteContent } from "../dischargeNote/DischargeNoteContent"
-import { sidebarRecords } from "./constants"
-import { DiagnosticProceduresSection } from "./sections/DiagnosticProceduresSection"
-import { EvolutionSection } from "./sections/EvolutionSection"
-import { HciSection } from "./sections/HciSection"
-import { MedicalNotesSection } from "./sections/MedicalNotesSection"
-import { MinorProceduresSection } from "./sections/MinorProceduresSection"
-import { NonSurgicalSection } from "./sections/NonSurgicalSection"
-import { NursingNoteSection } from "./sections/NursingNoteSection"
-import { SpecialistEvolutionSection } from "./sections/SpecialistEvolutionSection"
-import { SurgicalDescriptionSection } from "./sections/SurgicalDescriptionSection"
-import type { DiagnosisRow } from "./types"
-import "./initialClinicalHistory.css"
+} from "@ant-design/icons";
+import { Button, Input, Modal, Select, Tag, Typography, message } from "antd";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { DischargeNoteContent } from "../dischargeNote/DischargeNoteContent";
+import { sidebarRecords } from "./constants";
+import { DiagnosticProceduresSection } from "./sections/DiagnosticProceduresSection";
+import { EvolutionSection } from "./sections/EvolutionSection";
+import { HciSection } from "./sections/HciSection";
+import { MedicalNotesSection } from "./sections/MedicalNotesSection";
+import { MinorProceduresSection } from "./sections/MinorProceduresSection";
+import { NonSurgicalSection } from "./sections/NonSurgicalSection";
+import { NursingNoteSection } from "./sections/NursingNoteSection";
+import { SpecialistEvolutionSection } from "./sections/SpecialistEvolutionSection";
+import { SurgicalDescriptionSection } from "./sections/SurgicalDescriptionSection";
+import type { DiagnosisRow } from "./types";
+import "./initialClinicalHistory.css";
 
 const buildFullName = (user?: GetUser) => {
-  if (!user) return ""
-  return `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.username || user.email
-}
-
-const formatDate = (value: string | null) => {
-  if (!value) return "03/03/2026 20:47"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString("es-CO", {
-    year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit",
-  })
-}
+  if (!user) return "";
+  return (
+    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
+    user.username ||
+    user.email
+  );
+};
 
 const calculateAge = (birthDate: string) => {
-  const birth = new Date(birthDate)
-  if (Number.isNaN(birth.getTime())) return "21 años"
-  const today = new Date()
-  let age = today.getFullYear() - birth.getFullYear()
-  const monthDiff = today.getMonth() - birth.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age -= 1
-  return `${age} años`
-}
+  const birth = new Date(birthDate);
+  if (Number.isNaN(birth.getTime())) return "21 años";
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate()))
+    age -= 1;
+  return `${age} años`;
+};
 
 const clickableSidebarKeys = new Set([
-  "hci", "quirurgica", "evoluciones", "egreso",
-  "enfermeria", "menores", "medicas", "diagnosticos",
-  "noquirurgicos", "especialista",
-])
+  "hci",
+  "quirurgica",
+  "evoluciones",
+  "egreso",
+  "enfermeria",
+  "menores",
+  "medicas",
+  "diagnosticos",
+  "noquirurgicos",
+  "especialista",
+]);
 
 const InitialClinicalHistoryContainer = () => {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [messageApi, contextHolder] = message.useMessage()
-  const { data: me } = useMe()
-  const { data: users = [] } = useGetUsers()
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [messageApi, contextHolder] = message.useMessage();
+  const { data: me } = useMe();
+  const { data: users = [] } = useGetUsers();
 
-  const admissionId = searchParams.get("admissionId") || undefined
+  const admissionId = searchParams.get("admissionId") || undefined;
+  const patientId = searchParams.get("patientId") || undefined;
+
+  const { data: existingHCInicial } = useGetHCInicialByAdmission(admissionId);
+  const updateHCInicial = useUpdateHCInicial();
+  const isHciClosed = existingHCInicial?.isClosed === true;
+
+  const [admissionDate, setAdmissionDate] = useState(
+    () => new Date().toISOString().slice(0, 10),
+  );
+  const [admissionDateHydrated, setAdmissionDateHydrated] = useState(false);
+
+  useEffect(() => {
+    if (!existingHCInicial) return;
+    if (existingHCInicial.isClosed) {
+      setAdmissionDate("");
+      return;
+    }
+    if (!admissionDateHydrated) {
+      setAdmissionDate(existingHCInicial.admissionDate?.slice(0, 10) || "");
+      setAdmissionDateHydrated(true);
+    }
+  }, [existingHCInicial, admissionDateHydrated]);
 
   const patient = {
     name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
     documentNumber: searchParams.get("documentNumber") || "1102796382",
     careScope: searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(searchParams.get("admissionDate")),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
-    clinicalRecord: searchParams.get("clinicalRecord") || `HC-${searchParams.get("patientId") || "1024"}`,
+    clinicalRecord:
+      searchParams.get("clinicalRecord") ||
+      `HC-${searchParams.get("patientId") || "1024"}`,
     room: searchParams.get("room") || "Observacion 4",
     insurer: searchParams.get("insurer") || "EPS Sanitas",
-  }
+  };
 
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+  const currentDoctor = me?.name || "Dr. Martin Martinez Perez";
 
   const canAssignDoctor = useMemo(() => {
-    const role = (me?.role || "").toLowerCase()
-    return ["admin", "administrador", "coordinador", "jefe"].some((word) => role.includes(word))
-  }, [me?.role])
+    const role = (me?.role || "").toLowerCase();
+    return ["admin", "administrador", "coordinador", "jefe"].some((word) =>
+      role.includes(word),
+    );
+  }, [me?.role]);
 
   const doctorOptions = useMemo(() => {
     const mapped = users.map((user) => ({
       value: user.id,
       label: buildFullName(user),
       role: user.userRoleName,
-    }))
-    if (mapped.length) return mapped
-    return [{ value: me?.id || 0, label: currentDoctor, role: me?.role || "Medico" }]
-  }, [currentDoctor, me?.id, me?.role, users])
+    }));
+    if (mapped.length) return mapped;
+    return [
+      { value: me?.id || 0, label: currentDoctor, role: me?.role || "Medico" },
+    ];
+  }, [currentDoctor, me?.id, me?.role, users]);
 
-  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(doctorOptions[0]?.value)
-  const [diagnoses, setDiagnoses] = useState<DiagnosisRow[]>([])
-  const [activeSidebarKey, setActiveSidebarKey] = useState("hci")
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(
+    doctorOptions[0]?.value,
+  );
+  const [diagnoses, setDiagnoses] = useState<DiagnosisRow[]>([]);
+  const [activeSidebarKey, setActiveSidebarKey] = useState("hci");
 
   useEffect(() => {
-    if (!doctorOptions.length) return
-    if (selectedDoctorId === undefined || !doctorOptions.some((d) => d.value === selectedDoctorId)) {
-      setSelectedDoctorId(doctorOptions[0].value)
+    if (!doctorOptions.length) return;
+    if (
+      selectedDoctorId === undefined ||
+      !doctorOptions.some((d) => d.value === selectedDoctorId)
+    ) {
+      setSelectedDoctorId(doctorOptions[0].value);
     }
-  }, [doctorOptions, selectedDoctorId])
+  }, [doctorOptions, selectedDoctorId]);
 
-  const selectedDoctor = doctorOptions.find((d) => d.value === selectedDoctorId)?.label || currentDoctor
-  const mainDiagnosis = useMemo(() => diagnoses.find((d) => d.main && d.code), [diagnoses])
+  const selectedDoctor =
+    doctorOptions.find((d) => d.value === selectedDoctorId)?.label ||
+    currentDoctor;
+  const mainDiagnosis = useMemo(
+    () => diagnoses.find((d) => d.main && d.code),
+    [diagnoses],
+  );
+
+  const handleClausurarHistoria = () => {
+    if (!existingHCInicial) {
+      messageApi.info(
+        "Aún no se ha registrado la historia clínica inicial de esta admisión.",
+      );
+      return;
+    }
+
+    Modal.confirm({
+      title: "Clausurar historia clínica inicial",
+      content:
+        "Esta acción limpiará el formulario de la historia clínica inicial de esta admisión y no podrá volver a guardar cambios en ella. Los datos ya guardados permanecen disponibles en el histórico. ¿Desea continuar?",
+      okText: "Clausurar",
+      okButtonProps: { danger: true },
+      cancelText: "Cancelar",
+      onOk: async () => {
+        try {
+          await updateHCInicial.mutateAsync({
+            id: existingHCInicial.id,
+            data: {
+              admissionDate: existingHCInicial.admissionDate,
+              idSubjetivoHCInicial: existingHCInicial.idSubjetivoHCInicial,
+              idObjetivoHCInicial: existingHCInicial.idObjetivoHCInicial,
+              idSignosVitalesHCInicial:
+                existingHCInicial.idSignosVitalesHCInicial,
+              idAnalisisDiagnosticosPlanHCInicial:
+                existingHCInicial.idAnalisisDiagnosticosPlanHCInicial,
+              isActive: true,
+              isClosed: true,
+            },
+          });
+          setAdmissionDate("");
+          messageApi.success("Historia clínica inicial clausurada.");
+        } catch (err) {
+          messageApi.error(
+            err instanceof Error
+              ? err.message
+              : "No se pudo clausurar la historia clínica inicial.",
+          );
+        }
+      },
+    });
+  };
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
       {contextHolder}
       <div className="clinical-history-page">
-
         {/* ════ HEADER ════ */}
         <div
           className="clinical-history-header"
@@ -145,10 +222,18 @@ const InitialClinicalHistoryContainer = () => {
           <div className="clinical-history-header-top">
             <div className="clinical-history-patient">
               <div className="patient-avatar">
-                {patient.name.split(" ").slice(0, 2).map((p) => p[0]).join("")}
+                {patient.name
+                  .split(" ")
+                  .slice(0, 2)
+                  .map((p) => p[0])
+                  .join("")}
               </div>
               <div style={{ minWidth: 0 }}>
-                <Typography.Title level={4} style={{ margin: 0 }} className="clinical-history-patient-title">
+                <Typography.Title
+                  level={4}
+                  style={{ margin: 0 }}
+                  className="clinical-history-patient-title"
+                >
                   {patient.name}
                 </Typography.Title>
                 <div className="patient-meta">
@@ -169,15 +254,36 @@ const InitialClinicalHistoryContainer = () => {
             <div className="clinical-history-actions">
               <Button icon={<EyeOutlined />}>Vista previa</Button>
               <Button icon={<PrinterOutlined />}>Imprimir</Button>
-              <Button danger icon={<FileDoneOutlined />}>Cerrar Historia</Button>
-              <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>Volver</Button>
+              <Button
+                danger
+                icon={<FileDoneOutlined />}
+                disabled={isHciClosed || !existingHCInicial}
+                onClick={handleClausurarHistoria}
+              >
+                {isHciClosed ? "Historia Clausurada" : "Clausurar Historia"}
+              </Button>
+              <Button
+                icon={<ArrowLeftOutlined />}
+                onClick={() => router.back()}
+              >
+                Volver
+              </Button>
             </div>
           </div>
 
           <div className="clinical-history-summary">
             <div className="summary-cell">
-              <div className="summary-cell-label">Fecha de ingreso</div>
-              <div className="summary-cell-value">{patient.admissionDate}</div>
+              <div className="summary-cell-label">Fecha de atención</div>
+              <div className="summary-cell-value">
+                <Input
+                  type="date"
+                  size="small"
+                  value={admissionDate}
+                  onChange={(e) => setAdmissionDate(e.target.value)}
+                  disabled={isHciClosed}
+                  style={{ marginTop: 2 }}
+                />
+              </div>
             </div>
             <div className="summary-cell">
               <div className="summary-cell-label">Servicio</div>
@@ -188,9 +294,12 @@ const InitialClinicalHistoryContainer = () => {
               <div className="summary-cell-value">
                 {canAssignDoctor ? (
                   <Select
-                    showSearch value={selectedDoctorId} options={doctorOptions}
+                    showSearch
+                    value={selectedDoctorId}
+                    options={doctorOptions}
                     onChange={setSelectedDoctorId}
-                    style={{ width: "100%", marginTop: 2 }} size="small"
+                    style={{ width: "100%", marginTop: 2 }}
+                    size="small"
                   />
                 ) : (
                   selectedDoctor
@@ -205,14 +314,23 @@ const InitialClinicalHistoryContainer = () => {
                     {mainDiagnosis.code} – {mainDiagnosis.diagnosis}
                   </Tag>
                 ) : (
-                  <span style={{ color: "var(--dash-text-tertiary, #93a39d)", fontSize: 12 }}>Sin diagnóstico</span>
+                  <span
+                    style={{
+                      color: "var(--dash-text-tertiary, #93a39d)",
+                      fontSize: 12,
+                    }}
+                  >
+                    Sin diagnóstico
+                  </span>
                 )}
               </div>
             </div>
             <div className="summary-cell">
               <div className="summary-cell-label">Estado</div>
               <div className="summary-cell-value">
-                <Tag color="green" style={{ margin: 0 }}>Hospitalizado</Tag>
+                <Tag color="green" style={{ margin: 0 }}>
+                  Hospitalizado
+                </Tag>
               </div>
             </div>
           </div>
@@ -220,17 +338,22 @@ const InitialClinicalHistoryContainer = () => {
 
         {/* ════ WORKSPACE ════ */}
         <div className="evolution-workspace">
-
           {/* ── LEFT SIDEBAR ── */}
           <aside className="clinical-sidebar">
             <div className="clinical-sidebar-header">
-              <FileTextOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 14 }} />
+              <FileTextOutlined
+                style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 14 }}
+              />
               Historia clínica
             </div>
 
             <div className="clinical-sidebar-search">
               <Input
-                prefix={<SearchOutlined style={{ color: "var(--dash-text-tertiary, #93a39d)" }} />}
+                prefix={
+                  <SearchOutlined
+                    style={{ color: "var(--dash-text-tertiary, #93a39d)" }}
+                  />
+                }
                 placeholder="Buscar en la historia clínica..."
                 allowClear
                 size="small"
@@ -243,7 +366,10 @@ const InitialClinicalHistoryContainer = () => {
                   key={record.key}
                   type="button"
                   className={`sidebar-record-item${activeSidebarKey === record.key ? " active" : ""}${!clickableSidebarKeys.has(record.key) ? " sidebar-record-disabled" : ""}`}
-                  onClick={() => { if (clickableSidebarKeys.has(record.key)) setActiveSidebarKey(record.key) }}
+                  onClick={() => {
+                    if (clickableSidebarKeys.has(record.key))
+                      setActiveSidebarKey(record.key);
+                  }}
                 >
                   <div className="sidebar-record-icon">
                     <FileTextOutlined />
@@ -255,7 +381,10 @@ const InitialClinicalHistoryContainer = () => {
                     )}
                   </div>
                   {record.count > 0 && (
-                    <Tag color="blue" style={{ margin: 0, flexShrink: 0, fontSize: 10 }}>
+                    <Tag
+                      color="blue"
+                      style={{ margin: 0, flexShrink: 0, fontSize: 10 }}
+                    >
                       {record.count}
                     </Tag>
                   )}
@@ -270,10 +399,12 @@ const InitialClinicalHistoryContainer = () => {
             {activeSidebarKey === "hci" && (
               <HciSection
                 admissionId={admissionId}
+                patientId={patientId}
                 diagnoses={diagnoses}
                 onDiagnosesChange={setDiagnoses}
                 patientName={patient.name}
                 messageApi={messageApi}
+                admissionDate={admissionDate}
               />
             )}
 
@@ -350,7 +481,7 @@ const InitialClinicalHistoryContainer = () => {
         </div>
       </div>
     </Container>
-  )
-}
+  );
+};
 
-export default InitialClinicalHistoryContainer
+export default InitialClinicalHistoryContainer;

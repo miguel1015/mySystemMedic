@@ -3,7 +3,7 @@
 import { SaveOutlined } from "@ant-design/icons"
 import { Button } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useCreateAnalisisDiagnosticosPlanHCInicial, useUpdateAnalisisDiagnosticosPlanHCInicial } from "@/core/hooks/care/hciInicial/useSaveAnalisisDiagnosticosPlan"
 import { useCreateHCInicial, useUpdateHCInicial } from "@/core/hooks/care/hciInicial/useSaveHCInicial"
 import { useCreateObjetivoHCInicial, useUpdateObjetivoHCInicial } from "@/core/hooks/care/hciInicial/useSaveObjetivo"
@@ -12,7 +12,7 @@ import { useCreateSubjetivoHCInicial, useUpdateSubjetivoHCInicial } from "@/core
 import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission"
 import ClinicalRecordHistoryModal from "@/components/clinicalRecordHistoryModal"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
-import { defaultAntecedentes, defaultPhysicalExam, clinicalTabs } from "../constants"
+import { antecedentesFields, defaultAntecedentes, defaultPhysicalExam, clinicalTabs, physicalExamFields } from "../constants"
 import type {
   AntecedentesState,
   DiagnosisRow,
@@ -28,10 +28,12 @@ import { SubjectiveTab } from "./hci/SubjectiveTab"
 
 interface Props {
   admissionId?: string | number
+  patientId?: string | number
   diagnoses: DiagnosisRow[]
   onDiagnosesChange: (diagnoses: DiagnosisRow[]) => void
   patientName: string
   messageApi: MessageInstance
+  admissionDate: string
 }
 
 const defaultVitals: VitalsState = {
@@ -52,7 +54,7 @@ interface HubIds {
   idAnalisisDiagnosticosPlanHCInicial: number | null
 }
 
-export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientName, messageApi }: Props) => {
+export const HciSection = ({ admissionId, patientId, diagnoses, onDiagnosesChange, patientName, messageApi, admissionDate }: Props) => {
   const [activeSection, setActiveSection] = useState("subjective")
   const [vitals, setVitals] = useState<VitalsState>(defaultVitals)
   const [subjective, setSubjective] = useState<SubjectiveState>(defaultSubjective)
@@ -68,6 +70,7 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
   const [analisisId, setAnalisisId] = useState<number | null>(null)
   const [hydrated, setHydrated] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const wasClosedRef = useRef(false)
 
   const [savingSubjetivo, setSavingSubjetivo] = useState(false)
   const [savingObjetivo, setSavingObjetivo] = useState(false)
@@ -87,6 +90,22 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
   const createHCInicial = useCreateHCInicial()
   const updateHCInicial = useUpdateHCInicial()
 
+  const isClosed = existingHCInicial?.isClosed === true
+
+  useEffect(() => {
+    if (isClosed && !wasClosedRef.current) {
+      setSubjective(defaultSubjective)
+      setPhysicalExam(defaultPhysicalExam)
+      setAntecedentes(defaultAntecedentes)
+      setVitals(defaultVitals)
+      setAnalysis("")
+      setPlan("")
+      onDiagnosesChange([])
+    }
+    wasClosedRef.current = isClosed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClosed])
+
   useEffect(() => {
     if (!existingHCInicial || hydrated) return
 
@@ -95,6 +114,11 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
     setObjetivoId(existingHCInicial.idObjetivoHCInicial)
     setSignosVitalesId(existingHCInicial.idSignosVitalesHCInicial)
     setAnalisisId(existingHCInicial.idAnalisisDiagnosticosPlanHCInicial)
+
+    if (existingHCInicial.isClosed === true) {
+      setHydrated(true)
+      return
+    }
 
     if (existingHCInicial.subjetivo) {
       setSubjective({
@@ -162,14 +186,18 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
 
   const linkToHub = async (patch: HubIds) => {
     if (!admissionId) return
+    if (!admissionDate) {
+      messageApi.error("La fecha de atención es obligatoria.")
+      return
+    }
 
     if (hcInicialId) {
-      await updateHCInicial.mutateAsync({ id: hcInicialId, data: { ...patch, isActive: true } })
+      await updateHCInicial.mutateAsync({ id: hcInicialId, data: { ...patch, admissionDate, isActive: true, isClosed: false } })
       return
     }
 
     try {
-      const created = await createHCInicial.mutateAsync({ admissionId: Number(admissionId), ...patch })
+      const created = await createHCInicial.mutateAsync({ admissionId: Number(admissionId), admissionDate, ...patch })
       setHcInicialId(created.id)
     } catch (err) {
       const message = err instanceof Error ? err.message : ""
@@ -177,7 +205,7 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
         const { data: refreshed } = await refetchHCInicial()
         if (refreshed) {
           setHcInicialId(refreshed.id)
-          await updateHCInicial.mutateAsync({ id: refreshed.id, data: { ...patch, isActive: true } })
+          await updateHCInicial.mutateAsync({ id: refreshed.id, data: { ...patch, admissionDate, isActive: true, isClosed: false } })
         }
       } else {
         throw err
@@ -186,6 +214,10 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
   }
 
   const saveSubjetivo = async () => {
+    if (isClosed) {
+      messageApi.error("Esta historia clínica ya fue clausurada y no admite más cambios.")
+      return
+    }
     if (!subjective.motivoConsulta.trim() || !subjective.enfermedadActual.trim()) {
       messageApi.error("El motivo de consulta y la enfermedad actual son obligatorios.")
       return
@@ -216,6 +248,16 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
   }
 
   const saveObjetivo = async () => {
+    if (isClosed) {
+      messageApi.error("Esta historia clínica ya fue clausurada y no admite más cambios.")
+      return
+    }
+    const missingPhysicalExam = physicalExamFields.some(({ key }) => !physicalExam[key]?.trim())
+    const missingAntecedentes = antecedentesFields.some(({ key }) => !antecedentes[key]?.trim())
+    if (missingPhysicalExam || missingAntecedentes) {
+      messageApi.error("Todos los campos del examen físico y los antecedentes son obligatorios.")
+      return
+    }
     if (!admissionId) {
       messageApi.error("No se encontró la admisión asociada a esta historia clínica.")
       return
@@ -243,6 +285,23 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
   }
 
   const saveSignosVitales = async () => {
+    if (isClosed) {
+      messageApi.error("Esta historia clínica ya fue clausurada y no admite más cambios.")
+      return
+    }
+    const vitalsMissing =
+      !vitals.ta.trim() ||
+      !vitals.fc ||
+      !vitals.fr ||
+      !vitals.temperature ||
+      !vitals.saturation ||
+      !vitals.glasgow ||
+      !vitals.weight ||
+      !vitals.height
+    if (vitalsMissing) {
+      messageApi.error("Todos los signos vitales son obligatorios.")
+      return
+    }
     if (!admissionId) {
       messageApi.error("No se encontró la admisión asociada a esta historia clínica.")
       return
@@ -279,6 +338,12 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
   }
 
   const saveAnalisisDiagnosticosPlan = async () => {
+    if (isClosed) {
+      messageApi.error("Esta historia clínica ya fue clausurada y no admite más cambios.")
+      return
+    }
+    if (!analysis.trim()) { messageApi.error("El análisis es obligatorio."); return }
+    if (!plan.trim()) { messageApi.error("El plan es obligatorio."); return }
     const hasMain = diagnoses.some((item) => item.main && item.cie10Id)
     const hasIncomplete = diagnoses.some((item) => !item.cie10Id || !item.diagnosis)
     if (!hasMain) { messageApi.error("Debe registrar un diagnóstico principal."); return }
@@ -329,7 +394,12 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
       </nav>
 
       <div className="evolution-tab-content">
-        {activeSection === "subjective" && <SubjectiveTab value={subjective} onChange={setSubjective} />}
+        {isClosed && (
+          <div className="clinical-history-closed-banner">
+            Esta historia clínica inicial fue clausurada para esta admisión y ya no admite cambios.
+          </div>
+        )}
+        {activeSection === "subjective" && <SubjectiveTab value={subjective} onChange={setSubjective} disabled={isClosed} />}
         {activeSection === "objective" && (
           <ObjectiveTab
             vitals={vitals}
@@ -338,32 +408,33 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
             onPhysicalExamChange={setPhysicalExam}
             antecedentes={antecedentes}
             onAntecedentesChange={setAntecedentes}
+            disabled={isClosed}
           />
         )}
-        {activeSection === "analysis" && <AnalysisTab value={analysis} onChange={setAnalysis} />}
+        {activeSection === "analysis" && <AnalysisTab value={analysis} onChange={setAnalysis} disabled={isClosed} />}
         {activeSection === "diagnoses" && (
-          <DiagnosesTab diagnoses={diagnoses} onDiagnosesChange={onDiagnosesChange} />
+          <DiagnosesTab diagnoses={diagnoses} onDiagnosesChange={onDiagnosesChange} disabled={isClosed} />
         )}
-        {activeSection === "plan" && <PlanTab value={plan} onChange={setPlan} />}
+        {activeSection === "plan" && <PlanTab value={plan} onChange={setPlan} disabled={isClosed} />}
 
         <div className="clinical-history-footer-actions">
           {activeSection === "subjective" && (
-            <Button type="primary" icon={<SaveOutlined />} loading={savingSubjetivo} onClick={saveSubjetivo}>
+            <Button type="primary" icon={<SaveOutlined />} loading={savingSubjetivo} disabled={isClosed} onClick={saveSubjetivo}>
               Guardar subjetivo
             </Button>
           )}
           {activeSection === "objective" && (
             <>
-              <Button icon={<SaveOutlined />} loading={savingSignosVitales} onClick={saveSignosVitales}>
+              <Button icon={<SaveOutlined />} loading={savingSignosVitales} disabled={isClosed} onClick={saveSignosVitales}>
                 Guardar signos vitales
               </Button>
-              <Button type="primary" icon={<SaveOutlined />} loading={savingObjetivo} onClick={saveObjetivo}>
+              <Button type="primary" icon={<SaveOutlined />} loading={savingObjetivo} disabled={isClosed} onClick={saveObjetivo}>
                 Guardar objetivo
               </Button>
             </>
           )}
           {(activeSection === "analysis" || activeSection === "diagnoses" || activeSection === "plan") && (
-            <Button type="primary" icon={<SaveOutlined />} loading={savingAnalisis} onClick={saveAnalisisDiagnosticosPlan}>
+            <Button type="primary" icon={<SaveOutlined />} loading={savingAnalisis} disabled={isClosed} onClick={saveAnalisisDiagnosticosPlan}>
               Guardar análisis, diagnósticos y plan
             </Button>
           )}
@@ -379,6 +450,7 @@ export const HciSection = ({ admissionId, diagnoses, onDiagnosesChange, patientN
         onClose={() => setHistoryOpen(false)}
         moduleType="initial-clinical-history"
         admissionId={admissionId}
+        patientId={patientId}
       />
     </>
   )

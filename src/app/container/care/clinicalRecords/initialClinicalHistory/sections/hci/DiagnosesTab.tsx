@@ -1,82 +1,72 @@
 "use client";
 
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import {
-  AutoComplete,
-  Button,
-  Checkbox,
-  Spin,
-  Table,
-  Tooltip,
-  Typography,
-} from "antd";
+import { Button, Checkbox, Input, Table, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useSearchCie10 } from "@/core/hooks/care/cie10/useSearchCie10";
-import { useRef, useState } from "react";
+import { cie10Services } from "@/core/hooks/care/cie10/useSearchCie10";
+import { useState } from "react";
 import type { DiagnosisRow } from "../../types";
 
 interface Cie10SelectProps {
   code: string;
   onSelect: (cie10Id: number, codigo: string, descripcion: string) => void;
   onCodeChange: (codigo: string) => void;
+  disabled?: boolean;
 }
 
-const Cie10AutoComplete = ({ code, onSelect, onCodeChange }: Cie10SelectProps) => {
-  const [search, setSearch] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const Cie10CodeSearch = ({ code, onSelect, onCodeChange, disabled }: Cie10SelectProps) => {
+  const [loading, setLoading] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
-  const { data, isFetching } = useSearchCie10(search);
-
-  const handleSearch = (query: string) => {
-    onCodeChange(query);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setSearch(query.trim());
-    }, 400);
+  const handleChange = (value: string) => {
+    setNotFound(false);
+    onCodeChange(value);
   };
 
-  const options = (data ?? []).map((item) => ({
-    value: item.codigo,
-    label: `${item.codigo} — ${item.descripcion}`,
-    item,
-  }));
-
-  const notFound = !isFetching && search.length >= 2 && (!data || data.length === 0);
-
-  const handleSelect = (_value: string, option: (typeof options)[number]) => {
-    onSelect(option.item.id, option.item.codigo, option.item.descripcion);
+  const handleSearch = async () => {
+    const query = code.trim();
+    if (!query) return;
+    setLoading(true);
+    setNotFound(false);
+    try {
+      const results = await cie10Services.search(query);
+      const match = results.find((item) => item.codigo.toLowerCase() === query.toLowerCase());
+      if (match) {
+        onSelect(match.id, match.codigo, match.descripcion);
+      } else {
+        onCodeChange(query);
+        setNotFound(true);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <AutoComplete
-      value={code}
-      options={options}
-      onSearch={handleSearch}
-      onSelect={handleSelect}
-      onChange={onCodeChange}
-      placeholder="Escriba el código CIE-10"
-      style={{ width: "100%" }}
-      notFoundContent={
-        isFetching ? (
-          <div style={{ textAlign: "center", padding: "8px 0" }}>
-            <Spin size="small" />
-          </div>
-        ) : notFound ? (
-          <div style={{ textAlign: "center", padding: "8px 0", color: "#9ca3af", fontSize: 13 }}>
-            Sin resultados
-          </div>
-        ) : null
-      }
-    />
+    <div>
+      <Input.Search
+        value={code}
+        onChange={(e) => handleChange(e.target.value)}
+        onSearch={handleSearch}
+        enterButton
+        loading={loading}
+        placeholder="Código CIE-10"
+        disabled={disabled}
+      />
+      {notFound && (
+        <div style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>El código no existe</div>
+      )}
+    </div>
   );
 };
 
 interface Props {
   diagnoses: DiagnosisRow[];
   onDiagnosesChange: (diagnoses: DiagnosisRow[]) => void;
+  disabled?: boolean;
 }
 
-export const DiagnosesTab = ({ diagnoses, onDiagnosesChange }: Props) => {
+export const DiagnosesTab = ({ diagnoses, onDiagnosesChange, disabled }: Props) => {
   const update = (id: number, patch: Partial<DiagnosisRow>) => {
     onDiagnosesChange(
       diagnoses.map((item) => {
@@ -107,14 +97,15 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange }: Props) => {
     {
       title: "Código CIE-10",
       dataIndex: "code",
-      width: 320,
+      width: 200,
       render: (_v, record) => (
-        <Cie10AutoComplete
+        <Cie10CodeSearch
           code={record.code}
           onCodeChange={(codigo) => update(record.id, { code: codigo, diagnosis: "", cie10Id: null })}
           onSelect={(cie10Id, codigo, descripcion) =>
             update(record.id, { cie10Id, code: codigo, diagnosis: descripcion })
           }
+          disabled={disabled}
         />
       ),
     },
@@ -141,6 +132,7 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange }: Props) => {
         <Checkbox
           checked={record.main}
           onChange={(e) => update(record.id, { main: e.target.checked })}
+          disabled={disabled}
         />
       ),
     },
@@ -155,6 +147,7 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange }: Props) => {
             danger
             type="text"
             onClick={() => remove(record.id)}
+            disabled={disabled}
           />
         </Tooltip>
       ),
@@ -174,9 +167,9 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange }: Props) => {
         }}
       >
         <Typography.Title level={5} style={{ margin: 0 }}>
-          4. Diagnósticos (CIE-10)
+          4. Diagnósticos (CIE-10) <span className="field-required">*</span>
         </Typography.Title>
-        <Button type="primary" ghost icon={<PlusOutlined />} onClick={add}>
+        <Button type="primary" ghost icon={<PlusOutlined />} onClick={add} disabled={disabled}>
           Agregar diagnóstico
         </Button>
       </div>

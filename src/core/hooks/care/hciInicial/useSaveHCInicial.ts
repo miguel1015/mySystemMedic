@@ -1,4 +1,4 @@
-import { create, updatePut } from "@/core/api/baseService"
+import { create, remove, updatePut } from "@/core/api/baseService"
 import { ENDPOINTS } from "@/core/api/endpoints"
 import type {
   HCInicialCreateRequest,
@@ -18,6 +18,8 @@ export const hcInicialServices = {
       ENDPOINTS.HCINICIAL.UPDATE(id),
       data,
     ),
+  delete: (id: number) =>
+    remove<HCInicialResponse>(ENDPOINTS.HCINICIAL.DELETE(id)),
 }
 
 export function useCreateHCInicial() {
@@ -39,6 +41,19 @@ export function useUpdateHCInicial() {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: HCInicialUpdateRequest }) =>
       hcInicialServices.update(id, data),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["hci-inicial", "by-admission", data.admissionId],
+      })
+    },
+  })
+}
+
+export function useDeleteHCInicial() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => hcInicialServices.delete(id),
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: ["hci-inicial", "by-admission", data.admissionId],

@@ -2,7 +2,7 @@ import { ENDPOINTS } from "@/core/api/endpoints"
 import type { HCInicialResponse } from "@/core/interfaces/care/hciInicial"
 import { useQuery } from "@tanstack/react-query"
 
-async function fetchHCInicialByAdmission(
+export async function fetchHCInicialByAdmission(
   admissionId: number | string,
 ): Promise<HCInicialResponse | null> {
   const url = new URL(

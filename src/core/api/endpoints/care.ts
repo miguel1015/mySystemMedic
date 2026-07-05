@@ -46,6 +46,7 @@ export const CARE_ENDPOINTS = {
       `/api/auth/care/hci-inicial/by-admission/${admissionId}`,
     CREATE: "/api/auth/care/hci-inicial",
     UPDATE: (id: IdParam) => `/api/auth/care/hci-inicial/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/hci-inicial/${id}`,
   },
   SUBJETIVO_HCINICIAL: {
     CREATE: "/api/auth/care/subjetivo-hcinicial",

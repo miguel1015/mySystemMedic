@@ -12,6 +12,7 @@ interface Props {
   onPhysicalExamChange: (physicalExam: PhysicalExamState) => void
   antecedentes: AntecedentesState
   onAntecedentesChange: (antecedentes: AntecedentesState) => void
+  disabled?: boolean
 }
 
 const vitalsConfig: Array<{
@@ -39,6 +40,7 @@ export const ObjectiveTab = ({
   onPhysicalExamChange,
   antecedentes,
   onAntecedentesChange,
+  disabled,
 }: Props) => {
   const bmi = useMemo(() => {
     const h = vitals.height / 100
@@ -56,12 +58,13 @@ export const ObjectiveTab = ({
             {physicalExamFields.map(({ key, label }) => (
               <div className="physical-exam-row" key={key}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "var(--dash-text-secondary, #344054)" }}>
-                  {label}
+                  {label} <span className="field-required">*</span>
                 </span>
                 <Input
                   size="small"
                   value={physicalExam[key]}
                   onChange={(e) => onPhysicalExamChange({ ...physicalExam, [key]: e.target.value })}
+                  disabled={disabled}
                 />
               </div>
             ))}
@@ -73,11 +76,12 @@ export const ObjectiveTab = ({
           <div className="vital-signs-grid">
             {vitalsConfig.map(({ label, key, isString, min, max, step }) => (
               <div key={key}>
-                <label style={labelStyle}>{label}</label>
+                <label style={labelStyle}>{label} <span className="field-required">*</span></label>
                 {isString ? (
                   <Input
                     value={vitals[key] as string}
                     onChange={(e) => onVitalsChange({ ...vitals, [key]: e.target.value })}
+                    disabled={disabled}
                   />
                 ) : (
                   <InputNumber
@@ -87,6 +91,7 @@ export const ObjectiveTab = ({
                     max={max}
                     step={step ?? 1}
                     onChange={(v) => onVitalsChange({ ...vitals, [key]: Number(v) || 0 })}
+                    disabled={disabled}
                   />
                 )}
               </div>
@@ -103,11 +108,12 @@ export const ObjectiveTab = ({
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(200px, 100%), 1fr))", gap: 12, marginTop: 12 }}>
             {antecedentesFields.map(({ key, label }) => (
               <div key={key}>
-                <label style={labelStyle}>{label}</label>
+                <label style={labelStyle}>{label} <span className="field-required">*</span></label>
                 <Input
                   value={antecedentes[key]}
                   onChange={(e) => onAntecedentesChange({ ...antecedentes, [key]: e.target.value })}
                   placeholder={`Ingrese ${label.toLowerCase()}`}
+                  disabled={disabled}
                 />
               </div>
             ))}

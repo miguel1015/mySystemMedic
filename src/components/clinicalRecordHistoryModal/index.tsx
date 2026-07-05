@@ -14,7 +14,7 @@ import {
   type ClinicalRecordModuleType,
 } from "@/core/constants/clinicalRecordModules"
 import { useClinicalRecordHistory } from "@/core/hooks/care/records/useClinicalRecordHistory"
-import { HciInicialOverview } from "./HciInicialOverview"
+import { HciInicialHistoryList } from "./HciInicialHistoryList"
 import "./clinicalRecordHistoryModal.css"
 
 export interface ClinicalRecordHistoryModalProps {
@@ -22,6 +22,7 @@ export interface ClinicalRecordHistoryModalProps {
   onClose: () => void
   moduleType: ClinicalRecordModuleType
   admissionId?: string | number
+  patientId?: string | number
 }
 
 const formatDateTime = (iso: string) =>
@@ -51,6 +52,7 @@ const ClinicalRecordHistoryModal = ({
   onClose,
   moduleType,
   admissionId,
+  patientId,
 }: ClinicalRecordHistoryModalProps) => {
   const moduleInfo = useMemo(
     () => CLINICAL_RECORD_MODULES.find((module) => module.key === moduleType),
@@ -97,11 +99,11 @@ const ClinicalRecordHistoryModal = ({
         title={
           <span className="chrm-title">
             <span style={{ color: moduleInfo?.color }}>{moduleInfo?.icon}</span>
-            {moduleInfo?.label ?? "Historia clínica inicial"} · Resumen completo
+            {moduleInfo?.label ?? "Historia clínica inicial"} · Histórico del paciente
           </span>
         }
       >
-        <HciInicialOverview admissionId={admissionId} />
+        <HciInicialHistoryList patientId={patientId} admissionId={admissionId} />
       </Modal>
     )
   }
