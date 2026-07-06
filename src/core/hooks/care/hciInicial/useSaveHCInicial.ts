@@ -29,7 +29,7 @@ export function useCreateHCInicial() {
     mutationFn: hcInicialServices.create,
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["hci-inicial", "by-admission", data.admissionId],
+        queryKey: ["hci-inicial", "by-admission", String(data.admissionId)],
       })
     },
   })
@@ -43,7 +43,7 @@ export function useUpdateHCInicial() {
       hcInicialServices.update(id, data),
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["hci-inicial", "by-admission", data.admissionId],
+        queryKey: ["hci-inicial", "by-admission", String(data.admissionId)],
       })
     },
   })
@@ -53,10 +53,11 @@ export function useDeleteHCInicial() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => hcInicialServices.delete(id),
-    onSuccess: (data) => {
+    mutationFn: ({ id }: { id: number; admissionId: number | string }) =>
+      hcInicialServices.delete(id),
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["hci-inicial", "by-admission", data.admissionId],
+        queryKey: ["hci-inicial", "by-admission", String(variables.admissionId)],
       })
     },
   })

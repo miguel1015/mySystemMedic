@@ -152,6 +152,17 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
   const handleEvolutionOption = (
     option: (typeof clinicalEvolutionOptions)[number],
   ) => {
+    if (!patient) return
+
+    // La historia clínica inicial obtiene los datos del paciente desde el
+    // backend (useGetAdmissionById), así que no hace falta duplicarlos en la URL.
+    if (option.key === "initial-clinical-history") {
+      const params = new URLSearchParams({ admissionId: String(patient.id) })
+      router.push(`${option.path}?${params.toString()}`)
+      closeActionsModal()
+      return
+    }
+
     const params = buildPatientParams()
     if (!params) return
 

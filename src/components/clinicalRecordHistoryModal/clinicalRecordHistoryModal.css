@@ -201,6 +201,22 @@
   background: var(--dash-surface, #ffffff);
 }
 
+.chrm-body.is-editing {
+  grid-template-columns: 1fr;
+}
+
+.chrm-body.is-editing .chrm-list {
+  display: none;
+}
+
+.chrm-body.is-editing .chrm-detail {
+  max-height: none;
+}
+
+.chrm-hci-edit-date {
+  margin-bottom: 16px;
+}
+
 .chrm-detail-empty {
   height: 100%;
   display: flex;

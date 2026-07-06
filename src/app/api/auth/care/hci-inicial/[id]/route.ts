@@ -69,3 +69,18 @@ export async function PUT(req: Request, { params }: { params: Params }) {
     )
   }
 }
+
+export async function DELETE(_req: Request, { params }: { params: Params }) {
+  try {
+    const session = await getSession()
+    await apiFetch(`${BACKEND_ENDPOINT}/${params.id}`, session.user.accessToken!, {
+      method: "DELETE",
+    })
+    return NextResponse.json({ ok: true, message: "Deleted successfully" })
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e.message ?? "Server error" },
+      { status: e.status ?? 500 },
+    )
+  }
+}

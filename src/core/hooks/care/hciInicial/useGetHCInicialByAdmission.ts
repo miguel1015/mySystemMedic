@@ -19,7 +19,7 @@ export async function fetchHCInicialByAdmission(
 
 export function useGetHCInicialByAdmission(admissionId?: number | string) {
   return useQuery({
-    queryKey: ["hci-inicial", "by-admission", admissionId],
+    queryKey: ["hci-inicial", "by-admission", admissionId ? String(admissionId) : admissionId],
     queryFn: () => fetchHCInicialByAdmission(admissionId!),
     enabled: !!admissionId,
   })

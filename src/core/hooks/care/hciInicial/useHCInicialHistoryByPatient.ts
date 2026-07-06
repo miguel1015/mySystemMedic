@@ -24,7 +24,7 @@ export function useHCInicialHistoryByPatient(patientId?: string | number) {
 
   const hcInicialQueries = useQueries({
     queries: admissions.map((admission) => ({
-      queryKey: ["hci-inicial", "by-admission", admission.id],
+      queryKey: ["hci-inicial", "by-admission", String(admission.id)],
       queryFn: () => fetchHCInicialByAdmission(admission.id),
       enabled: !!admission.id,
     })),

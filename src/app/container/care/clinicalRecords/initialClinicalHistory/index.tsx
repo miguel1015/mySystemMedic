@@ -3,6 +3,7 @@
 import { Container } from "@/components/container";
 import { useMe } from "@/core/hooks/users/useMeUser";
 import { useGetUsers } from "@/core/hooks/users/useGetUsers";
+import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById";
 import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission";
 import { useUpdateHCInicial } from "@/core/hooks/care/hciInicial/useSaveHCInicial";
 import { GetUser } from "@/core/interfaces/user/users";
@@ -75,11 +76,17 @@ const InitialClinicalHistoryContainer = () => {
   const { data: users = [] } = useGetUsers();
 
   const admissionId = searchParams.get("admissionId") || undefined;
-  const patientId = searchParams.get("patientId") || undefined;
+  const editHci = searchParams.get("editHci") === "1";
+
+  const { data: admission } = useGetAdmissionById(admissionId);
+  const patientId =
+    searchParams.get("patientId") ||
+    (admission ? String(admission.patientId) : undefined);
 
   const { data: existingHCInicial } = useGetHCInicialByAdmission(admissionId);
   const updateHCInicial = useUpdateHCInicial();
   const isHciClosed = existingHCInicial?.isClosed === true;
+  const isHciLocked = isHciClosed && !editHci;
 
   const [admissionDate, setAdmissionDate] = useState(
     () => new Date().toISOString().slice(0, 10),
@@ -88,7 +95,7 @@ const InitialClinicalHistoryContainer = () => {
 
   useEffect(() => {
     if (!existingHCInicial) return;
-    if (existingHCInicial.isClosed) {
+    if (isHciLocked) {
       setAdmissionDate("");
       return;
     }
@@ -96,18 +103,24 @@ const InitialClinicalHistoryContainer = () => {
       setAdmissionDate(existingHCInicial.admissionDate?.slice(0, 10) || "");
       setAdmissionDateHydrated(true);
     }
-  }, [existingHCInicial, admissionDateHydrated]);
+  }, [existingHCInicial, admissionDateHydrated, isHciLocked]);
 
   const patient = {
-    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    name:
+      admission?.nombrePaciente ||
+      searchParams.get("patientName") ||
+      "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
-    documentNumber: searchParams.get("documentNumber") || "1102796382",
-    careScope: searchParams.get("careScope") || "Urgencias",
+    documentNumber:
+      admission?.documentoPatiente ||
+      searchParams.get("documentNumber") ||
+      "1102796382",
+    careScope:
+      admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
     clinicalRecord:
-      searchParams.get("clinicalRecord") ||
-      `HC-${searchParams.get("patientId") || "1024"}`,
+      searchParams.get("clinicalRecord") || `HC-${patientId || "1024"}`,
     room: searchParams.get("room") || "Observacion 4",
     insurer: searchParams.get("insurer") || "EPS Sanitas",
   };
@@ -168,7 +181,7 @@ const InitialClinicalHistoryContainer = () => {
     Modal.confirm({
       title: "Clausurar historia clínica inicial",
       content:
-        "Esta acción limpiará el formulario de la historia clínica inicial de esta admisión y no podrá volver a guardar cambios en ella. Los datos ya guardados permanecen disponibles en el histórico. ¿Desea continuar?",
+        "Esta acción limpiará el formulario de la historia clínica inicial de esta admisión y no podrá crear una nueva aquí. Los datos ya guardados quedarán disponibles en el histórico del paciente, desde donde podrá editarlos si es necesario. ¿Desea continuar?",
       okText: "Clausurar",
       okButtonProps: { danger: true },
       cancelText: "Cancelar",
@@ -280,7 +293,7 @@ const InitialClinicalHistoryContainer = () => {
                   size="small"
                   value={admissionDate}
                   onChange={(e) => setAdmissionDate(e.target.value)}
-                  disabled={isHciClosed}
+                  disabled={isHciLocked}
                   style={{ marginTop: 2 }}
                 />
               </div>
@@ -405,6 +418,7 @@ const InitialClinicalHistoryContainer = () => {
                 patientName={patient.name}
                 messageApi={messageApi}
                 admissionDate={admissionDate}
+                editMode={editHci}
               />
             )}
 

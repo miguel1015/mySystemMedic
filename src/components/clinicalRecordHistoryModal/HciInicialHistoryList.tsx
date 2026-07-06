@@ -1,11 +1,12 @@
 "use client"
 
-import { ClockCircleOutlined, DeleteOutlined, EditOutlined, UserOutlined } from "@ant-design/icons"
+import { ArrowLeftOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, UserOutlined } from "@ant-design/icons"
 import { Button, Empty, message, Modal, Skeleton, Tag, Tooltip } from "antd"
 import { useEffect, useMemo, useState } from "react"
 import { useMe } from "@/core/hooks/users/useMeUser"
 import { useHCInicialHistoryByPatient } from "@/core/hooks/care/hciInicial/useHCInicialHistoryByPatient"
 import { useDeleteHCInicial } from "@/core/hooks/care/hciInicial/useSaveHCInicial"
+import { HciInicialEditPanel } from "./HciInicialEditPanel"
 import { HciInicialOverview } from "./HciInicialOverview"
 
 interface Props {
@@ -28,6 +29,7 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
   const [messageApi, contextHolder] = message.useMessage()
   const deleteHCInicial = useDeleteHCInicial()
   const [selectedAdmissionId, setSelectedAdmissionId] = useState<number | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
 
   const defaultSelectedId = useMemo(() => {
     if (!records.length) return null
@@ -45,15 +47,12 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
 
   const selected = records.find((record) => record.admission.id === selectedAdmissionId) ?? null
 
-  const handleEdit = (record: (typeof records)[number]) => {
-    const params = new URLSearchParams({
-      admissionId: String(record.admission.id),
-      patientId: String(record.admission.patientId),
-      patientName: record.admission.nombrePaciente,
-      documentNumber: record.admission.documentoPatiente,
-      careScope: record.admission.careScopeName || record.admission.serviceGroupName || "",
-    })
-    window.location.href = `/care/clinicalRecords/initialClinicalHistory?${params.toString()}`
+  const handleEdit = () => {
+    setIsEditing(true)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
   }
 
   const handleDelete = (record: (typeof records)[number]) => {
@@ -65,7 +64,10 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
       cancelText: "Cancelar",
       onOk: async () => {
         try {
-          await deleteHCInicial.mutateAsync(record.hcInicial.id)
+          await deleteHCInicial.mutateAsync({
+            id: record.hcInicial.id,
+            admissionId: record.admission.id,
+          })
           messageApi.success("Historia clínica inicial eliminada del histórico.")
           setSelectedAdmissionId(null)
         } catch (err) {
@@ -96,7 +98,7 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
   }
 
   return (
-    <div className={`chrm-body${selected ? " has-selection" : ""}`}>
+    <div className={`chrm-body${selected ? " has-selection" : ""}${isEditing ? " is-editing" : ""}`}>
       {contextHolder}
       <div className="chrm-list">
         <ul className="chrm-timeline">
@@ -107,7 +109,10 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
                 <button
                   type="button"
                   className={`chrm-item${selectedAdmissionId === admission.id ? " active" : ""}`}
-                  onClick={() => setSelectedAdmissionId(admission.id)}
+                  onClick={() => {
+                    setSelectedAdmissionId(admission.id)
+                    setIsEditing(false)
+                  }}
                 >
                   <div className="chrm-item-top">
                     <Tooltip title={formatDateTime(admission.createdAt)}>
@@ -135,23 +140,49 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
       <div className="chrm-detail">
         {selected ? (
           <>
-            <button type="button" className="chrm-back-btn" onClick={() => setSelectedAdmissionId(null)}>
-              ← Volver al listado
+            <button
+              type="button"
+              className="chrm-back-btn"
+              onClick={() => {
+                if (isEditing) {
+                  handleCancelEdit()
+                  return
+                }
+                setSelectedAdmissionId(null)
+              }}
+            >
+              ← {isEditing ? "Volver al detalle" : "Volver al listado"}
             </button>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 12 }}>
-              <Button icon={<EditOutlined />} onClick={() => handleEdit(selected)}>
-                Editar
-              </Button>
-              <Button
-                icon={<DeleteOutlined />}
-                danger
-                loading={deleteHCInicial.isPending}
-                onClick={() => handleDelete(selected)}
-              >
-                Eliminar
-              </Button>
+              {isEditing ? (
+                <Button icon={<ArrowLeftOutlined />} onClick={handleCancelEdit}>
+                  Cancelar edición
+                </Button>
+              ) : (
+                <>
+                  <Button icon={<EditOutlined />} onClick={handleEdit}>
+                    Editar
+                  </Button>
+                  <Button
+                    icon={<DeleteOutlined />}
+                    danger
+                    loading={deleteHCInicial.isPending}
+                    onClick={() => handleDelete(selected)}
+                  >
+                    Eliminar
+                  </Button>
+                </>
+              )}
             </div>
-            <HciInicialOverview admissionId={selected.admission.id} />
+            {isEditing ? (
+              <HciInicialEditPanel
+                admissionId={selected.admission.id}
+                patientName={selected.hcInicial.nombrePaciente || "Paciente"}
+                messageApi={messageApi}
+              />
+            ) : (
+              <HciInicialOverview admissionId={selected.admission.id} />
+            )}
           </>
         ) : (
           <div className="chrm-detail-empty">
