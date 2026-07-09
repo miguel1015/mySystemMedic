@@ -92,6 +92,7 @@ export interface HCInicialResponse {
   nombrePaciente: string;
   documentoPaciente: string;
   admissionDate: string;
+  admissionTime: string;
   idSubjetivoHCInicial: number | null;
   subjetivo: SubjetivoHCInicialResponse | null;
   idObjetivoHCInicial: number | null;
@@ -109,6 +110,7 @@ export interface HCInicialResponse {
 export interface HCInicialCreateRequest {
   admissionId: number;
   admissionDate: string;
+  admissionTime: string;
   idSubjetivoHCInicial: number | null;
   idObjetivoHCInicial: number | null;
   idSignosVitalesHCInicial: number | null;
@@ -117,6 +119,7 @@ export interface HCInicialCreateRequest {
 
 export interface HCInicialUpdateRequest {
   admissionDate: string;
+  admissionTime: string;
   idSubjetivoHCInicial: number | null;
   idObjetivoHCInicial: number | null;
   idSignosVitalesHCInicial: number | null;

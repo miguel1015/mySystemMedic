@@ -93,18 +93,6 @@ export default function AdmissionsTable({
       ),
     },
     {
-      title: "Fecha de registro",
-      dataIndex: "createdAt",
-      width: 180,
-      sorter: (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      render: (value: string) => (
-        <span style={{ fontFamily: "monospace" }}>
-          {new Date(value).toLocaleString()}
-        </span>
-      ),
-    },
-    {
       title: "Documento",
       dataIndex: "documentoPatiente",
       width: 140,

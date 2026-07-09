@@ -4,6 +4,7 @@ import { Container } from "@/components/container";
 import { useMe } from "@/core/hooks/users/useMeUser";
 import { useGetUsers } from "@/core/hooks/users/useGetUsers";
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById";
+import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient";
 import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission";
 import { useUpdateHCInicial } from "@/core/hooks/care/hciInicial/useSaveHCInicial";
 import { GetUser } from "@/core/interfaces/user/users";
@@ -83,6 +84,7 @@ const InitialClinicalHistoryContainer = () => {
     searchParams.get("patientId") ||
     (admission ? String(admission.patientId) : undefined);
 
+  const { data: patientRecord } = useGetPatientById(patientId ?? null);
   const { data: existingHCInicial } = useGetHCInicialByAdmission(admissionId);
   const updateHCInicial = useUpdateHCInicial();
   const isHciClosed = existingHCInicial?.isClosed === true;
@@ -92,6 +94,10 @@ const InitialClinicalHistoryContainer = () => {
     new Date().toISOString().slice(0, 10),
   );
   const [admissionDateHydrated, setAdmissionDateHydrated] = useState(false);
+  const [admissionTime, setAdmissionTime] = useState(() =>
+    new Date().toTimeString().slice(0, 8),
+  );
+  const [admissionTimeHydrated, setAdmissionTimeHydrated] = useState(false);
 
   useEffect(() => {
     if (!existingHCInicial) return;
@@ -104,6 +110,18 @@ const InitialClinicalHistoryContainer = () => {
       setAdmissionDateHydrated(true);
     }
   }, [existingHCInicial, admissionDateHydrated, isHciLocked]);
+
+  useEffect(() => {
+    if (!existingHCInicial) return;
+    if (isHciLocked) {
+      setAdmissionTime("");
+      return;
+    }
+    if (!admissionTimeHydrated) {
+      setAdmissionTime(existingHCInicial.admissionTime || "");
+      setAdmissionTimeHydrated(true);
+    }
+  }, [existingHCInicial, admissionTimeHydrated, isHciLocked]);
 
   const patient = {
     name:
@@ -123,6 +141,8 @@ const InitialClinicalHistoryContainer = () => {
       searchParams.get("clinicalRecord") || `HC-${patientId || "1024"}`,
     room: searchParams.get("room") || "Observacion 4",
     insurer: searchParams.get("insurer") || "EPS Sanitas",
+    city: patientRecord?.cityName || searchParams.get("city") || "",
+    phone: patientRecord?.phone || searchParams.get("phone") || "",
   };
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez";
@@ -193,6 +213,7 @@ const InitialClinicalHistoryContainer = () => {
             id: existingHCInicial.id,
             data: {
               admissionDate: existingHCInicial.admissionDate,
+              admissionTime: existingHCInicial.admissionTime,
               idSubjetivoHCInicial: existingHCInicial.idSubjetivoHCInicial,
               idObjetivoHCInicial: existingHCInicial.idObjetivoHCInicial,
               idSignosVitalesHCInicial:
@@ -204,6 +225,7 @@ const InitialClinicalHistoryContainer = () => {
             },
           });
           setAdmissionDate("");
+          setAdmissionTime("");
           messageApi.success("Historia clínica inicial clausurada.");
         } catch (err) {
           messageApi.error(
@@ -305,6 +327,20 @@ const InitialClinicalHistoryContainer = () => {
                   size="small"
                   value={admissionDate}
                   onChange={(e) => setAdmissionDate(e.target.value)}
+                  disabled={isHciLocked}
+                  style={{ marginTop: 2 }}
+                />
+              </div>
+            </div>
+            <div className="summary-cell">
+              <div className="summary-cell-label">Hora de admisión</div>
+              <div className="summary-cell-value">
+                <Input
+                  type="time"
+                  step={1}
+                  size="small"
+                  value={admissionTime}
+                  onChange={(e) => setAdmissionTime(e.target.value)}
                   disabled={isHciLocked}
                   style={{ marginTop: 2 }}
                 />
@@ -430,6 +466,7 @@ const InitialClinicalHistoryContainer = () => {
                 patientName={patient.name}
                 messageApi={messageApi}
                 admissionDate={admissionDate}
+                admissionTime={admissionTime}
                 editMode={editHci}
               />
             )}
@@ -514,6 +551,7 @@ const InitialClinicalHistoryContainer = () => {
         patient={patient}
         admissionDate={admission?.admissionDate ?? ""}
         attentionDate={admissionDate}
+        attentionTime={admissionTime}
         contractName={admission?.convenioNombre ?? ""}
         doctorName={selectedDoctor}
         doctorUser={selectedDoctorUser}

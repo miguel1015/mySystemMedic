@@ -28,6 +28,8 @@ interface PrintPatient {
   birthDate: string;
   sex: string;
   insurer: string;
+  city?: string;
+  phone?: string;
 }
 
 interface Props {
@@ -35,6 +37,7 @@ interface Props {
   patient: PrintPatient;
   admissionDate: string;
   attentionDate: string;
+  attentionTime: string;
   contractName: string;
   doctorName: string;
   doctorUser?: GetUser;
@@ -69,13 +72,6 @@ const FieldRow = ({
  * that — position:fixed, <thead>/<tfoot> — turned out not to repeat
  * reliably in testing). Whichever units land on a page, that page gets a
  * real, literal copy of the header/footer.
- *
- * "field" units are individual label/value rows (antecedentes, examen
- * físico findings + vitals, diagnósticos) — small enough to flow one at a
- * time onto whatever page has room, merging back into a single fieldtable
- * grid with adjacent same-section units when rendered. "block" units are
- * indivisible chunks (paragraph-style fields, signatures) that always stay
- * together.
  */
 type FieldUnit = {
   kind: "field";
@@ -155,6 +151,7 @@ export const HciPrintDocument = ({
   patient,
   admissionDate,
   attentionDate,
+  attentionTime,
   contractName,
   doctorName,
   doctorUser,
@@ -166,7 +163,6 @@ export const HciPrintDocument = ({
   const vitales = hcInicial?.signosVitales;
   const analisisPlan = hcInicial?.analisisDiagnosticosPlan;
   const mainDiagnosis = diagnoses.find((d) => d.main && d.code);
-  const generatedAt = useMemo(() => new Date().toLocaleString("es-CO"), []);
 
   const headerBlock = (
     <div className="hci-print-header-block">
@@ -195,6 +191,10 @@ export const HciPrintDocument = ({
 
       <div className="hci-print-patient-grid">
         <div className="hci-print-row">
+          <span className="hci-print-label">Fecha de admisión:</span>
+          <span className="hci-print-value">{admissionDate || emptyDash}</span>
+        </div>
+        <div className="hci-print-row">
           <span className="hci-print-label">Paciente:</span>
           <span className="hci-print-value">{patient.name}</span>
         </div>
@@ -205,8 +205,16 @@ export const HciPrintDocument = ({
           </span>
         </div>
         <div className="hci-print-row">
-          <span className="hci-print-label">Sexo:</span>
-          <span className="hci-print-value">{patient.sex}</span>
+          <span className="hci-print-label">Aseguradora:</span>
+          <span className="hci-print-value">{patient.insurer}</span>
+        </div>
+        <div className="hci-print-row">
+          <span className="hci-print-label">Ciudad:</span>
+          <span className="hci-print-value">{patient.city || emptyDash}</span>
+        </div>
+        <div className="hci-print-row">
+          <span className="hci-print-label">Fecha de nacimiento:</span>
+          <span className="hci-print-value">{patient.birthDate}</span>
         </div>
         <div className="hci-print-row">
           <span className="hci-print-label">Edad:</span>
@@ -215,42 +223,34 @@ export const HciPrintDocument = ({
           </span>
         </div>
         <div className="hci-print-row">
-          <span className="hci-print-label">Fecha de nacimiento:</span>
-          <span className="hci-print-value">{patient.birthDate}</span>
+          <span className="hci-print-label">Convenio:</span>
+          <span className="hci-print-value">{contractName || emptyDash}</span>
         </div>
         <div className="hci-print-row">
-          <span className="hci-print-label">Aseguradora:</span>
-          <span className="hci-print-value">{patient.insurer}</span>
+          <span className="hci-print-label">Teléfono/Celular:</span>
+          <span className="hci-print-value">{patient.phone || emptyDash}</span>
         </div>
         <div className="hci-print-row">
           <span className="hci-print-label">Servicio:</span>
           <span className="hci-print-value">{patient.careScope}</span>
         </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Fecha de admisión:</span>
-          <span className="hci-print-value">{admissionDate || emptyDash}</span>
+        {/* <div className="hci-print-row">
+          <span className="hci-print-label">Sexo:</span>
+          <span className="hci-print-value">{patient.sex}</span>
         </div>
         <div className="hci-print-row">
           <span className="hci-print-label">Médico tratante:</span>
           <span className="hci-print-value">{doctorName}</span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Convenio:</span>
-          <span className="hci-print-value">{contractName || emptyDash}</span>
-        </div>
+        </div> */}
       </div>
 
       <div className="hci-print-row">
         <span className="hci-print-label">Fecha de atención:</span>
         <span className="hci-print-value">{attentionDate || emptyDash}</span>
-      </div>
-    </div>
-  );
-
-  const footerBlock = (
-    <div className="hci-print-footer-block">
-      <div className="hci-print-footer">
-        Documento generado el {generatedAt}
+        <span className="hci-print-label" style={{ marginLeft: 16 }}>
+          Hora:
+        </span>
+        <span className="hci-print-value">{attentionTime || emptyDash}</span>
       </div>
     </div>
   );
@@ -310,7 +310,11 @@ export const HciPrintDocument = ({
       });
     }
 
-    const examRows: { key: string; label: string; value?: string | number | null }[] = [
+    const examRows: {
+      key: string;
+      label: string;
+      value?: string | number | null;
+    }[] = [
       ...physicalExamFields
         .filter(({ key }) => objetivo?.[key])
         .map(({ key, label }) => ({
@@ -318,8 +322,16 @@ export const HciPrintDocument = ({
           label,
           value: objetivo?.[key],
         })),
-      { key: "vit-ta", label: "Presión Arterial", value: vitales?.tensionArterial },
-      { key: "vit-fc", label: "Frecuencia Cardiaca", value: vitales?.frecuenciaCardiaca },
+      {
+        key: "vit-ta",
+        label: "Presión Arterial",
+        value: vitales?.tensionArterial,
+      },
+      {
+        key: "vit-fc",
+        label: "Frecuencia Cardiaca",
+        value: vitales?.frecuenciaCardiaca,
+      },
       {
         key: "vit-fr",
         label: "Frecuencia Respiratoria",
@@ -439,16 +451,15 @@ export const HciPrintDocument = ({
 
   const [pages, setPages] = useState<Unit[][] | null>(null);
   const headerMeasureRef = useRef<HTMLDivElement>(null);
-  const footerMeasureRef = useRef<HTMLDivElement>(null);
   const unitMeasureRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   useLayoutEffect(() => {
-    const headerH = headerMeasureRef.current?.getBoundingClientRect().height ?? 0;
-    const footerH = footerMeasureRef.current?.getBoundingClientRect().height ?? 0;
+    const headerH =
+      headerMeasureRef.current?.getBoundingClientRect().height ?? 0;
     const pageHeightPx = PAGE_HEIGHT_MM * MM_TO_PX;
     const marginPx = PAGE_MARGIN_MM * MM_TO_PX;
     const budget =
-      pageHeightPx - marginPx * 2 - headerH - footerH - PAGE_BUDGET_BUFFER_PX;
+      pageHeightPx - marginPx * 2 - headerH - PAGE_BUDGET_BUFFER_PX;
 
     const result: Unit[][] = [];
     let current: Unit[] = [];
@@ -495,9 +506,6 @@ export const HciPrintDocument = ({
         <div ref={headerMeasureRef} style={{ overflow: "hidden" }}>
           {headerBlock}
         </div>
-        <div ref={footerMeasureRef} style={{ overflow: "hidden" }}>
-          {footerBlock}
-        </div>
         {units.map((unit) => (
           <div
             key={unit.id}
@@ -515,7 +523,6 @@ export const HciPrintDocument = ({
         <div className="hci-print-page" key={index}>
           {headerBlock}
           <div className="hci-print-body">{renderPageUnits(pageUnits)}</div>
-          {footerBlock}
         </div>
       ))}
     </>

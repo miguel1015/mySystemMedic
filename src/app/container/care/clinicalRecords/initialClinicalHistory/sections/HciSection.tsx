@@ -16,6 +16,7 @@ interface Props {
   patientName: string;
   messageApi: MessageInstance;
   admissionDate: string;
+  admissionTime: string;
   editMode?: boolean;
 }
 
@@ -27,6 +28,7 @@ export const HciSection = ({
   patientName,
   messageApi,
   admissionDate,
+  admissionTime,
   editMode = false,
 }: Props) => {
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -38,6 +40,7 @@ export const HciSection = ({
     patientName,
     messageApi,
     admissionDate,
+    admissionTime,
     editMode,
   });
 

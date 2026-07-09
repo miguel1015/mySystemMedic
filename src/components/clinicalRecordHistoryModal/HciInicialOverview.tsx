@@ -77,6 +77,7 @@ export const HciInicialOverview = ({ admissionId }: Props) => {
       <div className="chrm-hci-meta">
         <span>{data.nombrePaciente} · {data.documentoPaciente}</span>
         <span>Fecha de atención: {data.admissionDate}</span>
+        <span>Hora de admisión: {data.admissionTime || "—"}</span>
         <span>Última actualización: {formatDateTime(data.updatedAt)}</span>
       </div>
 

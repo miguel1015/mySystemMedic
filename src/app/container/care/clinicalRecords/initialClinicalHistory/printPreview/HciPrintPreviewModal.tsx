@@ -20,6 +20,8 @@ interface PrintPatient {
   birthDate: string;
   sex: string;
   insurer: string;
+  city?: string;
+  phone?: string;
 }
 
 interface Props {
@@ -29,6 +31,7 @@ interface Props {
   patient: PrintPatient;
   admissionDate: string;
   attentionDate: string;
+  attentionTime: string;
   contractName: string;
   doctorName: string;
   doctorUser?: GetUser;
@@ -42,6 +45,7 @@ const HciPrintPreviewModal = ({
   patient,
   admissionDate,
   attentionDate,
+  attentionTime,
   contractName,
   doctorName,
   doctorUser,
@@ -62,6 +66,7 @@ const HciPrintPreviewModal = ({
       patient={patient}
       admissionDate={admissionDate}
       attentionDate={attentionDate}
+      attentionTime={attentionTime}
       contractName={contractName}
       doctorName={doctorName}
       doctorUser={doctorUser}

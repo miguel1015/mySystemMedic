@@ -65,6 +65,7 @@ interface UseHciInicialFormArgs {
   patientName: string;
   messageApi: MessageInstance;
   admissionDate: string;
+  admissionTime: string;
   editMode?: boolean;
 }
 
@@ -75,6 +76,7 @@ export const useHciInicialForm = ({
   patientName,
   messageApi,
   admissionDate,
+  admissionTime,
   editMode = false,
 }: UseHciInicialFormArgs) => {
   const [vitals, setVitals] = useState<VitalsState>(defaultVitals);
@@ -212,6 +214,10 @@ export const useHciInicialForm = ({
       messageApi.error("La fecha de atención es obligatoria.");
       return;
     }
+    if (!admissionTime) {
+      messageApi.error("La hora de admisión es obligatoria.");
+      return;
+    }
 
     if (hcInicialId) {
       await updateHCInicial.mutateAsync({
@@ -219,6 +225,7 @@ export const useHciInicialForm = ({
         data: {
           ...patch,
           admissionDate,
+          admissionTime,
           isActive: true,
           isClosed: existingHCInicial?.isClosed ?? false,
         },
@@ -230,6 +237,7 @@ export const useHciInicialForm = ({
       const created = await createHCInicial.mutateAsync({
         admissionId: Number(admissionId),
         admissionDate,
+        admissionTime,
         ...patch,
       });
       setHcInicialId(created.id);
@@ -244,6 +252,7 @@ export const useHciInicialForm = ({
             data: {
               ...patch,
               admissionDate,
+              admissionTime,
               isActive: true,
               isClosed: refreshed.isClosed ?? false,
             },

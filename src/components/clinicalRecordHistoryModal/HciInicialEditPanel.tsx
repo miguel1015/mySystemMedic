@@ -17,6 +17,8 @@ export const HciInicialEditPanel = ({ admissionId, patientName, messageApi }: Pr
   const [diagnoses, setDiagnoses] = useState<DiagnosisRow[]>([])
   const [admissionDate, setAdmissionDate] = useState("")
   const [admissionDateHydrated, setAdmissionDateHydrated] = useState(false)
+  const [admissionTime, setAdmissionTime] = useState("")
+  const [admissionTimeHydrated, setAdmissionTimeHydrated] = useState(false)
 
   const form = useHciInicialForm({
     admissionId,
@@ -25,6 +27,7 @@ export const HciInicialEditPanel = ({ admissionId, patientName, messageApi }: Pr
     patientName,
     messageApi,
     admissionDate,
+    admissionTime,
     editMode: true,
   })
 
@@ -33,6 +36,12 @@ export const HciInicialEditPanel = ({ admissionId, patientName, messageApi }: Pr
     setAdmissionDate(form.existingHCInicial.admissionDate?.slice(0, 10) || "")
     setAdmissionDateHydrated(true)
   }, [form.existingHCInicial, admissionDateHydrated])
+
+  useEffect(() => {
+    if (!form.existingHCInicial || admissionTimeHydrated) return
+    setAdmissionTime(form.existingHCInicial.admissionTime || "")
+    setAdmissionTimeHydrated(true)
+  }, [form.existingHCInicial, admissionTimeHydrated])
 
   return (
     <div className="chrm-hci-edit">
@@ -43,6 +52,17 @@ export const HciInicialEditPanel = ({ admissionId, patientName, messageApi }: Pr
           size="small"
           value={admissionDate}
           onChange={(e) => setAdmissionDate(e.target.value)}
+          style={{ maxWidth: 200, marginTop: 4 }}
+        />
+      </div>
+      <div className="chrm-hci-edit-date">
+        <span className="chrm-detail-field-label">Hora de admisión</span>
+        <Input
+          type="time"
+          step={1}
+          size="small"
+          value={admissionTime}
+          onChange={(e) => setAdmissionTime(e.target.value)}
           style={{ maxWidth: 200, marginTop: 4 }}
         />
       </div>
