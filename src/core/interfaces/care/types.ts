@@ -79,6 +79,7 @@ export interface AdmissionCatalogs {
 
 export interface AdmissionCreateRequest {
   document: string;
+  admissionDate: string;
   careModalityId: number;
   careReasonId: number;
   serviceClassificationId: number;
@@ -97,6 +98,7 @@ export interface AdmissionResponse {
   patientId: number;
   documentoPatiente: string;
   nombrePaciente: string;
+  admissionDate: string;
   triageId: number;
   triagePrioridad: string;
   triageFechaHora: string;

@@ -108,7 +108,7 @@ export default function AdmissionsFormSkeleton() {
         <Divider style={{ margin: "8px 0 16px" }} />
 
         <GridContainer columns="col-3" gap="g-3">
-          {Array.from({ length: 9 }).map((_, i) => (
+          {Array.from({ length: 10 }).map((_, i) => (
             <div key={i}>
               <div
                 className="skeleton"

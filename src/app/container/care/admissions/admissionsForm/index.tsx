@@ -2,6 +2,7 @@
 
 import GridContainer from "@/components/componentLayout"
 import SelectAutocomplete from "@/components/select"
+import Input from "@/components/input"
 import {
   Alert,
   Avatar,
@@ -236,6 +237,12 @@ export default function AdmissionsForm({
             <Divider style={{ margin: "8px 0 16px" }} />
 
             <GridContainer columns="col-4" gap="g-4">
+              <Input
+                type="date"
+                name="admissionDate"
+                label="Fecha de admision"
+                control={control}
+              />
               <SelectAutocomplete
                 name="careModality"
                 label="Modalidad de atencion"

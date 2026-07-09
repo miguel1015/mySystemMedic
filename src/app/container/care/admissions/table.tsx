@@ -15,6 +15,14 @@ interface AdmissionsTableProps {
   onEdit: (admission: AdmissionResponse) => void;
 }
 
+function formatAdmissionDate(value: string): string {
+  const datePart = value?.split("T")[0];
+  if (!datePart) return "-";
+  const [year, month, day] = datePart.split("-");
+  if (!year || !month || !day) return "-";
+  return `${day}/${month}/${year}`;
+}
+
 export default function AdmissionsTable({
   data,
   isLoading,
@@ -73,7 +81,19 @@ export default function AdmissionsTable({
       ),
     },
     {
-      title: "Fecha",
+      title: "Fecha de admision",
+      dataIndex: "admissionDate",
+      width: 150,
+      sorter: (a, b) =>
+        (a.admissionDate ?? "").localeCompare(b.admissionDate ?? ""),
+      render: (value: string) => (
+        <span style={{ fontFamily: "monospace" }}>
+          {formatAdmissionDate(value)}
+        </span>
+      ),
+    },
+    {
+      title: "Fecha de registro",
       dataIndex: "createdAt",
       width: 180,
       sorter: (a, b) =>

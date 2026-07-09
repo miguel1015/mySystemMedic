@@ -13,7 +13,6 @@ import {
   EyeOutlined,
   FileDoneOutlined,
   FileTextOutlined,
-  PrinterOutlined,
   RightOutlined,
   SearchOutlined,
   UserOutlined,
@@ -23,6 +22,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { DischargeNoteContent } from "../dischargeNote/DischargeNoteContent";
 import { sidebarRecords } from "./constants";
+import HciPrintPreviewModal from "./printPreview/HciPrintPreviewModal";
 import { DiagnosticProceduresSection } from "./sections/DiagnosticProceduresSection";
 import { EvolutionSection } from "./sections/EvolutionSection";
 import { HciSection } from "./sections/HciSection";
@@ -88,8 +88,8 @@ const InitialClinicalHistoryContainer = () => {
   const isHciClosed = existingHCInicial?.isClosed === true;
   const isHciLocked = isHciClosed && !editHci;
 
-  const [admissionDate, setAdmissionDate] = useState(
-    () => new Date().toISOString().slice(0, 10),
+  const [admissionDate, setAdmissionDate] = useState(() =>
+    new Date().toISOString().slice(0, 10),
   );
   const [admissionDateHydrated, setAdmissionDateHydrated] = useState(false);
 
@@ -151,6 +151,7 @@ const InitialClinicalHistoryContainer = () => {
   );
   const [diagnoses, setDiagnoses] = useState<DiagnosisRow[]>([]);
   const [activeSidebarKey, setActiveSidebarKey] = useState("hci");
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
     if (!doctorOptions.length) return;
@@ -165,6 +166,7 @@ const InitialClinicalHistoryContainer = () => {
   const selectedDoctor =
     doctorOptions.find((d) => d.value === selectedDoctorId)?.label ||
     currentDoctor;
+  const selectedDoctorUser = users.find((u) => u.id === selectedDoctorId);
   const mainDiagnosis = useMemo(
     () => diagnoses.find((d) => d.main && d.code),
     [diagnoses],
@@ -265,8 +267,18 @@ const InitialClinicalHistoryContainer = () => {
             </div>
 
             <div className="clinical-history-actions">
-              <Button icon={<EyeOutlined />}>Vista previa</Button>
-              <Button icon={<PrinterOutlined />}>Imprimir</Button>
+              <Button
+                icon={<EyeOutlined />}
+                onClick={() => setPreviewOpen(true)}
+              >
+                Vista previa
+              </Button>
+              <Button
+                icon={<FileDoneOutlined />}
+                onClick={() => setPreviewOpen(true)}
+              >
+                Epicrisis
+              </Button>
               <Button
                 danger
                 icon={<FileDoneOutlined />}
@@ -494,6 +506,19 @@ const InitialClinicalHistoryContainer = () => {
           </div>
         </div>
       </div>
+
+      <HciPrintPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        admissionId={admissionId}
+        patient={patient}
+        admissionDate={admission?.admissionDate ?? ""}
+        attentionDate={admissionDate}
+        contractName={admission?.convenioNombre ?? ""}
+        doctorName={selectedDoctor}
+        doctorUser={selectedDoctorUser}
+        diagnoses={diagnoses}
+      />
     </Container>
   );
 };

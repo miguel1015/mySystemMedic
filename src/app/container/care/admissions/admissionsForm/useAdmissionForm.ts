@@ -48,6 +48,10 @@ const admissionSchema = z.preprocess(normalizeClearedSelectValues, z.object({
   secondLastName: z.string().optional(),
   birthDate: z.string().optional(),
   gender: z.string().optional(),
+  admissionDate: z
+    .string({ required_error: "La fecha de admisión es obligatoria" })
+    .min(1, "La fecha de admisión es obligatoria")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Ingrese una fecha válida"),
   careModality: z
     .number({ required_error: "La modalidad de atención es obligatoria" })
     .min(1, "Seleccione una modalidad de atención"),
@@ -84,13 +88,20 @@ interface UseAdmissionFormArgs {
   onDone?: () => void;
 }
 
-const emptyValues: AdmissionFormValues = {
+function getCurrentDate(): string {
+  const now = new Date();
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+const getEmptyValues = (): AdmissionFormValues => ({
   firstName: "",
   secondName: "",
   firstLastName: "",
   secondLastName: "",
   birthDate: "",
   gender: "",
+  admissionDate: getCurrentDate(),
   careModality: undefined as unknown as number,
   careReason: undefined as unknown as number,
   serviceClassification: undefined as unknown as number,
@@ -100,7 +111,7 @@ const emptyValues: AdmissionFormValues = {
   carePurpose: undefined as unknown as number,
   insurerId: undefined as unknown as number,
   agreementId: undefined as unknown as number,
-};
+});
 
 const toOptions = (data: { id: number; name: string }[] | undefined) =>
   (data ?? []).map((x) => ({ value: x.id, label: x.name }));
@@ -126,7 +137,7 @@ export function useAdmissionForm({
   const { control, handleSubmit, reset, setValue, watch } =
     useForm<AdmissionFormValues>({
       resolver: zodResolver(admissionSchema),
-      defaultValues: emptyValues,
+      defaultValues: getEmptyValues(),
     });
 
   const selectedServiceClassification = watch("serviceClassification");
@@ -338,7 +349,9 @@ export function useAdmissionForm({
     if (initializedAdmissionIdRef.current === initialAdmission.id) return;
 
     const resetValues: AdmissionFormValues = {
-      ...emptyValues,
+      ...getEmptyValues(),
+      admissionDate:
+        initialAdmission.admissionDate?.split("T")[0] ?? getCurrentDate(),
       careModality: initialAdmission.careModalityId,
       careReason: initialAdmission.careReasonId,
       serviceClassification: initialAdmission.serviceClassificationId,
@@ -416,6 +429,7 @@ export function useAdmissionForm({
   const isEditDataReady = !isEdit || hasLoadedInitialEditData;
 
   const buildPayload = (data: AdmissionFormValues): AdmissionUpdateRequest => ({
+    admissionDate: data.admissionDate,
     careModalityId: data.careModality,
     careReasonId: data.careReason,
     serviceClassificationId: data.serviceClassification,
@@ -524,7 +538,7 @@ export function useAdmissionForm({
 
   const handleReset = () => {
     userTouchedAgreementRef.current = false;
-    reset(emptyValues);
+    reset(getEmptyValues());
     setPatient(null);
     setSearchDoc("");
     setSearchError(null);
