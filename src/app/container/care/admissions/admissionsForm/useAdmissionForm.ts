@@ -51,7 +51,7 @@ const admissionSchema = z.preprocess(normalizeClearedSelectValues, z.object({
   admissionDate: z
     .string({ required_error: "La fecha de admisión es obligatoria" })
     .min(1, "La fecha de admisión es obligatoria")
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Ingrese una fecha válida"),
+    .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Ingrese una fecha y hora válidas"),
   careModality: z
     .number({ required_error: "La modalidad de atención es obligatoria" })
     .min(1, "Seleccione una modalidad de atención"),
@@ -91,7 +91,13 @@ interface UseAdmissionFormArgs {
 function getCurrentDate(): string {
   const now = new Date();
   const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+function toDateTimeLocal(value?: string | null): string {
+  if (!value) return getCurrentDate();
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
+  return match ? `${match[1]}T${match[2]}` : getCurrentDate();
 }
 
 const getEmptyValues = (): AdmissionFormValues => ({
@@ -350,8 +356,7 @@ export function useAdmissionForm({
 
     const resetValues: AdmissionFormValues = {
       ...getEmptyValues(),
-      admissionDate:
-        initialAdmission.admissionDate?.split("T")[0] ?? getCurrentDate(),
+      admissionDate: toDateTimeLocal(initialAdmission.admissionDate),
       careModality: initialAdmission.careModalityId,
       careReason: initialAdmission.careReasonId,
       serviceClassification: initialAdmission.serviceClassificationId,

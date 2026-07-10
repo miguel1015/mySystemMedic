@@ -25,6 +25,34 @@ function buildHeaders(token?: string): HeadersInit {
   };
 }
 
+function extractProblemDetailsMessage(
+  parsed: unknown,
+  fallback: string
+): string {
+  if (typeof parsed === "string") return parsed;
+  if (!parsed || typeof parsed !== "object") return fallback;
+
+  const err = parsed as Record<string, unknown>;
+  const detailParts: string[] = [];
+
+  if (err.errors && typeof err.errors === "object") {
+    Object.entries(err.errors as Record<string, unknown>).forEach(
+      ([field, messages]) => {
+        const text = Array.isArray(messages) ? messages.join(", ") : String(messages);
+        detailParts.push(`${field}: ${text}`);
+      }
+    );
+  }
+
+  if (detailParts.length > 0) return detailParts.join(" | ");
+  if (typeof err.error === "string") return err.error;
+  if (typeof err.title === "string") return err.title;
+  if (typeof err.message === "string") return err.message;
+  if (err.error) return JSON.stringify(err.error);
+
+  return fallback;
+}
+
 /* -------------------------------- GET -------------------------------- */
 
 export async function getAll<T>(
@@ -69,24 +97,10 @@ export async function create<T, U>(
     : await res.text().catch(() => null);
 
   if (!res.ok) {
-    let errorMessage = res.statusText;
-
-    if (typeof parsed === "string") {
-      errorMessage = parsed;
-    } else if (parsed && typeof parsed === "object") {
-      const err = parsed as Record<string, unknown>;
-      if (typeof err.error === "string") {
-        errorMessage = err.error;
-      } else if (typeof err.title === "string") {
-        errorMessage = err.title;
-      } else if (typeof err.message === "string") {
-        errorMessage = err.message;
-      } else if (err.error) {
-        errorMessage = JSON.stringify(err.error);
-      }
-    }
-
-    throw new Error(errorMessage);
+    console.error(
+      `[${endpoint}] ${res.status} ${res.statusText}\nrequestBody: ${JSON.stringify(body)}\nresponseBody: ${JSON.stringify(parsed)}`
+    );
+    throw new Error(extractProblemDetailsMessage(parsed, res.statusText));
   }
 
   return (parsed ?? {}) as T;
@@ -115,14 +129,10 @@ export async function updatePut<T, U>(
     : await res.text().catch(() => null);
 
   if (!res.ok) {
-    const message =
-      typeof parsed === "string"
-        ? parsed
-        : parsed && typeof parsed === "object" && "error" in parsed
-        ? parsed.error ?? res.statusText
-        : res.statusText;
-
-    throw new Error(message);
+    console.error(
+      `[${endpoint}] ${res.status} ${res.statusText}\nrequestBody: ${JSON.stringify(body)}\nresponseBody: ${JSON.stringify(parsed)}`
+    );
+    throw new Error(extractProblemDetailsMessage(parsed, res.statusText));
   }
 
   if (

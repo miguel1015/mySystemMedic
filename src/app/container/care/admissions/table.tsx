@@ -16,11 +16,16 @@ interface AdmissionsTableProps {
 }
 
 function formatAdmissionDate(value: string): string {
-  const datePart = value?.split("T")[0];
-  if (!datePart) return "-";
-  const [year, month, day] = datePart.split("-");
-  if (!year || !month || !day) return "-";
-  return `${day}/${month}/${year}`;
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("es-CO", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function AdmissionsTable({
@@ -83,7 +88,7 @@ export default function AdmissionsTable({
     {
       title: "Fecha de admision",
       dataIndex: "admissionDate",
-      width: 150,
+      width: 200,
       sorter: (a, b) =>
         (a.admissionDate ?? "").localeCompare(b.admissionDate ?? ""),
       render: (value: string) => (

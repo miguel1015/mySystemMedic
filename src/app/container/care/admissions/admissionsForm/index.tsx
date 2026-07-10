@@ -238,7 +238,7 @@ export default function AdmissionsForm({
 
             <GridContainer columns="col-4" gap="g-4">
               <Input
-                type="date"
+                type="datetime-local"
                 name="admissionDate"
                 label="Fecha de admision"
                 control={control}

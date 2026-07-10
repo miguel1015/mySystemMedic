@@ -9,6 +9,14 @@ import { antecedentesFields, physicalExamFields } from "../constants";
 import type { DiagnosisRow } from "../types";
 import "./hciPrintPreview.css";
 
+const formatDateTime = (value: string) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
 const calculateAge = (birthDate: string) => {
   const birth = new Date(birthDate);
   if (Number.isNaN(birth.getTime())) return "";
@@ -192,11 +200,13 @@ export const HciPrintDocument = ({
       <div className="hci-print-patient-grid">
         <div className="hci-print-row">
           <span className="hci-print-label">Fecha de admisión:</span>
-          <span className="hci-print-value">{admissionDate || emptyDash}</span>
+          <span className="hci-print-value">
+            {formatDateTime(admissionDate) || emptyDash}
+          </span>
         </div>
         <div className="hci-print-row">
           <span className="hci-print-label">Paciente:</span>
-          <span className="hci-print-value">{patient.name}</span>
+          <span className="hci-print-value">{patient.name?.toUpperCase()}</span>
         </div>
         <div className="hci-print-row">
           <span className="hci-print-label">Documento:</span>
@@ -245,12 +255,10 @@ export const HciPrintDocument = ({
       </div>
 
       <div className="hci-print-row">
-        <span className="hci-print-label">Fecha de atención:</span>
-        <span className="hci-print-value">{attentionDate || emptyDash}</span>
-        <span className="hci-print-label" style={{ marginLeft: 16 }}>
-          Hora:
+        <span className="hci-print-label">Fecha y hora de atención:</span>
+        <span className="hci-print-value">
+          {attentionDate || emptyDash} {attentionTime || emptyDash}
         </span>
-        <span className="hci-print-value">{attentionTime || emptyDash}</span>
       </div>
     </div>
   );

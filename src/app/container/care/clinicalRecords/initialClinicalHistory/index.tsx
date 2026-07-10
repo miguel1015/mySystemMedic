@@ -123,8 +123,18 @@ const InitialClinicalHistoryContainer = () => {
     }
   }, [existingHCInicial, admissionTimeHydrated, isHciLocked]);
 
+  const patientFullName = [
+    patientRecord?.firstName,
+    patientRecord?.middleName,
+    patientRecord?.lastName,
+    patientRecord?.secondLastName,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   const patient = {
     name:
+      patientFullName ||
       admission?.nombrePaciente ||
       searchParams.get("patientName") ||
       "Andres Felipe Quintero Perez",
@@ -333,7 +343,7 @@ const InitialClinicalHistoryContainer = () => {
               </div>
             </div>
             <div className="summary-cell">
-              <div className="summary-cell-label">Hora de admisión</div>
+              <div className="summary-cell-label">Hora de atención</div>
               <div className="summary-cell-value">
                 <Input
                   type="time"

@@ -27,10 +27,18 @@ async function apiFetch(url: string, token: string, options: RequestInit = {}) {
     : await res.text().catch(() => null)
 
   if (!res.ok) {
-    const message =
+    let message: string =
       typeof data === "string"
         ? data
         : data?.title || data?.message || data?.error || res.statusText
+
+    if (data?.errors && typeof data.errors === "object") {
+      const detail = Object.entries(data.errors as Record<string, unknown>)
+        .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`)
+        .join(" | ")
+      if (detail) message = detail
+    }
+
     throw { status: res.status, message }
   }
 
