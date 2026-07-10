@@ -1,9 +1,11 @@
 "use client"
 
-import { Input, InputNumber, Typography } from "antd"
-import { useMemo } from "react"
+import { HistoryOutlined } from "@ant-design/icons"
+import { Button, Input, InputNumber, Typography } from "antd"
+import { useMemo, useState } from "react"
 import { antecedentesFields, labelStyle, physicalExamFields, sectionCardStyle } from "../../constants"
 import type { AntecedentesState, PhysicalExamState, VitalsState } from "../../types"
+import { AntecedentesHistoryModal } from "./AntecedentesHistoryModal"
 
 interface Props {
   vitals: VitalsState
@@ -13,6 +15,8 @@ interface Props {
   antecedentes: AntecedentesState
   onAntecedentesChange: (antecedentes: AntecedentesState) => void
   disabled?: boolean
+  patientId?: string | number
+  admissionId?: string | number
 }
 
 const vitalsConfig: Array<{
@@ -41,7 +45,11 @@ export const ObjectiveTab = ({
   antecedentes,
   onAntecedentesChange,
   disabled,
+  patientId,
+  admissionId,
 }: Props) => {
+  const [antecedentesHistoryOpen, setAntecedentesHistoryOpen] = useState(false)
+
   const bmi = useMemo(() => {
     const h = vitals.height / 100
     if (!h || !vitals.weight) return ""
@@ -104,7 +112,17 @@ export const ObjectiveTab = ({
         </div>
 
         <div style={{ ...sectionCardStyle, gridColumn: "1 / -1" }}>
-          <Typography.Text strong>Antecedentes Personales y Familiares</Typography.Text>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+            <Typography.Text strong>Antecedentes Personales y Familiares</Typography.Text>
+            <Button
+              size="small"
+              icon={<HistoryOutlined />}
+              disabled={!patientId}
+              onClick={() => setAntecedentesHistoryOpen(true)}
+            >
+              Histórico de antecedentes
+            </Button>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(200px, 100%), 1fr))", gap: 12, marginTop: 12 }}>
             {antecedentesFields.map(({ key, label }) => (
               <div key={key}>
@@ -120,6 +138,13 @@ export const ObjectiveTab = ({
           </div>
         </div>
       </div>
+
+      <AntecedentesHistoryModal
+        open={antecedentesHistoryOpen}
+        onClose={() => setAntecedentesHistoryOpen(false)}
+        patientId={patientId}
+        admissionId={admissionId}
+      />
     </div>
   )
 }

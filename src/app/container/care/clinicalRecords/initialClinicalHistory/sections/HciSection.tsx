@@ -51,6 +51,8 @@ export const HciSection = ({
         editMode={editMode}
         diagnoses={diagnoses}
         onDiagnosesChange={onDiagnosesChange}
+        patientId={patientId}
+        admissionId={admissionId}
       />
 
       <ClinicalRecordHistoryTrigger

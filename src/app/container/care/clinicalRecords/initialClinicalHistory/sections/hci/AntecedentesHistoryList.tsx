@@ -1,13 +1,15 @@
 "use client"
 
 import { ArrowLeftOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, UserOutlined } from "@ant-design/icons"
-import { Button, Empty, message, Modal, Skeleton, Tag, Tooltip } from "antd"
+import { Button, Empty, message, Modal, Skeleton, Tooltip } from "antd"
+import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { useMe } from "@/core/hooks/users/useMeUser"
-import { useHCInicialHistoryByPatient } from "@/core/hooks/care/hciInicial/useHCInicialHistoryByPatient"
-import { useDeleteHCInicial } from "@/core/hooks/care/hciInicial/useSaveHCInicial"
-import { HciInicialEditPanel } from "./HciInicialEditPanel"
-import { HciInicialOverview } from "./HciInicialOverview"
+import { useHCInicialHistoryByPatient, type HCInicialHistoryRecord } from "@/core/hooks/care/hciInicial/useHCInicialHistoryByPatient"
+import { useUpdateObjetivoHCInicial } from "@/core/hooks/care/hciInicial/useSaveObjetivo"
+import { antecedentesFields } from "../../constants"
+import { AntecedentesEditPanel } from "./AntecedentesEditPanel"
+import { AntecedentesOverview } from "./AntecedentesOverview"
 
 interface Props {
   patientId?: string | number
@@ -23,11 +25,20 @@ const formatDateTime = (iso: string) =>
     minute: "2-digit",
   })
 
-export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
+const buildExcerpt = (record: HCInicialHistoryRecord) => {
+  const o = record.hcInicial.objetivo
+  if (!o) return "Sin antecedentes registrados."
+  const firstFilled = antecedentesFields.find(({ key }) => o[key]?.trim())
+  if (!firstFilled) return "Antecedentes vacíos."
+  return `${firstFilled.label}: ${o[firstFilled.key]}`
+}
+
+export const AntecedentesHistoryList = ({ patientId, admissionId }: Props) => {
   const { records, isLoading } = useHCInicialHistoryByPatient(patientId)
   const { data: me } = useMe()
   const [messageApi, contextHolder] = message.useMessage()
-  const deleteHCInicial = useDeleteHCInicial()
+  const updateObjetivo = useUpdateObjetivoHCInicial()
+  const queryClient = useQueryClient()
   const [selectedAdmissionId, setSelectedAdmissionId] = useState<number | null>(null)
   const [isEditing, setIsEditing] = useState(false)
 
@@ -47,31 +58,45 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
 
   const selected = records.find((record) => record.admission.id === selectedAdmissionId) ?? null
 
-  const handleEdit = () => {
-    setIsEditing(true)
-  }
-
-  const handleCancelEdit = () => {
-    setIsEditing(false)
-  }
-
-  const handleDelete = (record: (typeof records)[number]) => {
+  const handleDelete = (record: HCInicialHistoryRecord) => {
+    if (!record.hcInicial.objetivo) return
+    const o = record.hcInicial.objetivo
     Modal.confirm({
-      title: "Eliminar historia clínica inicial",
-      content: `Esta acción eliminará del histórico la historia clínica inicial de la admisión #${record.admission.id}. Esta acción no se puede deshacer. ¿Desea continuar?`,
+      title: "Eliminar antecedentes",
+      content: `Esta acción borrará únicamente los antecedentes personales y familiares de la admisión #${record.admission.id}. El resto del registro (examen físico, subjetivo, signos vitales, etc.) no se modifica. ¿Desea continuar?`,
       okText: "Eliminar",
       okButtonProps: { danger: true },
       cancelText: "Cancelar",
       onOk: async () => {
         try {
-          await deleteHCInicial.mutateAsync({
-            id: record.hcInicial.id,
-            admissionId: record.admission.id,
+          await updateObjetivo.mutateAsync({
+            id: o.id,
+            data: {
+              cabezaCuello: o.cabezaCuello,
+              torax: o.torax,
+              abdomen: o.abdomen,
+              extremidades: o.extremidades,
+              sistemaNervioso: o.sistemaNervioso,
+              organosSentidos: o.organosSentidos,
+              genitourinario: o.genitourinario,
+              padres: "",
+              personalesMedicos: "",
+              otrosFamiliares: "",
+              alergicos: "",
+              quirurgicos: "",
+              toxicos: "",
+              transfusiones: "",
+              habitos: "",
+              traumas: "",
+              isActive: true,
+            },
           })
-          messageApi.success("Historia clínica inicial eliminada del histórico.")
-          setSelectedAdmissionId(null)
+          await queryClient.invalidateQueries({
+            queryKey: ["hci-inicial", "by-admission", String(record.admission.id)],
+          })
+          messageApi.success("Antecedentes eliminados correctamente.")
         } catch (err) {
-          messageApi.error(err instanceof Error ? err.message : "No se pudo eliminar la historia clínica inicial.")
+          messageApi.error(err instanceof Error ? err.message : "No se pudieron eliminar los antecedentes.")
         }
       },
     })
@@ -102,8 +127,8 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
       {contextHolder}
       <div className="chrm-list">
         <ul className="chrm-timeline">
-          {records.map(({ admission, hcInicial }) => {
-            const isCurrentlyClosed = hcInicial.isClosed === true
+          {records.map((record) => {
+            const { admission } = record
             return (
               <li key={admission.id}>
                 <button
@@ -120,16 +145,11 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
                         <ClockCircleOutlined /> {formatDateTime(admission.createdAt)}
                       </span>
                     </Tooltip>
-                    <Tag color={isCurrentlyClosed ? "default" : "green"} style={{ margin: 0 }}>
-                      {isCurrentlyClosed ? "Clausurada" : "Activa"}
-                    </Tag>
                   </div>
                   <div className="chrm-item-author">
                     <UserOutlined /> {me?.name ?? "Usuario"}
                   </div>
-                  <p className="chrm-item-excerpt">
-                    Admisión #{admission.id} · {admission.careScopeName || admission.serviceGroupName || "Sin servicio"}
-                  </p>
+                  <p className="chrm-item-excerpt">{buildExcerpt(record)}</p>
                 </button>
               </li>
             )
@@ -145,7 +165,7 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
               className="chrm-back-btn"
               onClick={() => {
                 if (isEditing) {
-                  handleCancelEdit()
+                  setIsEditing(false)
                   return
                 }
                 setSelectedAdmissionId(null)
@@ -155,18 +175,19 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
             </button>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 12 }}>
               {isEditing ? (
-                <Button icon={<ArrowLeftOutlined />} onClick={handleCancelEdit}>
+                <Button icon={<ArrowLeftOutlined />} onClick={() => setIsEditing(false)}>
                   Cancelar edición
                 </Button>
               ) : (
                 <>
-                  <Button icon={<EditOutlined />} onClick={handleEdit}>
+                  <Button icon={<EditOutlined />} onClick={() => setIsEditing(true)}>
                     Editar
                   </Button>
                   <Button
                     icon={<DeleteOutlined />}
                     danger
-                    loading={deleteHCInicial.isPending}
+                    disabled={!selected.hcInicial.objetivo}
+                    loading={updateObjetivo.isPending}
                     onClick={() => handleDelete(selected)}
                   >
                     Eliminar
@@ -175,19 +196,19 @@ export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
               )}
             </div>
             {isEditing ? (
-              <HciInicialEditPanel
+              <AntecedentesEditPanel
                 admissionId={selected.admission.id}
-                patientId={patientId}
-                patientName={selected.hcInicial.nombrePaciente || "Paciente"}
                 messageApi={messageApi}
+                onSaved={() => setIsEditing(false)}
+                onCancel={() => setIsEditing(false)}
               />
             ) : (
-              <HciInicialOverview admissionId={selected.admission.id} />
+              <AntecedentesOverview hcInicial={selected.hcInicial} />
             )}
           </>
         ) : (
           <div className="chrm-detail-empty">
-            <Empty description="Selecciona una historia del listado para ver el detalle." />
+            <Empty description="Selecciona una historia del listado para ver sus antecedentes." />
           </div>
         )}
       </div>

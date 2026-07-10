@@ -131,6 +131,10 @@ export interface HCInicialUpdateRequest {
 export interface EvolucionResponse {
   id: number;
   admissionId: number;
+  fechaEvolucion: string;
+  horaEvolucion: string;
+  userId: number;
+  nombreProfesional: string;
   motivoConsulta: string;
   tensionArterial: string | null;
   frecuenciaCardiaca: number | null;
@@ -149,6 +153,8 @@ export interface EvolucionResponse {
 
 export interface EvolucionCreateRequest {
   admissionId: number;
+  fechaEvolucion: string;
+  horaEvolucion: string;
   motivoConsulta: string;
   tensionArterial: string | null;
   frecuenciaCardiaca: number | null;
@@ -161,9 +167,29 @@ export interface EvolucionCreateRequest {
   plan: string;
 }
 
+export interface EvolucionUpdateRequest {
+  fechaEvolucion: string;
+  horaEvolucion: string;
+  motivoConsulta: string;
+  tensionArterial: string | null;
+  frecuenciaCardiaca: number | null;
+  frecuenciaRespiratoria: number | null;
+  temperatura: number | null;
+  saturacionOxigeno: number | null;
+  glasgow: number | null;
+  peso: number | null;
+  talla: number | null;
+  plan: string;
+  isActive: boolean;
+}
+
 export interface EvolucionEspecialistaResponse {
   id: number;
   admissionId: number;
+  fechaEvolucion: string;
+  horaEvolucion: string;
+  userId: number;
+  nombreProfesional: string;
   motivoConsulta: string;
   plan: string;
   isActive: boolean;
@@ -175,4 +201,56 @@ export interface EvolucionEspecialistaCreateRequest {
   admissionId: number;
   motivoConsulta: string;
   plan: string;
+}
+
+export interface EvolucionEspecialistaUpdateRequest {
+  motivoConsulta: string;
+  plan: string;
+  isActive: boolean;
+}
+
+export interface NotaMedicaResponse {
+  id: number;
+  admissionId: number;
+  fechaNota: string;
+  horaNota: string;
+  userId: number;
+  nombreProfesional: string;
+  nota: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotaMedicaCreateRequest {
+  admissionId: number;
+  nota: string;
+}
+
+export interface NotaMedicaUpdateRequest {
+  nota: string;
+  isActive: boolean;
+}
+
+export interface ProcedimientoMenorResponse {
+  id: number;
+  admissionId: number;
+  fechaProcedimiento: string;
+  horaProcedimiento: string;
+  userId: number;
+  nombreProfesional: string;
+  descripcion: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProcedimientoMenorCreateRequest {
+  admissionId: number;
+  descripcion: string;
+}
+
+export interface ProcedimientoMenorUpdateRequest {
+  descripcion: string;
+  isActive: boolean;
 }

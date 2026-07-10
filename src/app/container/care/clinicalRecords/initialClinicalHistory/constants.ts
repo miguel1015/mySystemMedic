@@ -98,7 +98,7 @@ export const sidebarRecords = [
 
 export const defaultEvoVitals: EvoVitalsState = {
   ta: "120/80", fc: 80, fr: 18,
-  temperature: 36.5, saturation: 98,
+  temperature: 36.5, saturation: 98, glasgow: 15,
   weight: 80, height: 175,
 }
 

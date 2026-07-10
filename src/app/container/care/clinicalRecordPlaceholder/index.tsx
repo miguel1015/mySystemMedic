@@ -4,6 +4,10 @@ import { Container } from "@/components/container"
 import Title from "@/components/title"
 import ClinicalRecordHistoryModal from "@/components/clinicalRecordHistoryModal"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
+import { EvolutionSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/EvolutionSection"
+import { MedicalNotesSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/MedicalNotesSection"
+import { MinorProceduresSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/MinorProceduresSection"
+import { SpecialistEvolutionSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/SpecialistEvolutionSection"
 import { useMe } from "@/core/hooks/users/useMeUser"
 import { useGetUsers } from "@/core/hooks/users/useGetUsers"
 import { GetUser } from "@/core/interfaces/user/users"
@@ -16,12 +20,10 @@ import {
   ExperimentOutlined,
   FileDoneOutlined,
   FormOutlined,
-  HeartOutlined,
   MedicineBoxOutlined,
   PlusOutlined,
   PrinterOutlined,
   SaveOutlined,
-  SolutionOutlined,
   ToolOutlined,
   UserOutlined,
 } from "@ant-design/icons"
@@ -611,12 +613,6 @@ export const SurgicalDescriptionContainer = () => {
 // ─────────────────────────────────────────────────────────────
 // Evolutions page
 // ─────────────────────────────────────────────────────────────
-const defaultEvoVitals = {
-  ta: "120/80", fc: 80, fr: 18,
-  temperature: 36.5, saturation: 98,
-  weight: 80, height: 175,
-}
-
 export const EvolutionsContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -647,37 +643,7 @@ export const EvolutionsContainer = () => {
 
   const selectedDoctor = doctorOptions[0]?.label || currentDoctor
 
-  const [evoMotivo, setEvoMotivo] = useState("")
-  const [evoPlan, setEvoPlan] = useState("")
-  const [evoVitals, setEvoVitals] = useState({ ...defaultEvoVitals })
-
-  const evoBmi = useMemo(() => {
-    const h = evoVitals.height / 100
-    if (!h || !evoVitals.weight) return ""
-    return (evoVitals.weight / (h * h)).toFixed(1)
-  }, [evoVitals.height, evoVitals.weight])
-
-  const resetEvoForm = () => {
-    setEvoMotivo("")
-    setEvoPlan("")
-    setEvoVitals({ ...defaultEvoVitals })
-  }
-
-  const validateAndSaveEvo = () => {
-    const motivo = evoMotivo.trim()
-    if (!motivo || motivo.length < 10) {
-      messageApi.error("El motivo de consulta debe tener mínimo 10 caracteres.")
-      return
-    }
-    if (!evoPlan.trim()) {
-      messageApi.error("El campo Plan es obligatorio.")
-      return
-    }
-    messageApi.success(`Evolución guardada para ${patient.name}.`)
-  }
-
   const admissionId = searchParams.get("admissionId") || undefined
-  const [historyOpen, setHistoryOpen] = useState(false)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -723,9 +689,6 @@ export const EvolutionsContainer = () => {
             </div>
 
             <div className="clinical-history-actions">
-              <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveEvo}>
-                Guardar
-              </Button>
               <Button icon={<PrinterOutlined />}>Imprimir</Button>
               <Button danger icon={<FileDoneOutlined />}>Cerrar</Button>
               <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>Volver</Button>
@@ -764,124 +727,15 @@ export const EvolutionsContainer = () => {
             overflow: "hidden",
           }}
         >
-          <div className="evolution-tab-content evolution-tab-content--full">
-
-            {/* Header */}
-            <div className="qx-form-header">
-              <HeartOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
-              <Typography.Title level={5} style={{ margin: 0 }}>Nueva Evolución</Typography.Title>
-              <div className="evo-header-meta">
-                <span>{selectedDoctor}</span>
-                <span className="evo-header-sep">·</span>
-                <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-              </div>
-            </div>
-
-            {/* Sección 1: Motivo de consulta */}
-            <div className="qx-section">
-              <div className="qx-section-header">
-                <span className="section-number">1</span>
-                <span className="section-title">Motivo de consulta</span>
-              </div>
-              <label style={labelStyle}>
-                Motivo de consulta <span className="field-required">*</span>
-              </label>
-              <TextArea
-                rows={4}
-                value={evoMotivo}
-                onChange={(e) => setEvoMotivo(e.target.value)}
-                placeholder="Registre el motivo de atención o seguimiento del paciente..."
-                maxLength={2000}
-                showCount
-              />
-              {evoMotivo.length > 0 && evoMotivo.trim().length < 10 && (
-                <span className="qx-field-error">Mínimo 10 caracteres.</span>
-              )}
-            </div>
-
-            {/* Sección 2: Signos vitales */}
-            <div className="qx-section">
-              <div className="qx-section-header" style={{ flexWrap: "wrap", gap: 8 }}>
-                <span className="section-number">2</span>
-                <span className="section-title">Signos vitales</span>
-                <Tag color="blue" style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600 }}>
-                  Cargados desde último Triage
-                </Tag>
-              </div>
-              <div className="evo-vitals-grid">
-                {([
-                  { label: "TA (mmHg)", key: "ta", isString: true, placeholder: "120/80" },
-                  { label: "FC (lpm)", key: "fc", placeholder: "80" },
-                  { label: "FR (rpm)", key: "fr", placeholder: "18" },
-                  { label: "Temperatura (°C)", key: "temperature", placeholder: "36.5" },
-                  { label: "Sat. O₂ (%)", key: "saturation", placeholder: "98" },
-                  { label: "Peso (kg)", key: "weight", placeholder: "80" },
-                  { label: "Talla (cm)", key: "height", placeholder: "175" },
-                ] as Array<{ label: string; key: string; isString?: boolean; placeholder: string }>).map(({ label, key, isString, placeholder }) => (
-                  <div key={key} className="evo-vital-item">
-                    <label style={labelStyle}>{label}</label>
-                    {isString ? (
-                      <Input
-                        value={(evoVitals as Record<string, number | string>)[key] as string}
-                        placeholder={placeholder}
-                        onChange={(e) => setEvoVitals({ ...evoVitals, [key]: e.target.value })}
-                      />
-                    ) : (
-                      <InputNumber
-                        style={{ width: "100%" }}
-                        value={(evoVitals as Record<string, number | string>)[key] as number}
-                        placeholder={placeholder}
-                        onChange={(v) => setEvoVitals({ ...evoVitals, [key]: Number(v) || 0 })}
-                      />
-                    )}
-                  </div>
-                ))}
-                <div className="evo-vital-item">
-                  <label style={labelStyle}>IMC</label>
-                  <Input value={evoBmi ? `${evoBmi} kg/m²` : ""} readOnly placeholder="—" />
-                </div>
-              </div>
-            </div>
-
-            {/* Sección 3: Plan */}
-            <div className="qx-section">
-              <div className="qx-section-header">
-                <span className="section-number">3</span>
-                <span className="section-title">Plan</span>
-              </div>
-              <label style={labelStyle}>
-                Plan de manejo <span className="field-required">*</span>
-              </label>
-              <TextArea
-                rows={8}
-                value={evoPlan}
-                onChange={(e) => setEvoPlan(e.target.value)}
-                placeholder="Registre la conducta médica, órdenes clínicas, medicamentos, procedimientos, solicitudes diagnósticas e indicaciones de seguimiento..."
-                maxLength={5000}
-                showCount
-              />
-            </div>
-
-            <div className="clinical-history-footer-actions">
-              <Button onClick={resetEvoForm}>Limpiar formulario</Button>
-              <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSaveEvo}>
-                Guardar evolución
-              </Button>
-            </div>
-          </div>
+          <EvolutionSection
+            admissionId={admissionId}
+            selectedDoctor={selectedDoctor}
+            patientName={patient.name}
+            messageApi={messageApi}
+          />
         </div>
 
       </div>
-      <ClinicalRecordHistoryTrigger
-        moduleType="evolutions"
-        onClick={() => setHistoryOpen(true)}
-      />
-      <ClinicalRecordHistoryModal
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        moduleType="evolutions"
-        admissionId={admissionId}
-      />
     </Container>
   )
 }
@@ -1277,9 +1131,10 @@ interface SimpleFormProps {
   currentDoctor: string
   router: ReturnType<typeof useRouter>
   onSave: () => void
+  hideSave?: boolean
 }
 
-const PatientHeader = ({ patient, currentDoctor, router, onSave }: SimpleFormProps) => (
+const PatientHeader = ({ patient, currentDoctor, router, onSave, hideSave }: SimpleFormProps) => (
   <div
     className="clinical-history-header"
     style={{
@@ -1311,7 +1166,9 @@ const PatientHeader = ({ patient, currentDoctor, router, onSave }: SimpleFormPro
         </div>
       </div>
       <div className="clinical-history-actions">
-        <Button type="primary" icon={<SaveOutlined />} onClick={onSave}>Guardar</Button>
+        {!hideSave && (
+          <Button type="primary" icon={<SaveOutlined />} onClick={onSave}>Guardar</Button>
+        )}
         <Button icon={<PrinterOutlined />}>Imprimir</Button>
         <Button danger icon={<FileDoneOutlined />}>Cerrar</Button>
         <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>Volver</Button>
@@ -1361,57 +1218,21 @@ export const MinorProceduresContainer = () => {
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
   const admissionId = searchParams.get("admissionId") || undefined
-  const [consulta, setConsulta] = useState("")
-  const [historyOpen, setHistoryOpen] = useState(false)
-
-  const resetForm = () => setConsulta("")
-
-  const handleSave = () => {
-    if (!consulta.trim()) { messageApi.error("El campo es obligatorio."); return }
-    messageApi.success(`Procedimiento menor guardado para ${patient.name}.`)
-  }
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
       {contextHolder}
       <div className="clinical-history-page">
-        <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={handleSave} />
+        <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={() => {}} hideSave />
         <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
-          <div className="evolution-tab-content evolution-tab-content--full">
-            <div className="qx-form-header">
-              <ToolOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
-              <Typography.Title level={5} style={{ margin: 0 }}>Nuevo Procedimiento Menor</Typography.Title>
-              <div className="evo-header-meta">
-                <span>{currentDoctor}</span>
-                <span className="evo-header-sep">·</span>
-                <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-              </div>
-            </div>
-            <div className="qx-section">
-              <label style={labelStyle}>Procedimiento menor <span className="field-required">*</span></label>
-              <TextArea
-                rows={14} value={consulta} onChange={(e) => setConsulta(e.target.value)}
-                placeholder="Describa el procedimiento menor, motivo, evaluación, técnica utilizada e indicaciones post-procedimiento..."
-                maxLength={10000} showCount
-              />
-            </div>
-            <div className="clinical-history-footer-actions">
-              <Button onClick={resetForm}>Limpiar formulario</Button>
-              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Guardar procedimiento menor</Button>
-            </div>
-          </div>
+          <MinorProceduresSection
+            admissionId={admissionId}
+            currentDoctor={currentDoctor}
+            patientName={patient.name}
+            messageApi={messageApi}
+          />
         </div>
       </div>
-      <ClinicalRecordHistoryTrigger
-        moduleType="minor-procedures"
-        onClick={() => setHistoryOpen(true)}
-      />
-      <ClinicalRecordHistoryModal
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        moduleType="minor-procedures"
-        admissionId={admissionId}
-      />
     </Container>
   )
 }
@@ -1437,57 +1258,21 @@ export const MedicalNoteContainer = () => {
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
   const admissionId = searchParams.get("admissionId") || undefined
-  const [consulta, setConsulta] = useState("")
-  const [historyOpen, setHistoryOpen] = useState(false)
-
-  const resetForm = () => setConsulta("")
-
-  const handleSave = () => {
-    if (!consulta.trim()) { messageApi.error("El campo es obligatorio."); return }
-    messageApi.success(`Nota médica guardada para ${patient.name}.`)
-  }
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
       {contextHolder}
       <div className="clinical-history-page">
-        <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={handleSave} />
+        <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={() => {}} hideSave />
         <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
-          <div className="evolution-tab-content evolution-tab-content--full">
-            <div className="qx-form-header">
-              <FormOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
-              <Typography.Title level={5} style={{ margin: 0 }}>Nueva Nota Médica</Typography.Title>
-              <div className="evo-header-meta">
-                <span>{currentDoctor}</span>
-                <span className="evo-header-sep">·</span>
-                <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-              </div>
-            </div>
-            <div className="qx-section">
-              <label style={labelStyle}>Nota médica <span className="field-required">*</span></label>
-              <TextArea
-                rows={14} value={consulta} onChange={(e) => setConsulta(e.target.value)}
-                placeholder="Registre los hallazgos de la consulta médica, anamnesis, evaluación clínica e indicaciones del paciente..."
-                maxLength={10000} showCount
-              />
-            </div>
-            <div className="clinical-history-footer-actions">
-              <Button onClick={resetForm}>Limpiar formulario</Button>
-              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Guardar nota médica</Button>
-            </div>
-          </div>
+          <MedicalNotesSection
+            admissionId={admissionId}
+            currentDoctor={currentDoctor}
+            patientName={patient.name}
+            messageApi={messageApi}
+          />
         </div>
       </div>
-      <ClinicalRecordHistoryTrigger
-        moduleType="medical-note"
-        onClick={() => setHistoryOpen(true)}
-      />
-      <ClinicalRecordHistoryModal
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        moduleType="medical-note"
-        admissionId={admissionId}
-      />
     </Container>
   )
 }
@@ -1589,75 +1374,21 @@ export const SpecialistEvolutionContainer = () => {
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
   const admissionId = searchParams.get("admissionId") || undefined
-  const [consulta, setConsulta] = useState("")
-  const [plan, setPlan] = useState("")
-  const [historyOpen, setHistoryOpen] = useState(false)
-
-  const resetForm = () => { setConsulta(""); setPlan("") }
-
-  const handleSave = () => {
-    if (!consulta.trim()) { messageApi.error("El campo Consulta es obligatorio."); return }
-    if (!plan.trim()) { messageApi.error("El campo Plan es obligatorio."); return }
-    messageApi.success(`Evolución de especialista guardada para ${patient.name}.`)
-  }
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
       {contextHolder}
       <div className="clinical-history-page">
-        <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={handleSave} />
+        <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={() => {}} hideSave />
         <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
-          <div className="evolution-tab-content evolution-tab-content--full">
-            <div className="qx-form-header">
-              <SolutionOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
-              <Typography.Title level={5} style={{ margin: 0 }}>Nueva Evolución de Especialista</Typography.Title>
-              <div className="evo-header-meta">
-                <span>{currentDoctor}</span>
-                <span className="evo-header-sep">·</span>
-                <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-              </div>
-            </div>
-            <div className="qx-section">
-              <div className="qx-section-header">
-                <span className="section-number">1</span>
-                <span className="section-title">Consulta</span>
-              </div>
-              <label style={labelStyle}>Consulta <span className="field-required">*</span></label>
-              <TextArea
-                rows={8} value={consulta} onChange={(e) => setConsulta(e.target.value)}
-                placeholder="Registre los hallazgos de la consulta del especialista, evaluación y diagnóstico especializado..."
-                maxLength={10000} showCount
-              />
-            </div>
-            <div className="qx-section">
-              <div className="qx-section-header">
-                <span className="section-number">2</span>
-                <span className="section-title">Plan</span>
-              </div>
-              <label style={labelStyle}>Plan <span className="field-required">*</span></label>
-              <TextArea
-                rows={8} value={plan} onChange={(e) => setPlan(e.target.value)}
-                placeholder="Registre el plan de manejo del especialista: tratamiento, indicaciones y seguimiento especializado..."
-                maxLength={10000} showCount
-              />
-            </div>
-            <div className="clinical-history-footer-actions">
-              <Button onClick={resetForm}>Limpiar formulario</Button>
-              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Guardar evolución de especialista</Button>
-            </div>
-          </div>
+          <SpecialistEvolutionSection
+            admissionId={admissionId}
+            currentDoctor={currentDoctor}
+            patientName={patient.name}
+            messageApi={messageApi}
+          />
         </div>
       </div>
-      <ClinicalRecordHistoryTrigger
-        moduleType="specialist-evolution"
-        onClick={() => setHistoryOpen(true)}
-      />
-      <ClinicalRecordHistoryModal
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        moduleType="specialist-evolution"
-        admissionId={admissionId}
-      />
     </Container>
   )
 }
