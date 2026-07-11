@@ -69,11 +69,33 @@ export const CARE_ENDPOINTS = {
     GET_BY_ADMISSION: (admissionId: IdParam) =>
       `/api/auth/care/evoluciones/by-admission/${admissionId}`,
     CREATE: "/api/auth/care/evoluciones",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/evoluciones/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/evoluciones/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/evoluciones/${id}`,
   },
   EVOLUCION_ESPECIALISTAS: {
     GET_BY_ADMISSION: (admissionId: IdParam) =>
       `/api/auth/care/evolucion-especialistas/by-admission/${admissionId}`,
     CREATE: "/api/auth/care/evolucion-especialistas",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/evolucion-especialistas/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/evolucion-especialistas/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/evolucion-especialistas/${id}`,
+  },
+  NOTAS_MEDICAS: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/notas-medicas/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/notas-medicas",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/notas-medicas/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/notas-medicas/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/notas-medicas/${id}`,
+  },
+  PROCEDIMIENTOS_MENORES: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/procedimientos-menores/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/procedimientos-menores",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/procedimientos-menores/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/procedimientos-menores/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/procedimientos-menores/${id}`,
   },
   PROCEDIMIENTOS_NO_QX: {
     GET_BY_ADMISSION: (admissionId: IdParam) =>

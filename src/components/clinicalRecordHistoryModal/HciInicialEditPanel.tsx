@@ -9,11 +9,12 @@ import { useEffect, useState } from "react"
 
 interface Props {
   admissionId: string | number
+  patientId?: string | number
   patientName: string
   messageApi: MessageInstance
 }
 
-export const HciInicialEditPanel = ({ admissionId, patientName, messageApi }: Props) => {
+export const HciInicialEditPanel = ({ admissionId, patientId, patientName, messageApi }: Props) => {
   const [diagnoses, setDiagnoses] = useState<DiagnosisRow[]>([])
   const [admissionDate, setAdmissionDate] = useState("")
   const [admissionDateHydrated, setAdmissionDateHydrated] = useState(false)
@@ -71,6 +72,8 @@ export const HciInicialEditPanel = ({ admissionId, patientName, messageApi }: Pr
         editMode
         diagnoses={diagnoses}
         onDiagnosesChange={setDiagnoses}
+        patientId={patientId}
+        admissionId={admissionId}
       />
     </div>
   )

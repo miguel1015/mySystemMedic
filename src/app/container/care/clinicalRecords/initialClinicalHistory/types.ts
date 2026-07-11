@@ -28,6 +28,7 @@ export interface EvoVitalsState {
   fr: number
   temperature: number
   saturation: number
+  glasgow: number
   weight: number
   height: number
 }

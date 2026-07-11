@@ -521,6 +521,7 @@ const InitialClinicalHistoryContainer = () => {
 
             {activeSidebarKey === "menores" && (
               <MinorProceduresSection
+                admissionId={admissionId}
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
@@ -529,6 +530,7 @@ const InitialClinicalHistoryContainer = () => {
 
             {activeSidebarKey === "medicas" && (
               <MedicalNotesSection
+                admissionId={admissionId}
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}

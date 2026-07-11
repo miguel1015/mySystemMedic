@@ -21,7 +21,7 @@ export function useCreateEvolucionEspecialista() {
     mutationFn: evolucionEspecialistaServices.create,
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["evolucion-especialistas", "by-admission", data.admissionId],
+        queryKey: ["evolucion-especialistas", "by-admission", String(data.admissionId)],
       })
     },
   })

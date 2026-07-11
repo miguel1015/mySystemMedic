@@ -1,27 +1,27 @@
 import { create } from "@/core/api/baseService"
 import { ENDPOINTS } from "@/core/api/endpoints"
 import type {
-  EvolucionCreateRequest,
-  EvolucionResponse,
+  NotaMedicaCreateRequest,
+  NotaMedicaResponse,
 } from "@/core/interfaces/care/hciInicial"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-export const evolucionServices = {
-  create: (data: EvolucionCreateRequest) =>
-    create<EvolucionResponse, EvolucionCreateRequest>(
-      ENDPOINTS.EVOLUCIONES.CREATE,
+export const notaMedicaServices = {
+  create: (data: NotaMedicaCreateRequest) =>
+    create<NotaMedicaResponse, NotaMedicaCreateRequest>(
+      ENDPOINTS.NOTAS_MEDICAS.CREATE,
       data,
     ),
 }
 
-export function useCreateEvolucion() {
+export function useCreateNotaMedica() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: evolucionServices.create,
+    mutationFn: notaMedicaServices.create,
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["evoluciones", "by-admission", String(data.admissionId)],
+        queryKey: ["notas-medicas", "by-admission", String(data.admissionId)],
       })
     },
   })

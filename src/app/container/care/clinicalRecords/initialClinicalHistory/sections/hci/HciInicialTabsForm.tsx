@@ -16,12 +16,16 @@ interface Props extends UseHciInicialFormResult {
   editMode?: boolean;
   diagnoses: DiagnosisRow[];
   onDiagnosesChange: (diagnoses: DiagnosisRow[]) => void;
+  patientId?: string | number;
+  admissionId?: string | number;
 }
 
 export const HciInicialTabsForm = ({
   editMode = false,
   diagnoses,
   onDiagnosesChange,
+  patientId,
+  admissionId,
   vitals,
   setVitals,
   subjective,
@@ -94,6 +98,8 @@ export const HciInicialTabsForm = ({
             antecedentes={antecedentes}
             onAntecedentesChange={setAntecedentes}
             disabled={isLocked}
+            patientId={patientId}
+            admissionId={admissionId}
           />
         )}
         {activeSection === "analysis" && (
