@@ -504,6 +504,7 @@ const InitialClinicalHistoryContainer = () => {
 
             {activeSidebarKey === "enfermeria" && (
               <NursingNoteSection
+                admissionId={admissionId}
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
@@ -536,6 +537,7 @@ const InitialClinicalHistoryContainer = () => {
 
             {activeSidebarKey === "noquirurgicos" && (
               <NonSurgicalSection
+                admissionId={admissionId}
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}

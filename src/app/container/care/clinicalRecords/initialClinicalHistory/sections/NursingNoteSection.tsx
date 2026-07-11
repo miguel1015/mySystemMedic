@@ -4,9 +4,11 @@ import { FormOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useState } from "react"
+import { useCreateNotaEnfermeria } from "@/core/hooks/care/notasEnfermeria/useSaveNotaEnfermeria"
 import { labelStyle } from "../constants"
 
 interface Props {
+  admissionId?: string | number
   currentDoctor: string
   patientName: string
   messageApi: MessageInstance
@@ -14,15 +16,30 @@ interface Props {
 
 const { TextArea } = Input
 
-export const NursingNoteSection = ({ currentDoctor, patientName, messageApi }: Props) => {
+export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, messageApi }: Props) => {
   const [nota, setNota] = useState("")
+  const createNotaEnfermeria = useCreateNotaEnfermeria()
 
-  const validateAndSave = () => {
+  const validateAndSave = async () => {
     if (!nota.trim()) {
       messageApi.error("La nota de enfermería es obligatoria.")
       return
     }
-    messageApi.success(`Nota de enfermería guardada para ${patientName}.`)
+    if (!admissionId) {
+      messageApi.error("No se encontró la admisión asociada a esta nota.")
+      return
+    }
+
+    try {
+      await createNotaEnfermeria.mutateAsync({
+        admissionId: Number(admissionId),
+        nota: nota.trim(),
+      })
+      messageApi.success(`Nota de enfermería guardada para ${patientName}.`)
+      setNota("")
+    } catch (err) {
+      messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la nota de enfermería.")
+    }
   }
 
   return (
@@ -57,7 +74,12 @@ export const NursingNoteSection = ({ currentDoctor, patientName, messageApi }: P
 
       <div className="clinical-history-footer-actions">
         <Button onClick={() => setNota("")}>Limpiar formulario</Button>
-        <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSave}>
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          loading={createNotaEnfermeria.isPending}
+          onClick={validateAndSave}
+        >
           Guardar nota de enfermería
         </Button>
       </div>

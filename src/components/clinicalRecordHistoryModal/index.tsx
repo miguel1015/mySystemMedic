@@ -15,6 +15,8 @@ import {
 } from "@/core/constants/clinicalRecordModules"
 import { useClinicalRecordHistory } from "@/core/hooks/care/records/useClinicalRecordHistory"
 import { HciInicialHistoryList } from "./HciInicialHistoryList"
+import { NonSurgicalProcedureHistoryList } from "./NonSurgicalProcedureHistoryList"
+import { NursingNoteHistoryList } from "./NursingNoteHistoryList"
 import "./clinicalRecordHistoryModal.css"
 
 export interface ClinicalRecordHistoryModalProps {
@@ -59,6 +61,8 @@ const ClinicalRecordHistoryModal = ({
     [moduleType],
   )
   const isHciInicial = moduleType === "initial-clinical-history"
+  const isNonSurgical = moduleType === "non-surgical-procedures"
+  const isNursingNotes = moduleType === "nursing-notes"
   const [search, setSearch] = useState("")
   const [selectedId, setSelectedId] = useState<number | null>(null)
 
@@ -67,7 +71,11 @@ const ClinicalRecordHistoryModal = ({
     isLoading,
     isError,
     refetch,
-  } = useClinicalRecordHistory({ moduleType, admissionId, enabled: open && !isHciInicial })
+  } = useClinicalRecordHistory({
+    moduleType,
+    admissionId,
+    enabled: open && !isHciInicial && !isNonSurgical && !isNursingNotes,
+  })
 
   const filteredRecords = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -104,6 +112,42 @@ const ClinicalRecordHistoryModal = ({
         }
       >
         <HciInicialHistoryList patientId={patientId} admissionId={admissionId} />
+      </Modal>
+    )
+  }
+
+  if (isNonSurgical) {
+    return (
+      <Modal
+        open={open}
+        onClose={handleClose}
+        size="xl"
+        title={
+          <span className="chrm-title">
+            <span style={{ color: moduleInfo?.color }}>{moduleInfo?.icon}</span>
+            {moduleInfo?.label ?? "Procedimientos no quirúrgicos"} · Histórico de la admisión
+          </span>
+        }
+      >
+        <NonSurgicalProcedureHistoryList admissionId={admissionId} />
+      </Modal>
+    )
+  }
+
+  if (isNursingNotes) {
+    return (
+      <Modal
+        open={open}
+        onClose={handleClose}
+        size="xl"
+        title={
+          <span className="chrm-title">
+            <span style={{ color: moduleInfo?.color }}>{moduleInfo?.icon}</span>
+            {moduleInfo?.label ?? "Notas de enfermería"} · Histórico de la admisión
+          </span>
+        }
+      >
+        <NursingNoteHistoryList admissionId={admissionId} />
       </Modal>
     )
   }

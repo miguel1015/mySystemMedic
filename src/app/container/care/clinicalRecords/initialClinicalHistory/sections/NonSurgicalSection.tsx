@@ -4,9 +4,11 @@ import { AuditOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useState } from "react"
+import { useCreateProcedimientoNoQx } from "@/core/hooks/care/procedimientosNoQx/useSaveProcedimientoNoQx"
 import { labelStyle } from "../constants"
 
 interface Props {
+  admissionId?: string | number
   currentDoctor: string
   patientName: string
   messageApi: MessageInstance
@@ -14,12 +16,24 @@ interface Props {
 
 const { TextArea } = Input
 
-export const NonSurgicalSection = ({ currentDoctor, patientName, messageApi }: Props) => {
+export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, messageApi }: Props) => {
   const [consulta, setConsulta] = useState("")
+  const createProcedimientoNoQx = useCreateProcedimientoNoQx()
 
-  const validateAndSave = () => {
+  const validateAndSave = async () => {
     if (!consulta.trim()) { messageApi.error("El campo es obligatorio."); return }
-    messageApi.success(`Procedimiento no quirúrgico guardado para ${patientName}.`)
+    if (!admissionId) { messageApi.error("No se encontró la admisión asociada a este procedimiento."); return }
+
+    try {
+      await createProcedimientoNoQx.mutateAsync({
+        admissionId: Number(admissionId),
+        descripcion: consulta.trim(),
+      })
+      messageApi.success(`Procedimiento no quirúrgico guardado para ${patientName}.`)
+      setConsulta("")
+    } catch (err) {
+      messageApi.error(err instanceof Error ? err.message : "No se pudo guardar el procedimiento no quirúrgico.")
+    }
   }
 
   return (
@@ -48,7 +62,12 @@ export const NonSurgicalSection = ({ currentDoctor, patientName, messageApi }: P
 
       <div className="clinical-history-footer-actions">
         <Button onClick={() => setConsulta("")}>Limpiar formulario</Button>
-        <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSave}>
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          loading={createProcedimientoNoQx.isPending}
+          onClick={validateAndSave}
+        >
           Guardar procedimiento no quirúrgico
         </Button>
       </div>

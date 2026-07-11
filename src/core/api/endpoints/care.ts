@@ -75,4 +75,18 @@ export const CARE_ENDPOINTS = {
       `/api/auth/care/evolucion-especialistas/by-admission/${admissionId}`,
     CREATE: "/api/auth/care/evolucion-especialistas",
   },
+  PROCEDIMIENTOS_NO_QX: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/procedimientos-no-qx/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/procedimientos-no-qx",
+    UPDATE: (id: IdParam) => `/api/auth/care/procedimientos-no-qx/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/procedimientos-no-qx/${id}`,
+  },
+  NOTAS_ENFERMERIA: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/notas-enfermeria/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/notas-enfermeria",
+    UPDATE: (id: IdParam) => `/api/auth/care/notas-enfermeria/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/notas-enfermeria/${id}`,
+  },
 }

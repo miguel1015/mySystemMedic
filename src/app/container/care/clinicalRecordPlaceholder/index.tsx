@@ -6,6 +6,8 @@ import ClinicalRecordHistoryModal from "@/components/clinicalRecordHistoryModal"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useMe } from "@/core/hooks/users/useMeUser"
 import { useGetUsers } from "@/core/hooks/users/useGetUsers"
+import { useCreateProcedimientoNoQx } from "@/core/hooks/care/procedimientosNoQx/useSaveProcedimientoNoQx"
+import { useCreateNotaEnfermeria } from "@/core/hooks/care/notasEnfermeria/useSaveNotaEnfermeria"
 import { GetUser } from "@/core/interfaces/user/users"
 import type { Dayjs } from "dayjs"
 import {
@@ -908,19 +910,34 @@ export const NursingNotesContainer = () => {
   const currentNurse = me?.name || "Enf. Maria Gonzalez"
 
   const [nota, setNota] = useState("")
+  const createNotaEnfermeria = useCreateNotaEnfermeria()
 
   const resetForm = () => setNota("")
 
-  const handleSave = () => {
+  const admissionId = searchParams.get("admissionId") || undefined
+  const [historyOpen, setHistoryOpen] = useState(false)
+
+  const handleSave = async () => {
     if (!nota.trim()) {
       messageApi.error("La nota de enfermería es obligatoria.")
       return
     }
-    messageApi.success(`Nota de enfermería guardada para ${patient.name}.`)
-  }
+    if (!admissionId) {
+      messageApi.error("No se encontró la admisión asociada a esta nota.")
+      return
+    }
 
-  const admissionId = searchParams.get("admissionId") || undefined
-  const [historyOpen, setHistoryOpen] = useState(false)
+    try {
+      await createNotaEnfermeria.mutateAsync({
+        admissionId: Number(admissionId),
+        nota: nota.trim(),
+      })
+      messageApi.success(`Nota de enfermería guardada para ${patient.name}.`)
+      resetForm()
+    } catch (err) {
+      messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la nota de enfermería.")
+    }
+  }
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -1041,7 +1058,12 @@ export const NursingNotesContainer = () => {
 
             <div className="clinical-history-footer-actions">
               <Button onClick={resetForm}>Limpiar formulario</Button>
-              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                loading={createNotaEnfermeria.isPending}
+                onClick={handleSave}
+              >
                 Guardar nota de enfermería
               </Button>
             </div>
@@ -1515,12 +1537,24 @@ export const NonSurgicalProceduresContainer = () => {
   const admissionId = searchParams.get("admissionId") || undefined
   const [consulta, setConsulta] = useState("")
   const [historyOpen, setHistoryOpen] = useState(false)
+  const createProcedimientoNoQx = useCreateProcedimientoNoQx()
 
   const resetForm = () => setConsulta("")
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!consulta.trim()) { messageApi.error("El campo es obligatorio."); return }
-    messageApi.success(`Procedimiento no quirúrgico guardado para ${patient.name}.`)
+    if (!admissionId) { messageApi.error("No se encontró la admisión asociada a este procedimiento."); return }
+
+    try {
+      await createProcedimientoNoQx.mutateAsync({
+        admissionId: Number(admissionId),
+        descripcion: consulta.trim(),
+      })
+      messageApi.success(`Procedimiento no quirúrgico guardado para ${patient.name}.`)
+      resetForm()
+    } catch (err) {
+      messageApi.error(err instanceof Error ? err.message : "No se pudo guardar el procedimiento no quirúrgico.")
+    }
   }
 
   return (
@@ -1549,7 +1583,14 @@ export const NonSurgicalProceduresContainer = () => {
             </div>
             <div className="clinical-history-footer-actions">
               <Button onClick={resetForm}>Limpiar formulario</Button>
-              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Guardar procedimiento no quirúrgico</Button>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                loading={createProcedimientoNoQx.isPending}
+                onClick={handleSave}
+              >
+                Guardar procedimiento no quirúrgico
+              </Button>
             </div>
           </div>
         </div>

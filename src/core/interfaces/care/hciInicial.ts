@@ -176,3 +176,49 @@ export interface EvolucionEspecialistaCreateRequest {
   motivoConsulta: string;
   plan: string;
 }
+
+export interface ProcedimientoNoQxResponse {
+  id: number;
+  admissionId: number;
+  fechaProcedimiento: string;
+  horaProcedimiento: string;
+  userId: number;
+  nombreProfesional: string;
+  descripcion: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProcedimientoNoQxCreateRequest {
+  admissionId: number;
+  descripcion: string;
+}
+
+export interface ProcedimientoNoQxUpdateRequest {
+  descripcion: string;
+  isActive: boolean;
+}
+
+export interface NotaEnfermeriaResponse {
+  id: number;
+  admissionId: number;
+  fechaNota: string;
+  horaNota: string;
+  userId: number;
+  nombreProfesional: string;
+  nota: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotaEnfermeriaCreateRequest {
+  admissionId: number;
+  nota: string;
+}
+
+export interface NotaEnfermeriaUpdateRequest {
+  nota: string;
+  isActive: boolean;
+}
