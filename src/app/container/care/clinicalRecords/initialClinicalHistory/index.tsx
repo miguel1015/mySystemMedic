@@ -513,6 +513,7 @@ const InitialClinicalHistoryContainer = () => {
 
             {activeSidebarKey === "diagnosticos" && (
               <DiagnosticProceduresSection
+                admissionId={admissionId}
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}

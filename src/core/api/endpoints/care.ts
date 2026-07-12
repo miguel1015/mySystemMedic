@@ -111,4 +111,12 @@ export const CARE_ENDPOINTS = {
     UPDATE: (id: IdParam) => `/api/auth/care/notas-enfermeria/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/notas-enfermeria/${id}`,
   },
+  PROCEDIMIENTOS_DIAGNOSTICOS: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/procedimientos-diagnosticos/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/procedimientos-diagnosticos",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/procedimientos-diagnosticos/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/procedimientos-diagnosticos/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/procedimientos-diagnosticos/${id}`,
+  },
 }

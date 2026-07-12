@@ -278,6 +278,32 @@ export interface ProcedimientoNoQxUpdateRequest {
   isActive: boolean;
 }
 
+export interface ProcedimientoDiagnosticoResponse {
+  id: number;
+  admissionId: number;
+  fechaProcedimiento: string;
+  horaProcedimiento: string;
+  userId: number;
+  nombreProfesional: string;
+  estudiosRealizados: string;
+  hallazgos: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProcedimientoDiagnosticoCreateRequest {
+  admissionId: number;
+  estudiosRealizados: string;
+  hallazgos: string;
+}
+
+export interface ProcedimientoDiagnosticoUpdateRequest {
+  estudiosRealizados: string;
+  hallazgos: string;
+  isActive: boolean;
+}
+
 export interface NotaEnfermeriaResponse {
   id: number;
   admissionId: number;
