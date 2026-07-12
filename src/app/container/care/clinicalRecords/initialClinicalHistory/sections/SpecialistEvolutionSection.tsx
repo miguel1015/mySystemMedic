@@ -3,7 +3,7 @@
 import { CloseCircleOutlined, EyeOutlined, SaveOutlined, SolutionOutlined } from "@ant-design/icons"
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateEvolucionEspecialista } from "@/core/hooks/care/evolucionEspecialista/useCreateEvolucionEspecialista"
 import { useUpdateEvolucionEspecialista } from "@/core/hooks/care/evolucionEspecialista/useUpdateEvolucionEspecialista"
@@ -19,13 +19,14 @@ interface Props {
   currentDoctor: string
   patientName: string
   messageApi: MessageInstance
+  historyClosed?: boolean
 }
 
 const { TextArea } = Input
 
 const MAX_LENGTH = 1000
 
-export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patientName, messageApi }: Props) => {
+export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
   const { data: me } = useMe()
 
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -48,6 +49,12 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
     setPlan("")
   }
 
+  useEffect(() => {
+    if (!historyClosed) return
+    reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyClosed])
+
   const loadForEdit = (evolucion: EvolucionEspecialistaResponse) => {
     setEditingId(evolucion.id)
     setMotivoConsulta(evolucion.motivoConsulta)
@@ -69,6 +76,11 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
   }
 
   const validateAndSave = async () => {
+    if (historyClosed) {
+      messageApi.error("La historia clínica inicial está clausurada; no se pueden registrar nuevas evoluciones de especialista.")
+      return
+    }
+
     const motivo = motivoConsulta.trim()
     const planTrimmed = plan.trim()
 
@@ -110,7 +122,7 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
         messageApi.success(`Evolución de especialista guardada para ${patientName}.`)
       }
 
-      reset()
+      setEditingId(saved.id)
       setPreviewTitle("Evolución de especialista guardada")
       setPreviewIsReference(false)
       setPreviewData({
@@ -145,6 +157,12 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
         </div>
       </div>
 
+      {historyClosed && (
+        <div className="qx-section-locked-banner">
+          Esta historia clínica ya fue clausurada y no admite más evoluciones de especialista.
+        </div>
+      )}
+
       <div className="qx-section">
         <div className="qx-section-header">
           <span className="section-number">1</span>
@@ -160,6 +178,7 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
           placeholder="Registre los hallazgos de la consulta del especialista, evaluación y diagnóstico especializado..."
           maxLength={MAX_LENGTH}
           showCount
+          disabled={historyClosed}
         />
       </div>
 
@@ -178,17 +197,24 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
           placeholder="Registre el plan de manejo del especialista: tratamiento, indicaciones y seguimiento especializado..."
           maxLength={MAX_LENGTH}
           showCount
+          disabled={historyClosed}
         />
       </div>
 
       <div className="clinical-history-footer-actions">
         {editingId && (
-          <Button icon={<CloseCircleOutlined />} onClick={reset}>
+          <Button icon={<CloseCircleOutlined />} onClick={reset} disabled={historyClosed}>
             Cancelar edición
           </Button>
         )}
-        <Button onClick={reset}>Limpiar formulario</Button>
-        <Button type="primary" icon={<SaveOutlined />} loading={isSaving} onClick={validateAndSave}>
+        <Button onClick={reset} disabled={historyClosed}>Limpiar formulario</Button>
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          loading={isSaving}
+          onClick={validateAndSave}
+          disabled={historyClosed}
+        >
           {editingId ? "Actualizar evolución de especialista" : "Guardar evolución de especialista"}
         </Button>
       </div>

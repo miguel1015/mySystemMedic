@@ -3,7 +3,7 @@
 import { CloseCircleOutlined, SaveOutlined, ToolOutlined } from "@ant-design/icons"
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateProcedimientoMenor } from "@/core/hooks/care/procedimientosMenores/useCreateProcedimientoMenor"
 import { useUpdateProcedimientoMenor } from "@/core/hooks/care/procedimientosMenores/useUpdateProcedimientoMenor"
@@ -16,11 +16,12 @@ interface Props {
   currentDoctor: string
   patientName: string
   messageApi: MessageInstance
+  historyClosed?: boolean
 }
 
 const { TextArea } = Input
 
-export const MinorProceduresSection = ({ admissionId, currentDoctor, patientName, messageApi }: Props) => {
+export const MinorProceduresSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [consulta, setConsulta] = useState("")
   const [recentOpen, setRecentOpen] = useState(false)
@@ -34,6 +35,12 @@ export const MinorProceduresSection = ({ admissionId, currentDoctor, patientName
     setConsulta("")
   }
 
+  useEffect(() => {
+    if (!historyClosed) return
+    reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyClosed])
+
   const loadForEdit = (procedimientoMenor: ProcedimientoMenorResponse) => {
     setEditingId(procedimientoMenor.id)
     setConsulta(procedimientoMenor.descripcion)
@@ -41,6 +48,11 @@ export const MinorProceduresSection = ({ admissionId, currentDoctor, patientName
   }
 
   const validateAndSave = async () => {
+    if (historyClosed) {
+      messageApi.error("La historia clínica inicial está clausurada; no se pueden registrar nuevos procedimientos menores.")
+      return
+    }
+
     const descripcion = consulta.trim()
 
     if (!descripcion) {
@@ -53,20 +65,20 @@ export const MinorProceduresSection = ({ admissionId, currentDoctor, patientName
     }
 
     try {
-      if (editingId) {
-        await updateProcedimientoMenor.mutateAsync({
-          id: editingId,
-          data: { descripcion, isActive: true },
-        })
-        messageApi.success("Procedimiento menor actualizado correctamente")
-      } else {
-        await createProcedimientoMenor.mutateAsync({
-          admissionId: Number(admissionId),
-          descripcion,
-        })
-        messageApi.success(`Procedimiento menor guardado para ${patientName}.`)
-      }
-      reset()
+      const saved = editingId
+        ? await updateProcedimientoMenor.mutateAsync({
+            id: editingId,
+            data: { descripcion, isActive: true },
+          })
+        : await createProcedimientoMenor.mutateAsync({
+            admissionId: Number(admissionId),
+            descripcion,
+          })
+
+      messageApi.success(
+        editingId ? "Procedimiento menor actualizado correctamente" : `Procedimiento menor guardado para ${patientName}.`,
+      )
+      setEditingId(saved.id)
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar el procedimiento menor.")
     }
@@ -86,6 +98,12 @@ export const MinorProceduresSection = ({ admissionId, currentDoctor, patientName
         </div>
       </div>
 
+      {historyClosed && (
+        <div className="qx-section-locked-banner">
+          Esta historia clínica ya fue clausurada y no admite más procedimientos menores.
+        </div>
+      )}
+
       <div className="qx-section">
         <label style={labelStyle}>Procedimiento menor <span className="field-required">*</span></label>
         <TextArea
@@ -95,17 +113,24 @@ export const MinorProceduresSection = ({ admissionId, currentDoctor, patientName
           placeholder="Describa el procedimiento menor, motivo, evaluación, técnica utilizada e indicaciones post-procedimiento..."
           maxLength={5000}
           showCount
+          disabled={historyClosed}
         />
       </div>
 
       <div className="clinical-history-footer-actions">
         {editingId && (
-          <Button icon={<CloseCircleOutlined />} onClick={reset}>
+          <Button icon={<CloseCircleOutlined />} onClick={reset} disabled={historyClosed}>
             Cancelar edición
           </Button>
         )}
-        <Button onClick={reset}>Limpiar formulario</Button>
-        <Button type="primary" icon={<SaveOutlined />} loading={isSaving} onClick={validateAndSave}>
+        <Button onClick={reset} disabled={historyClosed}>Limpiar formulario</Button>
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          loading={isSaving}
+          onClick={validateAndSave}
+          disabled={historyClosed}
+        >
           {editingId ? "Actualizar procedimiento menor" : "Guardar procedimiento menor"}
         </Button>
       </div>

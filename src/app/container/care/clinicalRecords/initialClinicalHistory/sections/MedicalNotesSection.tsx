@@ -3,7 +3,7 @@
 import { CloseCircleOutlined, FormOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateNotaMedica } from "@/core/hooks/care/notasMedicas/useCreateNotaMedica"
 import { useUpdateNotaMedica } from "@/core/hooks/care/notasMedicas/useUpdateNotaMedica"
@@ -16,11 +16,12 @@ interface Props {
   currentDoctor: string
   patientName: string
   messageApi: MessageInstance
+  historyClosed?: boolean
 }
 
 const { TextArea } = Input
 
-export const MedicalNotesSection = ({ admissionId, currentDoctor, patientName, messageApi }: Props) => {
+export const MedicalNotesSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [consulta, setConsulta] = useState("")
   const [recentOpen, setRecentOpen] = useState(false)
@@ -34,6 +35,12 @@ export const MedicalNotesSection = ({ admissionId, currentDoctor, patientName, m
     setConsulta("")
   }
 
+  useEffect(() => {
+    if (!historyClosed) return
+    reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyClosed])
+
   const loadForEdit = (notaMedica: NotaMedicaResponse) => {
     setEditingId(notaMedica.id)
     setConsulta(notaMedica.nota)
@@ -41,6 +48,11 @@ export const MedicalNotesSection = ({ admissionId, currentDoctor, patientName, m
   }
 
   const validateAndSave = async () => {
+    if (historyClosed) {
+      messageApi.error("La historia clínica inicial está clausurada; no se pueden registrar nuevas notas médicas.")
+      return
+    }
+
     const nota = consulta.trim()
 
     if (!nota) {
@@ -53,20 +65,20 @@ export const MedicalNotesSection = ({ admissionId, currentDoctor, patientName, m
     }
 
     try {
-      if (editingId) {
-        await updateNotaMedica.mutateAsync({
-          id: editingId,
-          data: { nota, isActive: true },
-        })
-        messageApi.success("Nota médica actualizada correctamente")
-      } else {
-        await createNotaMedica.mutateAsync({
-          admissionId: Number(admissionId),
-          nota,
-        })
-        messageApi.success(`Nota médica guardada para ${patientName}.`)
-      }
-      reset()
+      const saved = editingId
+        ? await updateNotaMedica.mutateAsync({
+            id: editingId,
+            data: { nota, isActive: true },
+          })
+        : await createNotaMedica.mutateAsync({
+            admissionId: Number(admissionId),
+            nota,
+          })
+
+      messageApi.success(
+        editingId ? "Nota médica actualizada correctamente" : `Nota médica guardada para ${patientName}.`,
+      )
+      setEditingId(saved.id)
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la nota médica.")
     }
@@ -86,6 +98,12 @@ export const MedicalNotesSection = ({ admissionId, currentDoctor, patientName, m
         </div>
       </div>
 
+      {historyClosed && (
+        <div className="qx-section-locked-banner">
+          Esta historia clínica ya fue clausurada y no admite más notas médicas.
+        </div>
+      )}
+
       <div className="qx-section">
         <label style={labelStyle}>Nota médica <span className="field-required">*</span></label>
         <TextArea
@@ -95,17 +113,24 @@ export const MedicalNotesSection = ({ admissionId, currentDoctor, patientName, m
           placeholder="Registre los hallazgos de la consulta médica, anamnesis, evaluación clínica e indicaciones del paciente..."
           maxLength={5000}
           showCount
+          disabled={historyClosed}
         />
       </div>
 
       <div className="clinical-history-footer-actions">
         {editingId && (
-          <Button icon={<CloseCircleOutlined />} onClick={reset}>
+          <Button icon={<CloseCircleOutlined />} onClick={reset} disabled={historyClosed}>
             Cancelar edición
           </Button>
         )}
-        <Button onClick={reset}>Limpiar formulario</Button>
-        <Button type="primary" icon={<SaveOutlined />} loading={isSaving} onClick={validateAndSave}>
+        <Button onClick={reset} disabled={historyClosed}>Limpiar formulario</Button>
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          loading={isSaving}
+          onClick={validateAndSave}
+          disabled={historyClosed}
+        >
           {editingId ? "Actualizar nota médica" : "Guardar nota médica"}
         </Button>
       </div>

@@ -3,7 +3,7 @@
 import { CloseCircleOutlined, ExperimentOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateProcedimientoDiagnostico } from "@/core/hooks/care/procedimientosDiagnosticos/useCreateProcedimientoDiagnostico"
 import { useUpdateProcedimientoDiagnostico } from "@/core/hooks/care/procedimientosDiagnosticos/useUpdateProcedimientoDiagnostico"
@@ -16,11 +16,12 @@ interface Props {
   currentDoctor: string
   patientName: string
   messageApi: MessageInstance
+  historyClosed?: boolean
 }
 
 const { TextArea } = Input
 
-export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patientName, messageApi }: Props) => {
+export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [estudios, setEstudios] = useState("")
   const [hallazgos, setHallazgos] = useState("")
@@ -36,6 +37,12 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
     setHallazgos("")
   }
 
+  useEffect(() => {
+    if (!historyClosed) return
+    reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyClosed])
+
   const loadForEdit = (procedimientoDiagnostico: ProcedimientoDiagnosticoResponse) => {
     setEditingId(procedimientoDiagnostico.id)
     setEstudios(procedimientoDiagnostico.estudiosRealizados)
@@ -44,6 +51,11 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
   }
 
   const validateAndSave = async () => {
+    if (historyClosed) {
+      messageApi.error("La historia clínica inicial está clausurada; no se pueden registrar nuevos procedimientos diagnósticos.")
+      return
+    }
+
     const estudiosRealizados = estudios.trim()
     const hallazgosValue = hallazgos.trim()
 
@@ -61,21 +73,23 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
     }
 
     try {
-      if (editingId) {
-        await updateProcedimientoDiagnostico.mutateAsync({
-          id: editingId,
-          data: { estudiosRealizados, hallazgos: hallazgosValue, isActive: true },
-        })
-        messageApi.success("Procedimiento diagnóstico actualizado correctamente")
-      } else {
-        await createProcedimientoDiagnostico.mutateAsync({
-          admissionId: Number(admissionId),
-          estudiosRealizados,
-          hallazgos: hallazgosValue,
-        })
-        messageApi.success(`Procedimiento diagnóstico guardado para ${patientName}.`)
-      }
-      reset()
+      const saved = editingId
+        ? await updateProcedimientoDiagnostico.mutateAsync({
+            id: editingId,
+            data: { estudiosRealizados, hallazgos: hallazgosValue, isActive: true },
+          })
+        : await createProcedimientoDiagnostico.mutateAsync({
+            admissionId: Number(admissionId),
+            estudiosRealizados,
+            hallazgos: hallazgosValue,
+          })
+
+      messageApi.success(
+        editingId
+          ? "Procedimiento diagnóstico actualizado correctamente"
+          : `Procedimiento diagnóstico guardado para ${patientName}.`,
+      )
+      setEditingId(saved.id)
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar el procedimiento diagnóstico.")
     }
@@ -95,6 +109,12 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
         </div>
       </div>
 
+      {historyClosed && (
+        <div className="qx-section-locked-banner">
+          Esta historia clínica ya fue clausurada y no admite más procedimientos diagnósticos.
+        </div>
+      )}
+
       <div className="qx-section">
         <div className="qx-section-header">
           <span className="section-number">1</span>
@@ -110,6 +130,7 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
           placeholder="Describa los estudios diagnósticos realizados al paciente (laboratorios, imágenes, electrocardiograma, etc.)..."
           maxLength={2000}
           showCount
+          disabled={historyClosed}
         />
       </div>
 
@@ -128,17 +149,24 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
           placeholder="Registre los hallazgos obtenidos en los estudios diagnósticos realizados..."
           maxLength={2000}
           showCount
+          disabled={historyClosed}
         />
       </div>
 
       <div className="clinical-history-footer-actions">
         {editingId && (
-          <Button icon={<CloseCircleOutlined />} onClick={reset}>
+          <Button icon={<CloseCircleOutlined />} onClick={reset} disabled={historyClosed}>
             Cancelar edición
           </Button>
         )}
-        <Button onClick={reset}>Limpiar formulario</Button>
-        <Button type="primary" icon={<SaveOutlined />} loading={isSaving} onClick={validateAndSave}>
+        <Button onClick={reset} disabled={historyClosed}>Limpiar formulario</Button>
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          loading={isSaving}
+          onClick={validateAndSave}
+          disabled={historyClosed}
+        >
           {editingId ? "Actualizar procedimiento diagnóstico" : "Guardar procedimiento diagnóstico"}
         </Button>
       </div>

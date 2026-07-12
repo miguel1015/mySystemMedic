@@ -3,7 +3,7 @@
 import { CloseCircleOutlined, EyeOutlined, HeartOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, Input, InputNumber, Tag, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateEvolucion } from "@/core/hooks/care/evoluciones/useCreateEvolucion"
 import { useUpdateEvolucion } from "@/core/hooks/care/evoluciones/useUpdateEvolucion"
@@ -20,6 +20,7 @@ interface Props {
   selectedDoctor: string
   patientName: string
   messageApi: MessageInstance
+  historyClosed?: boolean
 }
 
 const { TextArea } = Input
@@ -38,7 +39,7 @@ const vitalsConfig: Array<{ label: string; key: keyof EvoVitalsState; isString?:
 const todayDate = () => new Date().toISOString().slice(0, 10)
 const nowTime = () => new Date().toTimeString().slice(0, 8)
 
-export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, messageApi }: Props) => {
+export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, messageApi, historyClosed }: Props) => {
   const { data: me } = useMe()
 
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -74,6 +75,12 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
     setEvoVitals({ ...defaultEvoVitals })
     setSavedImc(null)
   }
+
+  useEffect(() => {
+    if (!historyClosed) return
+    reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyClosed])
 
   const loadForEdit = (evolucion: EvolucionResponse) => {
     setEditingId(evolucion.id)
@@ -120,6 +127,11 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
   }
 
   const validateAndSave = async () => {
+    if (historyClosed) {
+      messageApi.error("La historia clínica inicial está clausurada; no se pueden registrar nuevas evoluciones.")
+      return
+    }
+
     const motivo = evoMotivo.trim()
     const plan = evoPlan.trim()
 
@@ -175,7 +187,7 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
         messageApi.success("Evolución guardada correctamente")
       }
 
-      reset()
+      setEditingId(saved.id)
       setPreviewTitle("Evolución guardada")
       setPreviewIsReference(false)
       setPreviewData({
@@ -219,6 +231,12 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
         </div>
       </div>
 
+      {historyClosed && (
+        <div className="qx-section-locked-banner">
+          Esta historia clínica ya fue clausurada y no admite más evoluciones.
+        </div>
+      )}
+
       <div className="qx-section">
         <div className="qx-section-header" style={{ flexWrap: "wrap", gap: 8 }}>
           <span className="section-number">1</span>
@@ -233,6 +251,7 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
               type="date"
               value={fechaEvolucion}
               onChange={(e) => setFechaEvolucion(e.target.value)}
+              disabled={historyClosed}
             />
           </div>
           <div className="evo-vital-item">
@@ -244,6 +263,7 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
               step={1}
               value={horaEvolucion}
               onChange={(e) => setHoraEvolucion(e.target.value)}
+              disabled={historyClosed}
             />
           </div>
         </div>
@@ -264,6 +284,7 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
           placeholder="Registre el motivo de atención o seguimiento del paciente..."
           maxLength={1000}
           showCount
+          disabled={historyClosed}
         />
       </div>
 
@@ -281,6 +302,7 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
                   value={evoVitals[key] as string}
                   placeholder={placeholder}
                   onChange={(e) => setEvoVitals({ ...evoVitals, [key]: e.target.value })}
+                  disabled={historyClosed}
                 />
               ) : (
                 <InputNumber
@@ -288,6 +310,7 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
                   value={evoVitals[key] as number}
                   placeholder={placeholder}
                   onChange={(v) => setEvoVitals({ ...evoVitals, [key]: Number(v) || 0 })}
+                  disabled={historyClosed}
                 />
               )}
             </div>
@@ -324,17 +347,24 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
           placeholder="Registre la conducta médica, órdenes clínicas, medicamentos, procedimientos, solicitudes diagnósticas e indicaciones de seguimiento..."
           maxLength={1000}
           showCount
+          disabled={historyClosed}
         />
       </div>
 
       <div className="clinical-history-footer-actions">
         {editingId && (
-          <Button icon={<CloseCircleOutlined />} onClick={reset}>
+          <Button icon={<CloseCircleOutlined />} onClick={reset} disabled={historyClosed}>
             Cancelar edición
           </Button>
         )}
-        <Button onClick={reset}>Limpiar formulario</Button>
-        <Button type="primary" icon={<SaveOutlined />} loading={isSaving} onClick={validateAndSave}>
+        <Button onClick={reset} disabled={historyClosed}>Limpiar formulario</Button>
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          loading={isSaving}
+          onClick={validateAndSave}
+          disabled={historyClosed}
+        >
           {editingId ? "Actualizar evolución" : "Guardar evolución"}
         </Button>
       </div>
