@@ -1,11 +1,14 @@
 "use client"
 
-import { CloseCircleOutlined, FormOutlined, SaveOutlined } from "@ant-design/icons"
+import { CloseCircleOutlined, EyeOutlined, FormOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useEffect, useState } from "react"
 import { useCreateNotaEnfermeria, useUpdateNotaEnfermeria } from "@/core/hooks/care/notasEnfermeria/useSaveNotaEnfermeria"
+import { useMe } from "@/core/hooks/users/useMeUser"
 import { labelStyle } from "../constants"
+import { NotaEnfermeriaPreviewModal } from "./NotaEnfermeriaPreviewModal"
+import type { NotaEnfermeriaViewData } from "./NotaEnfermeriaDetailView"
 
 interface Props {
   admissionId?: string | number
@@ -17,9 +20,21 @@ interface Props {
 
 const { TextArea } = Input
 
+const todayDate = () => new Date().toISOString().slice(0, 10)
+const nowTime = () => new Date().toTimeString().slice(0, 8)
+
 export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
+  const { data: me } = useMe()
+
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [fechaNota, setFechaNota] = useState(todayDate)
+  const [horaNota, setHoraNota] = useState(nowTime)
   const [nota, setNota] = useState("")
+
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<NotaEnfermeriaViewData | null>(null)
+  const [previewTitle, setPreviewTitle] = useState("Vista previa de la nota de enfermería")
+  const [previewIsReference, setPreviewIsReference] = useState(false)
 
   const createNotaEnfermeria = useCreateNotaEnfermeria()
   const updateNotaEnfermeria = useUpdateNotaEnfermeria()
@@ -27,6 +42,8 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
 
   const reset = () => {
     setEditingId(null)
+    setFechaNota(todayDate())
+    setHoraNota(nowTime())
     setNota("")
   }
 
@@ -36,6 +53,18 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyClosed])
 
+  const openPreview = () => {
+    setPreviewTitle(editingId ? "Vista previa - Nota de enfermería (edición)" : "Vista previa de la nota de enfermería")
+    setPreviewIsReference(true)
+    setPreviewData({
+      fechaNota,
+      horaNota,
+      nombreProfesional: me?.name,
+      nota,
+    })
+    setPreviewOpen(true)
+  }
+
   const validateAndSave = async () => {
     if (historyClosed) {
       messageApi.error("La historia clínica inicial está clausurada; no se pueden registrar nuevas notas de enfermería.")
@@ -44,6 +73,14 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
 
     const notaValue = nota.trim()
 
+    if (!fechaNota) {
+      messageApi.error("La fecha de la nota es obligatoria.")
+      return
+    }
+    if (!horaNota) {
+      messageApi.error("La hora de la nota es obligatoria.")
+      return
+    }
     if (!notaValue) {
       messageApi.error("La nota de enfermería es obligatoria.")
       return
@@ -57,17 +94,28 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
       const saved = editingId
         ? await updateNotaEnfermeria.mutateAsync({
             id: editingId,
-            data: { nota: notaValue, isActive: true },
+            data: { fechaNota, horaNota, nota: notaValue, isActive: true },
           })
         : await createNotaEnfermeria.mutateAsync({
             admissionId: Number(admissionId),
+            fechaNota,
+            horaNota,
             nota: notaValue,
           })
 
       messageApi.success(
         editingId ? "Nota de enfermería actualizada correctamente" : `Nota de enfermería guardada para ${patientName}.`,
       )
-      setEditingId(saved.id)
+      setPreviewTitle("Nota de enfermería guardada")
+      setPreviewIsReference(false)
+      setPreviewData({
+        fechaNota: saved.fechaNota,
+        horaNota: saved.horaNota,
+        nombreProfesional: saved.nombreProfesional,
+        nota: saved.nota,
+      })
+      setPreviewOpen(true)
+      reset()
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la nota de enfermería.")
     }
@@ -85,6 +133,11 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
           <span className="evo-header-sep">·</span>
           <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
         </div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <Button icon={<EyeOutlined />} onClick={openPreview}>
+            Vista previa
+          </Button>
+        </div>
       </div>
 
       {historyClosed && (
@@ -94,8 +147,40 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
       )}
 
       <div className="qx-section">
-        <div className="qx-section-header">
+        <div className="qx-section-header" style={{ flexWrap: "wrap", gap: 8 }}>
           <span className="section-number">1</span>
+          <span className="section-title">Fecha y hora de la nota</span>
+        </div>
+        <div className="evo-vitals-grid">
+          <div className="evo-vital-item">
+            <label style={labelStyle}>
+              Fecha <span className="field-required">*</span>
+            </label>
+            <Input
+              type="date"
+              value={fechaNota}
+              onChange={(e) => setFechaNota(e.target.value)}
+              disabled={historyClosed}
+            />
+          </div>
+          <div className="evo-vital-item">
+            <label style={labelStyle}>
+              Hora <span className="field-required">*</span>
+            </label>
+            <Input
+              type="time"
+              step={1}
+              value={horaNota}
+              onChange={(e) => setHoraNota(e.target.value)}
+              disabled={historyClosed}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="qx-section">
+        <div className="qx-section-header">
+          <span className="section-number">2</span>
           <span className="section-title">Nota de Enfermería</span>
         </div>
         <label style={labelStyle}>
@@ -129,6 +214,14 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
           {editingId ? "Actualizar nota de enfermería" : "Guardar nota de enfermería"}
         </Button>
       </div>
+
+      <NotaEnfermeriaPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        data={previewData}
+        title={previewTitle}
+        professionalIsReference={previewIsReference}
+      />
     </div>
   )
 }

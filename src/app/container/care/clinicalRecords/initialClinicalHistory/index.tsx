@@ -495,7 +495,6 @@ const InitialClinicalHistoryContainer = () => {
                 selectedDoctor={selectedDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
-                historyClosed={isHciClosed}
               />
             )}
 
@@ -509,7 +508,6 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
-                historyClosed={isHciClosed}
               />
             )}
 
@@ -519,7 +517,6 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
-                historyClosed={isHciClosed}
               />
             )}
 
@@ -529,7 +526,6 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
-                historyClosed={isHciClosed}
               />
             )}
 
@@ -539,7 +535,6 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
-                historyClosed={isHciClosed}
               />
             )}
 
@@ -549,7 +544,6 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
-                historyClosed={isHciClosed}
               />
             )}
 
@@ -559,7 +553,6 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
-                historyClosed={isHciClosed}
               />
             )}
           </div>

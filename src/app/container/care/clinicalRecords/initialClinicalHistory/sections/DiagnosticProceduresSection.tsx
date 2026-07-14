@@ -1,15 +1,18 @@
 "use client"
 
-import { CloseCircleOutlined, ExperimentOutlined, SaveOutlined } from "@ant-design/icons"
+import { CloseCircleOutlined, ExperimentOutlined, EyeOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useEffect, useState } from "react"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateProcedimientoDiagnostico } from "@/core/hooks/care/procedimientosDiagnosticos/useCreateProcedimientoDiagnostico"
 import { useUpdateProcedimientoDiagnostico } from "@/core/hooks/care/procedimientosDiagnosticos/useUpdateProcedimientoDiagnostico"
+import { useMe } from "@/core/hooks/users/useMeUser"
 import type { ProcedimientoDiagnosticoResponse } from "@/core/interfaces/care/hciInicial"
 import { labelStyle } from "../constants"
 import { ProcedimientosDiagnosticosRecentModal } from "./ProcedimientosDiagnosticosRecentModal"
+import { ProcedimientoDiagnosticoPreviewModal } from "./ProcedimientoDiagnosticoPreviewModal"
+import type { ProcedimientoDiagnosticoViewData } from "./ProcedimientoDiagnosticoDetailView"
 
 interface Props {
   admissionId?: string | number
@@ -21,11 +24,23 @@ interface Props {
 
 const { TextArea } = Input
 
+const todayDate = () => new Date().toISOString().slice(0, 10)
+const nowTime = () => new Date().toTimeString().slice(0, 8)
+
 export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
+  const { data: me } = useMe()
+
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [fechaProcedimiento, setFechaProcedimiento] = useState(todayDate)
+  const [horaProcedimiento, setHoraProcedimiento] = useState(nowTime)
   const [estudios, setEstudios] = useState("")
   const [hallazgos, setHallazgos] = useState("")
   const [recentOpen, setRecentOpen] = useState(false)
+
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<ProcedimientoDiagnosticoViewData | null>(null)
+  const [previewTitle, setPreviewTitle] = useState("Vista previa del procedimiento diagnóstico")
+  const [previewIsReference, setPreviewIsReference] = useState(false)
 
   const createProcedimientoDiagnostico = useCreateProcedimientoDiagnostico()
   const updateProcedimientoDiagnostico = useUpdateProcedimientoDiagnostico()
@@ -33,6 +48,8 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
 
   const reset = () => {
     setEditingId(null)
+    setFechaProcedimiento(todayDate())
+    setHoraProcedimiento(nowTime())
     setEstudios("")
     setHallazgos("")
   }
@@ -45,9 +62,24 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
 
   const loadForEdit = (procedimientoDiagnostico: ProcedimientoDiagnosticoResponse) => {
     setEditingId(procedimientoDiagnostico.id)
+    setFechaProcedimiento(procedimientoDiagnostico.fechaProcedimiento)
+    setHoraProcedimiento(procedimientoDiagnostico.horaProcedimiento)
     setEstudios(procedimientoDiagnostico.estudiosRealizados)
     setHallazgos(procedimientoDiagnostico.hallazgos)
     setRecentOpen(false)
+  }
+
+  const openPreview = () => {
+    setPreviewTitle(editingId ? "Vista previa - Procedimiento diagnóstico (edición)" : "Vista previa del procedimiento diagnóstico")
+    setPreviewIsReference(true)
+    setPreviewData({
+      fechaProcedimiento,
+      horaProcedimiento,
+      nombreProfesional: me?.name,
+      estudiosRealizados: estudios,
+      hallazgos,
+    })
+    setPreviewOpen(true)
   }
 
   const validateAndSave = async () => {
@@ -59,6 +91,14 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
     const estudiosRealizados = estudios.trim()
     const hallazgosValue = hallazgos.trim()
 
+    if (!fechaProcedimiento) {
+      messageApi.error("La fecha del procedimiento es obligatoria.")
+      return
+    }
+    if (!horaProcedimiento) {
+      messageApi.error("La hora del procedimiento es obligatoria.")
+      return
+    }
     if (!estudiosRealizados) {
       messageApi.error("El campo Estudios realizados es obligatorio.")
       return
@@ -76,10 +116,12 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
       const saved = editingId
         ? await updateProcedimientoDiagnostico.mutateAsync({
             id: editingId,
-            data: { estudiosRealizados, hallazgos: hallazgosValue, isActive: true },
+            data: { fechaProcedimiento, horaProcedimiento, estudiosRealizados, hallazgos: hallazgosValue, isActive: true },
           })
         : await createProcedimientoDiagnostico.mutateAsync({
             admissionId: Number(admissionId),
+            fechaProcedimiento,
+            horaProcedimiento,
             estudiosRealizados,
             hallazgos: hallazgosValue,
           })
@@ -89,7 +131,17 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
           ? "Procedimiento diagnóstico actualizado correctamente"
           : `Procedimiento diagnóstico guardado para ${patientName}.`,
       )
-      setEditingId(saved.id)
+      setPreviewTitle("Procedimiento diagnóstico guardado")
+      setPreviewIsReference(false)
+      setPreviewData({
+        fechaProcedimiento: saved.fechaProcedimiento,
+        horaProcedimiento: saved.horaProcedimiento,
+        nombreProfesional: saved.nombreProfesional,
+        estudiosRealizados: saved.estudiosRealizados,
+        hallazgos: saved.hallazgos,
+      })
+      setPreviewOpen(true)
+      reset()
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar el procedimiento diagnóstico.")
     }
@@ -107,6 +159,11 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
           <span className="evo-header-sep">·</span>
           <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
         </div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <Button icon={<EyeOutlined />} onClick={openPreview}>
+            Vista previa
+          </Button>
+        </div>
       </div>
 
       {historyClosed && (
@@ -116,8 +173,40 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
       )}
 
       <div className="qx-section">
-        <div className="qx-section-header">
+        <div className="qx-section-header" style={{ flexWrap: "wrap", gap: 8 }}>
           <span className="section-number">1</span>
+          <span className="section-title">Fecha y hora del procedimiento</span>
+        </div>
+        <div className="evo-vitals-grid">
+          <div className="evo-vital-item">
+            <label style={labelStyle}>
+              Fecha <span className="field-required">*</span>
+            </label>
+            <Input
+              type="date"
+              value={fechaProcedimiento}
+              onChange={(e) => setFechaProcedimiento(e.target.value)}
+              disabled={historyClosed}
+            />
+          </div>
+          <div className="evo-vital-item">
+            <label style={labelStyle}>
+              Hora <span className="field-required">*</span>
+            </label>
+            <Input
+              type="time"
+              step={1}
+              value={horaProcedimiento}
+              onChange={(e) => setHoraProcedimiento(e.target.value)}
+              disabled={historyClosed}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="qx-section">
+        <div className="qx-section-header">
+          <span className="section-number">2</span>
           <span className="section-title">Estudios realizados</span>
         </div>
         <label style={labelStyle}>
@@ -136,7 +225,7 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
 
       <div className="qx-section">
         <div className="qx-section-header">
-          <span className="section-number">2</span>
+          <span className="section-number">3</span>
           <span className="section-title">Hallazgos</span>
         </div>
         <label style={labelStyle}>
@@ -177,6 +266,14 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
         admissionId={admissionId}
         onEdit={loadForEdit}
         messageApi={messageApi}
+      />
+
+      <ProcedimientoDiagnosticoPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        data={previewData}
+        title={previewTitle}
+        professionalIsReference={previewIsReference}
       />
 
       <ClinicalRecordHistoryTrigger

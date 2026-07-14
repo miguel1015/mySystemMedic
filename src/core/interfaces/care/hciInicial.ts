@@ -199,11 +199,15 @@ export interface EvolucionEspecialistaResponse {
 
 export interface EvolucionEspecialistaCreateRequest {
   admissionId: number;
+  fechaEvolucion: string;
+  horaEvolucion: string;
   motivoConsulta: string;
   plan: string;
 }
 
 export interface EvolucionEspecialistaUpdateRequest {
+  fechaEvolucion: string;
+  horaEvolucion: string;
   motivoConsulta: string;
   plan: string;
   isActive: boolean;
@@ -247,10 +251,14 @@ export interface ProcedimientoMenorResponse {
 
 export interface ProcedimientoMenorCreateRequest {
   admissionId: number;
+  fechaProcedimiento: string;
+  horaProcedimiento: string;
   descripcion: string;
 }
 
 export interface ProcedimientoMenorUpdateRequest {
+  fechaProcedimiento: string;
+  horaProcedimiento: string;
   descripcion: string;
   isActive: boolean;
 }
@@ -270,10 +278,14 @@ export interface ProcedimientoNoQxResponse {
 
 export interface ProcedimientoNoQxCreateRequest {
   admissionId: number;
+  fechaProcedimiento: string;
+  horaProcedimiento: string;
   descripcion: string;
 }
 
 export interface ProcedimientoNoQxUpdateRequest {
+  fechaProcedimiento: string;
+  horaProcedimiento: string;
   descripcion: string;
   isActive: boolean;
 }
@@ -294,11 +306,15 @@ export interface ProcedimientoDiagnosticoResponse {
 
 export interface ProcedimientoDiagnosticoCreateRequest {
   admissionId: number;
+  fechaProcedimiento: string;
+  horaProcedimiento: string;
   estudiosRealizados: string;
   hallazgos: string;
 }
 
 export interface ProcedimientoDiagnosticoUpdateRequest {
+  fechaProcedimiento: string;
+  horaProcedimiento: string;
   estudiosRealizados: string;
   hallazgos: string;
   isActive: boolean;
@@ -319,10 +335,14 @@ export interface NotaEnfermeriaResponse {
 
 export interface NotaEnfermeriaCreateRequest {
   admissionId: number;
+  fechaNota: string;
+  horaNota: string;
   nota: string;
 }
 
 export interface NotaEnfermeriaUpdateRequest {
+  fechaNota: string;
+  horaNota: string;
   nota: string;
   isActive: boolean;
 }

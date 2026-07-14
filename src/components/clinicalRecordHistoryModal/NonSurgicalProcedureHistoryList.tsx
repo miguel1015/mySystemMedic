@@ -77,7 +77,12 @@ export const NonSurgicalProcedureHistoryList = ({ admissionId }: Props) => {
     try {
       await updateProcedimiento.mutateAsync({
         id: selected.id,
-        data: { descripcion: editValue.trim(), isActive: true },
+        data: {
+          fechaProcedimiento: selected.fechaProcedimiento,
+          horaProcedimiento: selected.horaProcedimiento,
+          descripcion: editValue.trim(),
+          isActive: true,
+        },
       })
       messageApi.success("Procedimiento no quirúrgico actualizado.")
       setIsEditing(false)

@@ -187,7 +187,6 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
         messageApi.success("Evolución guardada correctamente")
       }
 
-      setEditingId(saved.id)
       setPreviewTitle("Evolución guardada")
       setPreviewIsReference(false)
       setPreviewData({
@@ -207,6 +206,7 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
         plan: saved.plan,
       })
       setPreviewOpen(true)
+      reset()
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la evolución.")
     }

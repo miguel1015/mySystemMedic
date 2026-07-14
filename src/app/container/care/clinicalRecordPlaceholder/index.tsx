@@ -784,6 +784,8 @@ export const NursingNotesContainer = () => {
     try {
       await createNotaEnfermeria.mutateAsync({
         admissionId: Number(admissionId),
+        fechaNota: new Date().toISOString().slice(0, 10),
+        horaNota: new Date().toTimeString().slice(0, 8),
         nota: nota.trim(),
       })
       messageApi.success(`Nota de enfermería guardada para ${patient.name}.`)
@@ -1170,6 +1172,8 @@ export const NonSurgicalProceduresContainer = () => {
     try {
       await createProcedimientoNoQx.mutateAsync({
         admissionId: Number(admissionId),
+        fechaProcedimiento: new Date().toISOString().slice(0, 10),
+        horaProcedimiento: new Date().toTimeString().slice(0, 8),
         descripcion: consulta.trim(),
       })
       messageApi.success(`Procedimiento no quirúrgico guardado para ${patient.name}.`)

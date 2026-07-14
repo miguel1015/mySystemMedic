@@ -1,11 +1,14 @@
 "use client"
 
-import { AuditOutlined, CloseCircleOutlined, SaveOutlined } from "@ant-design/icons"
+import { AuditOutlined, CloseCircleOutlined, EyeOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useEffect, useState } from "react"
 import { useCreateProcedimientoNoQx, useUpdateProcedimientoNoQx } from "@/core/hooks/care/procedimientosNoQx/useSaveProcedimientoNoQx"
+import { useMe } from "@/core/hooks/users/useMeUser"
 import { labelStyle } from "../constants"
+import { ProcedimientoNoQxPreviewModal } from "./ProcedimientoNoQxPreviewModal"
+import type { ProcedimientoNoQxViewData } from "./ProcedimientoNoQxDetailView"
 
 interface Props {
   admissionId?: string | number
@@ -17,9 +20,21 @@ interface Props {
 
 const { TextArea } = Input
 
+const todayDate = () => new Date().toISOString().slice(0, 10)
+const nowTime = () => new Date().toTimeString().slice(0, 8)
+
 export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
+  const { data: me } = useMe()
+
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [fechaProcedimiento, setFechaProcedimiento] = useState(todayDate)
+  const [horaProcedimiento, setHoraProcedimiento] = useState(nowTime)
   const [consulta, setConsulta] = useState("")
+
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<ProcedimientoNoQxViewData | null>(null)
+  const [previewTitle, setPreviewTitle] = useState("Vista previa del procedimiento no quirúrgico")
+  const [previewIsReference, setPreviewIsReference] = useState(false)
 
   const createProcedimientoNoQx = useCreateProcedimientoNoQx()
   const updateProcedimientoNoQx = useUpdateProcedimientoNoQx()
@@ -27,6 +42,8 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
 
   const reset = () => {
     setEditingId(null)
+    setFechaProcedimiento(todayDate())
+    setHoraProcedimiento(nowTime())
     setConsulta("")
   }
 
@@ -36,6 +53,18 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyClosed])
 
+  const openPreview = () => {
+    setPreviewTitle(editingId ? "Vista previa - Procedimiento no quirúrgico (edición)" : "Vista previa del procedimiento no quirúrgico")
+    setPreviewIsReference(true)
+    setPreviewData({
+      fechaProcedimiento,
+      horaProcedimiento,
+      nombreProfesional: me?.name,
+      descripcion: consulta,
+    })
+    setPreviewOpen(true)
+  }
+
   const validateAndSave = async () => {
     if (historyClosed) {
       messageApi.error("La historia clínica inicial está clausurada; no se pueden registrar nuevos procedimientos no quirúrgicos.")
@@ -44,6 +73,14 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
 
     const descripcion = consulta.trim()
 
+    if (!fechaProcedimiento) {
+      messageApi.error("La fecha del procedimiento es obligatoria.")
+      return
+    }
+    if (!horaProcedimiento) {
+      messageApi.error("La hora del procedimiento es obligatoria.")
+      return
+    }
     if (!descripcion) {
       messageApi.error("El campo es obligatorio.")
       return
@@ -57,10 +94,12 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
       const saved = editingId
         ? await updateProcedimientoNoQx.mutateAsync({
             id: editingId,
-            data: { descripcion, isActive: true },
+            data: { fechaProcedimiento, horaProcedimiento, descripcion, isActive: true },
           })
         : await createProcedimientoNoQx.mutateAsync({
             admissionId: Number(admissionId),
+            fechaProcedimiento,
+            horaProcedimiento,
             descripcion,
           })
 
@@ -69,7 +108,16 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
           ? "Procedimiento no quirúrgico actualizado correctamente"
           : `Procedimiento no quirúrgico guardado para ${patientName}.`,
       )
-      setEditingId(saved.id)
+      setPreviewTitle("Procedimiento no quirúrgico guardado")
+      setPreviewIsReference(false)
+      setPreviewData({
+        fechaProcedimiento: saved.fechaProcedimiento,
+        horaProcedimiento: saved.horaProcedimiento,
+        nombreProfesional: saved.nombreProfesional,
+        descripcion: saved.descripcion,
+      })
+      setPreviewOpen(true)
+      reset()
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar el procedimiento no quirúrgico.")
     }
@@ -87,6 +135,11 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
           <span className="evo-header-sep">·</span>
           <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
         </div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <Button icon={<EyeOutlined />} onClick={openPreview}>
+            Vista previa
+          </Button>
+        </div>
       </div>
 
       {historyClosed && (
@@ -96,6 +149,42 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
       )}
 
       <div className="qx-section">
+        <div className="qx-section-header" style={{ flexWrap: "wrap", gap: 8 }}>
+          <span className="section-number">1</span>
+          <span className="section-title">Fecha y hora del procedimiento</span>
+        </div>
+        <div className="evo-vitals-grid">
+          <div className="evo-vital-item">
+            <label style={labelStyle}>
+              Fecha <span className="field-required">*</span>
+            </label>
+            <Input
+              type="date"
+              value={fechaProcedimiento}
+              onChange={(e) => setFechaProcedimiento(e.target.value)}
+              disabled={historyClosed}
+            />
+          </div>
+          <div className="evo-vital-item">
+            <label style={labelStyle}>
+              Hora <span className="field-required">*</span>
+            </label>
+            <Input
+              type="time"
+              step={1}
+              value={horaProcedimiento}
+              onChange={(e) => setHoraProcedimiento(e.target.value)}
+              disabled={historyClosed}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="qx-section">
+        <div className="qx-section-header">
+          <span className="section-number">2</span>
+          <span className="section-title">Procedimiento no quirúrgico</span>
+        </div>
         <label style={labelStyle}>Procedimiento no quirúrgico <span className="field-required">*</span></label>
         <TextArea
           rows={14}
@@ -125,6 +214,14 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
           {editingId ? "Actualizar procedimiento no quirúrgico" : "Guardar procedimiento no quirúrgico"}
         </Button>
       </div>
+
+      <ProcedimientoNoQxPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        data={previewData}
+        title={previewTitle}
+        professionalIsReference={previewIsReference}
+      />
     </div>
   )
 }

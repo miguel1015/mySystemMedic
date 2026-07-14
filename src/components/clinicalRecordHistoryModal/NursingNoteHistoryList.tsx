@@ -77,7 +77,12 @@ export const NursingNoteHistoryList = ({ admissionId }: Props) => {
     try {
       await updateNota.mutateAsync({
         id: selected.id,
-        data: { nota: editValue.trim(), isActive: true },
+        data: {
+          fechaNota: selected.fechaNota,
+          horaNota: selected.horaNota,
+          nota: editValue.trim(),
+          isActive: true,
+        },
       })
       messageApi.success("Nota de enfermería actualizada.")
       setIsEditing(false)

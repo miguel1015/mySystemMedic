@@ -26,10 +26,15 @@ const { TextArea } = Input
 
 const MAX_LENGTH = 1000
 
+const todayDate = () => new Date().toISOString().slice(0, 10)
+const nowTime = () => new Date().toTimeString().slice(0, 8)
+
 export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
   const { data: me } = useMe()
 
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [fechaEvolucion, setFechaEvolucion] = useState(todayDate)
+  const [horaEvolucion, setHoraEvolucion] = useState(nowTime)
   const [motivoConsulta, setMotivoConsulta] = useState("")
   const [plan, setPlan] = useState("")
 
@@ -45,6 +50,8 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
 
   const reset = () => {
     setEditingId(null)
+    setFechaEvolucion(todayDate())
+    setHoraEvolucion(nowTime())
     setMotivoConsulta("")
     setPlan("")
   }
@@ -57,6 +64,8 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
 
   const loadForEdit = (evolucion: EvolucionEspecialistaResponse) => {
     setEditingId(evolucion.id)
+    setFechaEvolucion(evolucion.fechaEvolucion)
+    setHoraEvolucion(evolucion.horaEvolucion)
     setMotivoConsulta(evolucion.motivoConsulta)
     setPlan(evolucion.plan)
     setRecentOpen(false)
@@ -66,8 +75,8 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
     setPreviewTitle(editingId ? "Vista previa - Evolución de especialista (edición)" : "Vista previa de la evolución")
     setPreviewIsReference(true)
     setPreviewData({
-      fechaEvolucion: null,
-      horaEvolucion: null,
+      fechaEvolucion,
+      horaEvolucion,
       nombreProfesional: me?.name,
       motivoConsulta,
       plan,
@@ -84,6 +93,14 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
     const motivo = motivoConsulta.trim()
     const planTrimmed = plan.trim()
 
+    if (!fechaEvolucion) {
+      messageApi.error("La fecha de evolución es obligatoria.")
+      return
+    }
+    if (!horaEvolucion) {
+      messageApi.error("La hora de evolución es obligatoria.")
+      return
+    }
     if (!motivo) {
       messageApi.error("El motivo de consulta es obligatorio.")
       return
@@ -110,19 +127,20 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
       if (editingId) {
         saved = await updateEvolucionEspecialista.mutateAsync({
           id: editingId,
-          data: { motivoConsulta: motivo, plan: planTrimmed, isActive: true },
+          data: { fechaEvolucion, horaEvolucion, motivoConsulta: motivo, plan: planTrimmed, isActive: true },
         })
         messageApi.success("Evolución de especialista actualizada correctamente")
       } else {
         saved = await createEvolucionEspecialista.mutateAsync({
           admissionId: Number(admissionId),
+          fechaEvolucion,
+          horaEvolucion,
           motivoConsulta: motivo,
           plan: planTrimmed,
         })
         messageApi.success(`Evolución de especialista guardada para ${patientName}.`)
       }
 
-      setEditingId(saved.id)
       setPreviewTitle("Evolución de especialista guardada")
       setPreviewIsReference(false)
       setPreviewData({
@@ -133,6 +151,7 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
         plan: saved.plan,
       })
       setPreviewOpen(true)
+      reset()
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la evolución de especialista.")
     }
@@ -164,8 +183,40 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
       )}
 
       <div className="qx-section">
-        <div className="qx-section-header">
+        <div className="qx-section-header" style={{ flexWrap: "wrap", gap: 8 }}>
           <span className="section-number">1</span>
+          <span className="section-title">Fecha y hora de evolución</span>
+        </div>
+        <div className="evo-vitals-grid">
+          <div className="evo-vital-item">
+            <label style={labelStyle}>
+              Fecha <span className="field-required">*</span>
+            </label>
+            <Input
+              type="date"
+              value={fechaEvolucion}
+              onChange={(e) => setFechaEvolucion(e.target.value)}
+              disabled={historyClosed}
+            />
+          </div>
+          <div className="evo-vital-item">
+            <label style={labelStyle}>
+              Hora <span className="field-required">*</span>
+            </label>
+            <Input
+              type="time"
+              step={1}
+              value={horaEvolucion}
+              onChange={(e) => setHoraEvolucion(e.target.value)}
+              disabled={historyClosed}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="qx-section">
+        <div className="qx-section-header">
+          <span className="section-number">2</span>
           <span className="section-title">Motivo de consulta</span>
         </div>
         <label style={labelStyle}>
@@ -184,7 +235,7 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
 
       <div className="qx-section">
         <div className="qx-section-header">
-          <span className="section-number">2</span>
+          <span className="section-number">3</span>
           <span className="section-title">Plan</span>
         </div>
         <label style={labelStyle}>
