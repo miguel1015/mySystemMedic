@@ -6,9 +6,11 @@ import type { MessageInstance } from "antd/es/message/interface"
 import { useEffect, useState } from "react"
 import { useCreateProcedimientoNoQx, useUpdateProcedimientoNoQx } from "@/core/hooks/care/procedimientosNoQx/useSaveProcedimientoNoQx"
 import { useMe } from "@/core/hooks/users/useMeUser"
+import type { GetUser } from "@/core/interfaces/user/users"
 import { labelStyle } from "../constants"
-import { ProcedimientoNoQxPreviewModal } from "./ProcedimientoNoQxPreviewModal"
-import type { ProcedimientoNoQxViewData } from "./ProcedimientoNoQxDetailView"
+import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
+import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument"
+import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
@@ -16,6 +18,10 @@ interface Props {
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
+  patient?: PrintPatient
+  admissionDate?: string
+  contractName?: string
+  doctorUser?: GetUser
 }
 
 const { TextArea } = Input
@@ -23,8 +29,28 @@ const { TextArea } = Input
 const todayDate = () => new Date().toISOString().slice(0, 10)
 const nowTime = () => new Date().toTimeString().slice(0, 8)
 
-export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
+export const NonSurgicalSection = ({
+  admissionId,
+  currentDoctor,
+  patientName,
+  messageApi,
+  historyClosed,
+  patient,
+  admissionDate = "",
+  contractName = "",
+  doctorUser,
+}: Props) => {
   const { data: me } = useMe()
+
+  const resolvedPatient: PrintPatient = patient ?? {
+    name: patientName,
+    documentType: "",
+    documentNumber: "",
+    careScope: "",
+    birthDate: "",
+    sex: "",
+    insurer: "",
+  }
 
   const [editingId, setEditingId] = useState<number | null>(null)
   const [fechaProcedimiento, setFechaProcedimiento] = useState(todayDate)
@@ -32,9 +58,11 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
   const [consulta, setConsulta] = useState("")
 
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewData, setPreviewData] = useState<ProcedimientoNoQxViewData | null>(null)
   const [previewTitle, setPreviewTitle] = useState("Vista previa del procedimiento no quirúrgico")
-  const [previewIsReference, setPreviewIsReference] = useState(false)
+  const [previewFecha, setPreviewFecha] = useState("")
+  const [previewHora, setPreviewHora] = useState("")
+  const [previewDoctor, setPreviewDoctor] = useState("")
+  const [previewDescripcion, setPreviewDescripcion] = useState("")
 
   const createProcedimientoNoQx = useCreateProcedimientoNoQx()
   const updateProcedimientoNoQx = useUpdateProcedimientoNoQx()
@@ -55,13 +83,10 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Procedimiento no quirúrgico (edición)" : "Vista previa del procedimiento no quirúrgico")
-    setPreviewIsReference(true)
-    setPreviewData({
-      fechaProcedimiento,
-      horaProcedimiento,
-      nombreProfesional: me?.name,
-      descripcion: consulta,
-    })
+    setPreviewFecha(fechaProcedimiento)
+    setPreviewHora(horaProcedimiento)
+    setPreviewDoctor(me?.name || "")
+    setPreviewDescripcion(consulta)
     setPreviewOpen(true)
   }
 
@@ -109,13 +134,10 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
           : `Procedimiento no quirúrgico guardado para ${patientName}.`,
       )
       setPreviewTitle("Procedimiento no quirúrgico guardado")
-      setPreviewIsReference(false)
-      setPreviewData({
-        fechaProcedimiento: saved.fechaProcedimiento,
-        horaProcedimiento: saved.horaProcedimiento,
-        nombreProfesional: saved.nombreProfesional,
-        descripcion: saved.descripcion,
-      })
+      setPreviewFecha(saved.fechaProcedimiento)
+      setPreviewHora(saved.horaProcedimiento)
+      setPreviewDoctor(saved.nombreProfesional)
+      setPreviewDescripcion(saved.descripcion)
       setPreviewOpen(true)
       reset()
     } catch (err) {
@@ -215,12 +237,30 @@ export const NonSurgicalSection = ({ admissionId, currentDoctor, patientName, me
         </Button>
       </div>
 
-      <ProcedimientoNoQxPreviewModal
+      <ClinicalPrintPreviewModal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        data={previewData}
         title={previewTitle}
-        professionalIsReference={previewIsReference}
+        renderDocument={(provider) => (
+          <GenericClinicalPrintDocument
+            provider={provider}
+            patient={resolvedPatient}
+            admissionDate={admissionDate}
+            contractName={contractName}
+            documentTitle="Procedimiento No Quirúrgico"
+            attentionLabel="Fecha y hora del procedimiento:"
+            attentionDate={previewFecha}
+            attentionTime={previewHora?.slice(0, 5)}
+            doctorName={previewDoctor}
+            doctorUser={doctorUser}
+            sections={[
+              {
+                title: "Procedimiento no quirúrgico",
+                rows: [{ label: "Procedimiento no quirúrgico", value: previewDescripcion }],
+              },
+            ]}
+          />
+        )}
       />
     </div>
   )

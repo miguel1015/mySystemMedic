@@ -6,9 +6,11 @@ import type { MessageInstance } from "antd/es/message/interface"
 import { useEffect, useState } from "react"
 import { useCreateNotaEnfermeria, useUpdateNotaEnfermeria } from "@/core/hooks/care/notasEnfermeria/useSaveNotaEnfermeria"
 import { useMe } from "@/core/hooks/users/useMeUser"
+import type { GetUser } from "@/core/interfaces/user/users"
 import { labelStyle } from "../constants"
-import { NotaEnfermeriaPreviewModal } from "./NotaEnfermeriaPreviewModal"
-import type { NotaEnfermeriaViewData } from "./NotaEnfermeriaDetailView"
+import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
+import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument"
+import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
@@ -16,6 +18,10 @@ interface Props {
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
+  patient?: PrintPatient
+  admissionDate?: string
+  contractName?: string
+  doctorUser?: GetUser
 }
 
 const { TextArea } = Input
@@ -23,8 +29,28 @@ const { TextArea } = Input
 const todayDate = () => new Date().toISOString().slice(0, 10)
 const nowTime = () => new Date().toTimeString().slice(0, 8)
 
-export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
+export const NursingNoteSection = ({
+  admissionId,
+  currentDoctor,
+  patientName,
+  messageApi,
+  historyClosed,
+  patient,
+  admissionDate = "",
+  contractName = "",
+  doctorUser,
+}: Props) => {
   const { data: me } = useMe()
+
+  const resolvedPatient: PrintPatient = patient ?? {
+    name: patientName,
+    documentType: "",
+    documentNumber: "",
+    careScope: "",
+    birthDate: "",
+    sex: "",
+    insurer: "",
+  }
 
   const [editingId, setEditingId] = useState<number | null>(null)
   const [fechaNota, setFechaNota] = useState(todayDate)
@@ -32,9 +58,11 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
   const [nota, setNota] = useState("")
 
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewData, setPreviewData] = useState<NotaEnfermeriaViewData | null>(null)
   const [previewTitle, setPreviewTitle] = useState("Vista previa de la nota de enfermería")
-  const [previewIsReference, setPreviewIsReference] = useState(false)
+  const [previewFecha, setPreviewFecha] = useState("")
+  const [previewHora, setPreviewHora] = useState("")
+  const [previewDoctor, setPreviewDoctor] = useState("")
+  const [previewNota, setPreviewNota] = useState("")
 
   const createNotaEnfermeria = useCreateNotaEnfermeria()
   const updateNotaEnfermeria = useUpdateNotaEnfermeria()
@@ -55,13 +83,10 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Nota de enfermería (edición)" : "Vista previa de la nota de enfermería")
-    setPreviewIsReference(true)
-    setPreviewData({
-      fechaNota,
-      horaNota,
-      nombreProfesional: me?.name,
-      nota,
-    })
+    setPreviewFecha(fechaNota)
+    setPreviewHora(horaNota)
+    setPreviewDoctor(me?.name || "")
+    setPreviewNota(nota)
     setPreviewOpen(true)
   }
 
@@ -107,13 +132,10 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
         editingId ? "Nota de enfermería actualizada correctamente" : `Nota de enfermería guardada para ${patientName}.`,
       )
       setPreviewTitle("Nota de enfermería guardada")
-      setPreviewIsReference(false)
-      setPreviewData({
-        fechaNota: saved.fechaNota,
-        horaNota: saved.horaNota,
-        nombreProfesional: saved.nombreProfesional,
-        nota: saved.nota,
-      })
+      setPreviewFecha(saved.fechaNota)
+      setPreviewHora(saved.horaNota)
+      setPreviewDoctor(saved.nombreProfesional)
+      setPreviewNota(saved.nota)
       setPreviewOpen(true)
       reset()
     } catch (err) {
@@ -215,12 +237,30 @@ export const NursingNoteSection = ({ admissionId, currentDoctor, patientName, me
         </Button>
       </div>
 
-      <NotaEnfermeriaPreviewModal
+      <ClinicalPrintPreviewModal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        data={previewData}
         title={previewTitle}
-        professionalIsReference={previewIsReference}
+        renderDocument={(provider) => (
+          <GenericClinicalPrintDocument
+            provider={provider}
+            patient={resolvedPatient}
+            admissionDate={admissionDate}
+            contractName={contractName}
+            documentTitle="Nota de Enfermería"
+            attentionLabel="Fecha y hora de la nota:"
+            attentionDate={previewFecha || ""}
+            attentionTime={previewHora?.slice(0, 5) || ""}
+            doctorName={previewDoctor}
+            doctorUser={doctorUser}
+            sections={[
+              {
+                title: "Nota de enfermería",
+                rows: [{ label: "Nota de enfermería", value: previewNota }],
+              },
+            ]}
+          />
+        )}
       />
     </div>
   )

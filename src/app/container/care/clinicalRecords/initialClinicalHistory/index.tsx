@@ -6,19 +6,17 @@ import { useGetUsers } from "@/core/hooks/users/useGetUsers";
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById";
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient";
 import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission";
-import { useUpdateHCInicial } from "@/core/hooks/care/hciInicial/useSaveHCInicial";
 import { GetUser } from "@/core/interfaces/user/users";
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
-  EyeOutlined,
   FileDoneOutlined,
   FileTextOutlined,
   RightOutlined,
   SearchOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Button, Input, Modal, Select, Tag, Typography, message } from "antd";
+import { Button, Input, Select, Tag, Typography, message } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { DischargeNoteContent } from "../dischargeNote/DischargeNoteContent";
@@ -43,6 +41,28 @@ const buildFullName = (user?: GetUser) => {
     user.username ||
     user.email
   );
+};
+
+const formatAdmissionDate = (value?: string) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("es-CO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+const formatAdmissionTime = (value?: string) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("es-CO", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 };
 
 const calculateAge = (birthDate: string) => {
@@ -86,7 +106,6 @@ const InitialClinicalHistoryContainer = () => {
 
   const { data: patientRecord } = useGetPatientById(patientId ?? null);
   const { data: existingHCInicial } = useGetHCInicialByAdmission(admissionId);
-  const updateHCInicial = useUpdateHCInicial();
   const isHciClosed = existingHCInicial?.isClosed === true;
   const isHciLocked = isHciClosed && !editHci;
 
@@ -197,56 +216,11 @@ const InitialClinicalHistoryContainer = () => {
     doctorOptions.find((d) => d.value === selectedDoctorId)?.label ||
     currentDoctor;
   const selectedDoctorUser = users.find((u) => u.id === selectedDoctorId);
+  const currentDoctorUser = users.find((u) => u.id === me?.id);
   const mainDiagnosis = useMemo(
     () => diagnoses.find((d) => d.main && d.code),
     [diagnoses],
   );
-
-  const handleClausurarHistoria = () => {
-    if (!existingHCInicial) {
-      messageApi.info(
-        "Aún no se ha registrado la historia clínica inicial de esta admisión.",
-      );
-      return;
-    }
-
-    Modal.confirm({
-      title: "Clausurar historia clínica inicial",
-      content:
-        "Esta acción limpiará el formulario de la historia clínica inicial de esta admisión y no podrá crear una nueva aquí. Los datos ya guardados quedarán disponibles en el histórico del paciente, desde donde podrá editarlos si es necesario. ¿Desea continuar?",
-      okText: "Clausurar",
-      okButtonProps: { danger: true },
-      cancelText: "Cancelar",
-      onOk: async () => {
-        try {
-          await updateHCInicial.mutateAsync({
-            id: existingHCInicial.id,
-            data: {
-              admissionDate: existingHCInicial.admissionDate,
-              admissionTime: existingHCInicial.admissionTime,
-              idSubjetivoHCInicial: existingHCInicial.idSubjetivoHCInicial,
-              idObjetivoHCInicial: existingHCInicial.idObjetivoHCInicial,
-              idSignosVitalesHCInicial:
-                existingHCInicial.idSignosVitalesHCInicial,
-              idAnalisisDiagnosticosPlanHCInicial:
-                existingHCInicial.idAnalisisDiagnosticosPlanHCInicial,
-              isActive: true,
-              isClosed: true,
-            },
-          });
-          setAdmissionDate("");
-          setAdmissionTime("");
-          messageApi.success("Historia clínica inicial clausurada.");
-        } catch (err) {
-          messageApi.error(
-            err instanceof Error
-              ? err.message
-              : "No se pudo clausurar la historia clínica inicial.",
-          );
-        }
-      },
-    });
-  };
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -300,24 +274,10 @@ const InitialClinicalHistoryContainer = () => {
 
             <div className="clinical-history-actions">
               <Button
-                icon={<EyeOutlined />}
-                onClick={() => setPreviewOpen(true)}
-              >
-                Vista previa
-              </Button>
-              <Button
                 icon={<FileDoneOutlined />}
                 onClick={() => setPreviewOpen(true)}
               >
                 Epicrisis
-              </Button>
-              <Button
-                danger
-                icon={<FileDoneOutlined />}
-                disabled={isHciClosed || !existingHCInicial}
-                onClick={handleClausurarHistoria}
-              >
-                {isHciClosed ? "Historia Clausurada" : "Clausurar Historia"}
               </Button>
               <Button
                 icon={<ArrowLeftOutlined />}
@@ -330,30 +290,15 @@ const InitialClinicalHistoryContainer = () => {
 
           <div className="clinical-history-summary">
             <div className="summary-cell">
-              <div className="summary-cell-label">Fecha de atención</div>
+              <div className="summary-cell-label">Fecha de admisión</div>
               <div className="summary-cell-value">
-                <Input
-                  type="date"
-                  size="small"
-                  value={admissionDate}
-                  onChange={(e) => setAdmissionDate(e.target.value)}
-                  disabled={isHciLocked}
-                  style={{ marginTop: 2 }}
-                />
+                {formatAdmissionDate(admission?.admissionDate) || "—"}
               </div>
             </div>
             <div className="summary-cell">
-              <div className="summary-cell-label">Hora de atención</div>
+              <div className="summary-cell-label">Hora de admisión</div>
               <div className="summary-cell-value">
-                <Input
-                  type="time"
-                  step={1}
-                  size="small"
-                  value={admissionTime}
-                  onChange={(e) => setAdmissionTime(e.target.value)}
-                  disabled={isHciLocked}
-                  style={{ marginTop: 2 }}
-                />
+                {formatAdmissionTime(admission?.admissionDate) || "—"}
               </div>
             </div>
             <div className="summary-cell">
@@ -477,7 +422,10 @@ const InitialClinicalHistoryContainer = () => {
                 messageApi={messageApi}
                 admissionDate={admissionDate}
                 admissionTime={admissionTime}
+                onAdmissionDateChange={setAdmissionDate}
+                onAdmissionTimeChange={setAdmissionTime}
                 editMode={editHci}
+                onOpenPreview={() => setPreviewOpen(true)}
               />
             )}
 
@@ -495,11 +443,18 @@ const InitialClinicalHistoryContainer = () => {
                 selectedDoctor={selectedDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
+                patient={patient}
+                admissionDate={admission?.admissionDate ?? ""}
+                contractName={admission?.convenioNombre ?? ""}
+                doctorUser={selectedDoctorUser}
               />
             )}
 
             {activeSidebarKey === "egreso" && (
-              <DischargeNoteContent messageApi={messageApi} />
+              <DischargeNoteContent
+                messageApi={messageApi}
+                currentDoctor={currentDoctor}
+              />
             )}
 
             {activeSidebarKey === "enfermeria" && (
@@ -508,6 +463,10 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
+                patient={patient}
+                admissionDate={admission?.admissionDate ?? ""}
+                contractName={admission?.convenioNombre ?? ""}
+                doctorUser={currentDoctorUser}
               />
             )}
 
@@ -517,6 +476,10 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
+                patient={patient}
+                admissionDate={admission?.admissionDate ?? ""}
+                contractName={admission?.convenioNombre ?? ""}
+                doctorUser={currentDoctorUser}
               />
             )}
 
@@ -526,6 +489,10 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
+                patient={patient}
+                admissionDate={admission?.admissionDate ?? ""}
+                contractName={admission?.convenioNombre ?? ""}
+                doctorUser={currentDoctorUser}
               />
             )}
 
@@ -535,6 +502,10 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
+                patient={patient}
+                admissionDate={admission?.admissionDate ?? ""}
+                contractName={admission?.convenioNombre ?? ""}
+                doctorUser={currentDoctorUser}
               />
             )}
 
@@ -544,6 +515,10 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
+                patient={patient}
+                admissionDate={admission?.admissionDate ?? ""}
+                contractName={admission?.convenioNombre ?? ""}
+                doctorUser={currentDoctorUser}
               />
             )}
 
@@ -553,6 +528,10 @@ const InitialClinicalHistoryContainer = () => {
                 currentDoctor={currentDoctor}
                 patientName={patient.name}
                 messageApi={messageApi}
+                patient={patient}
+                admissionDate={admission?.admissionDate ?? ""}
+                contractName={admission?.convenioNombre ?? ""}
+                doctorUser={currentDoctorUser}
               />
             )}
           </div>

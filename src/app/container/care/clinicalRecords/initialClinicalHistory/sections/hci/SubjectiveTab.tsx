@@ -10,12 +10,43 @@ interface Props {
   value: SubjectiveState
   onChange: (value: SubjectiveState) => void
   disabled?: boolean
+  admissionDate: string
+  admissionTime: string
+  onAdmissionDateChange: (value: string) => void
+  onAdmissionTimeChange: (value: string) => void
 }
 
-export const SubjectiveTab = ({ value, onChange, disabled }: Props) => (
+export const SubjectiveTab = ({
+  value,
+  onChange,
+  disabled,
+  admissionDate,
+  admissionTime,
+  onAdmissionDateChange,
+  onAdmissionTimeChange,
+}: Props) => (
   <div className="tab-section-inner">
     <Typography.Title level={5} style={{ marginTop: 0 }}>1. Subjetivo (SOAP)</Typography.Title>
     <div className="subjective-grid">
+      <div>
+        <label style={labelStyle}>Fecha de atención <span className="field-required">*</span></label>
+        <Input
+          type="date"
+          value={admissionDate}
+          onChange={(e) => onAdmissionDateChange(e.target.value)}
+          disabled={disabled}
+        />
+      </div>
+      <div>
+        <label style={labelStyle}>Hora de atención <span className="field-required">*</span></label>
+        <Input
+          type="time"
+          step={1}
+          value={admissionTime}
+          onChange={(e) => onAdmissionTimeChange(e.target.value)}
+          disabled={disabled}
+        />
+      </div>
       <div>
         <label style={labelStyle}>Motivo de consulta <span className="field-required">*</span></label>
         <Input

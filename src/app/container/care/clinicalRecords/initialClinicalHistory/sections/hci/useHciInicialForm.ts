@@ -1,3 +1,4 @@
+import { Modal } from "antd";
 import type { MessageInstance } from "antd/es/message/interface";
 import { useEffect, useState } from "react";
 import {
@@ -66,6 +67,8 @@ interface UseHciInicialFormArgs {
   messageApi: MessageInstance;
   admissionDate: string;
   admissionTime: string;
+  onAdmissionDateChange: (value: string) => void;
+  onAdmissionTimeChange: (value: string) => void;
   editMode?: boolean;
 }
 
@@ -77,6 +80,8 @@ export const useHciInicialForm = ({
   messageApi,
   admissionDate,
   admissionTime,
+  onAdmissionDateChange,
+  onAdmissionTimeChange,
   editMode = false,
 }: UseHciInicialFormArgs) => {
   const [vitals, setVitals] = useState<VitalsState>(defaultVitals);
@@ -100,6 +105,7 @@ export const useHciInicialForm = ({
   const [savingObjetivo, setSavingObjetivo] = useState(false);
   const [savingSignosVitales, setSavingSignosVitales] = useState(false);
   const [savingAnalisis, setSavingAnalisis] = useState(false);
+  const [closingHistoria, setClosingHistoria] = useState(false);
 
   const { data: existingHCInicial, refetch: refetchHCInicial } =
     useGetHCInicialByAdmission(admissionId);
@@ -498,6 +504,55 @@ export const useHciInicialForm = ({
     }
   };
 
+  const handleClausurarHistoria = () => {
+    if (!existingHCInicial) {
+      messageApi.info(
+        "Aún no se ha registrado la historia clínica inicial de esta admisión.",
+      );
+      return;
+    }
+
+    Modal.confirm({
+      title: "Clausurar historia clínica inicial",
+      content:
+        "Esta acción limpiará el formulario de la historia clínica inicial de esta admisión y no podrá crear una nueva aquí. Los datos ya guardados quedarán disponibles en el histórico del paciente, desde donde podrá editarlos si es necesario. ¿Desea continuar?",
+      okText: "Clausurar",
+      okButtonProps: { danger: true },
+      cancelText: "Cancelar",
+      onOk: async () => {
+        setClosingHistoria(true);
+        try {
+          await updateHCInicial.mutateAsync({
+            id: existingHCInicial.id,
+            data: {
+              admissionDate: existingHCInicial.admissionDate,
+              admissionTime: existingHCInicial.admissionTime,
+              idSubjetivoHCInicial: existingHCInicial.idSubjetivoHCInicial,
+              idObjetivoHCInicial: existingHCInicial.idObjetivoHCInicial,
+              idSignosVitalesHCInicial:
+                existingHCInicial.idSignosVitalesHCInicial,
+              idAnalisisDiagnosticosPlanHCInicial:
+                existingHCInicial.idAnalisisDiagnosticosPlanHCInicial,
+              isActive: true,
+              isClosed: true,
+            },
+          });
+          onAdmissionDateChange("");
+          onAdmissionTimeChange("");
+          messageApi.success("Historia clínica inicial clausurada.");
+        } catch (err) {
+          messageApi.error(
+            err instanceof Error
+              ? err.message
+              : "No se pudo clausurar la historia clínica inicial.",
+          );
+        } finally {
+          setClosingHistoria(false);
+        }
+      },
+    });
+  };
+
   return {
     vitals,
     setVitals,
@@ -522,6 +577,8 @@ export const useHciInicialForm = ({
     saveSignosVitales,
     saveAnalisisDiagnosticosPlan,
     existingHCInicial,
+    closingHistoria,
+    handleClausurarHistoria,
   };
 };
 

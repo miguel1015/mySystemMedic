@@ -1,7 +1,7 @@
 "use client";
 
-import { SaveOutlined } from "@ant-design/icons";
-import { Button } from "antd";
+import { EyeOutlined, FileDoneOutlined, FileTextOutlined, SaveOutlined } from "@ant-design/icons";
+import { Button, Typography } from "antd";
 import { useState } from "react";
 import { clinicalTabs } from "../../constants";
 import type { DiagnosisRow } from "../../types";
@@ -18,6 +18,11 @@ interface Props extends UseHciInicialFormResult {
   onDiagnosesChange: (diagnoses: DiagnosisRow[]) => void;
   patientId?: string | number;
   admissionId?: string | number;
+  admissionDate: string;
+  admissionTime: string;
+  onAdmissionDateChange: (value: string) => void;
+  onAdmissionTimeChange: (value: string) => void;
+  onOpenPreview?: () => void;
 }
 
 export const HciInicialTabsForm = ({
@@ -26,6 +31,11 @@ export const HciInicialTabsForm = ({
   onDiagnosesChange,
   patientId,
   admissionId,
+  admissionDate,
+  admissionTime,
+  onAdmissionDateChange,
+  onAdmissionTimeChange,
+  onOpenPreview,
   vitals,
   setVitals,
   subjective,
@@ -48,11 +58,37 @@ export const HciInicialTabsForm = ({
   saveObjetivo,
   saveSignosVitales,
   saveAnalisisDiagnosticosPlan,
+  existingHCInicial,
+  closingHistoria,
+  handleClausurarHistoria,
 }: Props) => {
   const [activeSection, setActiveSection] = useState("subjective");
 
   return (
-    <>
+    <div className="tabs-card">
+      <div className="qx-form-header">
+        <FileTextOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+        <Typography.Title level={5} style={{ margin: 0 }}>
+          Historia Clínica Inicial
+        </Typography.Title>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <Button
+            danger
+            icon={<FileDoneOutlined />}
+            loading={closingHistoria}
+            disabled={isClosed || !existingHCInicial}
+            onClick={handleClausurarHistoria}
+          >
+            {isClosed ? "Historia Clausurada" : "Clausurar Historia"}
+          </Button>
+          {onOpenPreview && (
+            <Button icon={<EyeOutlined />} onClick={onOpenPreview}>
+              Vista previa
+            </Button>
+          )}
+        </div>
+      </div>
+
       <nav
         className="clinical-section-tabs"
         aria-label="Secciones de historia clínica"
@@ -87,6 +123,10 @@ export const HciInicialTabsForm = ({
             value={subjective}
             onChange={setSubjective}
             disabled={isLocked}
+            admissionDate={admissionDate}
+            admissionTime={admissionTime}
+            onAdmissionDateChange={onAdmissionDateChange}
+            onAdmissionTimeChange={onAdmissionTimeChange}
           />
         )}
         {activeSection === "objective" && (
@@ -168,6 +208,6 @@ export const HciInicialTabsForm = ({
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };

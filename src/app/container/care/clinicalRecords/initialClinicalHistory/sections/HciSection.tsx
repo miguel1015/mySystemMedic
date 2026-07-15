@@ -17,7 +17,10 @@ interface Props {
   messageApi: MessageInstance;
   admissionDate: string;
   admissionTime: string;
+  onAdmissionDateChange: (value: string) => void;
+  onAdmissionTimeChange: (value: string) => void;
   editMode?: boolean;
+  onOpenPreview: () => void;
 }
 
 export const HciSection = ({
@@ -29,7 +32,10 @@ export const HciSection = ({
   messageApi,
   admissionDate,
   admissionTime,
+  onAdmissionDateChange,
+  onAdmissionTimeChange,
   editMode = false,
+  onOpenPreview,
 }: Props) => {
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -41,6 +47,8 @@ export const HciSection = ({
     messageApi,
     admissionDate,
     admissionTime,
+    onAdmissionDateChange,
+    onAdmissionTimeChange,
     editMode,
   });
 
@@ -53,6 +61,11 @@ export const HciSection = ({
         onDiagnosesChange={onDiagnosesChange}
         patientId={patientId}
         admissionId={admissionId}
+        admissionDate={admissionDate}
+        admissionTime={admissionTime}
+        onAdmissionDateChange={onAdmissionDateChange}
+        onAdmissionTimeChange={onAdmissionTimeChange}
+        onOpenPreview={onOpenPreview}
       />
 
       <ClinicalRecordHistoryTrigger

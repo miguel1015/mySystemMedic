@@ -228,10 +228,14 @@ export interface NotaMedicaResponse {
 
 export interface NotaMedicaCreateRequest {
   admissionId: number;
+  fechaNota: string;
+  horaNota: string;
   nota: string;
 }
 
 export interface NotaMedicaUpdateRequest {
+  fechaNota: string;
+  horaNota: string;
   nota: string;
   isActive: boolean;
 }

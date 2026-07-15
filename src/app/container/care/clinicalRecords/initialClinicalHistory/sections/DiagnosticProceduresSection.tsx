@@ -9,10 +9,12 @@ import { useCreateProcedimientoDiagnostico } from "@/core/hooks/care/procedimien
 import { useUpdateProcedimientoDiagnostico } from "@/core/hooks/care/procedimientosDiagnosticos/useUpdateProcedimientoDiagnostico"
 import { useMe } from "@/core/hooks/users/useMeUser"
 import type { ProcedimientoDiagnosticoResponse } from "@/core/interfaces/care/hciInicial"
+import type { GetUser } from "@/core/interfaces/user/users"
 import { labelStyle } from "../constants"
 import { ProcedimientosDiagnosticosRecentModal } from "./ProcedimientosDiagnosticosRecentModal"
-import { ProcedimientoDiagnosticoPreviewModal } from "./ProcedimientoDiagnosticoPreviewModal"
-import type { ProcedimientoDiagnosticoViewData } from "./ProcedimientoDiagnosticoDetailView"
+import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
+import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument"
+import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
@@ -20,6 +22,10 @@ interface Props {
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
+  patient?: PrintPatient
+  admissionDate?: string
+  contractName?: string
+  doctorUser?: GetUser
 }
 
 const { TextArea } = Input
@@ -27,8 +33,28 @@ const { TextArea } = Input
 const todayDate = () => new Date().toISOString().slice(0, 10)
 const nowTime = () => new Date().toTimeString().slice(0, 8)
 
-export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
+export const DiagnosticProceduresSection = ({
+  admissionId,
+  currentDoctor,
+  patientName,
+  messageApi,
+  historyClosed,
+  patient,
+  admissionDate = "",
+  contractName = "",
+  doctorUser,
+}: Props) => {
   const { data: me } = useMe()
+
+  const resolvedPatient: PrintPatient = patient ?? {
+    name: patientName,
+    documentType: "",
+    documentNumber: "",
+    careScope: "",
+    birthDate: "",
+    sex: "",
+    insurer: "",
+  }
 
   const [editingId, setEditingId] = useState<number | null>(null)
   const [fechaProcedimiento, setFechaProcedimiento] = useState(todayDate)
@@ -38,9 +64,12 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
   const [recentOpen, setRecentOpen] = useState(false)
 
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewData, setPreviewData] = useState<ProcedimientoDiagnosticoViewData | null>(null)
   const [previewTitle, setPreviewTitle] = useState("Vista previa del procedimiento diagnóstico")
-  const [previewIsReference, setPreviewIsReference] = useState(false)
+  const [previewFecha, setPreviewFecha] = useState("")
+  const [previewHora, setPreviewHora] = useState("")
+  const [previewDoctor, setPreviewDoctor] = useState("")
+  const [previewEstudios, setPreviewEstudios] = useState("")
+  const [previewHallazgos, setPreviewHallazgos] = useState("")
 
   const createProcedimientoDiagnostico = useCreateProcedimientoDiagnostico()
   const updateProcedimientoDiagnostico = useUpdateProcedimientoDiagnostico()
@@ -71,14 +100,11 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Procedimiento diagnóstico (edición)" : "Vista previa del procedimiento diagnóstico")
-    setPreviewIsReference(true)
-    setPreviewData({
-      fechaProcedimiento,
-      horaProcedimiento,
-      nombreProfesional: me?.name,
-      estudiosRealizados: estudios,
-      hallazgos,
-    })
+    setPreviewFecha(fechaProcedimiento)
+    setPreviewHora(horaProcedimiento)
+    setPreviewDoctor(me?.name || "")
+    setPreviewEstudios(estudios)
+    setPreviewHallazgos(hallazgos)
     setPreviewOpen(true)
   }
 
@@ -132,14 +158,11 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
           : `Procedimiento diagnóstico guardado para ${patientName}.`,
       )
       setPreviewTitle("Procedimiento diagnóstico guardado")
-      setPreviewIsReference(false)
-      setPreviewData({
-        fechaProcedimiento: saved.fechaProcedimiento,
-        horaProcedimiento: saved.horaProcedimiento,
-        nombreProfesional: saved.nombreProfesional,
-        estudiosRealizados: saved.estudiosRealizados,
-        hallazgos: saved.hallazgos,
-      })
+      setPreviewFecha(saved.fechaProcedimiento)
+      setPreviewHora(saved.horaProcedimiento)
+      setPreviewDoctor(saved.nombreProfesional)
+      setPreviewEstudios(saved.estudiosRealizados)
+      setPreviewHallazgos(saved.hallazgos)
       setPreviewOpen(true)
       reset()
     } catch (err) {
@@ -268,12 +291,34 @@ export const DiagnosticProceduresSection = ({ admissionId, currentDoctor, patien
         messageApi={messageApi}
       />
 
-      <ProcedimientoDiagnosticoPreviewModal
+      <ClinicalPrintPreviewModal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        data={previewData}
         title={previewTitle}
-        professionalIsReference={previewIsReference}
+        renderDocument={(provider) => (
+          <GenericClinicalPrintDocument
+            provider={provider}
+            patient={resolvedPatient}
+            admissionDate={admissionDate}
+            contractName={contractName}
+            documentTitle="Procedimiento Diagnóstico"
+            attentionLabel="Fecha y hora del procedimiento:"
+            attentionDate={previewFecha}
+            attentionTime={previewHora?.slice(0, 5)}
+            doctorName={previewDoctor}
+            doctorUser={doctorUser}
+            sections={[
+              {
+                title: "Estudios realizados",
+                rows: [{ label: "Estudios realizados", value: previewEstudios }],
+              },
+              {
+                title: "Hallazgos",
+                rows: [{ label: "Hallazgos", value: previewHallazgos }],
+              },
+            ]}
+          />
+        )}
       />
 
       <ClinicalRecordHistoryTrigger

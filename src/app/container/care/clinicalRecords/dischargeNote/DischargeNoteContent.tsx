@@ -2,7 +2,7 @@
 
 import dayjs from "dayjs"
 import type { Dayjs } from "dayjs"
-import { SaveOutlined, WarningOutlined } from "@ant-design/icons"
+import { EyeOutlined, FileDoneOutlined, SaveOutlined, WarningOutlined } from "@ant-design/icons"
 import {
   Button,
   DatePicker,
@@ -14,6 +14,8 @@ import {
 import type { MessageInstance } from "antd/es/message/interface"
 import { CSSProperties, useMemo, useState } from "react"
 import "../initialClinicalHistory/initialClinicalHistory.css"
+import { NotaEgresoPreviewModal } from "./NotaEgresoPreviewModal"
+import type { NotaEgresoViewData } from "./NotaEgresoDetailView"
 
 const { TextArea } = Input
 
@@ -86,9 +88,10 @@ interface TextField {
 
 interface DischargeNoteContentProps {
   messageApi: MessageInstance
+  currentDoctor?: string
 }
 
-export function DischargeNoteContent({ messageApi }: DischargeNoteContentProps) {
+export function DischargeNoteContent({ messageApi, currentDoctor = "Dr. Martin Martinez Perez" }: DischargeNoteContentProps) {
   const [activeTab, setActiveTab] = useState<"clinical" | "diagnoses">("clinical")
 
   // Tab 1: Datos Clínicos
@@ -119,6 +122,8 @@ export function DischargeNoteContent({ messageApi }: DischargeNoteContentProps) 
   const [finalidadConsulta, setFinalidadConsulta] = useState<string | undefined>()
   const [causaExterna, setCausaExterna] = useState<string | undefined>()
   const [condicionSalida, setCondicionSalida] = useState<string | undefined>()
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<NotaEgresoViewData | null>(null)
 
   const isDeceased = condicionSalida === "fallecido"
 
@@ -150,6 +155,34 @@ export function DischargeNoteContent({ messageApi }: DischargeNoteContentProps) 
     setFinalidadConsulta(undefined)
     setCausaExterna(undefined)
     setCondicionSalida(undefined)
+  }
+
+  const openPreview = () => {
+    setPreviewData({
+      vitals,
+      bmi,
+      condicionesGenerales,
+      cabezaCuello,
+      torax,
+      abdomen,
+      extremidades,
+      sistemaNervioso,
+      genitourinario,
+      evolucionesTxt,
+      justificacion,
+      ordenes,
+      ambitoEgreso: ambitoEgresoOptions.find((o) => o.value === ambitoEgreso)?.label,
+      fechaEgreso: fechaEgreso ? fechaEgreso.format("DD/MM/YYYY HH:mm") : "",
+      diag1: cie10Options.find((o) => o.value === diag1)?.label,
+      diag2: cie10Options.find((o) => o.value === diag2)?.label,
+      diag3: cie10Options.find((o) => o.value === diag3)?.label,
+      finalidadConsulta: finalidadConsultaOptions.find((o) => o.value === finalidadConsulta)?.label,
+      causaExterna: causaExternaOptions.find((o) => o.value === causaExterna)?.label,
+      condicionSalida: condicionSalidaOptions.find((o) => o.value === condicionSalida)?.label,
+      diagnosticoMuerte,
+      fechaMuerte: fechaMuerte ? fechaMuerte.format("DD/MM/YYYY HH:mm") : "",
+    })
+    setPreviewOpen(true)
   }
 
   const validateAndSave = () => {
@@ -275,6 +308,24 @@ export function DischargeNoteContent({ messageApi }: DischargeNoteContentProps) 
 
   return (
     <>
+      <div className="tabs-card">
+      <div className="qx-form-header">
+        <FileDoneOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+        <Typography.Title level={5} style={{ margin: 0 }}>Nota de Egreso</Typography.Title>
+        <div className="evo-header-meta">
+          <span>{currentDoctor}</span>
+          <span className="evo-header-sep">·</span>
+          <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+          <span className="evo-header-sep">·</span>
+          <span>{new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false })}</span>
+        </div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <Button icon={<EyeOutlined />} onClick={openPreview}>
+            Vista previa
+          </Button>
+        </div>
+      </div>
+
       <nav className="clinical-section-tabs" aria-label="Secciones nota de egreso">
         {dischargeTabs.map((tab) => (
           <button
@@ -522,6 +573,13 @@ export function DischargeNoteContent({ messageApi }: DischargeNoteContentProps) 
           </Button>
         </div>
       </div>
+      </div>
+
+      <NotaEgresoPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        data={previewData}
+      />
     </>
   )
 }

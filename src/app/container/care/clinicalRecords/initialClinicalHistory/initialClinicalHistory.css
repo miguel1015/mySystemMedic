@@ -317,6 +317,26 @@
   flex-direction: column;
 }
 
+/* ── Tabbed form card wrapper (header + tabs + content as one box) ── */
+.tabs-card {
+  background: var(--dash-surface, #fff);
+  border: 1px solid var(--dash-border, #e4eae8);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tabs-card .clinical-section-tabs {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.tabs-card .evolution-tab-content {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
 /* ── Tabs (underline style) ── */
 .clinical-section-tabs {
   display: flex;

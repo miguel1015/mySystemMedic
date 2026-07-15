@@ -7,38 +7,9 @@ import type { TProvider } from "@/core/interfaces/parameterization/types";
 import type { HCInicialResponse } from "@/core/interfaces/care/hciInicial";
 import { antecedentesFields, physicalExamFields } from "../constants";
 import type { DiagnosisRow } from "../types";
+import { ClinicalDocumentHeader } from "./ClinicalDocumentHeader";
+import { emptyDash, FieldRow, type PrintPatient } from "./printDocument.utils";
 import "./hciPrintPreview.css";
-
-const formatDateTime = (value: string) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-};
-
-const calculateAge = (birthDate: string) => {
-  const birth = new Date(birthDate);
-  if (Number.isNaN(birth.getTime())) return "";
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate()))
-    age -= 1;
-  return `${age} años`;
-};
-
-interface PrintPatient {
-  name: string;
-  documentType: string;
-  documentNumber: string;
-  careScope: string;
-  birthDate: string;
-  sex: string;
-  insurer: string;
-  city?: string;
-  phone?: string;
-}
 
 interface Props {
   provider?: TProvider;
@@ -52,25 +23,6 @@ interface Props {
   hcInicial?: HCInicialResponse | null;
   diagnoses: DiagnosisRow[];
 }
-
-const emptyDash = "—";
-
-const FieldRow = ({
-  label,
-  value,
-}: {
-  label: string;
-  value?: string | number | null;
-}) => (
-  <>
-    <div className="hci-print-fieldtable-label">- {label}:</div>
-    <div className="hci-print-fieldtable-value">
-      {value === "" || value === undefined || value === null
-        ? emptyDash
-        : value}
-    </div>
-  </>
-);
 
 /*
  * Pagination model: content is broken into small "units" that get packed
@@ -173,94 +125,16 @@ export const HciPrintDocument = ({
   const mainDiagnosis = diagnoses.find((d) => d.main && d.code);
 
   const headerBlock = (
-    <div className="hci-print-header-block">
-      <div className="hci-print-header">
-        <div className="hci-print-logo">
-          <img src="/assets/img/avatars/logoPdf.png" alt="Logo" />
-        </div>
-        <div className="hci-print-entity">
-          <div className="hci-print-entity-name">
-            {provider?.name || "Institución Prestadora de Salud"}
-          </div>
-          {provider?.nit && <div>NIT: {provider.nit}</div>}
-          {provider?.address && <div>Dirección: {provider.address}</div>}
-          {provider?.phone && <div>Tel: {provider.phone}</div>}
-          {provider?.enableCode && (
-            <div>Código de habilitación: {provider.enableCode}</div>
-          )}
-        </div>
-        <div className="hci-print-hc-number">
-          <div className="hci-print-hc-number-title">Historia Clínica</div>
-          <div>N° {patient.documentNumber || emptyDash}</div>
-        </div>
-      </div>
-
-      <div className="hci-print-title">Historia Clínica Inicial</div>
-
-      <div className="hci-print-patient-grid">
-        <div className="hci-print-row">
-          <span className="hci-print-label">Fecha de admisión:</span>
-          <span className="hci-print-value">
-            {formatDateTime(admissionDate) || emptyDash}
-          </span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Paciente:</span>
-          <span className="hci-print-value">{patient.name?.toUpperCase()}</span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Documento:</span>
-          <span className="hci-print-value">
-            {patient.documentType} {patient.documentNumber}
-          </span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Aseguradora:</span>
-          <span className="hci-print-value">{patient.insurer}</span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Ciudad:</span>
-          <span className="hci-print-value">{patient.city || emptyDash}</span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Fecha de nacimiento:</span>
-          <span className="hci-print-value">{patient.birthDate}</span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Edad:</span>
-          <span className="hci-print-value">
-            {calculateAge(patient.birthDate)}
-          </span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Convenio:</span>
-          <span className="hci-print-value">{contractName || emptyDash}</span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Teléfono/Celular:</span>
-          <span className="hci-print-value">{patient.phone || emptyDash}</span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Servicio:</span>
-          <span className="hci-print-value">{patient.careScope}</span>
-        </div>
-        {/* <div className="hci-print-row">
-          <span className="hci-print-label">Sexo:</span>
-          <span className="hci-print-value">{patient.sex}</span>
-        </div>
-        <div className="hci-print-row">
-          <span className="hci-print-label">Médico tratante:</span>
-          <span className="hci-print-value">{doctorName}</span>
-        </div> */}
-      </div>
-
-      <div className="hci-print-row">
-        <span className="hci-print-label">Fecha y hora de atención:</span>
-        <span className="hci-print-value">
-          {attentionDate || emptyDash} {attentionTime || emptyDash}
-        </span>
-      </div>
-    </div>
+    <ClinicalDocumentHeader
+      provider={provider}
+      patient={patient}
+      admissionDate={admissionDate}
+      contractName={contractName}
+      documentTitle="Historia Clínica Inicial"
+      attentionLabel="Fecha y hora de atención:"
+      attentionDate={attentionDate}
+      attentionTime={attentionTime}
+    />
   );
 
   const units = useMemo<Unit[]>(() => {

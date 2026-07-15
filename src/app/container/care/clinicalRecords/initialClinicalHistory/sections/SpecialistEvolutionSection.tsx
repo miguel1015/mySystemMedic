@@ -9,10 +9,12 @@ import { useCreateEvolucionEspecialista } from "@/core/hooks/care/evolucionEspec
 import { useUpdateEvolucionEspecialista } from "@/core/hooks/care/evolucionEspecialista/useUpdateEvolucionEspecialista"
 import { useMe } from "@/core/hooks/users/useMeUser"
 import type { EvolucionEspecialistaResponse } from "@/core/interfaces/care/hciInicial"
+import type { GetUser } from "@/core/interfaces/user/users"
 import { labelStyle } from "../constants"
 import { EvolucionesEspecialistaRecentModal } from "./EvolucionesEspecialistaRecentModal"
-import { EvolucionEspecialistaPreviewModal } from "./EvolucionEspecialistaPreviewModal"
-import type { EvolucionEspecialistaViewData } from "./EvolucionEspecialistaDetailView"
+import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
+import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument"
+import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
@@ -20,6 +22,10 @@ interface Props {
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
+  patient?: PrintPatient
+  admissionDate?: string
+  contractName?: string
+  doctorUser?: GetUser
 }
 
 const { TextArea } = Input
@@ -29,8 +35,28 @@ const MAX_LENGTH = 1000
 const todayDate = () => new Date().toISOString().slice(0, 10)
 const nowTime = () => new Date().toTimeString().slice(0, 8)
 
-export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patientName, messageApi, historyClosed }: Props) => {
+export const SpecialistEvolutionSection = ({
+  admissionId,
+  currentDoctor,
+  patientName,
+  messageApi,
+  historyClosed,
+  patient,
+  admissionDate = "",
+  contractName = "",
+  doctorUser,
+}: Props) => {
   const { data: me } = useMe()
+
+  const resolvedPatient: PrintPatient = patient ?? {
+    name: patientName,
+    documentType: "",
+    documentNumber: "",
+    careScope: "",
+    birthDate: "",
+    sex: "",
+    insurer: "",
+  }
 
   const [editingId, setEditingId] = useState<number | null>(null)
   const [fechaEvolucion, setFechaEvolucion] = useState(todayDate)
@@ -40,9 +66,12 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
 
   const [recentOpen, setRecentOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewData, setPreviewData] = useState<EvolucionEspecialistaViewData | null>(null)
   const [previewTitle, setPreviewTitle] = useState("Vista previa de la evolución")
-  const [previewIsReference, setPreviewIsReference] = useState(false)
+  const [previewFecha, setPreviewFecha] = useState("")
+  const [previewHora, setPreviewHora] = useState("")
+  const [previewDoctor, setPreviewDoctor] = useState("")
+  const [previewMotivo, setPreviewMotivo] = useState("")
+  const [previewPlan, setPreviewPlan] = useState("")
 
   const createEvolucionEspecialista = useCreateEvolucionEspecialista()
   const updateEvolucionEspecialista = useUpdateEvolucionEspecialista()
@@ -73,14 +102,11 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Evolución de especialista (edición)" : "Vista previa de la evolución")
-    setPreviewIsReference(true)
-    setPreviewData({
-      fechaEvolucion,
-      horaEvolucion,
-      nombreProfesional: me?.name,
-      motivoConsulta,
-      plan,
-    })
+    setPreviewFecha(fechaEvolucion)
+    setPreviewHora(horaEvolucion)
+    setPreviewDoctor(me?.name || "")
+    setPreviewMotivo(motivoConsulta)
+    setPreviewPlan(plan)
     setPreviewOpen(true)
   }
 
@@ -142,14 +168,11 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
       }
 
       setPreviewTitle("Evolución de especialista guardada")
-      setPreviewIsReference(false)
-      setPreviewData({
-        fechaEvolucion: saved.fechaEvolucion,
-        horaEvolucion: saved.horaEvolucion,
-        nombreProfesional: saved.nombreProfesional,
-        motivoConsulta: saved.motivoConsulta,
-        plan: saved.plan,
-      })
+      setPreviewFecha(saved.fechaEvolucion)
+      setPreviewHora(saved.horaEvolucion)
+      setPreviewDoctor(saved.nombreProfesional)
+      setPreviewMotivo(saved.motivoConsulta)
+      setPreviewPlan(saved.plan)
       setPreviewOpen(true)
       reset()
     } catch (err) {
@@ -278,12 +301,34 @@ export const SpecialistEvolutionSection = ({ admissionId, currentDoctor, patient
         messageApi={messageApi}
       />
 
-      <EvolucionEspecialistaPreviewModal
+      <ClinicalPrintPreviewModal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        data={previewData}
         title={previewTitle}
-        professionalIsReference={previewIsReference}
+        renderDocument={(provider) => (
+          <GenericClinicalPrintDocument
+            provider={provider}
+            patient={resolvedPatient}
+            admissionDate={admissionDate}
+            contractName={contractName}
+            documentTitle="Evolución de Especialista"
+            attentionLabel="Fecha y hora de evolución:"
+            attentionDate={previewFecha}
+            attentionTime={previewHora?.slice(0, 5)}
+            doctorName={previewDoctor}
+            doctorUser={doctorUser}
+            sections={[
+              {
+                title: "Motivo de consulta",
+                rows: [{ label: "Motivo de consulta", value: previewMotivo }],
+              },
+              {
+                title: "Plan",
+                rows: [{ label: "Plan", value: previewPlan }],
+              },
+            ]}
+          />
+        )}
       />
 
       <ClinicalRecordHistoryTrigger

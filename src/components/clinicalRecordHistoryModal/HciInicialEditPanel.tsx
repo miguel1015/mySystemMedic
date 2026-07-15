@@ -3,7 +3,6 @@
 import { HciInicialTabsForm } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/hci/HciInicialTabsForm"
 import { useHciInicialForm } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/hci/useHciInicialForm"
 import type { DiagnosisRow } from "@/app/container/care/clinicalRecords/initialClinicalHistory/types"
-import { Input } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useEffect, useState } from "react"
 
@@ -29,6 +28,8 @@ export const HciInicialEditPanel = ({ admissionId, patientId, patientName, messa
     messageApi,
     admissionDate,
     admissionTime,
+    onAdmissionDateChange: setAdmissionDate,
+    onAdmissionTimeChange: setAdmissionTime,
     editMode: true,
   })
 
@@ -46,27 +47,6 @@ export const HciInicialEditPanel = ({ admissionId, patientId, patientName, messa
 
   return (
     <div className="chrm-hci-edit">
-      <div className="chrm-hci-edit-date">
-        <span className="chrm-detail-field-label">Fecha de atención</span>
-        <Input
-          type="date"
-          size="small"
-          value={admissionDate}
-          onChange={(e) => setAdmissionDate(e.target.value)}
-          style={{ maxWidth: 200, marginTop: 4 }}
-        />
-      </div>
-      <div className="chrm-hci-edit-date">
-        <span className="chrm-detail-field-label">Hora de admisión</span>
-        <Input
-          type="time"
-          step={1}
-          size="small"
-          value={admissionTime}
-          onChange={(e) => setAdmissionTime(e.target.value)}
-          style={{ maxWidth: 200, marginTop: 4 }}
-        />
-      </div>
       <HciInicialTabsForm
         {...form}
         editMode
@@ -74,6 +54,10 @@ export const HciInicialEditPanel = ({ admissionId, patientId, patientName, messa
         onDiagnosesChange={setDiagnoses}
         patientId={patientId}
         admissionId={admissionId}
+        admissionDate={admissionDate}
+        admissionTime={admissionTime}
+        onAdmissionDateChange={setAdmissionDate}
+        onAdmissionTimeChange={setAdmissionTime}
       />
     </div>
   )

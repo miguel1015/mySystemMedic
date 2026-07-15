@@ -5,60 +5,52 @@ import { Button, Spin } from "antd";
 import { PrinterOutlined } from "@ant-design/icons";
 import Modal from "@/components/modal";
 import { useGetProvider } from "@/core/hooks/parameterization/providers/useGetProvider";
-import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission";
 import type { GetUser } from "@/core/interfaces/user/users";
-import type { DiagnosisRow } from "../types";
-import { HciPrintDocument } from "./HciPrintDocument";
 import { INSTITUTION_PROVIDER_ID, type PrintPatient } from "./printDocument.utils";
+import { NotaMedicaPrintDocument } from "./NotaMedicaPrintDocument";
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  admissionId?: string | number;
+  title: string;
   patient: PrintPatient;
   admissionDate: string;
-  attentionDate: string;
-  attentionTime: string;
   contractName: string;
+  fechaNota: string;
+  horaNota: string;
   doctorName: string;
   doctorUser?: GetUser;
-  diagnoses: DiagnosisRow[];
+  nota: string;
 }
 
-const HciPrintPreviewModal = ({
+const NotaMedicaPrintPreviewModal = ({
   open,
   onClose,
-  admissionId,
+  title,
   patient,
   admissionDate,
-  attentionDate,
-  attentionTime,
   contractName,
+  fechaNota,
+  horaNota,
   doctorName,
   doctorUser,
-  diagnoses,
+  nota,
 }: Props) => {
-  const { data: provider, isLoading: loadingProvider } = useGetProvider(
+  const { data: provider, isLoading } = useGetProvider(
     INSTITUTION_PROVIDER_ID,
   );
-  const { data: hcInicial, isLoading: loadingHci } = useGetHCInicialByAdmission(
-    open ? admissionId : undefined,
-  );
-
-  const isLoading = loadingProvider || loadingHci;
 
   const printContent = !isLoading && (
-    <HciPrintDocument
+    <NotaMedicaPrintDocument
       provider={provider}
       patient={patient}
       admissionDate={admissionDate}
-      attentionDate={attentionDate}
-      attentionTime={attentionTime}
       contractName={contractName}
+      fechaNota={fechaNota}
+      horaNota={horaNota}
       doctorName={doctorName}
       doctorUser={doctorUser}
-      hcInicial={hcInicial}
-      diagnoses={diagnoses}
+      nota={nota}
     />
   );
 
@@ -67,7 +59,7 @@ const HciPrintPreviewModal = ({
       <Modal
         open={open}
         onClose={onClose}
-        title="Vista previa - Historia Clínica Inicial"
+        title={title}
         size="xl"
         footer={
           <>
@@ -93,16 +85,6 @@ const HciPrintPreviewModal = ({
         </div>
       </Modal>
 
-      {/*
-        Printing renders from a portal appended straight to <body>, outside
-        the modal's position in the page tree. Printing the in-modal copy
-        directly used to leave a blank leading page: `visibility: hidden`
-        hides the rest of the page but doesn't collapse its layout height,
-        so whatever content sits above this modal in the DOM still pushed
-        the print output down by that much. A body-level portal + hiding
-        every other top-level sibling with `display: none` (which *does*
-        collapse space) avoids that entirely.
-      */}
       {open &&
         !isLoading &&
         typeof window !== "undefined" &&
@@ -114,4 +96,4 @@ const HciPrintPreviewModal = ({
   );
 };
 
-export default HciPrintPreviewModal;
+export default NotaMedicaPrintPreviewModal;

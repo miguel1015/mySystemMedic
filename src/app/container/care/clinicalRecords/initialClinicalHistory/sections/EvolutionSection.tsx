@@ -9,11 +9,13 @@ import { useCreateEvolucion } from "@/core/hooks/care/evoluciones/useCreateEvolu
 import { useUpdateEvolucion } from "@/core/hooks/care/evoluciones/useUpdateEvolucion"
 import { useMe } from "@/core/hooks/users/useMeUser"
 import type { EvolucionResponse } from "@/core/interfaces/care/hciInicial"
+import type { GetUser } from "@/core/interfaces/user/users"
 import { defaultEvoVitals, labelStyle } from "../constants"
 import type { EvoVitalsState } from "../types"
 import { EvolucionesRecentModal } from "./EvolucionesRecentModal"
-import { EvolucionPreviewModal } from "./EvolucionPreviewModal"
-import type { EvolucionViewData } from "./EvolucionDetailView"
+import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
+import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument"
+import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
@@ -21,6 +23,10 @@ interface Props {
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
+  patient?: PrintPatient
+  admissionDate?: string
+  contractName?: string
+  doctorUser?: GetUser
 }
 
 const { TextArea } = Input
@@ -39,8 +45,28 @@ const vitalsConfig: Array<{ label: string; key: keyof EvoVitalsState; isString?:
 const todayDate = () => new Date().toISOString().slice(0, 10)
 const nowTime = () => new Date().toTimeString().slice(0, 8)
 
-export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, messageApi, historyClosed }: Props) => {
+export const EvolutionSection = ({
+  admissionId,
+  selectedDoctor,
+  patientName,
+  messageApi,
+  historyClosed,
+  patient,
+  admissionDate = "",
+  contractName = "",
+  doctorUser,
+}: Props) => {
   const { data: me } = useMe()
+
+  const resolvedPatient: PrintPatient = patient ?? {
+    name: patientName,
+    documentType: "",
+    documentNumber: "",
+    careScope: "",
+    birthDate: "",
+    sex: "",
+    insurer: "",
+  }
 
   const [editingId, setEditingId] = useState<number | null>(null)
   const [fechaEvolucion, setFechaEvolucion] = useState(todayDate)
@@ -52,9 +78,14 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
 
   const [recentOpen, setRecentOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewData, setPreviewData] = useState<EvolucionViewData | null>(null)
   const [previewTitle, setPreviewTitle] = useState("Vista previa de la evolución")
-  const [previewIsReference, setPreviewIsReference] = useState(false)
+  const [previewFecha, setPreviewFecha] = useState("")
+  const [previewHora, setPreviewHora] = useState("")
+  const [previewDoctor, setPreviewDoctor] = useState("")
+  const [previewMotivo, setPreviewMotivo] = useState("")
+  const [previewVitals, setPreviewVitals] = useState<EvoVitalsState>({ ...defaultEvoVitals })
+  const [previewImc, setPreviewImc] = useState<number | null>(null)
+  const [previewPlan, setPreviewPlan] = useState("")
 
   const createEvolucion = useCreateEvolucion()
   const updateEvolucion = useUpdateEvolucion()
@@ -102,27 +133,15 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
     setRecentOpen(false)
   }
 
-  const buildViewData = (imc: number | null, nombreProfesional?: string): EvolucionViewData => ({
-    fechaEvolucion,
-    horaEvolucion,
-    nombreProfesional,
-    motivoConsulta: evoMotivo,
-    tensionArterial: evoVitals.ta || null,
-    frecuenciaCardiaca: evoVitals.fc || null,
-    frecuenciaRespiratoria: evoVitals.fr || null,
-    temperatura: evoVitals.temperature || null,
-    saturacionOxigeno: evoVitals.saturation || null,
-    glasgow: evoVitals.glasgow || null,
-    peso: evoVitals.weight || null,
-    talla: evoVitals.height ? evoVitals.height / 100 : null,
-    imc,
-    plan: evoPlan,
-  })
-
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Evolución (edición)" : "Vista previa de la evolución")
-    setPreviewIsReference(true)
-    setPreviewData(buildViewData(evoBmi ? Number(evoBmi) : savedImc, me?.name))
+    setPreviewFecha(fechaEvolucion)
+    setPreviewHora(horaEvolucion)
+    setPreviewDoctor(me?.name || "")
+    setPreviewMotivo(evoMotivo)
+    setPreviewVitals({ ...evoVitals })
+    setPreviewImc(evoBmi ? Number(evoBmi) : savedImc)
+    setPreviewPlan(evoPlan)
     setPreviewOpen(true)
   }
 
@@ -188,23 +207,22 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
       }
 
       setPreviewTitle("Evolución guardada")
-      setPreviewIsReference(false)
-      setPreviewData({
-        fechaEvolucion: saved.fechaEvolucion,
-        horaEvolucion: saved.horaEvolucion,
-        nombreProfesional: saved.nombreProfesional,
-        motivoConsulta: saved.motivoConsulta,
-        tensionArterial: saved.tensionArterial,
-        frecuenciaCardiaca: saved.frecuenciaCardiaca,
-        frecuenciaRespiratoria: saved.frecuenciaRespiratoria,
-        temperatura: saved.temperatura,
-        saturacionOxigeno: saved.saturacionOxigeno,
-        glasgow: saved.glasgow,
-        peso: saved.peso,
-        talla: saved.talla,
-        imc: saved.imc,
-        plan: saved.plan,
+      setPreviewFecha(saved.fechaEvolucion)
+      setPreviewHora(saved.horaEvolucion)
+      setPreviewDoctor(saved.nombreProfesional)
+      setPreviewMotivo(saved.motivoConsulta)
+      setPreviewVitals({
+        ta: saved.tensionArterial || "",
+        fc: saved.frecuenciaCardiaca || 0,
+        fr: saved.frecuenciaRespiratoria || 0,
+        temperature: saved.temperatura || 0,
+        saturation: saved.saturacionOxigeno || 0,
+        glasgow: saved.glasgow || 0,
+        weight: saved.peso || 0,
+        height: saved.talla ? saved.talla * 100 : 0,
       })
+      setPreviewImc(saved.imc ?? null)
+      setPreviewPlan(saved.plan)
       setPreviewOpen(true)
       reset()
     } catch (err) {
@@ -377,12 +395,48 @@ export const EvolutionSection = ({ admissionId, selectedDoctor, patientName, mes
         messageApi={messageApi}
       />
 
-      <EvolucionPreviewModal
+      <ClinicalPrintPreviewModal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        data={previewData}
         title={previewTitle}
-        professionalIsReference={previewIsReference}
+        renderDocument={(provider) => (
+          <GenericClinicalPrintDocument
+            provider={provider}
+            patient={resolvedPatient}
+            admissionDate={admissionDate}
+            contractName={contractName}
+            documentTitle="Evolución"
+            attentionLabel="Fecha y hora de evolución:"
+            attentionDate={previewFecha}
+            attentionTime={previewHora?.slice(0, 5)}
+            doctorName={previewDoctor}
+            doctorUser={doctorUser}
+            sections={[
+              {
+                title: "Motivo de consulta",
+                rows: [{ label: "Motivo de consulta", value: previewMotivo }],
+              },
+              {
+                title: "Signos vitales",
+                rows: [
+                  { label: "TA", value: previewVitals.ta || null },
+                  { label: "FC (lpm)", value: previewVitals.fc || null },
+                  { label: "FR (rpm)", value: previewVitals.fr || null },
+                  { label: "Temperatura (°C)", value: previewVitals.temperature || null },
+                  { label: "Sat. O₂ (%)", value: previewVitals.saturation || null },
+                  { label: "Glasgow", value: previewVitals.glasgow || null },
+                  { label: "Peso (kg)", value: previewVitals.weight || null },
+                  { label: "Talla (m)", value: previewVitals.height ? previewVitals.height / 100 : null },
+                  { label: "IMC", value: previewImc != null ? `${previewImc} kg/m²` : null },
+                ],
+              },
+              {
+                title: "Plan",
+                rows: [{ label: "Plan", value: previewPlan }],
+              },
+            ]}
+          />
+        )}
       />
 
       <ClinicalRecordHistoryTrigger

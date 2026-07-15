@@ -1,12 +1,14 @@
 "use client"
 
-import { DeleteOutlined, MedicineBoxOutlined, PlusOutlined, SaveOutlined } from "@ant-design/icons"
+import { DeleteOutlined, EyeOutlined, MedicineBoxOutlined, PlusOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, DatePicker, Input, Select, Tag, Tooltip, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import type { Dayjs } from "dayjs"
 import { useState } from "react"
 import { anesthesiaTypeOptions, cie10Options, cupsOptions, labelStyle } from "../constants"
 import type { QxSearchItem } from "../types"
+import { DescripcionQuirurgicaPreviewModal } from "./DescripcionQuirurgicaPreviewModal"
+import type { DescripcionQuirurgicaViewData } from "./DescripcionQuirurgicaDetailView"
 
 interface Props {
   doctorOptions: { value: number; label: string }[]
@@ -27,6 +29,8 @@ export const SurgicalDescriptionSection = ({ doctorOptions, patientName, message
   const [qxProcedures, setQxProcedures] = useState<QxSearchItem[]>([{ code: "", description: "" }])
   const [qxDiagnoses, setQxDiagnoses] = useState<QxSearchItem[]>([{ code: "", description: "" }])
   const [qxProcedureDescription, setQxProcedureDescription] = useState("")
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<DescripcionQuirurgicaViewData | null>(null)
 
   const addProcedure = () => {
     if (qxProcedures.length >= 4) return
@@ -67,6 +71,24 @@ export const SurgicalDescriptionSection = ({ doctorOptions, patientName, message
     setQxProcedureDescription("")
   }
 
+  const doctorLabel = (id?: number) => doctorOptions.find((d) => d.value === id)?.label
+
+  const openPreview = () => {
+    setPreviewData({
+      fechaInicio: qxStartDate ? qxStartDate.format("DD/MM/YYYY HH:mm") : "",
+      fechaFin: qxEndDate ? qxEndDate.format("DD/MM/YYYY HH:mm") : "",
+      cirujano: doctorLabel(qxSurgeon),
+      anestesiologo: doctorLabel(qxAnesthesiologist),
+      instrumentador: doctorLabel(qxInstrumenter),
+      ayudante: doctorLabel(qxAssistant),
+      tipoAnestesia: anesthesiaTypeOptions.find((o) => o.value === qxAnesthesiaType)?.label,
+      procedimientos: qxProcedures,
+      diagnosticos: qxDiagnoses,
+      descripcion: qxProcedureDescription,
+    })
+    setPreviewOpen(true)
+  }
+
   const validateAndSave = () => {
     if (!qxStartDate) { messageApi.error("La fecha inicial de ejecución es obligatoria."); return }
     if (!qxEndDate) { messageApi.error("La fecha final de ejecución es obligatoria."); return }
@@ -88,6 +110,11 @@ export const SurgicalDescriptionSection = ({ doctorOptions, patientName, message
         <div className="qx-form-header">
           <MedicineBoxOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
           <Typography.Title level={5} style={{ margin: 0 }}>Descripción Quirúrgica</Typography.Title>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+            <Button icon={<EyeOutlined />} onClick={openPreview}>
+              Vista previa
+            </Button>
+          </div>
         </div>
 
         <div className="qx-section">
@@ -274,6 +301,13 @@ export const SurgicalDescriptionSection = ({ doctorOptions, patientName, message
           Guardar descripción quirúrgica
         </Button>
       </div>
+
+      <DescripcionQuirurgicaPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        data={previewData}
+        title="Vista previa de la descripción quirúrgica"
+      />
     </div>
   )
 }
