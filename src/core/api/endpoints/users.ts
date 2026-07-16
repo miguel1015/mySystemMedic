@@ -19,4 +19,7 @@ export const USERS_ENDPOINTS = {
   PROFILES: {
     GET_ALL: "/api/auth/users/users/getAll?type=user-profiles",
   },
+  USERS_BY_PROFILE: {
+    GET_ALL: "/api/auth/users/users/by-profile",
+  },
 }

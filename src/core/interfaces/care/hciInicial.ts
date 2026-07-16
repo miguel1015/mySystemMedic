@@ -350,3 +350,73 @@ export interface NotaEnfermeriaUpdateRequest {
   nota: string;
   isActive: boolean;
 }
+
+export interface DescripcionQuirurgicaResponse {
+  id: number;
+  admissionId: number;
+  fechaHoraInicio: string;
+  fechaHoraFinalizacion: string;
+  cirujanoId: number;
+  nombreCirujano: string;
+  anestesiologoId: number;
+  nombreAnestesiologo: string;
+  instrumentadorId: number;
+  nombreInstrumentador: string;
+  ayudanteQxId: number;
+  nombreAyudanteQx: string;
+  tipoAnestesiaId: number;
+  nombreTipoAnestesia: string;
+  procedimiento1: string | null;
+  procedimiento2: string | null;
+  procedimiento3: string | null;
+  procedimiento4: string | null;
+  diagnostico1: string | null;
+  diagnostico2: string | null;
+  diagnostico3: string | null;
+  diagnostico4: string | null;
+  descripcionProcedimiento: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DescripcionQuirurgicaCreateRequest {
+  admissionId: number;
+  fechaHoraInicio: string;
+  fechaHoraFinalizacion: string;
+  cirujanoId: number;
+  anestesiologoId: number;
+  instrumentadorId: number;
+  ayudanteQxId: number;
+  tipoAnestesiaId: number;
+  procedimiento1: string | null;
+  procedimiento2: string | null;
+  procedimiento3: string | null;
+  procedimiento4: string | null;
+  diagnostico1: string | null;
+  diagnostico2: string | null;
+  diagnostico3: string | null;
+  diagnostico4: string | null;
+  descripcionProcedimiento: string;
+}
+
+export type DescripcionQuirurgicaUpdateRequest = Omit<
+  DescripcionQuirurgicaCreateRequest,
+  "admissionId"
+> & {
+  isActive: boolean;
+};
+
+export interface AnesthesiaTypeResponse {
+  id: number;
+  name: string;
+}
+
+export interface SurgicalProcedureResponse {
+  id: number;
+  code: string;
+  codeDescription: string;
+  cups: string;
+  cupsDescription: string;
+  codificationType: string;
+}

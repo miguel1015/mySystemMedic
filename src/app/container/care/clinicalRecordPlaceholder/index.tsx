@@ -12,6 +12,8 @@ import { SpecialistEvolutionSection } from "@/app/container/care/clinicalRecords
 import { SurgicalDescriptionSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/SurgicalDescriptionSection"
 import { useMe } from "@/core/hooks/users/useMeUser"
 import { useGetUsers } from "@/core/hooks/users/useGetUsers"
+import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
+import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
 import { GetUser } from "@/core/interfaces/user/users"
 import {
   ArrowLeftOutlined,
@@ -114,28 +116,38 @@ export const SurgicalDescriptionContainer = () => {
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
   const { data: me } = useMe()
-  const { data: users = [] } = useGetUsers()
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const { data: admission } = useGetAdmissionById(admissionId)
+  const patientId =
+    searchParams.get("patientId") || (admission ? String(admission.patientId) : undefined)
+  const { data: patientRecord } = useGetPatientById(patientId ?? null)
+
+  const patientFullName = [
+    patientRecord?.firstName,
+    patientRecord?.middleName,
+    patientRecord?.lastName,
+    patientRecord?.secondLastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   const patient = {
-    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    name:
+      patientFullName ||
+      admission?.nombrePaciente ||
+      searchParams.get("patientName") ||
+      "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
-    documentNumber: searchParams.get("documentNumber") || "1102796382",
-    careScope: searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(searchParams.get("admissionDate")),
+    documentNumber:
+      admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
+    careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-
-  const doctorOptions = useMemo(() => {
-    const mapped = users.map((user) => ({
-      value: user.id,
-      label: buildFullName(user),
-    }))
-    if (mapped.length) return mapped
-    return [{ value: me?.id || 0, label: currentDoctor }]
-  }, [currentDoctor, me?.id, users])
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -144,7 +156,7 @@ export const SurgicalDescriptionContainer = () => {
         <PatientHeader patient={patient} currentDoctor={currentDoctor} router={router} onSave={() => {}} hideSave />
         <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
           <SurgicalDescriptionSection
-            doctorOptions={doctorOptions}
+            admissionId={admissionId}
             patientName={patient.name}
             messageApi={messageApi}
           />
@@ -164,17 +176,41 @@ export const EvolutionsContainer = () => {
   const { data: me } = useMe()
   const { data: users = [] } = useGetUsers()
 
+  const admissionId = searchParams.get("admissionId") || undefined
+  const { data: admission } = useGetAdmissionById(admissionId)
+  const patientId =
+    searchParams.get("patientId") || (admission ? String(admission.patientId) : undefined)
+  const { data: patientRecord } = useGetPatientById(patientId ?? null)
+
+  const patientFullName = [
+    patientRecord?.firstName,
+    patientRecord?.middleName,
+    patientRecord?.lastName,
+    patientRecord?.secondLastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
+
   const patient = {
-    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    name:
+      patientFullName ||
+      admission?.nombrePaciente ||
+      searchParams.get("patientName") ||
+      "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
-    documentNumber: searchParams.get("documentNumber") || "1102796382",
-    careScope: searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(searchParams.get("admissionDate")),
+    documentNumber:
+      admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
+    careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
+    insurer: searchParams.get("insurer") || "EPS Sanitas",
+    city: patientRecord?.cityName || searchParams.get("city") || "",
+    phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
+  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   const doctorOptions = useMemo(() => {
     const mapped = users.map((user) => ({
@@ -186,8 +222,6 @@ export const EvolutionsContainer = () => {
   }, [currentDoctor, me?.id, users])
 
   const selectedDoctor = doctorOptions[0]?.label || currentDoctor
-
-  const admissionId = searchParams.get("admissionId") || undefined
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -276,6 +310,10 @@ export const EvolutionsContainer = () => {
             selectedDoctor={selectedDoctor}
             patientName={patient.name}
             messageApi={messageApi}
+            patient={patient}
+            admissionDate={admission?.admissionDate ?? ""}
+            contractName={admission?.convenioNombre ?? ""}
+            doctorUser={currentDoctorUser}
           />
         </div>
 
@@ -292,19 +330,43 @@ export const NursingNotesContainer = () => {
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
   const { data: me } = useMe()
+  const { data: users = [] } = useGetUsers()
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const { data: admission } = useGetAdmissionById(admissionId)
+  const patientId =
+    searchParams.get("patientId") || (admission ? String(admission.patientId) : undefined)
+  const { data: patientRecord } = useGetPatientById(patientId ?? null)
+
+  const patientFullName = [
+    patientRecord?.firstName,
+    patientRecord?.middleName,
+    patientRecord?.lastName,
+    patientRecord?.secondLastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   const patient = {
-    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    name:
+      patientFullName ||
+      admission?.nombrePaciente ||
+      searchParams.get("patientName") ||
+      "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
-    documentNumber: searchParams.get("documentNumber") || "1102796382",
-    careScope: searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(searchParams.get("admissionDate")),
+    documentNumber:
+      admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
+    careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
+    insurer: searchParams.get("insurer") || "EPS Sanitas",
+    city: patientRecord?.cityName || searchParams.get("city") || "",
+    phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const admissionId = searchParams.get("admissionId") || undefined
+  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -317,6 +379,10 @@ export const NursingNotesContainer = () => {
             currentDoctor={currentDoctor}
             patientName={patient.name}
             messageApi={messageApi}
+            patient={patient}
+            admissionDate={admission?.admissionDate ?? ""}
+            contractName={admission?.convenioNombre ?? ""}
+            doctorUser={currentDoctorUser}
           />
         </div>
       </div>
@@ -332,19 +398,43 @@ export const DiagnosticProceduresContainer = () => {
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
   const { data: me } = useMe()
+  const { data: users = [] } = useGetUsers()
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const { data: admission } = useGetAdmissionById(admissionId)
+  const patientId =
+    searchParams.get("patientId") || (admission ? String(admission.patientId) : undefined)
+  const { data: patientRecord } = useGetPatientById(patientId ?? null)
+
+  const patientFullName = [
+    patientRecord?.firstName,
+    patientRecord?.middleName,
+    patientRecord?.lastName,
+    patientRecord?.secondLastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   const patient = {
-    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    name:
+      patientFullName ||
+      admission?.nombrePaciente ||
+      searchParams.get("patientName") ||
+      "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
-    documentNumber: searchParams.get("documentNumber") || "1102796382",
-    careScope: searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(searchParams.get("admissionDate")),
+    documentNumber:
+      admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
+    careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
+    insurer: searchParams.get("insurer") || "EPS Sanitas",
+    city: patientRecord?.cityName || searchParams.get("city") || "",
+    phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const admissionId = searchParams.get("admissionId") || undefined
+  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -357,6 +447,10 @@ export const DiagnosticProceduresContainer = () => {
             currentDoctor={currentDoctor}
             patientName={patient.name}
             messageApi={messageApi}
+            patient={patient}
+            admissionDate={admission?.admissionDate ?? ""}
+            contractName={admission?.convenioNombre ?? ""}
+            doctorUser={currentDoctorUser}
           />
         </div>
       </div>
@@ -449,19 +543,43 @@ export const MinorProceduresContainer = () => {
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
   const { data: me } = useMe()
+  const { data: users = [] } = useGetUsers()
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const { data: admission } = useGetAdmissionById(admissionId)
+  const patientId =
+    searchParams.get("patientId") || (admission ? String(admission.patientId) : undefined)
+  const { data: patientRecord } = useGetPatientById(patientId ?? null)
+
+  const patientFullName = [
+    patientRecord?.firstName,
+    patientRecord?.middleName,
+    patientRecord?.lastName,
+    patientRecord?.secondLastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   const patient = {
-    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    name:
+      patientFullName ||
+      admission?.nombrePaciente ||
+      searchParams.get("patientName") ||
+      "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
-    documentNumber: searchParams.get("documentNumber") || "1102796382",
-    careScope: searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(searchParams.get("admissionDate")),
+    documentNumber:
+      admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
+    careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
+    insurer: searchParams.get("insurer") || "EPS Sanitas",
+    city: patientRecord?.cityName || searchParams.get("city") || "",
+    phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const admissionId = searchParams.get("admissionId") || undefined
+  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -474,6 +592,10 @@ export const MinorProceduresContainer = () => {
             currentDoctor={currentDoctor}
             patientName={patient.name}
             messageApi={messageApi}
+            patient={patient}
+            admissionDate={admission?.admissionDate ?? ""}
+            contractName={admission?.convenioNombre ?? ""}
+            doctorUser={currentDoctorUser}
           />
         </div>
       </div>
@@ -489,19 +611,43 @@ export const MedicalNoteContainer = () => {
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
   const { data: me } = useMe()
+  const { data: users = [] } = useGetUsers()
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const { data: admission } = useGetAdmissionById(admissionId)
+  const patientId =
+    searchParams.get("patientId") || (admission ? String(admission.patientId) : undefined)
+  const { data: patientRecord } = useGetPatientById(patientId ?? null)
+
+  const patientFullName = [
+    patientRecord?.firstName,
+    patientRecord?.middleName,
+    patientRecord?.lastName,
+    patientRecord?.secondLastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   const patient = {
-    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    name:
+      patientFullName ||
+      admission?.nombrePaciente ||
+      searchParams.get("patientName") ||
+      "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
-    documentNumber: searchParams.get("documentNumber") || "1102796382",
-    careScope: searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(searchParams.get("admissionDate")),
+    documentNumber:
+      admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
+    careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
+    insurer: searchParams.get("insurer") || "EPS Sanitas",
+    city: patientRecord?.cityName || searchParams.get("city") || "",
+    phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const admissionId = searchParams.get("admissionId") || undefined
+  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -514,6 +660,10 @@ export const MedicalNoteContainer = () => {
             currentDoctor={currentDoctor}
             patientName={patient.name}
             messageApi={messageApi}
+            patient={patient}
+            admissionDate={admission?.admissionDate ?? ""}
+            contractName={admission?.convenioNombre ?? ""}
+            doctorUser={currentDoctorUser}
           />
         </div>
       </div>
@@ -529,19 +679,43 @@ export const NonSurgicalProceduresContainer = () => {
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
   const { data: me } = useMe()
+  const { data: users = [] } = useGetUsers()
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const { data: admission } = useGetAdmissionById(admissionId)
+  const patientId =
+    searchParams.get("patientId") || (admission ? String(admission.patientId) : undefined)
+  const { data: patientRecord } = useGetPatientById(patientId ?? null)
+
+  const patientFullName = [
+    patientRecord?.firstName,
+    patientRecord?.middleName,
+    patientRecord?.lastName,
+    patientRecord?.secondLastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   const patient = {
-    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    name:
+      patientFullName ||
+      admission?.nombrePaciente ||
+      searchParams.get("patientName") ||
+      "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
-    documentNumber: searchParams.get("documentNumber") || "1102796382",
-    careScope: searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(searchParams.get("admissionDate")),
+    documentNumber:
+      admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
+    careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
+    insurer: searchParams.get("insurer") || "EPS Sanitas",
+    city: patientRecord?.cityName || searchParams.get("city") || "",
+    phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const admissionId = searchParams.get("admissionId") || undefined
+  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -554,6 +728,10 @@ export const NonSurgicalProceduresContainer = () => {
             currentDoctor={currentDoctor}
             patientName={patient.name}
             messageApi={messageApi}
+            patient={patient}
+            admissionDate={admission?.admissionDate ?? ""}
+            contractName={admission?.convenioNombre ?? ""}
+            doctorUser={currentDoctorUser}
           />
         </div>
       </div>
@@ -569,19 +747,43 @@ export const SpecialistEvolutionContainer = () => {
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
   const { data: me } = useMe()
+  const { data: users = [] } = useGetUsers()
+
+  const admissionId = searchParams.get("admissionId") || undefined
+  const { data: admission } = useGetAdmissionById(admissionId)
+  const patientId =
+    searchParams.get("patientId") || (admission ? String(admission.patientId) : undefined)
+  const { data: patientRecord } = useGetPatientById(patientId ?? null)
+
+  const patientFullName = [
+    patientRecord?.firstName,
+    patientRecord?.middleName,
+    patientRecord?.lastName,
+    patientRecord?.secondLastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   const patient = {
-    name: searchParams.get("patientName") || "Andres Felipe Quintero Perez",
+    name:
+      patientFullName ||
+      admission?.nombrePaciente ||
+      searchParams.get("patientName") ||
+      "Andres Felipe Quintero Perez",
     documentType: searchParams.get("documentType") || "CC",
-    documentNumber: searchParams.get("documentNumber") || "1102796382",
-    careScope: searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(searchParams.get("admissionDate")),
+    documentNumber:
+      admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
+    careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
+    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
+    insurer: searchParams.get("insurer") || "EPS Sanitas",
+    city: patientRecord?.cityName || searchParams.get("city") || "",
+    phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
 
   const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const admissionId = searchParams.get("admissionId") || undefined
+  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -594,6 +796,10 @@ export const SpecialistEvolutionContainer = () => {
             currentDoctor={currentDoctor}
             patientName={patient.name}
             messageApi={messageApi}
+            patient={patient}
+            admissionDate={admission?.admissionDate ?? ""}
+            contractName={admission?.convenioNombre ?? ""}
+            doctorUser={currentDoctorUser}
           />
         </div>
       </div>

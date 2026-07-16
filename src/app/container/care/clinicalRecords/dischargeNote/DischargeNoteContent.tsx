@@ -312,13 +312,6 @@ export function DischargeNoteContent({ messageApi, currentDoctor = "Dr. Martin M
       <div className="qx-form-header">
         <FileDoneOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
         <Typography.Title level={5} style={{ margin: 0 }}>Nota de Egreso</Typography.Title>
-        <div className="evo-header-meta">
-          <span>{currentDoctor}</span>
-          <span className="evo-header-sep">·</span>
-          <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-          <span className="evo-header-sep">·</span>
-          <span>{new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false })}</span>
-        </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
           <Button icon={<EyeOutlined />} onClick={openPreview}>
             Vista previa

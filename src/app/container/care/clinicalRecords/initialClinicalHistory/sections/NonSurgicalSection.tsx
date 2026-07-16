@@ -5,7 +5,6 @@ import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useEffect, useState } from "react"
 import { useCreateProcedimientoNoQx, useUpdateProcedimientoNoQx } from "@/core/hooks/care/procedimientosNoQx/useSaveProcedimientoNoQx"
-import { useMe } from "@/core/hooks/users/useMeUser"
 import type { GetUser } from "@/core/interfaces/user/users"
 import { labelStyle } from "../constants"
 import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
@@ -40,7 +39,6 @@ export const NonSurgicalSection = ({
   contractName = "",
   doctorUser,
 }: Props) => {
-  const { data: me } = useMe()
 
   const resolvedPatient: PrintPatient = patient ?? {
     name: patientName,
@@ -85,7 +83,7 @@ export const NonSurgicalSection = ({
     setPreviewTitle(editingId ? "Vista previa - Procedimiento no quirúrgico (edición)" : "Vista previa del procedimiento no quirúrgico")
     setPreviewFecha(fechaProcedimiento)
     setPreviewHora(horaProcedimiento)
-    setPreviewDoctor(me?.name || "")
+    setPreviewDoctor(currentDoctor)
     setPreviewDescripcion(consulta)
     setPreviewOpen(true)
   }
@@ -152,11 +150,6 @@ export const NonSurgicalSection = ({
         <Typography.Title level={5} style={{ margin: 0 }}>
           {editingId ? `Editar Procedimiento No Quirúrgico #${editingId}` : "Nuevo Procedimiento No Quirúrgico"}
         </Typography.Title>
-        <div className="evo-header-meta">
-          <span>{currentDoctor}</span>
-          <span className="evo-header-sep">·</span>
-          <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-        </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
           <Button icon={<EyeOutlined />} onClick={openPreview}>
             Vista previa

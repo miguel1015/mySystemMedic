@@ -8,7 +8,7 @@ import type { HCInicialResponse } from "@/core/interfaces/care/hciInicial";
 import { antecedentesFields, physicalExamFields } from "../constants";
 import type { DiagnosisRow } from "../types";
 import { ClinicalDocumentHeader } from "./ClinicalDocumentHeader";
-import { emptyDash, FieldRow, type PrintPatient } from "./printDocument.utils";
+import { emptyDash, FieldRow, formatDoctorSignatureName, type PrintPatient } from "./printDocument.utils";
 import "./hciPrintPreview.css";
 
 interface Props {
@@ -303,11 +303,7 @@ export const HciPrintDocument = ({
               )}
             </div>
             <div className="hci-print-signature-line">
-              {doctorName}
-              <br />
-              {doctorUser?.documentNumber
-                ? `Doc. ${doctorUser.documentNumber}`
-                : "Médico tratante"}
+              {formatDoctorSignatureName(doctorName)}
             </div>
           </div>
           <div className="hci-print-signature-box">

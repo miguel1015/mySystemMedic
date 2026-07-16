@@ -3,7 +3,7 @@
 import type { GetUser } from "@/core/interfaces/user/users";
 import type { TProvider } from "@/core/interfaces/parameterization/types";
 import { ClinicalDocumentHeader } from "./ClinicalDocumentHeader";
-import { FieldRow, type PrintPatient } from "./printDocument.utils";
+import { FieldRow, formatDoctorSignatureName, type PrintPatient } from "./printDocument.utils";
 import "./hciPrintPreview.css";
 
 interface Props {
@@ -57,11 +57,7 @@ export const NotaMedicaPrintDocument = ({
             )}
           </div>
           <div className="hci-print-signature-line">
-            {doctorName}
-            <br />
-            {doctorUser?.documentNumber
-              ? `Doc. ${doctorUser.documentNumber}`
-              : "Médico"}
+            {formatDoctorSignatureName(doctorName)}
           </div>
         </div>
         <div className="hci-print-signature-box">

@@ -157,11 +157,6 @@ export const MedicalNotesSection = ({
         <Typography.Title level={5} style={{ margin: 0 }}>
           {editingId ? `Editar Nota Médica #${editingId}` : "Nueva Nota Médica"}
         </Typography.Title>
-        <div className="evo-header-meta">
-          <span>{currentDoctor}</span>
-          <span className="evo-header-sep">·</span>
-          <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-        </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
           <Button icon={<EyeOutlined />} onClick={openPreview}>
             Vista previa

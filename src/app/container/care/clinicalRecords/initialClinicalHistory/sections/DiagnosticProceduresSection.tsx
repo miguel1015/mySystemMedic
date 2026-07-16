@@ -7,7 +7,6 @@ import { useEffect, useState } from "react"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateProcedimientoDiagnostico } from "@/core/hooks/care/procedimientosDiagnosticos/useCreateProcedimientoDiagnostico"
 import { useUpdateProcedimientoDiagnostico } from "@/core/hooks/care/procedimientosDiagnosticos/useUpdateProcedimientoDiagnostico"
-import { useMe } from "@/core/hooks/users/useMeUser"
 import type { ProcedimientoDiagnosticoResponse } from "@/core/interfaces/care/hciInicial"
 import type { GetUser } from "@/core/interfaces/user/users"
 import { labelStyle } from "../constants"
@@ -44,7 +43,6 @@ export const DiagnosticProceduresSection = ({
   contractName = "",
   doctorUser,
 }: Props) => {
-  const { data: me } = useMe()
 
   const resolvedPatient: PrintPatient = patient ?? {
     name: patientName,
@@ -102,7 +100,7 @@ export const DiagnosticProceduresSection = ({
     setPreviewTitle(editingId ? "Vista previa - Procedimiento diagnóstico (edición)" : "Vista previa del procedimiento diagnóstico")
     setPreviewFecha(fechaProcedimiento)
     setPreviewHora(horaProcedimiento)
-    setPreviewDoctor(me?.name || "")
+    setPreviewDoctor(currentDoctor)
     setPreviewEstudios(estudios)
     setPreviewHallazgos(hallazgos)
     setPreviewOpen(true)
@@ -177,11 +175,6 @@ export const DiagnosticProceduresSection = ({
         <Typography.Title level={5} style={{ margin: 0 }}>
           {editingId ? `Editar Procedimiento Diagnóstico #${editingId}` : "Nuevo Procedimiento Diagnóstico"}
         </Typography.Title>
-        <div className="evo-header-meta">
-          <span>{currentDoctor}</span>
-          <span className="evo-header-sep">·</span>
-          <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-        </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
           <Button icon={<EyeOutlined />} onClick={openPreview}>
             Vista previa

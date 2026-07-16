@@ -1,35 +1,13 @@
 import type { CSSProperties } from "react"
 import type { AntecedentesState, EvoVitalsState, PhysicalExamState } from "./types"
 
-export const cie10Options = [
-  { value: "S202", label: "S202 - Contusion del torax", diagnosis: "Contusion del torax" },
-  { value: "S301", label: "S301 - Contusion de la pared abdominal", diagnosis: "Contusion de la pared abdominal" },
-  { value: "S819", label: "S819 - Herida de la pierna, parte no especificada", diagnosis: "Herida de la pierna, parte no especificada" },
-  { value: "R509", label: "R509 - Fiebre no especificada", diagnosis: "Fiebre no especificada" },
-  { value: "I10X", label: "I10X - Hipertension esencial", diagnosis: "Hipertension esencial" },
-  { value: "E119", label: "E119 - Diabetes mellitus tipo 2 sin complicaciones", diagnosis: "Diabetes mellitus tipo 2 sin complicaciones" },
-]
-
-export const cupsOptions = [
-  { value: "45003", label: "45003 - Laparoscopia diagnóstica", description: "Laparoscopia diagnóstica" },
-  { value: "45200", label: "45200 - Apendicectomía laparoscópica", description: "Apendicectomía laparoscópica" },
-  { value: "47600", label: "47600 - Colecistectomía laparoscópica", description: "Colecistectomía laparoscópica" },
-  { value: "54500", label: "54500 - Hernioplastia inguinal", description: "Hernioplastia inguinal" },
-  { value: "54550", label: "54550 - Hernioplastia umbilical", description: "Hernioplastia umbilical" },
-  { value: "27130", label: "27130 - Artroplastia total de cadera", description: "Artroplastia total de cadera" },
-  { value: "27447", label: "27447 - Artroplastia total de rodilla", description: "Artroplastia total de rodilla" },
-  { value: "43239", label: "43239 - Endoscopia digestiva superior con biopsia", description: "Endoscopia digestiva superior con biopsia" },
-]
-
-export const anesthesiaTypeOptions = [
-  { value: "general", label: "Anestesia general" },
-  { value: "regional", label: "Anestesia regional" },
-  { value: "local", label: "Anestesia local" },
-  { value: "sedacion", label: "Sedación" },
-  { value: "epidural", label: "Epidural" },
-  { value: "raquianestesia", label: "Raquianestesia" },
-  { value: "combinada", label: "Combinada (general + regional)" },
-]
+// Deben coincidir exactamente (mayúsculas/tildes) con UserProfiles.Name en la base de datos del backend.
+export const QX_TEAM_PROFILES = {
+  cirujano: "Especialista",
+  anestesiologo: "Anestesiólogo",
+  instrumentador: "Instrumentador Quirúrgico",
+  ayudante: "Ayudante Quirúrgico",
+} as const
 
 export const physicalExamFields: Array<{ key: keyof PhysicalExamState; label: string }> = [
   { key: "cabezaCuello", label: "Cabeza y cuello" },

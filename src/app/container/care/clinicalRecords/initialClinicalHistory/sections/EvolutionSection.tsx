@@ -7,7 +7,6 @@ import { useEffect, useMemo, useState } from "react"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateEvolucion } from "@/core/hooks/care/evoluciones/useCreateEvolucion"
 import { useUpdateEvolucion } from "@/core/hooks/care/evoluciones/useUpdateEvolucion"
-import { useMe } from "@/core/hooks/users/useMeUser"
 import type { EvolucionResponse } from "@/core/interfaces/care/hciInicial"
 import type { GetUser } from "@/core/interfaces/user/users"
 import { defaultEvoVitals, labelStyle } from "../constants"
@@ -56,7 +55,6 @@ export const EvolutionSection = ({
   contractName = "",
   doctorUser,
 }: Props) => {
-  const { data: me } = useMe()
 
   const resolvedPatient: PrintPatient = patient ?? {
     name: patientName,
@@ -137,7 +135,7 @@ export const EvolutionSection = ({
     setPreviewTitle(editingId ? "Vista previa - Evolución (edición)" : "Vista previa de la evolución")
     setPreviewFecha(fechaEvolucion)
     setPreviewHora(horaEvolucion)
-    setPreviewDoctor(me?.name || "")
+    setPreviewDoctor(selectedDoctor)
     setPreviewMotivo(evoMotivo)
     setPreviewVitals({ ...evoVitals })
     setPreviewImc(evoBmi ? Number(evoBmi) : savedImc)
@@ -237,11 +235,6 @@ export const EvolutionSection = ({
         <Typography.Title level={5} style={{ margin: 0 }}>
           {editingId ? `Editar Evolución #${editingId}` : "Nueva Evolución"}
         </Typography.Title>
-        <div className="evo-header-meta">
-          <span>{selectedDoctor}</span>
-          <span className="evo-header-sep">·</span>
-          <span>{new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-        </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
           <Button icon={<EyeOutlined />} onClick={openPreview}>
             Vista previa

@@ -6,6 +6,13 @@ import { useGetUsers } from "@/core/hooks/users/useGetUsers";
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById";
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient";
 import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission";
+import { useGetNotasMedicasByAdmission } from "@/core/hooks/care/notasMedicas/useGetNotasMedicasByAdmission";
+import { useGetEvolucionesByAdmission } from "@/core/hooks/care/evoluciones/useGetEvolucionesByAdmission";
+import { useGetEvolucionEspecialistasByAdmission } from "@/core/hooks/care/evolucionEspecialista/useGetEvolucionEspecialistasByAdmission";
+import { useGetProcedimientosMenoresByAdmission } from "@/core/hooks/care/procedimientosMenores/useGetProcedimientosMenoresByAdmission";
+import { useGetProcedimientosDiagnosticosByAdmission } from "@/core/hooks/care/procedimientosDiagnosticos/useGetProcedimientosDiagnosticosByAdmission";
+import { useGetProcedimientosNoQxByAdmission } from "@/core/hooks/care/procedimientosNoQx/useGetProcedimientosNoQxByAdmission";
+import { useGetNotasEnfermeriaByAdmission } from "@/core/hooks/care/notasEnfermeria/useGetNotasEnfermeriaByAdmission";
 import { GetUser } from "@/core/interfaces/user/users";
 import {
   ArrowLeftOutlined,
@@ -108,6 +115,30 @@ const InitialClinicalHistoryContainer = () => {
   const { data: existingHCInicial } = useGetHCInicialByAdmission(admissionId);
   const isHciClosed = existingHCInicial?.isClosed === true;
   const isHciLocked = isHciClosed && !editHci;
+
+  const { data: notasMedicas } = useGetNotasMedicasByAdmission(admissionId);
+  const { data: evoluciones } = useGetEvolucionesByAdmission(admissionId);
+  const { data: evolucionEspecialistas } =
+    useGetEvolucionEspecialistasByAdmission(admissionId);
+  const { data: procedimientosMenores } =
+    useGetProcedimientosMenoresByAdmission(admissionId);
+  const { data: procedimientosDiagnosticos } =
+    useGetProcedimientosDiagnosticosByAdmission(admissionId);
+  const { data: procedimientosNoQx } =
+    useGetProcedimientosNoQxByAdmission(admissionId);
+  const { data: notasEnfermeria } =
+    useGetNotasEnfermeriaByAdmission(admissionId);
+
+  const sidebarCounts: Record<string, number> = {
+    hci: existingHCInicial ? 1 : 0,
+    medicas: notasMedicas?.length ?? 0,
+    evoluciones: evoluciones?.length ?? 0,
+    especialista: evolucionEspecialistas?.length ?? 0,
+    menores: procedimientosMenores?.length ?? 0,
+    diagnosticos: procedimientosDiagnosticos?.length ?? 0,
+    noquirurgicos: procedimientosNoQx?.length ?? 0,
+    enfermeria: notasEnfermeria?.length ?? 0,
+  };
 
   const [admissionDate, setAdmissionDate] = useState(() =>
     new Date().toISOString().slice(0, 10),
@@ -377,36 +408,39 @@ const InitialClinicalHistoryContainer = () => {
             </div>
 
             <div className="sidebar-nav-list">
-              {sidebarRecords.map((record) => (
-                <button
-                  key={record.key}
-                  type="button"
-                  className={`sidebar-record-item${activeSidebarKey === record.key ? " active" : ""}${!clickableSidebarKeys.has(record.key) ? " sidebar-record-disabled" : ""}`}
-                  onClick={() => {
-                    if (clickableSidebarKeys.has(record.key))
-                      setActiveSidebarKey(record.key);
-                  }}
-                >
-                  <div className="sidebar-record-icon">
-                    <FileTextOutlined />
-                  </div>
-                  <div className="sidebar-record-content">
-                    <div className="sidebar-record-title">{record.title}</div>
-                    {record.date && (
-                      <div className="sidebar-record-date">{record.date}</div>
+              {sidebarRecords.map((record) => {
+                const count = sidebarCounts[record.key] ?? record.count;
+                return (
+                  <button
+                    key={record.key}
+                    type="button"
+                    className={`sidebar-record-item${activeSidebarKey === record.key ? " active" : ""}${!clickableSidebarKeys.has(record.key) ? " sidebar-record-disabled" : ""}`}
+                    onClick={() => {
+                      if (clickableSidebarKeys.has(record.key))
+                        setActiveSidebarKey(record.key);
+                    }}
+                  >
+                    <div className="sidebar-record-icon">
+                      <FileTextOutlined />
+                    </div>
+                    <div className="sidebar-record-content">
+                      <div className="sidebar-record-title">{record.title}</div>
+                      {record.date && (
+                        <div className="sidebar-record-date">{record.date}</div>
+                      )}
+                    </div>
+                    {count > 0 && (
+                      <Tag
+                        color="blue"
+                        style={{ margin: 0, flexShrink: 0, fontSize: 10 }}
+                      >
+                        {count}
+                      </Tag>
                     )}
-                  </div>
-                  {record.count > 0 && (
-                    <Tag
-                      color="blue"
-                      style={{ margin: 0, flexShrink: 0, fontSize: 10 }}
-                    >
-                      {record.count}
-                    </Tag>
-                  )}
-                  <RightOutlined className="sidebar-record-chevron" />
-                </button>
-              ))}
+                    <RightOutlined className="sidebar-record-chevron" />
+                  </button>
+                );
+              })}
             </div>
           </aside>
 
@@ -431,9 +465,10 @@ const InitialClinicalHistoryContainer = () => {
 
             {activeSidebarKey === "quirurgica" && (
               <SurgicalDescriptionSection
-                doctorOptions={doctorOptions}
+                admissionId={admissionId}
                 patientName={patient.name}
                 messageApi={messageApi}
+                historyClosed={isHciLocked}
               />
             )}
 

@@ -19,6 +19,11 @@ export const calculateAge = (birthDate: string) => {
 
 export const emptyDash = "—";
 
+export const formatDoctorSignatureName = (doctorName: string) => {
+  const cleanName = doctorName.trim().replace(/^dra?\.?\s*/i, "");
+  return cleanName ? `Dr. ${cleanName}` : "";
+};
+
 export interface PrintPatient {
   name: string;
   documentType: string;

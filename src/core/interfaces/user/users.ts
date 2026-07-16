@@ -64,6 +64,12 @@ export interface GetUser {
   signature?: string;
 }
 
+export interface UserByProfile {
+  id: number;
+  fullName: string;
+  userProfileName: string;
+}
+
 export interface TCountries {
   id: number;
   code: string;

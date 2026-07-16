@@ -119,4 +119,18 @@ export const CARE_ENDPOINTS = {
     UPDATE: (id: IdParam) => `/api/auth/care/procedimientos-diagnosticos/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/procedimientos-diagnosticos/${id}`,
   },
+  DESCRIPCIONES_QUIRURGICAS: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/descripciones-quirurgicas/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/descripciones-quirurgicas",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/descripciones-quirurgicas/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/descripciones-quirurgicas/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/descripciones-quirurgicas/${id}`,
+  },
+  ANESTHESIA_TYPES: {
+    SEARCH: "/api/auth/care/anesthesia-types",
+  },
+  SURGICAL_PROCEDURES: {
+    SEARCH: "/api/auth/care/surgical-procedures",
+  },
 }
