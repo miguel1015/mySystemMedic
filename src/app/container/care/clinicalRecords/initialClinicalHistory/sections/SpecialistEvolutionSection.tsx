@@ -29,7 +29,7 @@ interface Props {
 
 const { TextArea } = Input
 
-const MAX_LENGTH = 1000
+const MAX_LENGTH = 5000
 
 const todayDate = () => new Date().toISOString().slice(0, 10)
 const nowTime = () => new Date().toTimeString().slice(0, 8)
@@ -129,7 +129,7 @@ export const SpecialistEvolutionSection = ({
       return
     }
     if (motivo.length > MAX_LENGTH) {
-      messageApi.error("El motivo de consulta no puede superar los 1000 caracteres.")
+      messageApi.error("El motivo de consulta no puede superar los 5000 caracteres.")
       return
     }
     if (!planTrimmed) {
@@ -137,7 +137,7 @@ export const SpecialistEvolutionSection = ({
       return
     }
     if (planTrimmed.length > MAX_LENGTH) {
-      messageApi.error("El campo Plan no puede superar los 1000 caracteres.")
+      messageApi.error("El campo Plan no puede superar los 5000 caracteres.")
       return
     }
     if (!admissionId) {
