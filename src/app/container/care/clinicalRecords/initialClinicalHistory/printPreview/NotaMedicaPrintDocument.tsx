@@ -28,7 +28,15 @@ export const NotaMedicaPrintDocument = ({
   doctorName,
   doctorUser,
   nota,
-}: Props) => (
+}: Props) => {
+  console.log("[NotaMedicaPrintDocument] doctorUser:", {
+    doctorName,
+    id: doctorUser?.id,
+    hasSignature: !!doctorUser?.signature,
+    signatureLength: doctorUser?.signature?.length,
+    doctorUser,
+  });
+  return (
   <div className="hci-print-page">
     <ClinicalDocumentHeader
       provider={provider}
@@ -69,4 +77,5 @@ export const NotaMedicaPrintDocument = ({
       </div>
     </div>
   </div>
-);
+  );
+};

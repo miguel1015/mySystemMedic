@@ -5,7 +5,7 @@ export const USERS_ENDPOINTS = {
     UPDATE: (id: string | number) => `/api/auth/users/users/${id}`,
     DELETE: (id: string | number) => `/api/auth/users/users/${id}`,
     GET_BY_ID: (id: string | number) => `/api/auth/users/users/${id}`,
-    ME: "/api/auth/users/users/me",
+    ME: "/api/users/me",
   },
   USERS_ROLES: {
     GET_ALL: "/api/auth/users/users/getAll?type=user-roles",

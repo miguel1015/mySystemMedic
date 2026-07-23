@@ -291,6 +291,14 @@ export const HciPrintDocument = ({
       ),
     });
 
+    console.log("[HciPrintDocument] doctorUser:", {
+      doctorName,
+      id: doctorUser?.id,
+      hasSignature: !!doctorUser?.signature,
+      signatureLength: doctorUser?.signature?.length,
+      doctorUser,
+    });
+
     list.push({
       kind: "block",
       id: "firmas",

@@ -1,8 +1,7 @@
 "use client";
 
 import { Container } from "@/components/container";
-import { useMe } from "@/core/hooks/users/useMeUser";
-import { useGetUsers } from "@/core/hooks/users/useGetUsers";
+import { useCurrentDoctor } from "@/core/hooks/users/useCurrentDoctor";
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById";
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient";
 import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission";
@@ -13,7 +12,7 @@ import { useGetProcedimientosMenoresByAdmission } from "@/core/hooks/care/proced
 import { useGetProcedimientosDiagnosticosByAdmission } from "@/core/hooks/care/procedimientosDiagnosticos/useGetProcedimientosDiagnosticosByAdmission";
 import { useGetProcedimientosNoQxByAdmission } from "@/core/hooks/care/procedimientosNoQx/useGetProcedimientosNoQxByAdmission";
 import { useGetNotasEnfermeriaByAdmission } from "@/core/hooks/care/notasEnfermeria/useGetNotasEnfermeriaByAdmission";
-import { GetUser } from "@/core/interfaces/user/users";
+import { useGetDescripcionQuirurgicaByAdmission } from "@/core/hooks/care/descripcionesQuirurgicas/useGetDescripcionQuirurgicaByAdmission";
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -29,6 +28,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DischargeNoteContent } from "../dischargeNote/DischargeNoteContent";
 import { sidebarRecords } from "./constants";
 import HciPrintPreviewModal from "./printPreview/HciPrintPreviewModal";
+import EpicrisisPrintPreviewModal from "./printPreview/EpicrisisPrintPreviewModal";
 import { DiagnosticProceduresSection } from "./sections/DiagnosticProceduresSection";
 import { EvolutionSection } from "./sections/EvolutionSection";
 import { HciSection } from "./sections/HciSection";
@@ -40,15 +40,6 @@ import { SpecialistEvolutionSection } from "./sections/SpecialistEvolutionSectio
 import { SurgicalDescriptionSection } from "./sections/SurgicalDescriptionSection";
 import type { DiagnosisRow } from "./types";
 import "./initialClinicalHistory.css";
-
-const buildFullName = (user?: GetUser) => {
-  if (!user) return "";
-  return (
-    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
-    user.username ||
-    user.email
-  );
-};
 
 const formatAdmissionDate = (value?: string) => {
   if (!value) return "";
@@ -100,8 +91,14 @@ const InitialClinicalHistoryContainer = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [messageApi, contextHolder] = message.useMessage();
-  const { data: me } = useMe();
-  const { data: users = [] } = useGetUsers();
+  const {
+    users,
+    currentDoctor,
+    currentDoctorUser,
+    canAssignDoctor,
+    doctorOptions,
+    defaultDoctorId,
+  } = useCurrentDoctor();
 
   const admissionId = searchParams.get("admissionId") || undefined;
   const editHci = searchParams.get("editHci") === "1";
@@ -128,6 +125,8 @@ const InitialClinicalHistoryContainer = () => {
     useGetProcedimientosNoQxByAdmission(admissionId);
   const { data: notasEnfermeria } =
     useGetNotasEnfermeriaByAdmission(admissionId);
+  const { data: descripcionesQuirurgicas } =
+    useGetDescripcionQuirurgicaByAdmission(admissionId);
 
   const sidebarCounts: Record<string, number> = {
     hci: existingHCInicial ? 1 : 0,
@@ -205,33 +204,13 @@ const InitialClinicalHistoryContainer = () => {
     phone: patientRecord?.phone || searchParams.get("phone") || "",
   };
 
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez";
-
-  const canAssignDoctor = useMemo(() => {
-    const role = (me?.role || "").toLowerCase();
-    return ["admin", "administrador", "coordinador", "jefe"].some((word) =>
-      role.includes(word),
-    );
-  }, [me?.role]);
-
-  const doctorOptions = useMemo(() => {
-    const mapped = users.map((user) => ({
-      value: user.id,
-      label: buildFullName(user),
-      role: user.userRoleName,
-    }));
-    if (mapped.length) return mapped;
-    return [
-      { value: me?.id || 0, label: currentDoctor, role: me?.role || "Medico" },
-    ];
-  }, [currentDoctor, me?.id, me?.role, users]);
-
   const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(
-    doctorOptions[0]?.value,
+    defaultDoctorId,
   );
   const [diagnoses, setDiagnoses] = useState<DiagnosisRow[]>([]);
   const [activeSidebarKey, setActiveSidebarKey] = useState("hci");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [epicrisisOpen, setEpicrisisOpen] = useState(false);
 
   useEffect(() => {
     if (!doctorOptions.length) return;
@@ -239,15 +218,14 @@ const InitialClinicalHistoryContainer = () => {
       selectedDoctorId === undefined ||
       !doctorOptions.some((d) => d.value === selectedDoctorId)
     ) {
-      setSelectedDoctorId(doctorOptions[0].value);
+      setSelectedDoctorId(defaultDoctorId);
     }
-  }, [doctorOptions, selectedDoctorId]);
+  }, [doctorOptions, selectedDoctorId, defaultDoctorId]);
 
   const selectedDoctor =
     doctorOptions.find((d) => d.value === selectedDoctorId)?.label ||
     currentDoctor;
   const selectedDoctorUser = users.find((u) => u.id === selectedDoctorId);
-  const currentDoctorUser = users.find((u) => u.id === me?.id);
   const mainDiagnosis = useMemo(
     () => diagnoses.find((d) => d.main && d.code),
     [diagnoses],
@@ -306,7 +284,7 @@ const InitialClinicalHistoryContainer = () => {
             <div className="clinical-history-actions">
               <Button
                 icon={<FileDoneOutlined />}
-                onClick={() => setPreviewOpen(true)}
+                onClick={() => setEpicrisisOpen(true)}
               >
                 Epicrisis
               </Button>
@@ -469,6 +447,9 @@ const InitialClinicalHistoryContainer = () => {
                 patientName={patient.name}
                 messageApi={messageApi}
                 historyClosed={isHciLocked}
+                patient={patient}
+                admissionDate={admission?.admissionDate ?? ""}
+                contractName={admission?.convenioNombre ?? ""}
               />
             )}
 
@@ -585,6 +566,29 @@ const InitialClinicalHistoryContainer = () => {
         doctorName={selectedDoctor}
         doctorUser={selectedDoctorUser}
         diagnoses={diagnoses}
+      />
+
+      <EpicrisisPrintPreviewModal
+        open={epicrisisOpen}
+        onClose={() => setEpicrisisOpen(false)}
+        patient={patient}
+        admissionDate={admission?.admissionDate ?? ""}
+        attentionDate={admissionDate}
+        attentionTime={admissionTime}
+        contractName={admission?.convenioNombre ?? ""}
+        doctorName={selectedDoctor}
+        doctorUser={selectedDoctorUser}
+        users={users}
+        hcInicial={existingHCInicial}
+        diagnoses={diagnoses}
+        descripcionesQuirurgicas={descripcionesQuirurgicas ?? []}
+        notasMedicas={notasMedicas ?? []}
+        evoluciones={evoluciones ?? []}
+        evolucionEspecialistas={evolucionEspecialistas ?? []}
+        procedimientosMenores={procedimientosMenores ?? []}
+        procedimientosDiagnosticos={procedimientosDiagnosticos ?? []}
+        procedimientosNoQx={procedimientosNoQx ?? []}
+        notasEnfermeria={notasEnfermeria ?? []}
       />
     </Container>
   );

@@ -11,19 +11,24 @@ import { useGetDescripcionQuirurgicaByAdmission } from "@/core/hooks/care/descri
 import { useGetAnesthesiaTypes } from "@/core/hooks/care/anesthesiaTypes/useGetAnesthesiaTypes"
 import { surgicalProcedureServices } from "@/core/hooks/care/surgicalProcedures/useSearchSurgicalProcedures"
 import { cie10Services } from "@/core/hooks/care/cie10/useSearchCie10"
-import { useGetUsersByProfile } from "@/core/hooks/users/useGetUsersByProfile"
+import { useGetUsers } from "@/core/hooks/users/useGetUsers"
 import type { DescripcionQuirurgicaResponse } from "@/core/interfaces/care/hciInicial"
+import type { GetUser } from "@/core/interfaces/user/users"
 import { QX_TEAM_PROFILES, labelStyle } from "../constants"
 import type { QxSearchItem } from "../types"
 import { CodeSearchSelect } from "./CodeSearchSelect"
-import { DescripcionQuirurgicaPreviewModal } from "./DescripcionQuirurgicaPreviewModal"
-import type { DescripcionQuirurgicaViewData } from "./DescripcionQuirurgicaDetailView"
+import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
+import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument"
+import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
+  patient?: PrintPatient
+  admissionDate?: string
+  contractName?: string
 }
 
 const { TextArea } = Input
@@ -52,7 +57,25 @@ const resolveDiagnosisDescription = async (code: string): Promise<string> => {
   }
 }
 
-export const SurgicalDescriptionSection = ({ admissionId, patientName, messageApi, historyClosed }: Props) => {
+export const SurgicalDescriptionSection = ({
+  admissionId,
+  patientName,
+  messageApi,
+  historyClosed,
+  patient,
+  admissionDate = "",
+  contractName = "",
+}: Props) => {
+  const resolvedPatient: PrintPatient = patient ?? {
+    name: patientName,
+    documentType: "",
+    documentNumber: "",
+    careScope: "",
+    birthDate: "",
+    sex: "",
+    insurer: "",
+  }
+
   const [editingId, setEditingId] = useState<number | null>(null)
   const [qxStartDate, setQxStartDate] = useState<Dayjs | null>(null)
   const [qxEndDate, setQxEndDate] = useState<Dayjs | null>(null)
@@ -64,21 +87,36 @@ export const SurgicalDescriptionSection = ({ admissionId, patientName, messageAp
   const [qxProcedures, setQxProcedures] = useState<QxSearchItem[]>([{ ...emptyItem }])
   const [qxDiagnoses, setQxDiagnoses] = useState<QxSearchItem[]>([{ ...emptyItem }])
   const [qxProcedureDescription, setQxProcedureDescription] = useState("")
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewData, setPreviewData] = useState<DescripcionQuirurgicaViewData | null>(null)
   const [hydrated, setHydrated] = useState(false)
 
-  const { data: surgeons = [] } = useGetUsersByProfile(QX_TEAM_PROFILES.cirujano)
-  const { data: anesthesiologists = [] } = useGetUsersByProfile(QX_TEAM_PROFILES.anestesiologo)
-  const { data: instrumenters = [] } = useGetUsersByProfile(QX_TEAM_PROFILES.instrumentador)
-  const { data: assistants = [] } = useGetUsersByProfile(QX_TEAM_PROFILES.ayudante)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewTitle, setPreviewTitle] = useState("Vista previa de la descripción quirúrgica")
+  const [previewStartDate, setPreviewStartDate] = useState("")
+  const [previewStartTime, setPreviewStartTime] = useState("")
+  const [previewEndDate, setPreviewEndDate] = useState("")
+  const [previewSurgeon, setPreviewSurgeon] = useState("")
+  const [previewAnesthesiologist, setPreviewAnesthesiologist] = useState("")
+  const [previewInstrumenter, setPreviewInstrumenter] = useState("")
+  const [previewAssistant, setPreviewAssistant] = useState("")
+  const [previewAnesthesiaType, setPreviewAnesthesiaType] = useState("")
+  const [previewProcedures, setPreviewProcedures] = useState<QxSearchItem[]>([])
+  const [previewDiagnoses, setPreviewDiagnoses] = useState<QxSearchItem[]>([])
+  const [previewDescription, setPreviewDescription] = useState("")
+  const [previewDoctorUser, setPreviewDoctorUser] = useState<GetUser | undefined>(undefined)
+
+  const { data: allUsers = [] } = useGetUsers()
   const { data: anesthesiaTypes = [] } = useGetAnesthesiaTypes()
   const { data: existingRecords, isLoading: isLoadingRecord } = useGetDescripcionQuirurgicaByAdmission(admissionId)
 
-  const surgeonOptions = surgeons.map((u) => ({ value: u.id, label: u.fullName }))
-  const anesthesiologistOptions = anesthesiologists.map((u) => ({ value: u.id, label: u.fullName }))
-  const instrumenterOptions = instrumenters.map((u) => ({ value: u.id, label: u.fullName }))
-  const assistantOptions = assistants.map((u) => ({ value: u.id, label: u.fullName }))
+  const usersByProfile = (profileIds: readonly number[]) =>
+    allUsers
+      .filter((u) => u.isActive && profileIds.includes(u.userProfileId))
+      .map((u) => ({ value: u.id, label: `${u.firstName} ${u.lastName}` }))
+
+  const surgeonOptions = usersByProfile(QX_TEAM_PROFILES.cirujano)
+  const anesthesiologistOptions = usersByProfile(QX_TEAM_PROFILES.anestesiologo)
+  const instrumenterOptions = usersByProfile(QX_TEAM_PROFILES.instrumentador)
+  const assistantOptions = usersByProfile(QX_TEAM_PROFILES.ayudante)
   const anesthesiaTypeOptions = anesthesiaTypes.map((a) => ({ value: a.id, label: a.name }))
 
   const createDescripcionQuirurgica = useCreateDescripcionQuirurgica()
@@ -179,18 +217,26 @@ export const SurgicalDescriptionSection = ({ admissionId, patientName, messageAp
     options.find((o) => o.value === id)?.label
 
   const openPreview = () => {
-    setPreviewData({
-      fechaInicio: qxStartDate ? qxStartDate.format("DD/MM/YYYY HH:mm") : "",
-      fechaFin: qxEndDate ? qxEndDate.format("DD/MM/YYYY HH:mm") : "",
-      cirujano: doctorLabel(qxSurgeon, surgeonOptions),
-      anestesiologo: doctorLabel(qxAnesthesiologist, anesthesiologistOptions),
-      instrumentador: doctorLabel(qxInstrumenter, instrumenterOptions),
-      ayudante: doctorLabel(qxAssistant, assistantOptions),
-      tipoAnestesia: anesthesiaTypeOptions.find((o) => o.value === qxAnesthesiaType)?.label,
-      procedimientos: qxProcedures,
-      diagnosticos: qxDiagnoses,
-      descripcion: qxProcedureDescription,
+    setPreviewTitle(editingId ? `Vista previa - Descripción Quirúrgica #${editingId}` : "Vista previa de la descripción quirúrgica")
+    setPreviewStartDate(qxStartDate ? qxStartDate.format("DD/MM/YYYY") : "")
+    setPreviewStartTime(qxStartDate ? qxStartDate.format("HH:mm") : "")
+    setPreviewEndDate(qxEndDate ? qxEndDate.format("DD/MM/YYYY HH:mm") : "")
+    setPreviewSurgeon(doctorLabel(qxSurgeon, surgeonOptions) || "")
+    const matchedSurgeon = allUsers.find((u) => u.id === qxSurgeon)
+    console.log("[SurgicalDescriptionSection] preview doctor debug:", {
+      qxSurgeon,
+      allUsersCount: allUsers.length,
+      matchedSurgeon,
+      hasSignature: !!matchedSurgeon?.signature,
     })
+    setPreviewDoctorUser(matchedSurgeon)
+    setPreviewAnesthesiologist(doctorLabel(qxAnesthesiologist, anesthesiologistOptions) || "")
+    setPreviewInstrumenter(doctorLabel(qxInstrumenter, instrumenterOptions) || "")
+    setPreviewAssistant(doctorLabel(qxAssistant, assistantOptions) || "")
+    setPreviewAnesthesiaType(anesthesiaTypeOptions.find((o) => o.value === qxAnesthesiaType)?.label || "")
+    setPreviewProcedures(qxProcedures)
+    setPreviewDiagnoses(qxDiagnoses)
+    setPreviewDescription(qxProcedureDescription)
     setPreviewOpen(true)
   }
 
@@ -467,11 +513,65 @@ export const SurgicalDescriptionSection = ({ admissionId, patientName, messageAp
         </Button>
       </div>
 
-      <DescripcionQuirurgicaPreviewModal
+      <ClinicalPrintPreviewModal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        data={previewData}
-        title="Vista previa de la descripción quirúrgica"
+        title={previewTitle}
+        renderDocument={(provider) => (
+          <GenericClinicalPrintDocument
+            provider={provider}
+            patient={resolvedPatient}
+            admissionDate={admissionDate}
+            contractName={contractName}
+            documentTitle="Descripción Quirúrgica"
+            attentionLabel="Fecha y hora de inicio:"
+            attentionDate={previewStartDate}
+            attentionTime={previewStartTime}
+            doctorName={previewSurgeon}
+            doctorUser={previewDoctorUser}
+            sections={[
+              {
+                title: "Fechas de ejecución",
+                rows: [
+                  { label: "Fecha inicial de ejecución", value: previewStartDate ? `${previewStartDate} ${previewStartTime}` : "" },
+                  { label: "Fecha final de ejecución", value: previewEndDate },
+                ],
+              },
+              {
+                title: "Equipo quirúrgico",
+                rows: [
+                  { label: "Cirujano", value: previewSurgeon },
+                  { label: "Anestesiólogo", value: previewAnesthesiologist },
+                  { label: "Instrumentador", value: previewInstrumenter },
+                  { label: "Ayudante Qx", value: previewAssistant },
+                  { label: "Tipo de anestesia", value: previewAnesthesiaType },
+                ],
+              },
+              {
+                title: "Procedimientos (CUPS/SOAT)",
+                rows: previewProcedures
+                  .filter((p) => p.code)
+                  .map((p, idx) => ({
+                    label: idx === 0 ? "Principal" : `Procedimiento ${idx + 1}`,
+                    value: `${p.code} - ${p.description || "—"}`,
+                  })),
+              },
+              {
+                title: "Diagnósticos de ingreso (CIE-10)",
+                rows: previewDiagnoses
+                  .filter((d) => d.code)
+                  .map((d, idx) => ({
+                    label: idx === 0 ? "Principal" : `Diagnóstico ${idx + 1}`,
+                    value: `${d.code} - ${d.description || "—"}`,
+                  })),
+              },
+              {
+                title: "Descripción del procedimiento",
+                rows: [{ label: "Descripción del procedimiento", value: previewDescription }],
+              },
+            ]}
+          />
+        )}
       />
     </div>
   )

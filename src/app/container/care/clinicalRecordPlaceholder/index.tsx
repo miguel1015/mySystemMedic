@@ -10,11 +10,9 @@ import { NonSurgicalSection } from "@/app/container/care/clinicalRecords/initial
 import { NursingNoteSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/NursingNoteSection"
 import { SpecialistEvolutionSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/SpecialistEvolutionSection"
 import { SurgicalDescriptionSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/SurgicalDescriptionSection"
-import { useMe } from "@/core/hooks/users/useMeUser"
-import { useGetUsers } from "@/core/hooks/users/useGetUsers"
+import { useCurrentDoctor } from "@/core/hooks/users/useCurrentDoctor"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
-import { GetUser } from "@/core/interfaces/user/users"
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -25,7 +23,7 @@ import {
 } from "@ant-design/icons"
 import { Button, Tag, Typography, message } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ReactNode, useMemo, useState } from "react"
+import { ReactNode } from "react"
 import "../clinicalRecords/initialClinicalHistory/initialClinicalHistory.css"
 
 // ─────────────────────────────────────────────────────────────
@@ -83,11 +81,6 @@ export default ClinicalRecordPlaceholder
 // ─────────────────────────────────────────────────────────────
 // Shared helpers
 // ─────────────────────────────────────────────────────────────
-const buildFullName = (user?: GetUser) => {
-  if (!user) return ""
-  return `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.username || user.email
-}
-
 const formatDate = (value: string | null) => {
   if (!value) return "03/03/2026 20:47"
   const date = new Date(value)
@@ -115,7 +108,7 @@ export const SurgicalDescriptionContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { data: me } = useMe()
+  const { currentDoctor } = useCurrentDoctor()
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -147,8 +140,6 @@ export const SurgicalDescriptionContainer = () => {
     sex: searchParams.get("sex") || "Masculino",
   }
 
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-
   return (
     <Container fluid padding="none" className="clinical-history-shell">
       {contextHolder}
@@ -173,8 +164,7 @@ export const EvolutionsContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { data: me } = useMe()
-  const { data: users = [] } = useGetUsers()
+  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -209,19 +199,7 @@ export const EvolutionsContainer = () => {
     phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
 
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const currentDoctorUser = users.find((u) => u.id === me?.id)
-
-  const doctorOptions = useMemo(() => {
-    const mapped = users.map((user) => ({
-      value: user.id,
-      label: buildFullName(user),
-    }))
-    if (mapped.length) return mapped
-    return [{ value: me?.id || 0, label: currentDoctor }]
-  }, [currentDoctor, me?.id, users])
-
-  const selectedDoctor = doctorOptions[0]?.label || currentDoctor
+  const selectedDoctor = currentDoctor
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -329,8 +307,7 @@ export const NursingNotesContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { data: me } = useMe()
-  const { data: users = [] } = useGetUsers()
+  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -364,9 +341,6 @@ export const NursingNotesContainer = () => {
     city: patientRecord?.cityName || searchParams.get("city") || "",
     phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
-
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -397,8 +371,7 @@ export const DiagnosticProceduresContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { data: me } = useMe()
-  const { data: users = [] } = useGetUsers()
+  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -432,9 +405,6 @@ export const DiagnosticProceduresContainer = () => {
     city: patientRecord?.cityName || searchParams.get("city") || "",
     phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
-
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -542,8 +512,7 @@ export const MinorProceduresContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { data: me } = useMe()
-  const { data: users = [] } = useGetUsers()
+  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -577,9 +546,6 @@ export const MinorProceduresContainer = () => {
     city: patientRecord?.cityName || searchParams.get("city") || "",
     phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
-
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -610,8 +576,7 @@ export const MedicalNoteContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { data: me } = useMe()
-  const { data: users = [] } = useGetUsers()
+  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -645,9 +610,6 @@ export const MedicalNoteContainer = () => {
     city: patientRecord?.cityName || searchParams.get("city") || "",
     phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
-
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -678,8 +640,7 @@ export const NonSurgicalProceduresContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { data: me } = useMe()
-  const { data: users = [] } = useGetUsers()
+  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -713,9 +674,6 @@ export const NonSurgicalProceduresContainer = () => {
     city: patientRecord?.cityName || searchParams.get("city") || "",
     phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
-
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -746,8 +704,7 @@ export const SpecialistEvolutionContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { data: me } = useMe()
-  const { data: users = [] } = useGetUsers()
+  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -781,9 +738,6 @@ export const SpecialistEvolutionContainer = () => {
     city: patientRecord?.cityName || searchParams.get("city") || "",
     phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
-
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-  const currentDoctorUser = users.find((u) => u.id === me?.id)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">

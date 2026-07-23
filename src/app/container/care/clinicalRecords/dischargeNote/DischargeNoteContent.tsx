@@ -91,7 +91,7 @@ interface DischargeNoteContentProps {
   currentDoctor?: string
 }
 
-export function DischargeNoteContent({ messageApi, currentDoctor = "Dr. Martin Martinez Perez" }: DischargeNoteContentProps) {
+export function DischargeNoteContent({ messageApi, currentDoctor = "" }: DischargeNoteContentProps) {
   const [activeTab, setActiveTab] = useState<"clinical" | "diagnoses">("clinical")
 
   // Tab 1: Datos Clínicos

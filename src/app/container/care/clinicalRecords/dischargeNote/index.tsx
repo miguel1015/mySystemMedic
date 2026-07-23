@@ -1,11 +1,9 @@
 "use client"
 
 import { Container } from "@/components/container"
-import { useMe } from "@/core/hooks/users/useMeUser"
-import { useGetUsers } from "@/core/hooks/users/useGetUsers"
+import { useCurrentDoctor } from "@/core/hooks/users/useCurrentDoctor"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
-import { GetUser } from "@/core/interfaces/user/users"
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -14,17 +12,8 @@ import {
 } from "@ant-design/icons"
 import { Button, Select, Tag, Typography, message } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { DischargeNoteContent } from "./DischargeNoteContent"
-
-const buildFullName = (user?: GetUser) => {
-  if (!user) return ""
-  return (
-    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
-    user.username ||
-    user.email
-  )
-}
 
 const formatAdmissionDate = (value?: string) => {
   if (!value) return ""
@@ -62,8 +51,8 @@ const DischargeNoteContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { data: me } = useMe()
-  const { data: users = [] } = useGetUsers()
+  const { currentDoctor, canAssignDoctor, doctorOptions, defaultDoctorId } =
+    useCurrentDoctor()
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -98,29 +87,8 @@ const DischargeNoteContainer = () => {
     sex: searchParams.get("sex") || "Masculino",
   }
 
-  const currentDoctor = me?.name || "Dr. Martin Martinez Perez"
-
-  const canAssignDoctor = useMemo(() => {
-    const role = (me?.role || "").toLowerCase()
-    return ["admin", "administrador", "coordinador", "jefe"].some((word) =>
-      role.includes(word),
-    )
-  }, [me?.role])
-
-  const doctorOptions = useMemo(() => {
-    const mapped = users.map((user) => ({
-      value: user.id,
-      label: buildFullName(user),
-      role: user.userRoleName,
-    }))
-    if (mapped.length) return mapped
-    return [
-      { value: me?.id || 0, label: currentDoctor, role: me?.role || "Medico" },
-    ]
-  }, [currentDoctor, me?.id, me?.role, users])
-
   const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(
-    doctorOptions[0]?.value,
+    defaultDoctorId,
   )
 
   useEffect(() => {
@@ -129,9 +97,9 @@ const DischargeNoteContainer = () => {
       selectedDoctorId === undefined ||
       !doctorOptions.some((d) => d.value === selectedDoctorId)
     ) {
-      setSelectedDoctorId(doctorOptions[0].value)
+      setSelectedDoctorId(defaultDoctorId)
     }
-  }, [doctorOptions, selectedDoctorId])
+  }, [doctorOptions, selectedDoctorId, defaultDoctorId])
 
   const selectedDoctor =
     doctorOptions.find((d) => d.value === selectedDoctorId)?.label ||

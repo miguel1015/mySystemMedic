@@ -1,12 +1,12 @@
 import type { CSSProperties } from "react"
 import type { AntecedentesState, EvoVitalsState, PhysicalExamState } from "./types"
 
-// Deben coincidir exactamente (mayúsculas/tildes) con UserProfiles.Name en la base de datos del backend.
+// IDs de UserProfiles en la base de datos del backend.
 export const QX_TEAM_PROFILES = {
-  cirujano: "Especialista",
-  anestesiologo: "Anestesiólogo",
-  instrumentador: "Instrumentador Quirúrgico",
-  ayudante: "Ayudante Quirúrgico",
+  cirujano: [3, 4],
+  anestesiologo: [5],
+  instrumentador: [16],
+  ayudante: [17],
 } as const
 
 export const physicalExamFields: Array<{ key: keyof PhysicalExamState; label: string }> = [

@@ -37,7 +37,15 @@ export const GenericClinicalPrintDocument = ({
   sections,
   doctorName,
   doctorUser,
-}: Props) => (
+}: Props) => {
+  console.log("[GenericClinicalPrintDocument] doctorUser:", {
+    doctorName,
+    id: doctorUser?.id,
+    hasSignature: !!doctorUser?.signature,
+    signatureLength: doctorUser?.signature?.length,
+    doctorUser,
+  });
+  return (
   <div className="hci-print-page">
     <ClinicalDocumentHeader
       provider={provider}
@@ -82,4 +90,5 @@ export const GenericClinicalPrintDocument = ({
       </div>
     </div>
   </div>
-);
+  );
+};
