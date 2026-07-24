@@ -28,14 +28,17 @@ async function apiFetch(url: string, token: string, options: RequestInit = {}) {
 
   if (!res.ok) {
     let message = res.statusText
-    if (typeof data === "string") {
+    if (typeof data === "string" && data.trim()) {
       message = data
     } else if (data?.errors && typeof data.errors === "object") {
       const details = Object.values(data.errors as Record<string, string[]>).flat().filter(Boolean)
       if (details.length > 0) message = details.join(" ")
-    } else {
-      message = data?.title || data?.message || data?.error || res.statusText
+    } else if (data && typeof data === "object") {
+      message = data.title || data.message || data.error || res.statusText
     }
+    console.error(
+      `[descripciones-quirurgicas] backend ${res.status} ${res.statusText} for ${url}\nresponseBody: ${JSON.stringify(data)}`,
+    )
     throw { status: res.status, message }
   }
 

@@ -32,7 +32,7 @@ async function apiFetch(url: string, token: string, options: RequestInit = {}) {
 
   if (!res.ok) {
     let message: string =
-      typeof data === "string"
+      typeof data === "string" && data.trim()
         ? data
         : data?.title || data?.message || data?.error || res.statusText
 
@@ -43,6 +43,9 @@ async function apiFetch(url: string, token: string, options: RequestInit = {}) {
       if (detail) message = detail
     }
 
+    console.error(
+      `[descripciones-quirurgicas/${url}] backend ${res.status} ${res.statusText}\nresponseBody: ${JSON.stringify(data)}`,
+    )
     throw { status: res.status, message }
   }
 

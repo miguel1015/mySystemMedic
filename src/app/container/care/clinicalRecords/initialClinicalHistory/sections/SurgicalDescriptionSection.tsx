@@ -1,13 +1,13 @@
 "use client"
 
-import { DeleteOutlined, EyeOutlined, MedicineBoxOutlined, PlusOutlined, SaveOutlined } from "@ant-design/icons"
+import { CloseCircleOutlined, DeleteOutlined, EyeOutlined, MedicineBoxOutlined, PlusOutlined, SaveOutlined } from "@ant-design/icons"
 import { Button, DatePicker, Input, Select, Tag, Tooltip, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import dayjs, { type Dayjs } from "dayjs"
 import { useEffect, useState } from "react"
+import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateDescripcionQuirurgica } from "@/core/hooks/care/descripcionesQuirurgicas/useCreateDescripcionQuirurgica"
 import { useUpdateDescripcionQuirurgica } from "@/core/hooks/care/descripcionesQuirurgicas/useUpdateDescripcionQuirurgica"
-import { useGetDescripcionQuirurgicaByAdmission } from "@/core/hooks/care/descripcionesQuirurgicas/useGetDescripcionQuirurgicaByAdmission"
 import { useGetAnesthesiaTypes } from "@/core/hooks/care/anesthesiaTypes/useGetAnesthesiaTypes"
 import { surgicalProcedureServices } from "@/core/hooks/care/surgicalProcedures/useSearchSurgicalProcedures"
 import { cie10Services } from "@/core/hooks/care/cie10/useSearchCie10"
@@ -17,6 +17,8 @@ import type { GetUser } from "@/core/interfaces/user/users"
 import { QX_TEAM_PROFILES, labelStyle } from "../constants"
 import type { QxSearchItem } from "../types"
 import { CodeSearchSelect } from "./CodeSearchSelect"
+import { resolveDiagnosisDescription, resolveProcedureDescription } from "./qxCodeResolvers"
+import { SurgicalDescriptionRecentModal } from "./SurgicalDescriptionRecentModal"
 import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
 import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument"
 import type { PrintPatient } from "../printPreview/printDocument.utils"
@@ -34,28 +36,6 @@ interface Props {
 const { TextArea } = Input
 
 const emptyItem: QxSearchItem = { code: "", description: "" }
-
-const resolveProcedureDescription = async (code: string): Promise<string> => {
-  if (!code) return ""
-  try {
-    const results = await surgicalProcedureServices.search(code)
-    const match = results.find((r) => r.code.toLowerCase() === code.toLowerCase())
-    return match?.codeDescription || match?.cupsDescription || ""
-  } catch {
-    return ""
-  }
-}
-
-const resolveDiagnosisDescription = async (code: string): Promise<string> => {
-  if (!code) return ""
-  try {
-    const results = await cie10Services.search(code)
-    const match = results.find((r) => r.codigo.toLowerCase() === code.toLowerCase())
-    return match?.descripcion || ""
-  } catch {
-    return ""
-  }
-}
 
 export const SurgicalDescriptionSection = ({
   admissionId,
@@ -87,7 +67,7 @@ export const SurgicalDescriptionSection = ({
   const [qxProcedures, setQxProcedures] = useState<QxSearchItem[]>([{ ...emptyItem }])
   const [qxDiagnoses, setQxDiagnoses] = useState<QxSearchItem[]>([{ ...emptyItem }])
   const [qxProcedureDescription, setQxProcedureDescription] = useState("")
-  const [hydrated, setHydrated] = useState(false)
+  const [recentOpen, setRecentOpen] = useState(false)
 
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewTitle, setPreviewTitle] = useState("Vista previa de la descripción quirúrgica")
@@ -106,7 +86,6 @@ export const SurgicalDescriptionSection = ({
 
   const { data: allUsers = [] } = useGetUsers()
   const { data: anesthesiaTypes = [] } = useGetAnesthesiaTypes()
-  const { data: existingRecords, isLoading: isLoadingRecord } = useGetDescripcionQuirurgicaByAdmission(admissionId)
 
   const usersByProfile = (profileIds: readonly number[]) =>
     allUsers
@@ -123,7 +102,7 @@ export const SurgicalDescriptionSection = ({
   const updateDescripcionQuirurgica = useUpdateDescripcionQuirurgica()
   const isSaving = createDescripcionQuirurgica.isPending || updateDescripcionQuirurgica.isPending
 
-  const loadFromRecord = async (record: DescripcionQuirurgicaResponse) => {
+  const loadForEdit = async (record: DescripcionQuirurgicaResponse) => {
     setEditingId(record.id)
     setQxStartDate(dayjs(record.fechaHoraInicio))
     setQxEndDate(dayjs(record.fechaHoraFinalizacion))
@@ -154,6 +133,7 @@ export const SurgicalDescriptionSection = ({
         ? diagnosisCodes.map((code, idx) => ({ code, description: diagnosisDescriptions[idx] }))
         : [{ ...emptyItem }],
     )
+    setRecentOpen(false)
   }
 
   const clearForm = () => {
@@ -171,20 +151,13 @@ export const SurgicalDescriptionSection = ({
   }
 
   useEffect(() => {
-    if (hydrated || isLoadingRecord) return
-    if (existingRecords && existingRecords.length > 0) {
-      loadFromRecord(existingRecords[0])
-    }
-    setHydrated(true)
+    if (!historyClosed) return
+    clearForm()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingRecords, isLoadingRecord, hydrated])
+  }, [historyClosed])
 
   const reset = () => {
-    if (existingRecords && existingRecords.length > 0) {
-      loadFromRecord(existingRecords[0])
-    } else {
-      clearForm()
-    }
+    clearForm()
   }
 
   const addProcedure = () => {
@@ -223,12 +196,6 @@ export const SurgicalDescriptionSection = ({
     setPreviewEndDate(qxEndDate ? qxEndDate.format("DD/MM/YYYY HH:mm") : "")
     setPreviewSurgeon(doctorLabel(qxSurgeon, surgeonOptions) || "")
     const matchedSurgeon = allUsers.find((u) => u.id === qxSurgeon)
-    console.log("[SurgicalDescriptionSection] preview doctor debug:", {
-      qxSurgeon,
-      allUsersCount: allUsers.length,
-      matchedSurgeon,
-      hasSignature: !!matchedSurgeon?.signature,
-    })
     setPreviewDoctorUser(matchedSurgeon)
     setPreviewAnesthesiologist(doctorLabel(qxAnesthesiologist, anesthesiologistOptions) || "")
     setPreviewInstrumenter(doctorLabel(qxInstrumenter, instrumenterOptions) || "")
@@ -278,16 +245,31 @@ export const SurgicalDescriptionSection = ({
     }
 
     try {
+      const wasEditing = !!editingId
       const saved = editingId
         ? await updateDescripcionQuirurgica.mutateAsync({ id: editingId, data: { ...payload, isActive: true } })
         : await createDescripcionQuirurgica.mutateAsync({ admissionId: Number(admissionId), ...payload })
 
-      setEditingId(saved.id)
       messageApi.success(
-        editingId
+        wasEditing
           ? "Descripción quirúrgica actualizada correctamente."
           : `Descripción quirúrgica guardada para ${patientName}.`,
       )
+      setEditingId(saved.id)
+      setPreviewTitle("Descripción quirúrgica guardada")
+      setPreviewStartDate(dayjs(saved.fechaHoraInicio).format("DD/MM/YYYY"))
+      setPreviewStartTime(dayjs(saved.fechaHoraInicio).format("HH:mm"))
+      setPreviewEndDate(dayjs(saved.fechaHoraFinalizacion).format("DD/MM/YYYY HH:mm"))
+      setPreviewSurgeon(saved.nombreCirujano || "")
+      setPreviewDoctorUser(allUsers.find((u) => u.id === saved.cirujanoId))
+      setPreviewAnesthesiologist(saved.nombreAnestesiologo || "")
+      setPreviewInstrumenter(saved.nombreInstrumentador || "")
+      setPreviewAssistant(saved.nombreAyudanteQx || "")
+      setPreviewAnesthesiaType(saved.nombreTipoAnestesia || "")
+      setPreviewProcedures(qxProcedures)
+      setPreviewDiagnoses(qxDiagnoses)
+      setPreviewDescription(saved.descripcionProcedimiento || "")
+      setPreviewOpen(true)
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la descripción quirúrgica.")
     }
@@ -299,7 +281,7 @@ export const SurgicalDescriptionSection = ({
         <div className="qx-form-header">
           <MedicineBoxOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
           <Typography.Title level={5} style={{ margin: 0 }}>
-            {editingId ? `Descripción Quirúrgica #${editingId}` : "Descripción Quirúrgica"}
+            {editingId ? `Editar Descripción Quirúrgica #${editingId}` : "Nueva Descripción Quirúrgica"}
           </Typography.Title>
           <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
             <Button icon={<EyeOutlined />} onClick={openPreview}>
@@ -505,9 +487,12 @@ export const SurgicalDescriptionSection = ({
       </div>
 
       <div className="clinical-history-footer-actions">
-        <Button onClick={reset} disabled={historyClosed}>
-          {editingId ? "Deshacer cambios" : "Limpiar formulario"}
-        </Button>
+        {editingId && (
+          <Button icon={<CloseCircleOutlined />} onClick={reset} disabled={historyClosed}>
+            Cancelar edición
+          </Button>
+        )}
+        <Button onClick={reset} disabled={historyClosed}>Limpiar formulario</Button>
         <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSave} loading={isSaving} disabled={historyClosed}>
           {editingId ? "Actualizar descripción quirúrgica" : "Guardar descripción quirúrgica"}
         </Button>
@@ -572,6 +557,19 @@ export const SurgicalDescriptionSection = ({
             ]}
           />
         )}
+      />
+
+      <SurgicalDescriptionRecentModal
+        open={recentOpen}
+        onClose={() => setRecentOpen(false)}
+        admissionId={admissionId}
+        onEdit={loadForEdit}
+        messageApi={messageApi}
+      />
+
+      <ClinicalRecordHistoryTrigger
+        moduleType="surgical-description"
+        onClick={() => setRecentOpen(true)}
       />
     </div>
   )

@@ -25,6 +25,9 @@ export function useUpdateDescripcionQuirurgica() {
       queryClient.invalidateQueries({
         queryKey: ["descripciones-quirurgicas", "by-admission", String(data.admissionId)],
       })
+      queryClient.invalidateQueries({
+        queryKey: ["descripciones-quirurgicas", "detail", data.id],
+      })
     },
   })
 }
