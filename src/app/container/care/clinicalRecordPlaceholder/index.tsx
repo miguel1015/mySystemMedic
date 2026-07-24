@@ -138,6 +138,9 @@ export const SurgicalDescriptionContainer = () => {
     admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
+    insurer: searchParams.get("insurer") || "EPS Sanitas",
+    city: patientRecord?.cityName || searchParams.get("city") || "",
+    phone: patientRecord?.phone || searchParams.get("phone") || "",
   }
 
   return (
@@ -150,6 +153,9 @@ export const SurgicalDescriptionContainer = () => {
             admissionId={admissionId}
             patientName={patient.name}
             messageApi={messageApi}
+            patient={patient}
+            admissionDate={admission?.admissionDate ?? ""}
+            contractName={admission?.convenioNombre ?? ""}
           />
         </div>
       </div>

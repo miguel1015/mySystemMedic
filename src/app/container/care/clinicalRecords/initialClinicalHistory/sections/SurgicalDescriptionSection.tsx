@@ -7,6 +7,7 @@ import dayjs, { type Dayjs } from "dayjs"
 import { useEffect, useState } from "react"
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateDescripcionQuirurgica } from "@/core/hooks/care/descripcionesQuirurgicas/useCreateDescripcionQuirurgica"
+import { useGetDescripcionQuirurgicaByAdmission } from "@/core/hooks/care/descripcionesQuirurgicas/useGetDescripcionQuirurgicaByAdmission"
 import { useUpdateDescripcionQuirurgica } from "@/core/hooks/care/descripcionesQuirurgicas/useUpdateDescripcionQuirurgica"
 import { useGetAnesthesiaTypes } from "@/core/hooks/care/anesthesiaTypes/useGetAnesthesiaTypes"
 import { surgicalProcedureServices } from "@/core/hooks/care/surgicalProcedures/useSearchSurgicalProcedures"
@@ -68,6 +69,7 @@ export const SurgicalDescriptionSection = ({
   const [qxDiagnoses, setQxDiagnoses] = useState<QxSearchItem[]>([{ ...emptyItem }])
   const [qxProcedureDescription, setQxProcedureDescription] = useState("")
   const [recentOpen, setRecentOpen] = useState(false)
+  const [previewLoading, setPreviewLoading] = useState(false)
 
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewTitle, setPreviewTitle] = useState("Vista previa de la descripción quirúrgica")
@@ -102,6 +104,30 @@ export const SurgicalDescriptionSection = ({
   const updateDescripcionQuirurgica = useUpdateDescripcionQuirurgica()
   const isSaving = createDescripcionQuirurgica.isPending || updateDescripcionQuirurgica.isPending
 
+  const { data: existingDescripcionesQuirurgicas = [] } =
+    useGetDescripcionQuirurgicaByAdmission(admissionId)
+
+  const resolveRecordItems = async (record: DescripcionQuirurgicaResponse) => {
+    const procedureCodes = [record.procedimiento1, record.procedimiento2, record.procedimiento3, record.procedimiento4]
+      .filter((c): c is string => !!c)
+    const diagnosisCodes = [record.diagnostico1, record.diagnostico2, record.diagnostico3, record.diagnostico4]
+      .filter((c): c is string => !!c)
+
+    const [procedureDescriptions, diagnosisDescriptions] = await Promise.all([
+      Promise.all(procedureCodes.map(resolveProcedureDescription)),
+      Promise.all(diagnosisCodes.map(resolveDiagnosisDescription)),
+    ])
+
+    return {
+      procedures: procedureCodes.length
+        ? procedureCodes.map((code, idx) => ({ code, description: procedureDescriptions[idx] }))
+        : [{ ...emptyItem }],
+      diagnoses: diagnosisCodes.length
+        ? diagnosisCodes.map((code, idx) => ({ code, description: diagnosisDescriptions[idx] }))
+        : [{ ...emptyItem }],
+    }
+  }
+
   const loadForEdit = async (record: DescripcionQuirurgicaResponse) => {
     setEditingId(record.id)
     setQxStartDate(dayjs(record.fechaHoraInicio))
@@ -113,26 +139,9 @@ export const SurgicalDescriptionSection = ({
     setQxAnesthesiaType(record.tipoAnestesiaId)
     setQxProcedureDescription(record.descripcionProcedimiento || "")
 
-    const procedureCodes = [record.procedimiento1, record.procedimiento2, record.procedimiento3, record.procedimiento4]
-      .filter((c): c is string => !!c)
-    const diagnosisCodes = [record.diagnostico1, record.diagnostico2, record.diagnostico3, record.diagnostico4]
-      .filter((c): c is string => !!c)
-
-    const [procedureDescriptions, diagnosisDescriptions] = await Promise.all([
-      Promise.all(procedureCodes.map(resolveProcedureDescription)),
-      Promise.all(diagnosisCodes.map(resolveDiagnosisDescription)),
-    ])
-
-    setQxProcedures(
-      procedureCodes.length
-        ? procedureCodes.map((code, idx) => ({ code, description: procedureDescriptions[idx] }))
-        : [{ ...emptyItem }],
-    )
-    setQxDiagnoses(
-      diagnosisCodes.length
-        ? diagnosisCodes.map((code, idx) => ({ code, description: diagnosisDescriptions[idx] }))
-        : [{ ...emptyItem }],
-    )
+    const { procedures, diagnoses } = await resolveRecordItems(record)
+    setQxProcedures(procedures)
+    setQxDiagnoses(diagnoses)
     setRecentOpen(false)
   }
 
@@ -155,6 +164,12 @@ export const SurgicalDescriptionSection = ({
     clearForm()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyClosed])
+
+  const latestSavedDescripcionQuirurgica = existingDescripcionesQuirurgicas.length
+    ? [...existingDescripcionesQuirurgicas].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )[0]
+    : undefined
 
   const reset = () => {
     clearForm()
@@ -189,22 +204,50 @@ export const SurgicalDescriptionSection = ({
   const doctorLabel = (id: number | undefined, options: { value: number; label: string }[]) =>
     options.find((o) => o.value === id)?.label
 
-  const openPreview = () => {
-    setPreviewTitle(editingId ? `Vista previa - Descripción Quirúrgica #${editingId}` : "Vista previa de la descripción quirúrgica")
-    setPreviewStartDate(qxStartDate ? qxStartDate.format("DD/MM/YYYY") : "")
-    setPreviewStartTime(qxStartDate ? qxStartDate.format("HH:mm") : "")
-    setPreviewEndDate(qxEndDate ? qxEndDate.format("DD/MM/YYYY HH:mm") : "")
-    setPreviewSurgeon(doctorLabel(qxSurgeon, surgeonOptions) || "")
-    const matchedSurgeon = allUsers.find((u) => u.id === qxSurgeon)
-    setPreviewDoctorUser(matchedSurgeon)
-    setPreviewAnesthesiologist(doctorLabel(qxAnesthesiologist, anesthesiologistOptions) || "")
-    setPreviewInstrumenter(doctorLabel(qxInstrumenter, instrumenterOptions) || "")
-    setPreviewAssistant(doctorLabel(qxAssistant, assistantOptions) || "")
-    setPreviewAnesthesiaType(anesthesiaTypeOptions.find((o) => o.value === qxAnesthesiaType)?.label || "")
-    setPreviewProcedures(qxProcedures)
-    setPreviewDiagnoses(qxDiagnoses)
-    setPreviewDescription(qxProcedureDescription)
-    setPreviewOpen(true)
+  const openPreview = async () => {
+    setPreviewLoading(true)
+    try {
+      if (!qxStartDate && latestSavedDescripcionQuirurgica) {
+        const record = latestSavedDescripcionQuirurgica
+        setPreviewTitle(`Vista previa - Descripción Quirúrgica #${record.id}`)
+        setPreviewStartDate(dayjs(record.fechaHoraInicio).format("DD/MM/YYYY"))
+        setPreviewStartTime(dayjs(record.fechaHoraInicio).format("HH:mm"))
+        setPreviewEndDate(dayjs(record.fechaHoraFinalizacion).format("DD/MM/YYYY HH:mm"))
+        setPreviewSurgeon(record.nombreCirujano || doctorLabel(record.cirujanoId, surgeonOptions) || "")
+        setPreviewDoctorUser(allUsers.find((u) => u.id === record.cirujanoId))
+        setPreviewAnesthesiologist(record.nombreAnestesiologo || doctorLabel(record.anestesiologoId, anesthesiologistOptions) || "")
+        setPreviewInstrumenter(record.nombreInstrumentador || doctorLabel(record.instrumentadorId, instrumenterOptions) || "")
+        setPreviewAssistant(record.nombreAyudanteQx || doctorLabel(record.ayudanteQxId, assistantOptions) || "")
+        setPreviewAnesthesiaType(
+          record.nombreTipoAnestesia || anesthesiaTypeOptions.find((o) => o.value === record.tipoAnestesiaId)?.label || "",
+        )
+
+        const { procedures, diagnoses } = await resolveRecordItems(record)
+        setPreviewProcedures(procedures)
+        setPreviewDiagnoses(diagnoses)
+        setPreviewDescription(record.descripcionProcedimiento || "")
+        setPreviewOpen(true)
+        return
+      }
+
+      setPreviewTitle(editingId ? `Vista previa - Descripción Quirúrgica #${editingId}` : "Vista previa de la descripción quirúrgica")
+      setPreviewStartDate(qxStartDate ? qxStartDate.format("DD/MM/YYYY") : "")
+      setPreviewStartTime(qxStartDate ? qxStartDate.format("HH:mm") : "")
+      setPreviewEndDate(qxEndDate ? qxEndDate.format("DD/MM/YYYY HH:mm") : "")
+      setPreviewSurgeon(doctorLabel(qxSurgeon, surgeonOptions) || "")
+      const matchedSurgeon = allUsers.find((u) => u.id === qxSurgeon)
+      setPreviewDoctorUser(matchedSurgeon)
+      setPreviewAnesthesiologist(doctorLabel(qxAnesthesiologist, anesthesiologistOptions) || "")
+      setPreviewInstrumenter(doctorLabel(qxInstrumenter, instrumenterOptions) || "")
+      setPreviewAssistant(doctorLabel(qxAssistant, assistantOptions) || "")
+      setPreviewAnesthesiaType(anesthesiaTypeOptions.find((o) => o.value === qxAnesthesiaType)?.label || "")
+      setPreviewProcedures(qxProcedures)
+      setPreviewDiagnoses(qxDiagnoses)
+      setPreviewDescription(qxProcedureDescription)
+      setPreviewOpen(true)
+    } finally {
+      setPreviewLoading(false)
+    }
   }
 
   const validateAndSave = async () => {
@@ -255,21 +298,21 @@ export const SurgicalDescriptionSection = ({
           ? "Descripción quirúrgica actualizada correctamente."
           : `Descripción quirúrgica guardada para ${patientName}.`,
       )
-      setEditingId(saved.id)
       setPreviewTitle("Descripción quirúrgica guardada")
-      setPreviewStartDate(dayjs(saved.fechaHoraInicio).format("DD/MM/YYYY"))
-      setPreviewStartTime(dayjs(saved.fechaHoraInicio).format("HH:mm"))
-      setPreviewEndDate(dayjs(saved.fechaHoraFinalizacion).format("DD/MM/YYYY HH:mm"))
-      setPreviewSurgeon(saved.nombreCirujano || "")
-      setPreviewDoctorUser(allUsers.find((u) => u.id === saved.cirujanoId))
-      setPreviewAnesthesiologist(saved.nombreAnestesiologo || "")
-      setPreviewInstrumenter(saved.nombreInstrumentador || "")
-      setPreviewAssistant(saved.nombreAyudanteQx || "")
-      setPreviewAnesthesiaType(saved.nombreTipoAnestesia || "")
+      setPreviewStartDate(qxStartDate.format("DD/MM/YYYY"))
+      setPreviewStartTime(qxStartDate.format("HH:mm"))
+      setPreviewEndDate(qxEndDate.format("DD/MM/YYYY HH:mm"))
+      setPreviewSurgeon(saved.nombreCirujano || doctorLabel(qxSurgeon, surgeonOptions) || "")
+      setPreviewDoctorUser(allUsers.find((u) => u.id === qxSurgeon))
+      setPreviewAnesthesiologist(saved.nombreAnestesiologo || doctorLabel(qxAnesthesiologist, anesthesiologistOptions) || "")
+      setPreviewInstrumenter(saved.nombreInstrumentador || doctorLabel(qxInstrumenter, instrumenterOptions) || "")
+      setPreviewAssistant(saved.nombreAyudanteQx || doctorLabel(qxAssistant, assistantOptions) || "")
+      setPreviewAnesthesiaType(saved.nombreTipoAnestesia || anesthesiaTypeOptions.find((o) => o.value === qxAnesthesiaType)?.label || "")
       setPreviewProcedures(qxProcedures)
       setPreviewDiagnoses(qxDiagnoses)
-      setPreviewDescription(saved.descripcionProcedimiento || "")
+      setPreviewDescription(qxProcedureDescription.trim())
       setPreviewOpen(true)
+      clearForm()
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la descripción quirúrgica.")
     }
@@ -284,7 +327,7 @@ export const SurgicalDescriptionSection = ({
             {editingId ? `Editar Descripción Quirúrgica #${editingId}` : "Nueva Descripción Quirúrgica"}
           </Typography.Title>
           <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-            <Button icon={<EyeOutlined />} onClick={openPreview}>
+            <Button icon={<EyeOutlined />} onClick={openPreview} loading={previewLoading}>
               Vista previa
             </Button>
           </div>
