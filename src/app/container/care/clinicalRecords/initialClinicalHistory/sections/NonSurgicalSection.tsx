@@ -4,12 +4,15 @@ import { AuditOutlined, CloseCircleOutlined, EyeOutlined, SaveOutlined } from "@
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useEffect, useState } from "react"
+import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateProcedimientoNoQx, useUpdateProcedimientoNoQx } from "@/core/hooks/care/procedimientosNoQx/useSaveProcedimientoNoQx"
+import type { ProcedimientoNoQxResponse } from "@/core/interfaces/care/hciInicial"
 import type { GetUser } from "@/core/interfaces/user/users"
 import { labelStyle } from "../constants"
 import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
 import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument"
 import type { PrintPatient } from "../printPreview/printDocument.utils"
+import { ProcedimientosNoQxRecentModal } from "./ProcedimientosNoQxRecentModal"
 
 interface Props {
   admissionId?: string | number
@@ -54,6 +57,7 @@ export const NonSurgicalSection = ({
   const [fechaProcedimiento, setFechaProcedimiento] = useState(todayDate)
   const [horaProcedimiento, setHoraProcedimiento] = useState(nowTime)
   const [consulta, setConsulta] = useState("")
+  const [recentOpen, setRecentOpen] = useState(false)
 
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewTitle, setPreviewTitle] = useState("Vista previa del procedimiento no quirúrgico")
@@ -78,6 +82,14 @@ export const NonSurgicalSection = ({
     reset()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyClosed])
+
+  const loadForEdit = (procedimientoNoQx: ProcedimientoNoQxResponse) => {
+    setEditingId(procedimientoNoQx.id)
+    setFechaProcedimiento(procedimientoNoQx.fechaProcedimiento)
+    setHoraProcedimiento(procedimientoNoQx.horaProcedimiento)
+    setConsulta(procedimientoNoQx.descripcion)
+    setRecentOpen(false)
+  }
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Procedimiento no quirúrgico (edición)" : "Vista previa del procedimiento no quirúrgico")
@@ -254,6 +266,19 @@ export const NonSurgicalSection = ({
             ]}
           />
         )}
+      />
+
+      <ProcedimientosNoQxRecentModal
+        open={recentOpen}
+        onClose={() => setRecentOpen(false)}
+        admissionId={admissionId}
+        onEdit={loadForEdit}
+        messageApi={messageApi}
+      />
+
+      <ClinicalRecordHistoryTrigger
+        moduleType="non-surgical-procedures"
+        onClick={() => setRecentOpen(true)}
       />
     </div>
   )
