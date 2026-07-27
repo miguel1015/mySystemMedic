@@ -17,7 +17,9 @@ import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
-  currentDoctor: string
+  selectedDoctorId?: number
+  selectedDoctorName: string
+  onDoctorChange: (doctorId: number | undefined) => void
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
@@ -36,7 +38,9 @@ const nowTime = () => new Date().toTimeString().slice(0, 8)
 
 export const SpecialistEvolutionSection = ({
   admissionId,
-  currentDoctor,
+  selectedDoctorId,
+  selectedDoctorName,
+  onDoctorChange,
   patientName,
   messageApi,
   historyClosed,
@@ -91,17 +95,18 @@ export const SpecialistEvolutionSection = ({
   const loadForEdit = (evolucion: EvolucionEspecialistaResponse) => {
     setEditingId(evolucion.id)
     setFechaEvolucion(evolucion.fechaEvolucion)
-    setHoraEvolucion(evolucion.horaEvolucion)
+    setHoraEvolucion(evolucion.horaEvolucion?.slice(0, 8) || "")
     setMotivoConsulta(evolucion.motivoConsulta)
     setPlan(evolucion.plan)
     setRecentOpen(false)
+    onDoctorChange(evolucion.userId)
   }
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Evolución de especialista (edición)" : "Vista previa de la evolución")
     setPreviewFecha(fechaEvolucion)
     setPreviewHora(horaEvolucion)
-    setPreviewDoctor(currentDoctor)
+    setPreviewDoctor(selectedDoctorName)
     setPreviewMotivo(motivoConsulta)
     setPreviewPlan(plan)
     setPreviewOpen(true)
@@ -144,18 +149,23 @@ export const SpecialistEvolutionSection = ({
       messageApi.error("No se encontró la admisión asociada a esta evolución.")
       return
     }
+    if (!selectedDoctorId) {
+      messageApi.error("Seleccione un médico tratante antes de guardar.")
+      return
+    }
 
     try {
       let saved: EvolucionEspecialistaResponse
       if (editingId) {
         saved = await updateEvolucionEspecialista.mutateAsync({
           id: editingId,
-          data: { fechaEvolucion, horaEvolucion, motivoConsulta: motivo, plan: planTrimmed, isActive: true },
+          data: { fechaEvolucion, horaEvolucion, motivoConsulta: motivo, plan: planTrimmed, userId: selectedDoctorId, isActive: true },
         })
         messageApi.success("Evolución de especialista actualizada correctamente")
       } else {
         saved = await createEvolucionEspecialista.mutateAsync({
           admissionId: Number(admissionId),
+          userId: selectedDoctorId,
           fechaEvolucion,
           horaEvolucion,
           motivoConsulta: motivo,
@@ -279,7 +289,7 @@ export const SpecialistEvolutionSection = ({
           icon={<SaveOutlined />}
           loading={isSaving}
           onClick={validateAndSave}
-          disabled={historyClosed}
+          disabled={historyClosed || isSaving}
         >
           {editingId ? "Actualizar evolución de especialista" : "Guardar evolución de especialista"}
         </Button>

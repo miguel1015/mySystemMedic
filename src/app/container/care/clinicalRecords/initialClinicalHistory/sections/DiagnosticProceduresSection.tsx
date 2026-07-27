@@ -17,7 +17,9 @@ import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
-  currentDoctor: string
+  selectedDoctorId?: number
+  selectedDoctorName: string
+  onDoctorChange: (doctorId: number | undefined) => void
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
@@ -34,7 +36,9 @@ const nowTime = () => new Date().toTimeString().slice(0, 8)
 
 export const DiagnosticProceduresSection = ({
   admissionId,
-  currentDoctor,
+  selectedDoctorId,
+  selectedDoctorName,
+  onDoctorChange,
   patientName,
   messageApi,
   historyClosed,
@@ -90,17 +94,18 @@ export const DiagnosticProceduresSection = ({
   const loadForEdit = (procedimientoDiagnostico: ProcedimientoDiagnosticoResponse) => {
     setEditingId(procedimientoDiagnostico.id)
     setFechaProcedimiento(procedimientoDiagnostico.fechaProcedimiento)
-    setHoraProcedimiento(procedimientoDiagnostico.horaProcedimiento)
+    setHoraProcedimiento(procedimientoDiagnostico.horaProcedimiento?.slice(0, 8) || "")
     setEstudios(procedimientoDiagnostico.estudiosRealizados)
     setHallazgos(procedimientoDiagnostico.hallazgos)
     setRecentOpen(false)
+    onDoctorChange(procedimientoDiagnostico.userId)
   }
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Procedimiento diagnóstico (edición)" : "Vista previa del procedimiento diagnóstico")
     setPreviewFecha(fechaProcedimiento)
     setPreviewHora(horaProcedimiento)
-    setPreviewDoctor(currentDoctor)
+    setPreviewDoctor(selectedDoctorName)
     setPreviewEstudios(estudios)
     setPreviewHallazgos(hallazgos)
     setPreviewOpen(true)
@@ -135,15 +140,20 @@ export const DiagnosticProceduresSection = ({
       messageApi.error("No se encontró la admisión asociada a este procedimiento diagnóstico.")
       return
     }
+    if (!selectedDoctorId) {
+      messageApi.error("Seleccione un médico tratante antes de guardar.")
+      return
+    }
 
     try {
       const saved = editingId
         ? await updateProcedimientoDiagnostico.mutateAsync({
             id: editingId,
-            data: { fechaProcedimiento, horaProcedimiento, estudiosRealizados, hallazgos: hallazgosValue, isActive: true },
+            data: { fechaProcedimiento, horaProcedimiento, estudiosRealizados, hallazgos: hallazgosValue, userId: selectedDoctorId, isActive: true },
           })
         : await createProcedimientoDiagnostico.mutateAsync({
             admissionId: Number(admissionId),
+            userId: selectedDoctorId,
             fechaProcedimiento,
             horaProcedimiento,
             estudiosRealizados,
@@ -270,7 +280,7 @@ export const DiagnosticProceduresSection = ({
           icon={<SaveOutlined />}
           loading={isSaving}
           onClick={validateAndSave}
-          disabled={historyClosed}
+          disabled={historyClosed || isSaving}
         >
           {editingId ? "Actualizar procedimiento diagnóstico" : "Guardar procedimiento diagnóstico"}
         </Button>

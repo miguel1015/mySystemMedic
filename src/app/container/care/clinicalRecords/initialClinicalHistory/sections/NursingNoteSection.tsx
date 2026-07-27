@@ -16,7 +16,9 @@ import { NotasEnfermeriaRecentModal } from "./NotasEnfermeriaRecentModal"
 
 interface Props {
   admissionId?: string | number
-  currentDoctor: string
+  selectedDoctorId?: number
+  selectedDoctorName: string
+  onDoctorChange: (doctorId: number | undefined) => void
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
@@ -33,7 +35,9 @@ const nowTime = () => new Date().toTimeString().slice(0, 8)
 
 export const NursingNoteSection = ({
   admissionId,
-  currentDoctor,
+  selectedDoctorId,
+  selectedDoctorName,
+  onDoctorChange,
   patientName,
   messageApi,
   historyClosed,
@@ -86,16 +90,17 @@ export const NursingNoteSection = ({
   const loadForEdit = (notaEnfermeria: NotaEnfermeriaResponse) => {
     setEditingId(notaEnfermeria.id)
     setFechaNota(notaEnfermeria.fechaNota)
-    setHoraNota(notaEnfermeria.horaNota)
+    setHoraNota(notaEnfermeria.horaNota?.slice(0, 8) || "")
     setNota(notaEnfermeria.nota)
     setRecentOpen(false)
+    onDoctorChange(notaEnfermeria.userId)
   }
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Nota de enfermería (edición)" : "Vista previa de la nota de enfermería")
     setPreviewFecha(fechaNota)
     setPreviewHora(horaNota)
-    setPreviewDoctor(currentDoctor)
+    setPreviewDoctor(selectedDoctorName)
     setPreviewNota(nota)
     setPreviewOpen(true)
   }
@@ -124,15 +129,20 @@ export const NursingNoteSection = ({
       messageApi.error("No se encontró la admisión asociada a esta nota.")
       return
     }
+    if (!selectedDoctorId) {
+      messageApi.error("Seleccione un médico tratante antes de guardar.")
+      return
+    }
 
     try {
       const saved = editingId
         ? await updateNotaEnfermeria.mutateAsync({
             id: editingId,
-            data: { fechaNota, horaNota, nota: notaValue, isActive: true },
+            data: { fechaNota, horaNota, nota: notaValue, userId: selectedDoctorId, isActive: true },
           })
         : await createNotaEnfermeria.mutateAsync({
             admissionId: Number(admissionId),
+            userId: selectedDoctorId,
             fechaNota,
             horaNota,
             nota: notaValue,
@@ -236,7 +246,7 @@ export const NursingNoteSection = ({
           icon={<SaveOutlined />}
           loading={isSaving}
           onClick={validateAndSave}
-          disabled={historyClosed}
+          disabled={historyClosed || isSaving}
         >
           {editingId ? "Actualizar nota de enfermería" : "Guardar nota de enfermería"}
         </Button>

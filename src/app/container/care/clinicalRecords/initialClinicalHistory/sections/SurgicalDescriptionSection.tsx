@@ -497,7 +497,7 @@ export const SurgicalDescriptionSection = ({
           </Button>
         )}
         <Button onClick={reset} disabled={historyClosed}>Limpiar formulario</Button>
-        <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSave} loading={isSaving} disabled={historyClosed}>
+        <Button type="primary" icon={<SaveOutlined />} onClick={validateAndSave} loading={isSaving} disabled={historyClosed || isSaving}>
           {editingId ? "Actualizar descripción quirúrgica" : "Guardar descripción quirúrgica"}
         </Button>
       </div>

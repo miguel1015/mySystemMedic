@@ -101,7 +101,13 @@ export const AntecedentesEditPanel = ({ admissionId, messageApi, onSaved, onCanc
       </div>
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
         <Button onClick={onCancel}>Cancelar</Button>
-        <Button type="primary" icon={<SaveOutlined />} loading={updateObjetivo.isPending} onClick={handleSave}>
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          loading={updateObjetivo.isPending}
+          disabled={updateObjetivo.isPending}
+          onClick={handleSave}
+        >
           Guardar antecedentes
         </Button>
       </div>

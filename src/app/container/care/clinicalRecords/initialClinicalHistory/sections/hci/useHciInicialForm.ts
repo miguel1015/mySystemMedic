@@ -70,6 +70,8 @@ interface UseHciInicialFormArgs {
   onAdmissionDateChange: (value: string) => void;
   onAdmissionTimeChange: (value: string) => void;
   editMode?: boolean;
+  selectedDoctorId?: number;
+  onDoctorChange: (doctorId: number | undefined) => void;
 }
 
 export const useHciInicialForm = ({
@@ -83,6 +85,8 @@ export const useHciInicialForm = ({
   onAdmissionDateChange,
   onAdmissionTimeChange,
   editMode = false,
+  selectedDoctorId,
+  onDoctorChange,
 }: UseHciInicialFormArgs) => {
   const [vitals, setVitals] = useState<VitalsState>(defaultVitals);
   const [subjective, setSubjective] =
@@ -132,6 +136,7 @@ export const useHciInicialForm = ({
     setObjetivoId(existingHCInicial.idObjetivoHCInicial);
     setSignosVitalesId(existingHCInicial.idSignosVitalesHCInicial);
     setAnalisisId(existingHCInicial.idAnalisisDiagnosticosPlanHCInicial);
+    onDoctorChange(existingHCInicial.userId ?? undefined);
 
     if (isLocked) {
       setHydrated(true);
@@ -224,12 +229,17 @@ export const useHciInicialForm = ({
       messageApi.error("La hora de admisión es obligatoria.");
       return;
     }
+    if (!selectedDoctorId) {
+      messageApi.error("Seleccione un médico tratante antes de guardar.");
+      return;
+    }
 
     if (hcInicialId) {
       await updateHCInicial.mutateAsync({
         id: hcInicialId,
         data: {
           ...patch,
+          userId: selectedDoctorId,
           admissionDate,
           admissionTime,
           isActive: true,
@@ -242,6 +252,7 @@ export const useHciInicialForm = ({
     try {
       const created = await createHCInicial.mutateAsync({
         admissionId: Number(admissionId),
+        userId: selectedDoctorId,
         admissionDate,
         admissionTime,
         ...patch,
@@ -257,6 +268,7 @@ export const useHciInicialForm = ({
             id: refreshed.id,
             data: {
               ...patch,
+              userId: selectedDoctorId,
               admissionDate,
               admissionTime,
               isActive: true,

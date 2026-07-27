@@ -19,6 +19,7 @@ export const HciInicialEditPanel = ({ admissionId, patientId, patientName, messa
   const [admissionDateHydrated, setAdmissionDateHydrated] = useState(false)
   const [admissionTime, setAdmissionTime] = useState("")
   const [admissionTimeHydrated, setAdmissionTimeHydrated] = useState(false)
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(undefined)
 
   const form = useHciInicialForm({
     admissionId,
@@ -31,6 +32,8 @@ export const HciInicialEditPanel = ({ admissionId, patientId, patientName, messa
     onAdmissionDateChange: setAdmissionDate,
     onAdmissionTimeChange: setAdmissionTime,
     editMode: true,
+    selectedDoctorId,
+    onDoctorChange: setSelectedDoctorId,
   })
 
   useEffect(() => {
@@ -41,7 +44,7 @@ export const HciInicialEditPanel = ({ admissionId, patientId, patientName, messa
 
   useEffect(() => {
     if (!form.existingHCInicial || admissionTimeHydrated) return
-    setAdmissionTime(form.existingHCInicial.admissionTime || "")
+    setAdmissionTime(form.existingHCInicial.admissionTime?.slice(0, 8) || "")
     setAdmissionTimeHydrated(true)
   }, [form.existingHCInicial, admissionTimeHydrated])
 

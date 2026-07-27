@@ -166,7 +166,7 @@ export const HciInicialTabsForm = ({
               type="primary"
               icon={<SaveOutlined />}
               loading={savingSubjetivo}
-              disabled={isLocked}
+              disabled={isLocked || savingSubjetivo}
               onClick={saveSubjetivo}
             >
               Guardar subjetivo
@@ -177,7 +177,7 @@ export const HciInicialTabsForm = ({
               <Button
                 icon={<SaveOutlined />}
                 loading={savingSignosVitales}
-                disabled={isLocked}
+                disabled={isLocked || savingSignosVitales}
                 onClick={saveSignosVitales}
               >
                 Guardar signos vitales
@@ -186,7 +186,7 @@ export const HciInicialTabsForm = ({
                 type="primary"
                 icon={<SaveOutlined />}
                 loading={savingObjetivo}
-                disabled={isLocked}
+                disabled={isLocked || savingObjetivo}
                 onClick={saveObjetivo}
               >
                 Guardar objetivo
@@ -200,7 +200,7 @@ export const HciInicialTabsForm = ({
               type="primary"
               icon={<SaveOutlined />}
               loading={savingAnalisis}
-              disabled={isLocked}
+              disabled={isLocked || savingAnalisis}
               onClick={saveAnalisisDiagnosticosPlan}
             >
               Guardar análisis, diagnósticos y plan

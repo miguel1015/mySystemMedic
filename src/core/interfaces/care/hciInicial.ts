@@ -91,6 +91,8 @@ export interface HCInicialResponse {
   admissionId: number;
   nombrePaciente: string;
   documentoPaciente: string;
+  userId: number | null;
+  nombreProfesional: string | null;
   admissionDate: string;
   admissionTime: string;
   idSubjetivoHCInicial: number | null;
@@ -109,6 +111,7 @@ export interface HCInicialResponse {
 
 export interface HCInicialCreateRequest {
   admissionId: number;
+  userId?: number;
   admissionDate: string;
   admissionTime: string;
   idSubjetivoHCInicial: number | null;
@@ -118,6 +121,7 @@ export interface HCInicialCreateRequest {
 }
 
 export interface HCInicialUpdateRequest {
+  userId?: number;
   admissionDate: string;
   admissionTime: string;
   idSubjetivoHCInicial: number | null;
@@ -153,6 +157,7 @@ export interface EvolucionResponse {
 
 export interface EvolucionCreateRequest {
   admissionId: number;
+  userId?: number;
   fechaEvolucion: string;
   horaEvolucion: string;
   motivoConsulta: string;
@@ -168,6 +173,7 @@ export interface EvolucionCreateRequest {
 }
 
 export interface EvolucionUpdateRequest {
+  userId?: number;
   fechaEvolucion: string;
   horaEvolucion: string;
   motivoConsulta: string;
@@ -199,6 +205,7 @@ export interface EvolucionEspecialistaResponse {
 
 export interface EvolucionEspecialistaCreateRequest {
   admissionId: number;
+  userId?: number;
   fechaEvolucion: string;
   horaEvolucion: string;
   motivoConsulta: string;
@@ -206,6 +213,7 @@ export interface EvolucionEspecialistaCreateRequest {
 }
 
 export interface EvolucionEspecialistaUpdateRequest {
+  userId?: number;
   fechaEvolucion: string;
   horaEvolucion: string;
   motivoConsulta: string;
@@ -228,12 +236,14 @@ export interface NotaMedicaResponse {
 
 export interface NotaMedicaCreateRequest {
   admissionId: number;
+  userId?: number;
   fechaNota: string;
   horaNota: string;
   nota: string;
 }
 
 export interface NotaMedicaUpdateRequest {
+  userId?: number;
   fechaNota: string;
   horaNota: string;
   nota: string;
@@ -255,12 +265,14 @@ export interface ProcedimientoMenorResponse {
 
 export interface ProcedimientoMenorCreateRequest {
   admissionId: number;
+  userId?: number;
   fechaProcedimiento: string;
   horaProcedimiento: string;
   descripcion: string;
 }
 
 export interface ProcedimientoMenorUpdateRequest {
+  userId?: number;
   fechaProcedimiento: string;
   horaProcedimiento: string;
   descripcion: string;
@@ -282,12 +294,14 @@ export interface ProcedimientoNoQxResponse {
 
 export interface ProcedimientoNoQxCreateRequest {
   admissionId: number;
+  userId?: number;
   fechaProcedimiento: string;
   horaProcedimiento: string;
   descripcion: string;
 }
 
 export interface ProcedimientoNoQxUpdateRequest {
+  userId?: number;
   fechaProcedimiento: string;
   horaProcedimiento: string;
   descripcion: string;
@@ -310,6 +324,7 @@ export interface ProcedimientoDiagnosticoResponse {
 
 export interface ProcedimientoDiagnosticoCreateRequest {
   admissionId: number;
+  userId?: number;
   fechaProcedimiento: string;
   horaProcedimiento: string;
   estudiosRealizados: string;
@@ -317,6 +332,7 @@ export interface ProcedimientoDiagnosticoCreateRequest {
 }
 
 export interface ProcedimientoDiagnosticoUpdateRequest {
+  userId?: number;
   fechaProcedimiento: string;
   horaProcedimiento: string;
   estudiosRealizados: string;
@@ -339,12 +355,14 @@ export interface NotaEnfermeriaResponse {
 
 export interface NotaEnfermeriaCreateRequest {
   admissionId: number;
+  userId?: number;
   fechaNota: string;
   horaNota: string;
   nota: string;
 }
 
 export interface NotaEnfermeriaUpdateRequest {
+  userId?: number;
   fechaNota: string;
   horaNota: string;
   nota: string;

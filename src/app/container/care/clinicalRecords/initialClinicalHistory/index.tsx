@@ -435,6 +435,8 @@ const InitialClinicalHistoryContainer = () => {
                 onAdmissionTimeChange={setAdmissionTime}
                 editMode={editHci}
                 onOpenPreview={() => setPreviewOpen(true)}
+                selectedDoctorId={selectedDoctorId}
+                onDoctorChange={setSelectedDoctorId}
               />
             )}
 
@@ -443,7 +445,6 @@ const InitialClinicalHistoryContainer = () => {
                 admissionId={admissionId}
                 patientName={patient.name}
                 messageApi={messageApi}
-                historyClosed={isHciLocked}
                 patient={patient}
                 admissionDate={admission?.admissionDate ?? ""}
                 contractName={admission?.convenioNombre ?? ""}
@@ -453,7 +454,9 @@ const InitialClinicalHistoryContainer = () => {
             {activeSidebarKey === "evoluciones" && (
               <EvolutionSection
                 admissionId={admissionId}
+                selectedDoctorId={selectedDoctorId}
                 selectedDoctor={selectedDoctor}
+                onDoctorChange={setSelectedDoctorId}
                 patientName={patient.name}
                 messageApi={messageApi}
                 patient={patient}
@@ -473,78 +476,90 @@ const InitialClinicalHistoryContainer = () => {
             {activeSidebarKey === "enfermeria" && (
               <NursingNoteSection
                 admissionId={admissionId}
-                currentDoctor={currentDoctor}
+                selectedDoctorId={selectedDoctorId}
+                selectedDoctorName={selectedDoctor}
+                onDoctorChange={setSelectedDoctorId}
                 patientName={patient.name}
                 messageApi={messageApi}
                 patient={patient}
                 admissionDate={admission?.admissionDate ?? ""}
                 contractName={admission?.convenioNombre ?? ""}
-                doctorUser={currentDoctorUser}
+                doctorUser={selectedDoctorUser}
               />
             )}
 
             {activeSidebarKey === "diagnosticos" && (
               <DiagnosticProceduresSection
                 admissionId={admissionId}
-                currentDoctor={currentDoctor}
+                selectedDoctorId={selectedDoctorId}
+                selectedDoctorName={selectedDoctor}
+                onDoctorChange={setSelectedDoctorId}
                 patientName={patient.name}
                 messageApi={messageApi}
                 patient={patient}
                 admissionDate={admission?.admissionDate ?? ""}
                 contractName={admission?.convenioNombre ?? ""}
-                doctorUser={currentDoctorUser}
+                doctorUser={selectedDoctorUser}
               />
             )}
 
             {activeSidebarKey === "menores" && (
               <MinorProceduresSection
                 admissionId={admissionId}
-                currentDoctor={currentDoctor}
+                selectedDoctorId={selectedDoctorId}
+                selectedDoctorName={selectedDoctor}
+                onDoctorChange={setSelectedDoctorId}
                 patientName={patient.name}
                 messageApi={messageApi}
                 patient={patient}
                 admissionDate={admission?.admissionDate ?? ""}
                 contractName={admission?.convenioNombre ?? ""}
-                doctorUser={currentDoctorUser}
+                doctorUser={selectedDoctorUser}
               />
             )}
 
             {activeSidebarKey === "medicas" && (
               <MedicalNotesSection
                 admissionId={admissionId}
-                currentDoctor={currentDoctor}
+                selectedDoctorId={selectedDoctorId}
+                selectedDoctorName={selectedDoctor}
+                onDoctorChange={setSelectedDoctorId}
                 patientName={patient.name}
                 messageApi={messageApi}
                 patient={patient}
                 admissionDate={admission?.admissionDate ?? ""}
                 contractName={admission?.convenioNombre ?? ""}
-                doctorUser={currentDoctorUser}
+                doctorUser={selectedDoctorUser}
               />
             )}
 
             {activeSidebarKey === "noquirurgicos" && (
               <NonSurgicalSection
                 admissionId={admissionId}
-                currentDoctor={currentDoctor}
+                selectedDoctorId={selectedDoctorId}
+                selectedDoctorName={selectedDoctor}
+                onDoctorChange={setSelectedDoctorId}
                 patientName={patient.name}
                 messageApi={messageApi}
                 patient={patient}
                 admissionDate={admission?.admissionDate ?? ""}
                 contractName={admission?.convenioNombre ?? ""}
-                doctorUser={currentDoctorUser}
+                doctorUser={selectedDoctorUser}
               />
             )}
 
             {activeSidebarKey === "especialista" && (
               <SpecialistEvolutionSection
                 admissionId={admissionId}
-                currentDoctor={currentDoctor}
+                selectedDoctorId={selectedDoctorId}
+                selectedDoctorName={selectedDoctor}
+                onDoctorChange={setSelectedDoctorId}
                 patientName={patient.name}
                 messageApi={messageApi}
                 patient={patient}
                 admissionDate={admission?.admissionDate ?? ""}
                 contractName={admission?.convenioNombre ?? ""}
-                doctorUser={currentDoctorUser}
+                doctorUser={selectedDoctorUser}
               />
             )}
           </div>

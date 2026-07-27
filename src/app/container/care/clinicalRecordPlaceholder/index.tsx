@@ -23,7 +23,7 @@ import {
 } from "@ant-design/icons"
 import { Button, Tag, Typography, message } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ReactNode } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import "../clinicalRecords/initialClinicalHistory/initialClinicalHistory.css"
 
 // ─────────────────────────────────────────────────────────────
@@ -170,7 +170,14 @@ export const EvolutionsContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
+  const { currentDoctor, currentDoctorUser, defaultDoctorId } = useCurrentDoctor()
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    if (selectedDoctorId === undefined && defaultDoctorId !== undefined) {
+      setSelectedDoctorId(defaultDoctorId)
+    }
+  }, [defaultDoctorId, selectedDoctorId])
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -291,7 +298,9 @@ export const EvolutionsContainer = () => {
         >
           <EvolutionSection
             admissionId={admissionId}
+            selectedDoctorId={selectedDoctorId}
             selectedDoctor={selectedDoctor}
+            onDoctorChange={setSelectedDoctorId}
             patientName={patient.name}
             messageApi={messageApi}
             patient={patient}
@@ -313,7 +322,14 @@ export const NursingNotesContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
+  const { currentDoctor, currentDoctorUser, defaultDoctorId } = useCurrentDoctor()
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    if (selectedDoctorId === undefined && defaultDoctorId !== undefined) {
+      setSelectedDoctorId(defaultDoctorId)
+    }
+  }, [defaultDoctorId, selectedDoctorId])
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -356,7 +372,9 @@ export const NursingNotesContainer = () => {
         <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
           <NursingNoteSection
             admissionId={admissionId}
-            currentDoctor={currentDoctor}
+            selectedDoctorId={selectedDoctorId}
+            selectedDoctorName={currentDoctor}
+            onDoctorChange={setSelectedDoctorId}
             patientName={patient.name}
             messageApi={messageApi}
             patient={patient}
@@ -377,7 +395,14 @@ export const DiagnosticProceduresContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
+  const { currentDoctor, currentDoctorUser, defaultDoctorId } = useCurrentDoctor()
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    if (selectedDoctorId === undefined && defaultDoctorId !== undefined) {
+      setSelectedDoctorId(defaultDoctorId)
+    }
+  }, [defaultDoctorId, selectedDoctorId])
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -420,7 +445,9 @@ export const DiagnosticProceduresContainer = () => {
         <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
           <DiagnosticProceduresSection
             admissionId={admissionId}
-            currentDoctor={currentDoctor}
+            selectedDoctorId={selectedDoctorId}
+            selectedDoctorName={currentDoctor}
+            onDoctorChange={setSelectedDoctorId}
             patientName={patient.name}
             messageApi={messageApi}
             patient={patient}
@@ -518,7 +545,14 @@ export const MinorProceduresContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
+  const { currentDoctor, currentDoctorUser, defaultDoctorId } = useCurrentDoctor()
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    if (selectedDoctorId === undefined && defaultDoctorId !== undefined) {
+      setSelectedDoctorId(defaultDoctorId)
+    }
+  }, [defaultDoctorId, selectedDoctorId])
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -561,7 +595,9 @@ export const MinorProceduresContainer = () => {
         <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
           <MinorProceduresSection
             admissionId={admissionId}
-            currentDoctor={currentDoctor}
+            selectedDoctorId={selectedDoctorId}
+            selectedDoctorName={currentDoctor}
+            onDoctorChange={setSelectedDoctorId}
             patientName={patient.name}
             messageApi={messageApi}
             patient={patient}
@@ -582,7 +618,14 @@ export const MedicalNoteContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
+  const { currentDoctor, currentDoctorUser, defaultDoctorId } = useCurrentDoctor()
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    if (selectedDoctorId === undefined && defaultDoctorId !== undefined) {
+      setSelectedDoctorId(defaultDoctorId)
+    }
+  }, [defaultDoctorId, selectedDoctorId])
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -625,7 +668,9 @@ export const MedicalNoteContainer = () => {
         <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
           <MedicalNotesSection
             admissionId={admissionId}
-            currentDoctor={currentDoctor}
+            selectedDoctorId={selectedDoctorId}
+            selectedDoctorName={currentDoctor}
+            onDoctorChange={setSelectedDoctorId}
             patientName={patient.name}
             messageApi={messageApi}
             patient={patient}
@@ -646,7 +691,14 @@ export const NonSurgicalProceduresContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
+  const { currentDoctor, currentDoctorUser, defaultDoctorId } = useCurrentDoctor()
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    if (selectedDoctorId === undefined && defaultDoctorId !== undefined) {
+      setSelectedDoctorId(defaultDoctorId)
+    }
+  }, [defaultDoctorId, selectedDoctorId])
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -689,7 +741,9 @@ export const NonSurgicalProceduresContainer = () => {
         <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
           <NonSurgicalSection
             admissionId={admissionId}
-            currentDoctor={currentDoctor}
+            selectedDoctorId={selectedDoctorId}
+            selectedDoctorName={currentDoctor}
+            onDoctorChange={setSelectedDoctorId}
             patientName={patient.name}
             messageApi={messageApi}
             patient={patient}
@@ -710,7 +764,14 @@ export const SpecialistEvolutionContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { currentDoctor, currentDoctorUser } = useCurrentDoctor()
+  const { currentDoctor, currentDoctorUser, defaultDoctorId } = useCurrentDoctor()
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    if (selectedDoctorId === undefined && defaultDoctorId !== undefined) {
+      setSelectedDoctorId(defaultDoctorId)
+    }
+  }, [defaultDoctorId, selectedDoctorId])
 
   const admissionId = searchParams.get("admissionId") || undefined
   const { data: admission } = useGetAdmissionById(admissionId)
@@ -753,7 +814,9 @@ export const SpecialistEvolutionContainer = () => {
         <div style={{ marginTop: 14, background: "var(--dash-surface, #fff)", border: "1px solid var(--dash-border, #e4eae8)", borderRadius: 10, overflow: "hidden" }}>
           <SpecialistEvolutionSection
             admissionId={admissionId}
-            currentDoctor={currentDoctor}
+            selectedDoctorId={selectedDoctorId}
+            selectedDoctorName={currentDoctor}
+            onDoctorChange={setSelectedDoctorId}
             patientName={patient.name}
             messageApi={messageApi}
             patient={patient}

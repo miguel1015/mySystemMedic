@@ -17,7 +17,9 @@ import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
-  currentDoctor: string
+  selectedDoctorId?: number
+  selectedDoctorName: string
+  onDoctorChange: (doctorId: number | undefined) => void
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
@@ -34,7 +36,9 @@ const nowTime = () => new Date().toTimeString().slice(0, 8)
 
 export const MinorProceduresSection = ({
   admissionId,
-  currentDoctor,
+  selectedDoctorId,
+  selectedDoctorName,
+  onDoctorChange,
   patientName,
   messageApi,
   historyClosed,
@@ -87,16 +91,17 @@ export const MinorProceduresSection = ({
   const loadForEdit = (procedimientoMenor: ProcedimientoMenorResponse) => {
     setEditingId(procedimientoMenor.id)
     setFechaProcedimiento(procedimientoMenor.fechaProcedimiento)
-    setHoraProcedimiento(procedimientoMenor.horaProcedimiento)
+    setHoraProcedimiento(procedimientoMenor.horaProcedimiento?.slice(0, 8) || "")
     setConsulta(procedimientoMenor.descripcion)
     setRecentOpen(false)
+    onDoctorChange(procedimientoMenor.userId)
   }
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Procedimiento menor (edición)" : "Vista previa del procedimiento menor")
     setPreviewFecha(fechaProcedimiento)
     setPreviewHora(horaProcedimiento)
-    setPreviewDoctor(currentDoctor)
+    setPreviewDoctor(selectedDoctorName)
     setPreviewDescripcion(consulta)
     setPreviewOpen(true)
   }
@@ -125,15 +130,20 @@ export const MinorProceduresSection = ({
       messageApi.error("No se encontró la admisión asociada a este procedimiento menor.")
       return
     }
+    if (!selectedDoctorId) {
+      messageApi.error("Seleccione un médico tratante antes de guardar.")
+      return
+    }
 
     try {
       const saved = editingId
         ? await updateProcedimientoMenor.mutateAsync({
             id: editingId,
-            data: { fechaProcedimiento, horaProcedimiento, descripcion, isActive: true },
+            data: { fechaProcedimiento, horaProcedimiento, descripcion, userId: selectedDoctorId, isActive: true },
           })
         : await createProcedimientoMenor.mutateAsync({
             admissionId: Number(admissionId),
+            userId: selectedDoctorId,
             fechaProcedimiento,
             horaProcedimiento,
             descripcion,
@@ -235,7 +245,7 @@ export const MinorProceduresSection = ({
           icon={<SaveOutlined />}
           loading={isSaving}
           onClick={validateAndSave}
-          disabled={historyClosed}
+          disabled={historyClosed || isSaving}
         >
           {editingId ? "Actualizar procedimiento menor" : "Guardar procedimiento menor"}
         </Button>

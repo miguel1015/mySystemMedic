@@ -21,6 +21,8 @@ interface Props {
   onAdmissionTimeChange: (value: string) => void;
   editMode?: boolean;
   onOpenPreview: () => void;
+  selectedDoctorId?: number;
+  onDoctorChange: (doctorId: number | undefined) => void;
 }
 
 export const HciSection = ({
@@ -36,6 +38,8 @@ export const HciSection = ({
   onAdmissionTimeChange,
   editMode = false,
   onOpenPreview,
+  selectedDoctorId,
+  onDoctorChange,
 }: Props) => {
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -50,6 +54,8 @@ export const HciSection = ({
     onAdmissionDateChange,
     onAdmissionTimeChange,
     editMode,
+    selectedDoctorId,
+    onDoctorChange,
   });
 
   return (

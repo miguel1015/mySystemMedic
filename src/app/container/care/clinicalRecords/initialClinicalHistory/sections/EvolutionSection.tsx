@@ -18,7 +18,9 @@ import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
+  selectedDoctorId?: number
   selectedDoctor: string
+  onDoctorChange: (doctorId: number | undefined) => void
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
@@ -46,7 +48,9 @@ const nowTime = () => new Date().toTimeString().slice(0, 8)
 
 export const EvolutionSection = ({
   admissionId,
+  selectedDoctorId,
   selectedDoctor,
+  onDoctorChange,
   patientName,
   messageApi,
   historyClosed,
@@ -114,7 +118,7 @@ export const EvolutionSection = ({
   const loadForEdit = (evolucion: EvolucionResponse) => {
     setEditingId(evolucion.id)
     setFechaEvolucion(evolucion.fechaEvolucion)
-    setHoraEvolucion(evolucion.horaEvolucion)
+    setHoraEvolucion(evolucion.horaEvolucion?.slice(0, 8) || "")
     setEvoMotivo(evolucion.motivoConsulta)
     setEvoPlan(evolucion.plan)
     setEvoVitals({
@@ -129,6 +133,7 @@ export const EvolutionSection = ({
     })
     setSavedImc(evolucion.imc ?? null)
     setRecentOpen(false)
+    onDoctorChange(evolucion.userId)
   }
 
   const openPreview = () => {
@@ -172,8 +177,13 @@ export const EvolutionSection = ({
       messageApi.error("No se encontró la admisión asociada a esta evolución.")
       return
     }
+    if (!selectedDoctorId) {
+      messageApi.error("Seleccione un médico tratante antes de guardar.")
+      return
+    }
 
     const basePayload = {
+      userId: selectedDoctorId,
       fechaEvolucion,
       horaEvolucion,
       motivoConsulta: motivo,
@@ -374,7 +384,7 @@ export const EvolutionSection = ({
           icon={<SaveOutlined />}
           loading={isSaving}
           onClick={validateAndSave}
-          disabled={historyClosed}
+          disabled={historyClosed || isSaving}
         >
           {editingId ? "Actualizar evolución" : "Guardar evolución"}
         </Button>

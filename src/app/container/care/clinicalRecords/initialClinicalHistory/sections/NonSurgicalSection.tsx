@@ -16,7 +16,9 @@ import { ProcedimientosNoQxRecentModal } from "./ProcedimientosNoQxRecentModal"
 
 interface Props {
   admissionId?: string | number
-  currentDoctor: string
+  selectedDoctorId?: number
+  selectedDoctorName: string
+  onDoctorChange: (doctorId: number | undefined) => void
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
@@ -33,7 +35,9 @@ const nowTime = () => new Date().toTimeString().slice(0, 8)
 
 export const NonSurgicalSection = ({
   admissionId,
-  currentDoctor,
+  selectedDoctorId,
+  selectedDoctorName,
+  onDoctorChange,
   patientName,
   messageApi,
   historyClosed,
@@ -86,16 +90,17 @@ export const NonSurgicalSection = ({
   const loadForEdit = (procedimientoNoQx: ProcedimientoNoQxResponse) => {
     setEditingId(procedimientoNoQx.id)
     setFechaProcedimiento(procedimientoNoQx.fechaProcedimiento)
-    setHoraProcedimiento(procedimientoNoQx.horaProcedimiento)
+    setHoraProcedimiento(procedimientoNoQx.horaProcedimiento?.slice(0, 8) || "")
     setConsulta(procedimientoNoQx.descripcion)
     setRecentOpen(false)
+    onDoctorChange(procedimientoNoQx.userId)
   }
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Procedimiento no quirúrgico (edición)" : "Vista previa del procedimiento no quirúrgico")
     setPreviewFecha(fechaProcedimiento)
     setPreviewHora(horaProcedimiento)
-    setPreviewDoctor(currentDoctor)
+    setPreviewDoctor(selectedDoctorName)
     setPreviewDescripcion(consulta)
     setPreviewOpen(true)
   }
@@ -124,15 +129,20 @@ export const NonSurgicalSection = ({
       messageApi.error("No se encontró la admisión asociada a este procedimiento.")
       return
     }
+    if (!selectedDoctorId) {
+      messageApi.error("Seleccione un médico tratante antes de guardar.")
+      return
+    }
 
     try {
       const saved = editingId
         ? await updateProcedimientoNoQx.mutateAsync({
             id: editingId,
-            data: { fechaProcedimiento, horaProcedimiento, descripcion, isActive: true },
+            data: { fechaProcedimiento, horaProcedimiento, descripcion, userId: selectedDoctorId, isActive: true },
           })
         : await createProcedimientoNoQx.mutateAsync({
             admissionId: Number(admissionId),
+            userId: selectedDoctorId,
             fechaProcedimiento,
             horaProcedimiento,
             descripcion,
@@ -236,7 +246,7 @@ export const NonSurgicalSection = ({
           icon={<SaveOutlined />}
           loading={isSaving}
           onClick={validateAndSave}
-          disabled={historyClosed}
+          disabled={historyClosed || isSaving}
         >
           {editingId ? "Actualizar procedimiento no quirúrgico" : "Guardar procedimiento no quirúrgico"}
         </Button>

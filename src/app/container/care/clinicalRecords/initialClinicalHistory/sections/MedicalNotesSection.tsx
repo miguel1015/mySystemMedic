@@ -16,7 +16,9 @@ import type { PrintPatient } from "../printPreview/printDocument.utils"
 
 interface Props {
   admissionId?: string | number
-  currentDoctor: string
+  selectedDoctorId?: number
+  selectedDoctorName: string
+  onDoctorChange: (doctorId: number | undefined) => void
   patientName: string
   messageApi: MessageInstance
   historyClosed?: boolean
@@ -33,7 +35,9 @@ const nowTime = () => new Date().toTimeString().slice(0, 8)
 
 export const MedicalNotesSection = ({
   admissionId,
-  currentDoctor,
+  selectedDoctorId,
+  selectedDoctorName,
+  onDoctorChange,
   patientName,
   messageApi,
   historyClosed,
@@ -83,9 +87,10 @@ export const MedicalNotesSection = ({
   const loadForEdit = (notaMedica: NotaMedicaResponse) => {
     setEditingId(notaMedica.id)
     setFechaNota(notaMedica.fechaNota)
-    setHoraNota(notaMedica.horaNota)
+    setHoraNota(notaMedica.horaNota?.slice(0, 8) || "")
     setConsulta(notaMedica.nota)
     setRecentOpen(false)
+    onDoctorChange(notaMedica.userId)
   }
 
   const openPreview = () => {
@@ -93,7 +98,7 @@ export const MedicalNotesSection = ({
     setPreviewFecha(fechaNota)
     setPreviewHora(horaNota)
     setPreviewNota(consulta)
-    setPreviewDoctor(currentDoctor)
+    setPreviewDoctor(selectedDoctorName)
     setPreviewOpen(true)
   }
 
@@ -121,15 +126,20 @@ export const MedicalNotesSection = ({
       messageApi.error("No se encontró la admisión asociada a esta nota médica.")
       return
     }
+    if (!selectedDoctorId) {
+      messageApi.error("Seleccione un médico tratante antes de guardar.")
+      return
+    }
 
     try {
       const saved = editingId
         ? await updateNotaMedica.mutateAsync({
             id: editingId,
-            data: { fechaNota, horaNota, nota, isActive: true },
+            data: { fechaNota, horaNota, nota, userId: selectedDoctorId, isActive: true },
           })
         : await createNotaMedica.mutateAsync({
             admissionId: Number(admissionId),
+            userId: selectedDoctorId,
             fechaNota,
             horaNota,
             nota,
@@ -231,7 +241,7 @@ export const MedicalNotesSection = ({
           icon={<SaveOutlined />}
           loading={isSaving}
           onClick={validateAndSave}
-          disabled={historyClosed}
+          disabled={historyClosed || isSaving}
         >
           {editingId ? "Actualizar nota médica" : "Guardar nota médica"}
         </Button>
