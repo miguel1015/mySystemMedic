@@ -469,7 +469,12 @@ const InitialClinicalHistoryContainer = () => {
             {activeSidebarKey === "egreso" && (
               <DischargeNoteContent
                 messageApi={messageApi}
-                currentDoctor={currentDoctor}
+                currentDoctor={selectedDoctor}
+                admissionId={admissionId}
+                patient={patient}
+                admissionDate={admission?.admissionDate ?? ""}
+                contractName={admission?.convenioNombre ?? ""}
+                doctorUser={selectedDoctorUser}
               />
             )}
 

@@ -51,7 +51,7 @@ const DischargeNoteContainer = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
-  const { currentDoctor, canAssignDoctor, doctorOptions, defaultDoctorId } =
+  const { currentDoctor, users, canAssignDoctor, doctorOptions, defaultDoctorId } =
     useCurrentDoctor()
 
   const admissionId = searchParams.get("admissionId") || undefined
@@ -85,6 +85,7 @@ const DischargeNoteContainer = () => {
       admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
+    insurer: searchParams.get("insurer") || "EPS Sanitas",
   }
 
   const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(
@@ -104,6 +105,7 @@ const DischargeNoteContainer = () => {
   const selectedDoctor =
     doctorOptions.find((d) => d.value === selectedDoctorId)?.label ||
     currentDoctor
+  const selectedDoctorUser = users.find((u) => u.id === selectedDoctorId)
 
   return (
     <Container fluid padding="none" className="clinical-history-shell">
@@ -214,7 +216,15 @@ const DischargeNoteContainer = () => {
 
         {/* ════ FORM ════ */}
         <div style={{ marginTop: 14 }}>
-          <DischargeNoteContent messageApi={messageApi} currentDoctor={currentDoctor} />
+          <DischargeNoteContent
+            messageApi={messageApi}
+            currentDoctor={selectedDoctor}
+            admissionId={admissionId}
+            patient={patient}
+            admissionDate={admission?.admissionDate ?? ""}
+            contractName={admission?.convenioNombre ?? ""}
+            doctorUser={selectedDoctorUser}
+          />
         </div>
 
       </div>

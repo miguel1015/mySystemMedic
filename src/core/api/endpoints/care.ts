@@ -135,4 +135,23 @@ export const CARE_ENDPOINTS = {
   SURGICAL_PROCEDURES: {
     SEARCH: "/api/auth/care/surgical-procedures",
   },
+  DATOS_CLINICOS_EGRESO: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/datos-clinicos-egreso/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/datos-clinicos-egreso",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/datos-clinicos-egreso/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/datos-clinicos-egreso/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/datos-clinicos-egreso/${id}`,
+  },
+  DIAGNOSTICOS_EGRESO: {
+    CREATE: "/api/auth/care/diagnosticos-egreso",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/diagnosticos-egreso/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/diagnosticos-egreso/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/diagnosticos-egreso/${id}`,
+    GET_BY_DATOS_CLINICOS_EGRESO: (datosClinicosEgresoId: IdParam) =>
+      `/api/auth/care/diagnosticos-egreso/by-datos-clinicos-egreso/${datosClinicosEgresoId}`,
+  },
+  CONDICIONES_SALIDA: {
+    GET_ALL: "/api/auth/care/condiciones-salida",
+  },
 }

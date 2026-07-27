@@ -425,6 +425,114 @@ export type DescripcionQuirurgicaUpdateRequest = Omit<
   isActive: boolean;
 };
 
+export interface DatosClinicosEgresoResponse {
+  id: number;
+  admissionId: number;
+  tensionArterial: string | null;
+  frecuenciaCardiaca: number | null;
+  frecuenciaRespiratoria: number | null;
+  temperatura: number | null;
+  saturacionOxigeno: number | null;
+  peso: number | null;
+  talla: number | null;
+  imc: number | null;
+  condicionesGeneralesSalida: string;
+  cabezaCuello: string | null;
+  torax: string | null;
+  abdomen: string | null;
+  extremidades: string | null;
+  sistemaNervioso: string | null;
+  genitourinario: string | null;
+  evoluciones: string | null;
+  justificacionHospitalizacion: string | null;
+  ordenes: string | null;
+  diagnosticoEgresoId: number | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DatosClinicosEgresoCreateRequest {
+  admissionId: number;
+  tensionArterial: string | null;
+  frecuenciaCardiaca: number | null;
+  frecuenciaRespiratoria: number | null;
+  temperatura: number | null;
+  saturacionOxigeno: number | null;
+  peso: number | null;
+  talla: number | null;
+  condicionesGeneralesSalida: string;
+  cabezaCuello: string | null;
+  torax: string | null;
+  abdomen: string | null;
+  extremidades: string | null;
+  sistemaNervioso: string | null;
+  genitourinario: string | null;
+  evoluciones: string | null;
+  justificacionHospitalizacion: string | null;
+  ordenes: string | null;
+}
+
+export type DatosClinicosEgresoUpdateRequest = Omit<
+  DatosClinicosEgresoCreateRequest,
+  "admissionId"
+> & {
+  isActive: boolean;
+};
+
+export interface DiagnosticoEgresoResponse {
+  id: number;
+  datosClinicosEgresoId: number;
+  ambitoEgresoId: number;
+  nombreAmbitoEgreso: string;
+  fechaEgreso: string;
+  diagnosticoEgreso1Id: number;
+  codigoDiagnosticoEgreso1: string;
+  descripcionDiagnosticoEgreso1: string;
+  diagnosticoEgreso2Id: number | null;
+  codigoDiagnosticoEgreso2: string | null;
+  descripcionDiagnosticoEgreso2: string | null;
+  diagnosticoEgreso3Id: number | null;
+  codigoDiagnosticoEgreso3: string | null;
+  descripcionDiagnosticoEgreso3: string | null;
+  finalidadConsultaId: number;
+  nombreFinalidadConsulta: string;
+  causaExternaId: number;
+  nombreCausaExterna: string;
+  condicionSalidaId: number;
+  descripcionCondicionSalida: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DiagnosticoEgresoCreateRequest {
+  datosClinicosEgresoId: number;
+  ambitoEgresoId: number;
+  fechaEgreso: string;
+  diagnosticoEgreso1Id: number;
+  diagnosticoEgreso2Id: number | null;
+  diagnosticoEgreso3Id: number | null;
+  finalidadConsultaId: number;
+  causaExternaId: number;
+  condicionSalidaId: number;
+}
+
+export type DiagnosticoEgresoUpdateRequest = Omit<
+  DiagnosticoEgresoCreateRequest,
+  "datosClinicosEgresoId"
+> & {
+  isActive: boolean;
+};
+
+export interface CondicionSalidaResponse {
+  id: number;
+  descripcion: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AnesthesiaTypeResponse {
   id: number;
   name: string;
