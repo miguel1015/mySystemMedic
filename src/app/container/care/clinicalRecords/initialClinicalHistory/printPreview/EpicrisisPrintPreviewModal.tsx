@@ -10,12 +10,10 @@ import type {
   HCInicialResponse,
   EvolucionResponse,
   EvolucionEspecialistaResponse,
-  NotaMedicaResponse,
   ProcedimientoMenorResponse,
   ProcedimientoDiagnosticoResponse,
   ProcedimientoNoQxResponse,
   NotaEnfermeriaResponse,
-  DescripcionQuirurgicaResponse,
 } from "@/core/interfaces/care/hciInicial";
 import type { DiagnosisRow } from "../types";
 import { EpicrisisPrintDocument } from "./EpicrisisPrintDocument";
@@ -34,8 +32,6 @@ interface Props {
   users: GetUser[];
   hcInicial?: HCInicialResponse | null;
   diagnoses: DiagnosisRow[];
-  descripcionesQuirurgicas: DescripcionQuirurgicaResponse[];
-  notasMedicas: NotaMedicaResponse[];
   evoluciones: EvolucionResponse[];
   evolucionEspecialistas: EvolucionEspecialistaResponse[];
   procedimientosMenores: ProcedimientoMenorResponse[];
@@ -57,8 +53,6 @@ const EpicrisisPrintPreviewModal = ({
   users,
   hcInicial,
   diagnoses,
-  descripcionesQuirurgicas,
-  notasMedicas,
   evoluciones,
   evolucionEspecialistas,
   procedimientosMenores,
@@ -81,8 +75,6 @@ const EpicrisisPrintPreviewModal = ({
       users={users}
       hcInicial={hcInicial}
       diagnoses={diagnoses}
-      descripcionesQuirurgicas={descripcionesQuirurgicas}
-      notasMedicas={notasMedicas}
       evoluciones={evoluciones}
       evolucionEspecialistas={evolucionEspecialistas}
       procedimientosMenores={procedimientosMenores}

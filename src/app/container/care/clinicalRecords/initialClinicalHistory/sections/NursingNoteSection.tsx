@@ -4,12 +4,15 @@ import { CloseCircleOutlined, EyeOutlined, FormOutlined, SaveOutlined } from "@a
 import { Button, Input, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useEffect, useState } from "react"
+import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import { useCreateNotaEnfermeria, useUpdateNotaEnfermeria } from "@/core/hooks/care/notasEnfermeria/useSaveNotaEnfermeria"
+import type { NotaEnfermeriaResponse } from "@/core/interfaces/care/hciInicial"
 import type { GetUser } from "@/core/interfaces/user/users"
 import { labelStyle } from "../constants"
 import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
 import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument"
 import type { PrintPatient } from "../printPreview/printDocument.utils"
+import { NotasEnfermeriaRecentModal } from "./NotasEnfermeriaRecentModal"
 
 interface Props {
   admissionId?: string | number
@@ -54,6 +57,7 @@ export const NursingNoteSection = ({
   const [fechaNota, setFechaNota] = useState(todayDate)
   const [horaNota, setHoraNota] = useState(nowTime)
   const [nota, setNota] = useState("")
+  const [recentOpen, setRecentOpen] = useState(false)
 
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewTitle, setPreviewTitle] = useState("Vista previa de la nota de enfermería")
@@ -78,6 +82,14 @@ export const NursingNoteSection = ({
     reset()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyClosed])
+
+  const loadForEdit = (notaEnfermeria: NotaEnfermeriaResponse) => {
+    setEditingId(notaEnfermeria.id)
+    setFechaNota(notaEnfermeria.fechaNota)
+    setHoraNota(notaEnfermeria.horaNota)
+    setNota(notaEnfermeria.nota)
+    setRecentOpen(false)
+  }
 
   const openPreview = () => {
     setPreviewTitle(editingId ? "Vista previa - Nota de enfermería (edición)" : "Vista previa de la nota de enfermería")
@@ -254,6 +266,19 @@ export const NursingNoteSection = ({
             ]}
           />
         )}
+      />
+
+      <NotasEnfermeriaRecentModal
+        open={recentOpen}
+        onClose={() => setRecentOpen(false)}
+        admissionId={admissionId}
+        onEdit={loadForEdit}
+        messageApi={messageApi}
+      />
+
+      <ClinicalRecordHistoryTrigger
+        moduleType="nursing-notes"
+        onClick={() => setRecentOpen(true)}
       />
     </div>
   )

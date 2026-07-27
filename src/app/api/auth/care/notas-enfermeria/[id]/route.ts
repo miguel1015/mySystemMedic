@@ -46,6 +46,22 @@ async function apiFetch(url: string, token: string, options: RequestInit = {}) {
   return data
 }
 
+export async function GET(_req: Request, { params }: { params: Params }) {
+  try {
+    const session = await getSession()
+    const data = await apiFetch(
+      `${BACKEND_ENDPOINT}/${params.id}`,
+      session.user.accessToken!,
+    )
+    return NextResponse.json(data)
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e.message ?? "Server error" },
+      { status: e.status ?? 500 },
+    )
+  }
+}
+
 export async function PUT(req: Request, { params }: { params: Params }) {
   try {
     const session = await getSession()

@@ -54,9 +54,12 @@ export function useDeleteNotaEnfermeria() {
 
   return useMutation({
     mutationFn: ({ id }: { id: number }) => notaEnfermeriaServices.delete(id),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["notas-enfermeria", "by-admission"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["notas-enfermeria", "detail", variables.id],
       })
     },
   })

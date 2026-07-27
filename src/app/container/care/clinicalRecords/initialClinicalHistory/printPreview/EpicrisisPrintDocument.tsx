@@ -1,22 +1,18 @@
 "use client";
 
-import dayjs from "dayjs";
 import type { GetUser } from "@/core/interfaces/user/users";
 import type { TProvider } from "@/core/interfaces/parameterization/types";
 import type {
   HCInicialResponse,
   EvolucionResponse,
   EvolucionEspecialistaResponse,
-  NotaMedicaResponse,
   ProcedimientoMenorResponse,
   ProcedimientoDiagnosticoResponse,
   ProcedimientoNoQxResponse,
   NotaEnfermeriaResponse,
-  DescripcionQuirurgicaResponse,
 } from "@/core/interfaces/care/hciInicial";
 import type { DiagnosisRow } from "../types";
 import { HciPrintDocument } from "./HciPrintDocument";
-import { NotaMedicaPrintDocument } from "./NotaMedicaPrintDocument";
 import { GenericClinicalPrintDocument } from "./GenericClinicalPrintDocument";
 import type { PrintPatient } from "./printDocument.utils";
 
@@ -32,8 +28,6 @@ interface Props {
   hcInicial?: HCInicialResponse | null;
   diagnoses: DiagnosisRow[];
   users: GetUser[];
-  descripcionesQuirurgicas: DescripcionQuirurgicaResponse[];
-  notasMedicas: NotaMedicaResponse[];
   evoluciones: EvolucionResponse[];
   evolucionEspecialistas: EvolucionEspecialistaResponse[];
   procedimientosMenores: ProcedimientoMenorResponse[];
@@ -54,8 +48,6 @@ export const EpicrisisPrintDocument = ({
   hcInicial,
   diagnoses,
   users,
-  descripcionesQuirurgicas,
-  notasMedicas,
   evoluciones,
   evolucionEspecialistas,
   procedimientosMenores,
@@ -79,86 +71,6 @@ export const EpicrisisPrintDocument = ({
         hcInicial={hcInicial}
         diagnoses={diagnoses}
       />
-
-      {descripcionesQuirurgicas.map((record) => (
-        <GenericClinicalPrintDocument
-          key={`qx-${record.id}`}
-          provider={provider}
-          patient={patient}
-          admissionDate={admissionDate}
-          contractName={contractName}
-          documentTitle="Descripción Quirúrgica"
-          attentionLabel="Fecha y hora de inicio:"
-          attentionDate={dayjs(record.fechaHoraInicio).format("DD/MM/YYYY")}
-          attentionTime={dayjs(record.fechaHoraInicio).format("HH:mm")}
-          doctorName={record.nombreCirujano}
-          doctorUser={findUser(record.cirujanoId)}
-          sections={[
-            {
-              title: "Fechas de ejecución",
-              rows: [
-                {
-                  label: "Fecha inicial de ejecución",
-                  value: dayjs(record.fechaHoraInicio).format("DD/MM/YYYY HH:mm"),
-                },
-                {
-                  label: "Fecha final de ejecución",
-                  value: dayjs(record.fechaHoraFinalizacion).format("DD/MM/YYYY HH:mm"),
-                },
-              ],
-            },
-            {
-              title: "Equipo quirúrgico",
-              rows: [
-                { label: "Cirujano", value: record.nombreCirujano },
-                { label: "Anestesiólogo", value: record.nombreAnestesiologo },
-                { label: "Instrumentador", value: record.nombreInstrumentador },
-                { label: "Ayudante Qx", value: record.nombreAyudanteQx },
-                { label: "Tipo de anestesia", value: record.nombreTipoAnestesia },
-              ],
-            },
-            {
-              title: "Procedimientos (CUPS/SOAT)",
-              rows: [record.procedimiento1, record.procedimiento2, record.procedimiento3, record.procedimiento4]
-                .map((code, idx) =>
-                  code
-                    ? { label: idx === 0 ? "Principal" : `Procedimiento ${idx + 1}`, value: code }
-                    : null,
-                )
-                .filter((row): row is { label: string; value: string } => row !== null),
-            },
-            {
-              title: "Diagnósticos de ingreso (CIE-10)",
-              rows: [record.diagnostico1, record.diagnostico2, record.diagnostico3, record.diagnostico4]
-                .map((code, idx) =>
-                  code
-                    ? { label: idx === 0 ? "Principal" : `Diagnóstico ${idx + 1}`, value: code }
-                    : null,
-                )
-                .filter((row): row is { label: string; value: string } => row !== null),
-            },
-            {
-              title: "Descripción del procedimiento",
-              rows: [{ label: "Descripción del procedimiento", value: record.descripcionProcedimiento }],
-            },
-          ]}
-        />
-      ))}
-
-      {notasMedicas.map((nota) => (
-        <NotaMedicaPrintDocument
-          key={`nota-medica-${nota.id}`}
-          provider={provider}
-          patient={patient}
-          admissionDate={admissionDate}
-          contractName={contractName}
-          fechaNota={nota.fechaNota}
-          horaNota={nota.horaNota}
-          doctorName={nota.nombreProfesional}
-          doctorUser={findUser(nota.userId)}
-          nota={nota.nota}
-        />
-      ))}
 
       {evoluciones.map((evo) => (
         <GenericClinicalPrintDocument

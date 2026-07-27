@@ -230,8 +230,8 @@ export const SurgicalDescriptionSection = ({
     if (!qxProcedureDescription.trim()) { messageApi.error("La descripción del procedimiento es obligatoria."); return }
 
     const payload = {
-      fechaHoraInicio: qxStartDate.format("YYYY-MM-DDTHH:mm:ss"),
-      fechaHoraFinalizacion: qxEndDate.format("YYYY-MM-DDTHH:mm:ss"),
+      fechaHoraInicio: qxStartDate.toISOString(),
+      fechaHoraFinalizacion: qxEndDate.toISOString(),
       cirujanoId: qxSurgeon,
       anestesiologoId: qxAnesthesiologist,
       instrumentadorId: qxInstrumenter,

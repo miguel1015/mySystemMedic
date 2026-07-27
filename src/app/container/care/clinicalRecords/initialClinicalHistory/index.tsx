@@ -12,7 +12,6 @@ import { useGetProcedimientosMenoresByAdmission } from "@/core/hooks/care/proced
 import { useGetProcedimientosDiagnosticosByAdmission } from "@/core/hooks/care/procedimientosDiagnosticos/useGetProcedimientosDiagnosticosByAdmission";
 import { useGetProcedimientosNoQxByAdmission } from "@/core/hooks/care/procedimientosNoQx/useGetProcedimientosNoQxByAdmission";
 import { useGetNotasEnfermeriaByAdmission } from "@/core/hooks/care/notasEnfermeria/useGetNotasEnfermeriaByAdmission";
-import { useGetDescripcionQuirurgicaByAdmission } from "@/core/hooks/care/descripcionesQuirurgicas/useGetDescripcionQuirurgicaByAdmission";
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -125,8 +124,6 @@ const InitialClinicalHistoryContainer = () => {
     useGetProcedimientosNoQxByAdmission(admissionId);
   const { data: notasEnfermeria } =
     useGetNotasEnfermeriaByAdmission(admissionId);
-  const { data: descripcionesQuirurgicas } =
-    useGetDescripcionQuirurgicaByAdmission(admissionId);
 
   const sidebarCounts: Record<string, number> = {
     hci: existingHCInicial ? 1 : 0,
@@ -581,8 +578,6 @@ const InitialClinicalHistoryContainer = () => {
         users={users}
         hcInicial={existingHCInicial}
         diagnoses={diagnoses}
-        descripcionesQuirurgicas={descripcionesQuirurgicas ?? []}
-        notasMedicas={notasMedicas ?? []}
         evoluciones={evoluciones ?? []}
         evolucionEspecialistas={evolucionEspecialistas ?? []}
         procedimientosMenores={procedimientosMenores ?? []}
