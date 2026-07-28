@@ -260,6 +260,7 @@ export const NursingNoteSection = ({
           <GenericClinicalPrintDocument
             provider={provider}
             patient={resolvedPatient}
+            admissionId={admissionId}
             admissionDate={admissionDate}
             contractName={contractName}
             documentTitle="Nota de Enfermería"

@@ -260,6 +260,7 @@ export const NonSurgicalSection = ({
           <GenericClinicalPrintDocument
             provider={provider}
             patient={resolvedPatient}
+            admissionId={admissionId}
             admissionDate={admissionDate}
             contractName={contractName}
             documentTitle="Procedimiento No Quirúrgico"

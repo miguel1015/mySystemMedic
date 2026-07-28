@@ -3,12 +3,13 @@
 import type { GetUser } from "@/core/interfaces/user/users";
 import type { TProvider } from "@/core/interfaces/parameterization/types";
 import { ClinicalDocumentHeader } from "./ClinicalDocumentHeader";
-import { FieldRow, formatDoctorSignatureName, type PrintPatient } from "./printDocument.utils";
+import { DoctorSignatureBox, FieldRow, type PrintPatient } from "./printDocument.utils";
 import "./hciPrintPreview.css";
 
 interface Props {
   provider?: TProvider;
   patient: PrintPatient;
+  admissionId?: string | number;
   admissionDate: string;
   contractName: string;
   fechaNota: string;
@@ -21,6 +22,7 @@ interface Props {
 export const NotaMedicaPrintDocument = ({
   provider,
   patient,
+  admissionId,
   admissionDate,
   contractName,
   fechaNota,
@@ -29,18 +31,12 @@ export const NotaMedicaPrintDocument = ({
   doctorUser,
   nota,
 }: Props) => {
-  console.log("[NotaMedicaPrintDocument] doctorUser:", {
-    doctorName,
-    id: doctorUser?.id,
-    hasSignature: !!doctorUser?.signature,
-    signatureLength: doctorUser?.signature?.length,
-    doctorUser,
-  });
   return (
   <div className="hci-print-page">
     <ClinicalDocumentHeader
       provider={provider}
       patient={patient}
+      admissionId={admissionId}
       admissionDate={admissionDate}
       contractName={contractName}
       documentTitle="Nota Médica"
@@ -58,16 +54,7 @@ export const NotaMedicaPrintDocument = ({
       </div>
 
       <div className="hci-print-signatures">
-        <div className="hci-print-signature-box">
-          <div className="hci-print-signature-img">
-            {doctorUser?.signature && (
-              <img src={doctorUser.signature} alt="Firma" />
-            )}
-          </div>
-          <div className="hci-print-signature-line">
-            {formatDoctorSignatureName(doctorName)}
-          </div>
-        </div>
+        <DoctorSignatureBox doctorName={doctorName} doctorUser={doctorUser} />
         <div className="hci-print-signature-box">
           <div className="hci-print-signature-img" />
           <div className="hci-print-signature-line">

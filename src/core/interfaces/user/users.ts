@@ -41,6 +41,8 @@ export interface DataUser {
   phone?: string;
   telephone?: string;
   signature?: string;
+  licenseCard?: string;
+  userProfileName?: string;
 }
 
 export interface GetUser {
@@ -62,6 +64,8 @@ export interface GetUser {
   phone?: string;
   telephone?: string;
   signature?: string;
+  licenseCard?: string;
+  userProfileName?: string;
 }
 
 export interface UserByProfile {

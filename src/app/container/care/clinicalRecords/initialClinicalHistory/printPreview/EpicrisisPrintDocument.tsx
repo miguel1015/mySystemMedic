@@ -10,6 +10,8 @@ import type {
   ProcedimientoDiagnosticoResponse,
   ProcedimientoNoQxResponse,
   NotaEnfermeriaResponse,
+  DatosClinicosEgresoResponse,
+  DiagnosticoEgresoResponse,
 } from "@/core/interfaces/care/hciInicial";
 import type { DiagnosisRow } from "../types";
 import { HciPrintDocument } from "./HciPrintDocument";
@@ -19,6 +21,7 @@ import type { PrintPatient } from "./printDocument.utils";
 interface Props {
   provider?: TProvider;
   patient: PrintPatient;
+  admissionId?: string | number;
   admissionDate: string;
   attentionDate: string;
   attentionTime: string;
@@ -34,6 +37,8 @@ interface Props {
   procedimientosDiagnosticos: ProcedimientoDiagnosticoResponse[];
   procedimientosNoQx: ProcedimientoNoQxResponse[];
   notasEnfermeria: NotaEnfermeriaResponse[];
+  datosClinicosEgreso: DatosClinicosEgresoResponse[];
+  diagnosticosEgreso: DiagnosticoEgresoResponse[];
 }
 
 const toSortKey = (fecha?: string, hora?: string) => {
@@ -67,11 +72,18 @@ type EpicrisisEntry =
       data: ProcedimientoNoQxResponse;
       sortKey: number;
     }
-  | { type: "notaEnfermeria"; data: NotaEnfermeriaResponse; sortKey: number };
+  | { type: "notaEnfermeria"; data: NotaEnfermeriaResponse; sortKey: number }
+  | {
+      type: "notaEgreso";
+      data: DatosClinicosEgresoResponse;
+      diagnostico?: DiagnosticoEgresoResponse;
+      sortKey: number;
+    };
 
 export const EpicrisisPrintDocument = ({
   provider,
   patient,
+  admissionId,
   admissionDate,
   attentionDate,
   attentionTime,
@@ -87,8 +99,14 @@ export const EpicrisisPrintDocument = ({
   procedimientosDiagnosticos,
   procedimientosNoQx,
   notasEnfermeria,
+  datosClinicosEgreso,
+  diagnosticosEgreso,
 }: Props) => {
   const findUser = (userId: number) => users.find((u) => u.id === userId);
+  const findDiagnostico = (diagnosticoEgresoId: number | null) =>
+    diagnosticoEgresoId
+      ? diagnosticosEgreso.find((d) => d.id === diagnosticoEgresoId)
+      : undefined;
 
   const entries: EpicrisisEntry[] = [
     { type: "hci" as const, sortKey: toSortKey(attentionDate, attentionTime) },
@@ -122,6 +140,17 @@ export const EpicrisisPrintDocument = ({
       data,
       sortKey: toSortKey(data.fechaNota, data.horaNota),
     })),
+    ...datosClinicosEgreso.map((data): EpicrisisEntry => {
+      const diagnostico = findDiagnostico(data.diagnosticoEgresoId);
+      const sortSource = diagnostico?.fechaEgreso ?? data.createdAt;
+      const sortTime = sortSource ? new Date(sortSource).getTime() : NaN;
+      return {
+        type: "notaEgreso",
+        data,
+        diagnostico,
+        sortKey: Number.isNaN(sortTime) ? Number.POSITIVE_INFINITY : sortTime,
+      };
+    }),
   ].sort((a, b) => a.sortKey - b.sortKey);
 
   return (
@@ -134,6 +163,7 @@ export const EpicrisisPrintDocument = ({
                 key="hci-inicial"
                 provider={provider}
                 patient={patient}
+                admissionId={admissionId}
                 admissionDate={admissionDate}
                 attentionDate={attentionDate}
                 attentionTime={attentionTime}
@@ -151,6 +181,7 @@ export const EpicrisisPrintDocument = ({
                 key={`evolucion-${evo.id}`}
                 provider={provider}
                 patient={patient}
+                admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
                 documentTitle="Evolución"
@@ -193,6 +224,7 @@ export const EpicrisisPrintDocument = ({
                 key={`evolucion-especialista-${evo.id}`}
                 provider={provider}
                 patient={patient}
+                admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
                 documentTitle="Evolución de Especialista"
@@ -221,6 +253,7 @@ export const EpicrisisPrintDocument = ({
                 key={`procedimiento-menor-${proc.id}`}
                 provider={provider}
                 patient={patient}
+                admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
                 documentTitle="Procedimiento Menor"
@@ -245,6 +278,7 @@ export const EpicrisisPrintDocument = ({
                 key={`procedimiento-diagnostico-${proc.id}`}
                 provider={provider}
                 patient={patient}
+                admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
                 documentTitle="Procedimiento Diagnóstico"
@@ -273,6 +307,7 @@ export const EpicrisisPrintDocument = ({
                 key={`procedimiento-noqx-${proc.id}`}
                 provider={provider}
                 patient={patient}
+                admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
                 documentTitle="Procedimiento No Quirúrgico"
@@ -297,6 +332,7 @@ export const EpicrisisPrintDocument = ({
                 key={`nota-enfermeria-${nota.id}`}
                 provider={provider}
                 patient={patient}
+                admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
                 documentTitle="Nota de Enfermería"
@@ -309,6 +345,86 @@ export const EpicrisisPrintDocument = ({
                   {
                     title: "Nota de enfermería",
                     rows: [{ label: "Nota de enfermería", value: nota.nota }],
+                  },
+                ]}
+              />
+            );
+          }
+          case "notaEgreso": {
+            const nota = entry.data;
+            const diagnostico = entry.diagnostico;
+            return (
+              <GenericClinicalPrintDocument
+                key={`nota-egreso-${nota.id}`}
+                provider={provider}
+                patient={patient}
+                admissionId={admissionId}
+                admissionDate={admissionDate}
+                contractName={contractName}
+                documentTitle="Nota de Egreso"
+                attentionLabel="Fecha y hora de egreso:"
+                attentionDate={diagnostico?.fechaEgreso ?? ""}
+                attentionTime={diagnostico?.fechaEgreso?.slice(11, 16) ?? ""}
+                doctorName={doctorName}
+                doctorUser={doctorUser}
+                sections={[
+                  {
+                    title: "Signos vitales",
+                    rows: [
+                      { label: "TA", value: nota.tensionArterial },
+                      { label: "FC (lpm)", value: nota.frecuenciaCardiaca },
+                      { label: "FR (rpm)", value: nota.frecuenciaRespiratoria },
+                      { label: "Temperatura (°C)", value: nota.temperatura },
+                      { label: "Sat. O₂ (%)", value: nota.saturacionOxigeno },
+                      { label: "Peso (kg)", value: nota.peso },
+                      { label: "Talla (m)", value: nota.talla },
+                      { label: "IMC", value: nota.imc != null ? `${nota.imc} kg/m²` : null },
+                    ],
+                  },
+                  {
+                    title: "Datos Clínicos de Egreso",
+                    rows: [
+                      { label: "Condiciones generales de salida", value: nota.condicionesGeneralesSalida },
+                      { label: "Cabeza y cuello", value: nota.cabezaCuello },
+                      { label: "Tórax", value: nota.torax },
+                      { label: "Abdomen", value: nota.abdomen },
+                      { label: "Extremidades", value: nota.extremidades },
+                      { label: "Sistema nervioso", value: nota.sistemaNervioso },
+                      { label: "Genitourinario", value: nota.genitourinario },
+                      { label: "Evoluciones", value: nota.evoluciones },
+                      { label: "Justificación de hospitalización", value: nota.justificacionHospitalizacion },
+                      { label: "Órdenes", value: nota.ordenes },
+                    ],
+                  },
+                  {
+                    title: "Diagnósticos de Egreso",
+                    rows: [
+                      { label: "Ámbito de egreso", value: diagnostico?.nombreAmbitoEgreso },
+                      { label: "Fecha de egreso", value: diagnostico?.fechaEgreso },
+                      {
+                        label: "Diagnóstico 1",
+                        value: diagnostico
+                          ? `${diagnostico.codigoDiagnosticoEgreso1} - ${diagnostico.descripcionDiagnosticoEgreso1}`
+                          : null,
+                      },
+                      {
+                        label: "Diagnóstico 2",
+                        value:
+                          diagnostico?.codigoDiagnosticoEgreso2 && diagnostico?.descripcionDiagnosticoEgreso2
+                            ? `${diagnostico.codigoDiagnosticoEgreso2} - ${diagnostico.descripcionDiagnosticoEgreso2}`
+                            : null,
+                      },
+                      {
+                        label: "Diagnóstico 3",
+                        value:
+                          diagnostico?.codigoDiagnosticoEgreso3 && diagnostico?.descripcionDiagnosticoEgreso3
+                            ? `${diagnostico.codigoDiagnosticoEgreso3} - ${diagnostico.descripcionDiagnosticoEgreso3}`
+                            : null,
+                      },
+                      { label: "Finalidad de consulta", value: diagnostico?.nombreFinalidadConsulta },
+                      { label: "Causa externa", value: diagnostico?.nombreCausaExterna },
+                      { label: "Condición de salida", value: diagnostico?.descripcionCondicionSalida },
+                    ],
                   },
                 ]}
               />

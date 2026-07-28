@@ -51,6 +51,7 @@ const HciPrintPreviewModal = ({
     <HciPrintDocument
       provider={provider}
       patient={patient}
+      admissionId={admissionId}
       admissionDate={admissionDate}
       attentionDate={attentionDate}
       attentionTime={attentionTime}

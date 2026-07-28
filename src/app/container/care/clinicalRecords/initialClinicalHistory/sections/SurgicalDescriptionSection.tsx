@@ -510,6 +510,7 @@ export const SurgicalDescriptionSection = ({
           <GenericClinicalPrintDocument
             provider={provider}
             patient={resolvedPatient}
+            admissionId={admissionId}
             admissionDate={admissionDate}
             contractName={contractName}
             documentTitle="Descripción Quirúrgica"

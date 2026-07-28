@@ -11,6 +11,7 @@ import {
 interface Props {
   provider?: TProvider;
   patient: PrintPatient;
+  admissionId?: string | number;
   admissionDate: string;
   contractName: string;
   documentTitle: string;
@@ -22,6 +23,7 @@ interface Props {
 export const ClinicalDocumentHeader = ({
   provider,
   patient,
+  admissionId,
   admissionDate,
   contractName,
   documentTitle,
@@ -47,7 +49,7 @@ export const ClinicalDocumentHeader = ({
       </div>
       <div className="hci-print-hc-number">
         <div className="hci-print-hc-number-title">Historia Clínica</div>
-        <div>N° {patient.documentNumber || emptyDash}</div>
+        <div>N° {admissionId ?? emptyDash}</div>
       </div>
     </div>
 

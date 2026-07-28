@@ -843,6 +843,7 @@ export function DischargeNoteContent({
           <GenericClinicalPrintDocument
             provider={provider}
             patient={resolvedPatient}
+            admissionId={admissionId}
             admissionDate={admissionDate}
             contractName={contractName}
             documentTitle="Nota de Egreso"

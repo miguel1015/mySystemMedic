@@ -207,6 +207,12 @@
   font-size: 11px;
 }
 
+.hci-print-signature-meta {
+  font-size: 9px;
+  color: #333;
+  margin-top: 2px;
+}
+
 .hci-print-footer {
   margin-top: 16px;
   text-align: right;

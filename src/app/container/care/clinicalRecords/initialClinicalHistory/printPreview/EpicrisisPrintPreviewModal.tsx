@@ -14,6 +14,8 @@ import type {
   ProcedimientoDiagnosticoResponse,
   ProcedimientoNoQxResponse,
   NotaEnfermeriaResponse,
+  DatosClinicosEgresoResponse,
+  DiagnosticoEgresoResponse,
 } from "@/core/interfaces/care/hciInicial";
 import type { DiagnosisRow } from "../types";
 import { EpicrisisPrintDocument } from "./EpicrisisPrintDocument";
@@ -23,6 +25,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   patient: PrintPatient;
+  admissionId?: string | number;
   admissionDate: string;
   attentionDate: string;
   attentionTime: string;
@@ -38,12 +41,15 @@ interface Props {
   procedimientosDiagnosticos: ProcedimientoDiagnosticoResponse[];
   procedimientosNoQx: ProcedimientoNoQxResponse[];
   notasEnfermeria: NotaEnfermeriaResponse[];
+  datosClinicosEgreso: DatosClinicosEgresoResponse[];
+  diagnosticosEgreso: DiagnosticoEgresoResponse[];
 }
 
 const EpicrisisPrintPreviewModal = ({
   open,
   onClose,
   patient,
+  admissionId,
   admissionDate,
   attentionDate,
   attentionTime,
@@ -59,6 +65,8 @@ const EpicrisisPrintPreviewModal = ({
   procedimientosDiagnosticos,
   procedimientosNoQx,
   notasEnfermeria,
+  datosClinicosEgreso,
+  diagnosticosEgreso,
 }: Props) => {
   const { data: provider, isLoading } = useGetProvider(INSTITUTION_PROVIDER_ID);
 
@@ -66,6 +74,7 @@ const EpicrisisPrintPreviewModal = ({
     <EpicrisisPrintDocument
       provider={provider}
       patient={patient}
+      admissionId={admissionId}
       admissionDate={admissionDate}
       attentionDate={attentionDate}
       attentionTime={attentionTime}
@@ -81,6 +90,8 @@ const EpicrisisPrintPreviewModal = ({
       procedimientosDiagnosticos={procedimientosDiagnosticos}
       procedimientosNoQx={procedimientosNoQx}
       notasEnfermeria={notasEnfermeria}
+      datosClinicosEgreso={datosClinicosEgreso}
+      diagnosticosEgreso={diagnosticosEgreso}
     />
   );
 

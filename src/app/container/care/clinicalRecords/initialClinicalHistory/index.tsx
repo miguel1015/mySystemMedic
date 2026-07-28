@@ -12,6 +12,8 @@ import { useGetProcedimientosMenoresByAdmission } from "@/core/hooks/care/proced
 import { useGetProcedimientosDiagnosticosByAdmission } from "@/core/hooks/care/procedimientosDiagnosticos/useGetProcedimientosDiagnosticosByAdmission";
 import { useGetProcedimientosNoQxByAdmission } from "@/core/hooks/care/procedimientosNoQx/useGetProcedimientosNoQxByAdmission";
 import { useGetNotasEnfermeriaByAdmission } from "@/core/hooks/care/notasEnfermeria/useGetNotasEnfermeriaByAdmission";
+import { useGetDatosClinicosEgresoByAdmission } from "@/core/hooks/care/dischargeNote/useGetDatosClinicosEgresoByAdmission";
+import { useGetDiagnosticosEgresoByIds } from "@/core/hooks/care/dischargeNote/useGetDiagnosticosEgresoByIds";
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -124,6 +126,11 @@ const InitialClinicalHistoryContainer = () => {
     useGetProcedimientosNoQxByAdmission(admissionId);
   const { data: notasEnfermeria } =
     useGetNotasEnfermeriaByAdmission(admissionId);
+  const { data: datosClinicosEgreso } =
+    useGetDatosClinicosEgresoByAdmission(admissionId);
+  const { data: diagnosticosEgreso } = useGetDiagnosticosEgresoByIds(
+    (datosClinicosEgreso ?? []).map((d) => d.diagnosticoEgresoId),
+  );
 
   const sidebarCounts: Record<string, number> = {
     hci: existingHCInicial ? 1 : 0,
@@ -134,6 +141,7 @@ const InitialClinicalHistoryContainer = () => {
     diagnosticos: procedimientosDiagnosticos?.length ?? 0,
     noquirurgicos: procedimientosNoQx?.length ?? 0,
     enfermeria: notasEnfermeria?.length ?? 0,
+    egreso: datosClinicosEgreso?.length ?? 0,
   };
 
   const [admissionDate, setAdmissionDate] = useState(() =>
@@ -589,6 +597,7 @@ const InitialClinicalHistoryContainer = () => {
         open={epicrisisOpen}
         onClose={() => setEpicrisisOpen(false)}
         patient={patient}
+        admissionId={admissionId}
         admissionDate={admission?.admissionDate ?? ""}
         attentionDate={admissionDate}
         attentionTime={admissionTime}
@@ -604,6 +613,8 @@ const InitialClinicalHistoryContainer = () => {
         procedimientosDiagnosticos={procedimientosDiagnosticos ?? []}
         procedimientosNoQx={procedimientosNoQx ?? []}
         notasEnfermeria={notasEnfermeria ?? []}
+        datosClinicosEgreso={datosClinicosEgreso ?? []}
+        diagnosticosEgreso={diagnosticosEgreso ?? []}
       />
     </Container>
   );

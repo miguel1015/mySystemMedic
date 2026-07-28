@@ -8,12 +8,13 @@ import type { HCInicialResponse } from "@/core/interfaces/care/hciInicial";
 import { antecedentesFields, physicalExamFields } from "../constants";
 import type { DiagnosisRow } from "../types";
 import { ClinicalDocumentHeader } from "./ClinicalDocumentHeader";
-import { emptyDash, FieldRow, formatDoctorSignatureName, type PrintPatient } from "./printDocument.utils";
+import { DoctorSignatureBox, emptyDash, FieldRow, type PrintPatient } from "./printDocument.utils";
 import "./hciPrintPreview.css";
 
 interface Props {
   provider?: TProvider;
   patient: PrintPatient;
+  admissionId?: string | number;
   admissionDate: string;
   attentionDate: string;
   attentionTime: string;
@@ -109,6 +110,7 @@ const PAGE_BUDGET_BUFFER_PX = 24;
 export const HciPrintDocument = ({
   provider,
   patient,
+  admissionId,
   admissionDate,
   attentionDate,
   attentionTime,
@@ -128,6 +130,7 @@ export const HciPrintDocument = ({
     <ClinicalDocumentHeader
       provider={provider}
       patient={patient}
+      admissionId={admissionId}
       admissionDate={admissionDate}
       contractName={contractName}
       documentTitle="Historia Clínica Inicial"
@@ -291,29 +294,12 @@ export const HciPrintDocument = ({
       ),
     });
 
-    console.log("[HciPrintDocument] doctorUser:", {
-      doctorName,
-      id: doctorUser?.id,
-      hasSignature: !!doctorUser?.signature,
-      signatureLength: doctorUser?.signature?.length,
-      doctorUser,
-    });
-
     list.push({
       kind: "block",
       id: "firmas",
       node: (
         <div className="hci-print-signatures">
-          <div className="hci-print-signature-box">
-            <div className="hci-print-signature-img">
-              {doctorUser?.signature && (
-                <img src={doctorUser.signature} alt="Firma" />
-              )}
-            </div>
-            <div className="hci-print-signature-line">
-              {formatDoctorSignatureName(doctorName)}
-            </div>
-          </div>
+          <DoctorSignatureBox doctorName={doctorName} doctorUser={doctorUser} />
           <div className="hci-print-signature-box">
             <div className="hci-print-signature-img" />
             <div className="hci-print-signature-line">

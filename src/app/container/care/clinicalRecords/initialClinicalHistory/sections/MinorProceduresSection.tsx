@@ -267,6 +267,7 @@ export const MinorProceduresSection = ({
           <GenericClinicalPrintDocument
             provider={provider}
             patient={resolvedPatient}
+            admissionId={admissionId}
             admissionDate={admissionDate}
             contractName={contractName}
             documentTitle="Procedimiento Menor"

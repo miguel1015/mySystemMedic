@@ -260,6 +260,7 @@ export const MedicalNotesSection = ({
         onClose={() => setPreviewOpen(false)}
         title={previewTitle}
         patient={resolvedPatient}
+        admissionId={admissionId}
         admissionDate={admissionDate}
         contractName={contractName}
         fechaNota={previewFecha}

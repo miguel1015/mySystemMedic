@@ -24,6 +24,29 @@ export const formatDoctorSignatureName = (doctorName: string) => {
   return cleanName ? `Dr. ${cleanName}` : "";
 };
 
+export const DoctorSignatureBox = ({
+  doctorName,
+  doctorUser,
+}: {
+  doctorName: string;
+  doctorUser?: { signature?: string; userProfileName?: string; licenseCard?: string };
+}) => (
+  <div className="hci-print-signature-box">
+    <div className="hci-print-signature-img">
+      {doctorUser?.signature && <img src={doctorUser.signature} alt="Firma" />}
+    </div>
+    <div className="hci-print-signature-line">
+      {formatDoctorSignatureName(doctorName)}
+    </div>
+    {doctorUser?.userProfileName && (
+      <div className="hci-print-signature-meta">{doctorUser.userProfileName}</div>
+    )}
+    {doctorUser?.licenseCard && (
+      <div className="hci-print-signature-meta">RM: {doctorUser.licenseCard}</div>
+    )}
+  </div>
+);
+
 export interface PrintPatient {
   name: string;
   documentType: string;

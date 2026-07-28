@@ -14,6 +14,7 @@ interface Props {
   onClose: () => void;
   title: string;
   patient: PrintPatient;
+  admissionId?: string | number;
   admissionDate: string;
   contractName: string;
   fechaNota: string;
@@ -28,6 +29,7 @@ const NotaMedicaPrintPreviewModal = ({
   onClose,
   title,
   patient,
+  admissionId,
   admissionDate,
   contractName,
   fechaNota,
@@ -44,6 +46,7 @@ const NotaMedicaPrintPreviewModal = ({
     <NotaMedicaPrintDocument
       provider={provider}
       patient={patient}
+      admissionId={admissionId}
       admissionDate={admissionDate}
       contractName={contractName}
       fechaNota={fechaNota}
