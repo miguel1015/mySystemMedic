@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import type { GetUser } from "@/core/interfaces/user/users";
 import type { TProvider } from "@/core/interfaces/parameterization/types";
 import { ClinicalDocumentHeader } from "./ClinicalDocumentHeader";
-import { DoctorSignatureBox, FieldRow, type PrintPatient } from "./printDocument.utils";
+import { DoctorSignatureBox, type PrintPatient } from "./printDocument.utils";
+import { PaginatedPages, usePaginatedUnits, type Unit } from "./printPagination";
 import "./hciPrintPreview.css";
 
 export interface ClinicalPrintSection {
@@ -40,8 +42,7 @@ export const GenericClinicalPrintDocument = ({
   doctorName,
   doctorUser,
 }: Props) => {
-  return (
-  <div className="hci-print-page">
+  const headerBlock = (
     <ClinicalDocumentHeader
       provider={provider}
       patient={patient}
@@ -53,29 +54,50 @@ export const GenericClinicalPrintDocument = ({
       attentionDate={attentionDate}
       attentionTime={attentionTime}
     />
+  );
 
-    <div className="hci-print-body">
-      {sections.map((section) => (
-        <div className="hci-print-section" key={section.title}>
-          <div className="hci-print-section-title">{section.title}</div>
-          <div className="hci-print-fieldtable">
-            {section.rows.map((row) => (
-              <FieldRow key={row.label} label={row.label} value={row.value} />
-            ))}
+  const units = useMemo<Unit[]>(() => {
+    const list: Unit[] = [];
+
+    sections.forEach((section, sectionIdx) => {
+      section.rows.forEach((row, rowIdx) => {
+        list.push({
+          kind: "field",
+          id: `section-${sectionIdx}-row-${rowIdx}`,
+          sectionKey: `section-${sectionIdx}`,
+          sectionTitle: section.title,
+          isFirst: rowIdx === 0,
+          label: row.label,
+          value: row.value,
+        });
+      });
+    });
+
+    list.push({
+      kind: "block",
+      id: "firmas",
+      node: (
+        <div className="hci-print-signatures">
+          <DoctorSignatureBox doctorName={doctorName} doctorUser={doctorUser} />
+          <div className="hci-print-signature-box">
+            <div className="hci-print-signature-img" />
+            <div className="hci-print-signature-line">
+              Paciente / Responsable
+            </div>
           </div>
         </div>
-      ))}
+      ),
+    });
 
-      <div className="hci-print-signatures">
-        <DoctorSignatureBox doctorName={doctorName} doctorUser={doctorUser} />
-        <div className="hci-print-signature-box">
-          <div className="hci-print-signature-img" />
-          <div className="hci-print-signature-line">
-            Paciente / Responsable
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    return list;
+  }, [sections, doctorName, doctorUser]);
+
+  const { pages, measuringPass } = usePaginatedUnits(units, headerBlock);
+
+  return (
+    <>
+      {measuringPass}
+      <PaginatedPages pages={pages} headerBlock={headerBlock} />
+    </>
   );
 };
