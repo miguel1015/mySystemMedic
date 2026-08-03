@@ -29,6 +29,7 @@ export function useUpdateAdmission() {
       queryClient.invalidateQueries({ queryKey: ["admissions"] })
       queryClient.invalidateQueries({ queryKey: ["admissions", variables.id] })
       queryClient.invalidateQueries({ queryKey: ["active-admissions"] })
+      queryClient.invalidateQueries({ queryKey: ["ongoing-attentions"] })
     },
   })
 }

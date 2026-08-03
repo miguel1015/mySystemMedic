@@ -12,9 +12,11 @@ import {
   MedicineBoxOutlined,
   RadarChartOutlined,
   ScissorOutlined,
+  SwapOutlined,
 } from "@ant-design/icons"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import TransferServiceForm from "./transferServiceForm"
 
 interface ActionsModalProps {
   open: boolean
@@ -103,6 +105,16 @@ const actions = [
     iconBackground: "#c41d7f15",
     shadowColor: "#c41d7f25",
   },
+  {
+    key: "transfer-service",
+    label: "Trasladar servicios",
+    icon: <SwapOutlined style={{ fontSize: 28 }} />,
+    path: "",
+    color: "#0958d9",
+    hoverBackground: "#0958d912",
+    iconBackground: "#0958d915",
+    shadowColor: "#0958d925",
+  },
 ]
 
 const clinicalEvolutionOptions = CLINICAL_RECORD_MODULES
@@ -117,9 +129,11 @@ const patientSummaryStyle = {
 const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
   const router = useRouter()
   const [evolutionModalOpen, setEvolutionModalOpen] = useState(false)
+  const [transferModalOpen, setTransferModalOpen] = useState(false)
 
   const closeActionsModal = () => {
     setEvolutionModalOpen(false)
+    setTransferModalOpen(false)
     onClose()
   }
 
@@ -139,6 +153,11 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
   const handleAction = (action: (typeof actions)[number]) => {
     if (action.key === "evolve") {
       setEvolutionModalOpen(true)
+      return
+    }
+
+    if (action.key === "transfer-service") {
+      setTransferModalOpen(true)
       return
     }
 
@@ -194,7 +213,7 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
   return (
     <>
       <Modal
-        open={open && !evolutionModalOpen}
+        open={open && !evolutionModalOpen && !transferModalOpen}
         onClose={closeActionsModal}
         title="Acciones del Paciente"
         size="lg"
@@ -321,6 +340,19 @@ const ActionsModal = ({ open, onClose, patient }: ActionsModalProps) => {
             </button>
           ))}
         </div>
+      </Modal>
+
+      <Modal
+        open={open && transferModalOpen}
+        onClose={() => setTransferModalOpen(false)}
+        title="Trasladar servicios"
+        size="md"
+      >
+        {renderPatientSummary()}
+        <TransferServiceForm
+          admissionId={patient?.id ?? null}
+          onDone={closeActionsModal}
+        />
       </Modal>
     </>
   )
