@@ -4,11 +4,15 @@ import { Container } from "@/components/container"
 import Title from "@/components/title"
 import { Button } from "antd"
 import { ArrowLeftOutlined, SolutionOutlined } from "@ant-design/icons"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import AdmissionsForm from "@/app/container/care/admissions/admissionsForm"
 
 export default function NewAdmissionPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const prefillDocument = searchParams.get("document") ?? undefined
+  const triageIdParam = searchParams.get("triageId")
+  const prefillTriageId = triageIdParam ? Number(triageIdParam) : undefined
 
   return (
     <Container>
@@ -36,7 +40,11 @@ export default function NewAdmissionPage() {
         </Button>
       </div>
 
-      <AdmissionsForm onDone={() => router.push("/care/admissions")} />
+      <AdmissionsForm
+        prefillDocument={prefillDocument}
+        prefillTriageId={prefillTriageId}
+        onDone={() => router.push("/care/admissions")}
+      />
     </Container>
   )
 }

@@ -25,6 +25,7 @@ import {
   ManOutlined,
   WomanOutlined,
   CheckCircleFilled,
+  SolutionOutlined,
 } from "@ant-design/icons";
 import { useController, Control } from "react-hook-form";
 import {
@@ -86,9 +87,8 @@ export default function TriageForm({
 }: TriageFormProps) {
   const {
     control,
-    handleSubmit,
-    onSubmit,
-    onInvalid,
+    submitSave,
+    submitAdmit,
     handleReset,
     patient,
     searchDoc,
@@ -99,13 +99,14 @@ export default function TriageForm({
     consultationReasonLength,
     isSubmitting,
     editingTriage,
+    isAdmissionEligible,
   } = useTriageForm({ mode, initialTriage });
 
   const isEdit = mode === "edit";
   const showFormBody = isEdit ? !!editingTriage : !!patient;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
+    <form onSubmit={submitSave}>
       <div style={sectionCardStyle}>
         <p style={sectionTitleStyle}>
           {isEdit ? <UserOutlined /> : <FileSearchOutlined />}
@@ -332,9 +333,21 @@ export default function TriageForm({
           </div>
 
           <div className="d-flex justify-content-end gap-2 mt-3">
-            <Button icon={<ClearOutlined />} onClick={handleReset}>
-              {isEdit ? "Cancelar" : "Limpiar"}
-            </Button>
+            {isEdit && (
+              <Button icon={<ClearOutlined />} onClick={handleReset}>
+                Cancelar
+              </Button>
+            )}
+            {isAdmissionEligible && (
+              <Button
+                icon={<SolutionOutlined />}
+                onClick={submitAdmit}
+                loading={isSubmitting}
+                disabled={isSubmitting}
+              >
+                Registrar Admisión
+              </Button>
+            )}
             <Button
               type="primary"
               htmlType="submit"

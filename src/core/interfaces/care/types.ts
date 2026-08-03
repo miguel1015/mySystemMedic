@@ -56,6 +56,16 @@ export interface ActiveAdmission {
   patientId: number;
 }
 
+export interface OngoingAttention {
+  admissionId: number;
+  patientId: number;
+  admissionDate: string;
+  patientFullName: string;
+  documentTypeName: string;
+  documentNumber: string;
+  careScope: string;
+}
+
 export interface AdmissionCatalogItem {
   id: number;
   name: string;
@@ -79,6 +89,7 @@ export interface AdmissionCatalogs {
 
 export interface AdmissionCreateRequest {
   document: string;
+  triageId?: number;
   admissionDate: string;
   careModalityId: number;
   careReasonId: number;
@@ -96,6 +107,9 @@ export type AdmissionUpdateRequest = Omit<AdmissionCreateRequest, "document">;
 export interface AdmissionResponse {
   id: number;
   patientId: number;
+  documentTypeId: number;
+  documentTypeCode: string;
+  documentTypeName: string;
   documentoPatiente: string;
   nombrePaciente: string;
   admissionDate: string;

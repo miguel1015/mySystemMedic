@@ -62,11 +62,15 @@ const emptyStateStyle: React.CSSProperties = {
 interface AdmissionsFormProps {
   initialAdmission?: AdmissionResponse | null
   onDone?: () => void
+  prefillDocument?: string
+  prefillTriageId?: number
 }
 
 export default function AdmissionsForm({
   initialAdmission = null,
   onDone,
+  prefillDocument,
+  prefillTriageId,
 }: AdmissionsFormProps) {
   const {
     control,
@@ -96,7 +100,7 @@ export default function AdmissionsForm({
     agreementOptions,
     handleAgreementChange,
     handleAgreementClear,
-  } = useAdmissionForm({ initialAdmission, onDone })
+  } = useAdmissionForm({ initialAdmission, onDone, prefillDocument, prefillTriageId })
 
   const showFormBody = isEdit || !!patient
 
@@ -163,7 +167,7 @@ export default function AdmissionsForm({
             <Button
               type="primary"
               size="large"
-              onClick={handleSearchPatient}
+              onClick={() => handleSearchPatient()}
               loading={searching}
               icon={<SearchOutlined />}
             >

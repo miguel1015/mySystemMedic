@@ -86,6 +86,8 @@ export type AdmissionFormValues = z.infer<typeof admissionSchema>;
 interface UseAdmissionFormArgs {
   initialAdmission?: AdmissionResponse | null;
   onDone?: () => void;
+  prefillDocument?: string;
+  prefillTriageId?: number;
 }
 
 function getCurrentDate(): string {
@@ -125,6 +127,8 @@ const toOptions = (data: { id: number; name: string }[] | undefined) =>
 export function useAdmissionForm({
   initialAdmission = null,
   onDone,
+  prefillDocument,
+  prefillTriageId,
 }: UseAdmissionFormArgs = {}) {
   const { data: catalogs, isLoading: loadingAdmissionCatalogs } =
     useAdmissionCatalogs();
@@ -446,10 +450,10 @@ export function useAdmissionForm({
     convenioId: data.agreementId,
   });
 
-  const handleSearchPatient = async () => {
+  const handleSearchPatient = async (docOverride?: string) => {
     if (isEdit) return;
 
-    const doc = searchDoc.trim();
+    const doc = (docOverride ?? searchDoc).trim();
 
     if (!doc) {
       setSearchError({
@@ -490,6 +494,16 @@ export function useAdmissionForm({
     }
   };
 
+  const hasAppliedPrefillRef = useRef(false);
+
+  useEffect(() => {
+    if (isEdit || hasAppliedPrefillRef.current || !prefillDocument) return;
+    hasAppliedPrefillRef.current = true;
+    setSearchDoc(prefillDocument);
+    handleSearchPatient(prefillDocument);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, prefillDocument]);
+
   const onSubmit = (data: AdmissionFormValues) => {
     if (!isEdit && !patient) {
       toast.error("Debe buscar un paciente antes de guardar");
@@ -526,6 +540,7 @@ export function useAdmissionForm({
 
     const createPayload: AdmissionCreateRequest = {
       document: patient?.numeroDocumento?.trim() || searchDoc.trim(),
+      ...(prefillTriageId ? { triageId: prefillTriageId } : {}),
       ...payload,
     };
 

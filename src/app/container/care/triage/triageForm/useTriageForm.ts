@@ -229,7 +229,10 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
     );
   };
 
-  const onSubmit = (data: TriageFormValues) => {
+  const onSubmit = (
+    data: TriageFormValues,
+    action: "save" | "admit" = "save",
+  ) => {
     const priorityRoman = PRIORITY_NUMBER_TO_ROMAN[data.priority];
     const fechaHora = new Date(data.dateTime).toISOString();
     const signosVitales = buildVitalSigns(data);
@@ -252,7 +255,17 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
       };
 
       createMutation.mutate(payload, {
-        onSuccess: () => {
+        onSuccess: (created) => {
+          if (action === "admit") {
+            toast.success("Triage registrado correctamente. Redirigiendo a registro de admisión...");
+            const params = new URLSearchParams({
+              document: created.numeroDocumento ?? numeroDocumento,
+              triageId: String(created.id),
+            });
+            router.push(`/care/admissions/new?${params.toString()}`);
+            return;
+          }
+
           toast.success("Triaje registrado correctamente");
           router.push("/care/triage");
         },
@@ -298,13 +311,21 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
     setSearchError(null);
   };
   const consultationReason = watch("consultationReason") ?? "";
+  const priorityValue = watch("priority");
+  const isAdmissionEligible =
+    mode === "create" && [1, 2, 3].includes(priorityValue);
+
+  const submitSave = handleSubmit((data) => onSubmit(data, "save"), onInvalid);
+  const submitAdmit = handleSubmit(
+    (data) => onSubmit(data, "admit"),
+    onInvalid,
+  );
 
   return {
     mode,
     control,
-    handleSubmit,
-    onSubmit,
-    onInvalid,
+    submitSave,
+    submitAdmit,
     handleReset,
     patient,
     searchDoc,
@@ -315,5 +336,6 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
     consultationReasonLength: consultationReason.length,
     isSubmitting: createMutation.isPending || updateMutation.isPending,
     editingTriage: mode === "edit" ? (initialTriage ?? null) : null,
+    isAdmissionEligible,
   };
 }
