@@ -8,6 +8,7 @@ import {
   Button,
   Divider,
   Input as AntdInput,
+  Modal,
   Radio,
   Spin,
   Tag,
@@ -25,7 +26,6 @@ import {
   ManOutlined,
   WomanOutlined,
   CheckCircleFilled,
-  SolutionOutlined,
 } from "@ant-design/icons";
 import { useController, Control } from "react-hook-form";
 import {
@@ -88,7 +88,6 @@ export default function TriageForm({
   const {
     control,
     submitSave,
-    submitAdmit,
     handleReset,
     patient,
     searchDoc,
@@ -99,13 +98,16 @@ export default function TriageForm({
     consultationReasonLength,
     isSubmitting,
     editingTriage,
-    isAdmissionEligible,
+    admitPromptOpen,
+    confirmAdmit,
+    cancelAdmit,
   } = useTriageForm({ mode, initialTriage });
 
   const isEdit = mode === "edit";
   const showFormBody = isEdit ? !!editingTriage : !!patient;
 
   return (
+    <>
     <form onSubmit={submitSave}>
       <div style={sectionCardStyle}>
         <p style={sectionTitleStyle}>
@@ -338,16 +340,6 @@ export default function TriageForm({
                 Cancelar
               </Button>
             )}
-            {isAdmissionEligible && (
-              <Button
-                icon={<SolutionOutlined />}
-                onClick={submitAdmit}
-                loading={isSubmitting}
-                disabled={isSubmitting}
-              >
-                Registrar Admisión
-              </Button>
-            )}
             <Button
               type="primary"
               htmlType="submit"
@@ -361,6 +353,21 @@ export default function TriageForm({
         </>
       )}
     </form>
+
+    <Modal
+      title="¿Admisionar paciente?"
+      open={admitPromptOpen}
+      onOk={confirmAdmit}
+      onCancel={cancelAdmit}
+      okText="Sí, admisionar"
+      cancelText="No, ir al listado"
+    >
+      <p>
+        El triage se guardó correctamente. Debido a la prioridad asignada,
+        ¿desea continuar con el registro de admisión de este paciente?
+      </p>
+    </Modal>
+    </>
   );
 }
 
