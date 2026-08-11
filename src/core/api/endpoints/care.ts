@@ -154,4 +154,11 @@ export const CARE_ENDPOINTS = {
   CONDICIONES_SALIDA: {
     GET_ALL: "/api/auth/care/condiciones-salida",
   },
+  BILLING_MOVEMENTS: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/billing-movements/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/billing-movements",
+    UPDATE: (id: IdParam) => `/api/auth/care/billing-movements/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/billing-movements/${id}`,
+  },
 }

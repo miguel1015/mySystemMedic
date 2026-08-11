@@ -33,9 +33,8 @@ export const sidebar = {
   },
 
   billing: {
-    admissionOpenIntegral: "Admisión (Abierta) integral",
+    admissionIntegral: "Admisión integral",
     surgeryUpload: "Cargue de cirugía",
-    admissionClosedIntegral: "Admisión (Cerrada) integral",
     invoiceVisualization: "Visualización de facturas",
     invoiceAttachment: "Anexo facturas",
     billingReport: "Reporte de facturación",

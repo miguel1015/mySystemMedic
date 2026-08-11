@@ -1,10 +1,11 @@
 "use client";
 
-import { DatePicker, Input, Select, Table, Tag } from "antd";
+import { Button, DatePicker, Input, Select, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo, useState } from "react";
-import { SearchOutlined } from "@ant-design/icons";
+import { DollarOutlined, SearchOutlined } from "@ant-design/icons";
 import { OngoingAttention } from "@/core/interfaces/care/types";
+import { useRouter } from "next/navigation";
 import dayjs, { Dayjs } from "dayjs";
 
 const { RangePicker } = DatePicker;
@@ -23,7 +24,20 @@ const CARE_SCOPE_COLORS: Record<string, string> = {
 };
 
 const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
+  const router = useRouter();
   const [search, setSearch] = useState("");
+
+  const goToBilling = (record: OngoingAttention) => {
+    const params = new URLSearchParams({
+      admissionId: String(record.admissionId),
+      patientId: String(record.patientId),
+      patientName: record.patientFullName,
+      documentNumber: record.documentNumber,
+      careScope: record.careScope,
+      admissionDate: record.admissionDate,
+    });
+    router.push(`/billing/admissionIntegral?${params.toString()}`);
+  };
   const [careScopeFilter, setCareScopeFilter] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
 
@@ -155,6 +169,21 @@ const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
       width: 120,
       align: "center",
       render: () => <Tag color="success">En curso</Tag>,
+    },
+    {
+      title: "Acciones",
+      width: 150,
+      align: "center",
+      fixed: "right",
+      render: (_, record) => (
+        <Button
+          type="primary"
+          icon={<DollarOutlined />}
+          onClick={() => goToBilling(record)}
+        >
+          Admisión integral
+        </Button>
+      ),
     },
   ];
 
