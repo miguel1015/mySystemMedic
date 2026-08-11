@@ -16,7 +16,8 @@ import ServiceLoadingTab from "./serviceLoadingTab"
 
 const AdmissionIntegralContainer = () => {
   const searchParams = useSearchParams()
-  const admissionId = searchParams.get("admissionId")
+  const admissionIdParam = searchParams.get("admissionId")
+  const admissionId = admissionIdParam ? Number(admissionIdParam) : null
 
   const {
     data: admission,

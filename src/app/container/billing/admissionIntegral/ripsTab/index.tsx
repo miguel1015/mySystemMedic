@@ -18,7 +18,7 @@ export type { RipsValidationResult }
 
 interface RipsTabProps {
   admission: AdmissionResponse | undefined
-  admissionId: string
+  admissionId: number
   movements: BillingMovementResponse[]
   onValidationChange: (result: RipsValidationResult | null) => void
 }

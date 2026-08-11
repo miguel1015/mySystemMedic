@@ -24,7 +24,7 @@ import MovementsTable from "./table"
 
 interface ServiceLoadingTabProps {
   admission: AdmissionResponse | undefined
-  admissionId: string
+  admissionId: number
   movements: BillingMovementResponse[]
   loading: boolean
 }
@@ -158,7 +158,7 @@ const ServiceLoadingTab = ({
 
       <MovementsTable
         movements={movements}
-        admissionId={Number(admissionId)}
+        admissionId={admissionId}
         loading={loading}
         onEdit={handleEdit}
       />
@@ -176,7 +176,7 @@ const ServiceLoadingTab = ({
 
       <Modal open={!!draft} onClose={() => setDraft(null)} size="md">
         <MovementForm
-          admissionId={Number(admissionId)}
+          admissionId={admissionId}
           admission={admission}
           draft={draft}
           title={formTitle}

@@ -1,6 +1,7 @@
 "use client"
 
 import RHFAntdInput from "@/components/input"
+import RHFAntdInputNumber from "@/components/inputNumber"
 import RHFAntdSelect from "@/components/select"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import { BILLING_SERVICE_CATEGORIES, BillingMovementResponse } from "@/core/interfaces/care/billing"
@@ -49,18 +50,18 @@ const MovementForm = ({
         <RHFAntdInput name="name" control={control} label="Nombre del servicio / elemento" />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <RHFAntdInput
+          <RHFAntdInputNumber
             name="quantity"
             control={control}
-            type="number"
             min={1}
+            precision={0}
             label="Cantidad"
           />
-          <RHFAntdInput
+          <RHFAntdInputNumber
             name="unitValue"
             control={control}
-            type="number"
             min={0}
+            precision={2}
             label="Valor unitario"
           />
         </div>
