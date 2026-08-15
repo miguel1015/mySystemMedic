@@ -38,6 +38,14 @@ export interface TTariffDetail {
   surgicalGroupReferenceCode?: string;
 }
 
+export interface TTariffDetailsPaged {
+  items: TTariffDetail[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export interface TMedicine {
   id?: number;
   name: string;

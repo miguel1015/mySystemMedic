@@ -9,6 +9,7 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   "contracts-by-insurer": "/api/contracts/by-insurer",
   "contract-details": "/api/contract-details",
   tariffdetails: "/api/tariffdetails",
+  "tariffdetails-paged": "/api/tariffdetails/paged",
   medicines: "/api/medicines",
   "medical-devices": "/api/medical-devices",
   "contract-catalogs": "/api/contracts/catalogs",
@@ -49,8 +50,13 @@ export async function GET(request: Request) {
       );
     }
 
+    const forwardParams = new URLSearchParams(searchParams);
+    forwardParams.delete("type");
+    forwardParams.delete("insurerId");
+    const qs = forwardParams.toString();
+
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
+      `${process.env.NEXT_PUBLIC_API_URL}${endpoint}${qs ? `?${qs}` : ""}`,
       {
         headers: {
           Authorization: `Bearer ${session.user.accessToken}`,

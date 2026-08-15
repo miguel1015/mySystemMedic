@@ -17,8 +17,13 @@
   padding: 26px 26px;
   color: #eafff8;
   background:
-    radial-gradient(540px 300px at 88% -20%, rgba(110, 231, 196, 0.35), transparent 60%),
-    linear-gradient(135deg, #0a4f42 0%, #0f6f5c 52%, #0c5a4a 100%);
+    radial-gradient(540px 300px at 88% -20%, rgba(255, 255, 255, 0.28), transparent 60%),
+    linear-gradient(
+      135deg,
+      var(--theme-primary-active, #0a4f42) 0%,
+      var(--theme-primary, #0f6f5c) 52%,
+      var(--theme-primary-hover, #0c5a4a) 100%
+    );
   box-shadow: var(--dash-shadow-md);
 }
 
@@ -189,8 +194,8 @@
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(16, 185, 129, 0.12);
-  color: #0f6f5c;
+  background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.12);
+  color: var(--theme-primary, #0f6f5c);
 }
 
 .statCardValue {

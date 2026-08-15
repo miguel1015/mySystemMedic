@@ -3,7 +3,6 @@ import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
-import { useContractsByInsurer } from "@/core/hooks/parameterization/contracts/useGetAllContracts"
 import { useCreateBillingMovement } from "@/core/hooks/care/billing/useCreateBillingMovement"
 import { useUpdateBillingMovement } from "@/core/hooks/care/billing/useUpdateBillingMovement"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
@@ -46,13 +45,7 @@ interface UseMovementFormArgs {
   onDone: (movement?: BillingMovementResponse) => void
 }
 
-const toOptions = (data: { id: number; contractName: string }[] | undefined) =>
-  (data ?? []).map((contract) => ({ value: contract.id, label: contract.contractName }))
-
 export function useMovementForm({ admissionId, admission, draft, onDone }: UseMovementFormArgs) {
-  const { data: contracts, isLoading: isLoadingContracts } = useContractsByInsurer(
-    admission?.epsId,
-  )
   const createMovement = useCreateBillingMovement()
   const updateMovement = useUpdateBillingMovement()
 
@@ -79,8 +72,6 @@ export function useMovementForm({ admissionId, admission, draft, onDone }: UseMo
       notes: draft.notes,
     } as MovementFormValues)
   }, [draft, admission?.convenioId, reset])
-
-  const contractOptions = toOptions(contracts)
 
   const onSubmit = (values: MovementFormValues) => {
     if (!draft) return
@@ -131,8 +122,6 @@ export function useMovementForm({ admissionId, admission, draft, onDone }: UseMo
     control,
     handleSubmit,
     onSubmit,
-    contractOptions,
-    isLoadingContracts,
     isSubmitting: createMovement.isPending || updateMovement.isPending,
   }
 }

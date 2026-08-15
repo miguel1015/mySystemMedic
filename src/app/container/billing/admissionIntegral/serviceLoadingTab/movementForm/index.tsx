@@ -33,8 +33,12 @@ const MovementForm = ({
   onClose,
   onSaved,
 }: MovementFormProps) => {
-  const { control, handleSubmit, onSubmit, contractOptions, isLoadingContracts, isSubmitting } =
-    useMovementForm({ admissionId, admission, draft, onDone: onSaved })
+  const { control, handleSubmit, onSubmit, isSubmitting } = useMovementForm({
+    admissionId,
+    admission,
+    draft,
+    onDone: onSaved,
+  })
 
   const quantity = useWatch({ control, name: "quantity" })
   const unitValue = useWatch({ control, name: "unitValue" })
@@ -66,14 +70,10 @@ const MovementForm = ({
           />
         </div>
 
-        <RHFAntdSelect
-          name="contractId"
-          control={control}
-          label="Convenio"
-          placeholder="Seleccione el convenio"
-          options={contractOptions}
-          loading={isLoadingContracts}
-        />
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", marginBottom: 4, fontWeight: 500 }}>Convenio</label>
+          <div>{admission?.convenioNombre || "Sin convenio"}</div>
+        </div>
 
         {draft.movementType === "service" && (
           <RHFAntdSelect

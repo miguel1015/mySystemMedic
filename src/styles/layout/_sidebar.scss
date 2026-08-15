@@ -101,7 +101,7 @@ $sidebar-overlay-z-index: 1025;
     linear-gradient(
       180deg,
       var(--sidebar-background) 0%,
-      var(--sidebar-background-2) 100%
+      color-mix(in srgb, var(--sidebar-background) 65%, black) 100%
     );
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
 
@@ -286,8 +286,8 @@ $sidebar-overlay-z-index: 1025;
     display: grid;
     place-items: center;
     border-radius: 8px;
-    color: #8ff0d4;
-    background: rgba(16, 185, 129, 0.13);
+    color: var(--theme-primary, #8ff0d4);
+    background: rgba(var(--theme-primary-rgb, 16, 185, 129), 0.18);
   }
 
   .sidebar-account-mini-text {
@@ -322,7 +322,7 @@ $sidebar-overlay-z-index: 1025;
     gap: 9px;
     padding: 10px 12px;
     color: #eafff8;
-    background: rgba(16, 185, 129, 0.12);
+    background: rgba(var(--theme-primary-rgb, 16, 185, 129), 0.16);
     font-size: 13px;
     font-weight: 800;
 
@@ -330,8 +330,8 @@ $sidebar-overlay-z-index: 1025;
     &[aria-expanded="true"] {
       transform: translateY(-1px);
       color: #fff;
-      background: rgba(16, 185, 129, 0.22);
-      box-shadow: 0 10px 22px rgba(6, 95, 70, 0.16);
+      background: rgba(var(--theme-primary-rgb, 16, 185, 129), 0.28);
+      box-shadow: 0 10px 22px rgba(var(--theme-primary-rgb, 6, 95, 70), 0.16);
     }
   }
 
@@ -518,7 +518,7 @@ $sidebar-overlay-z-index: 1025;
   }
 
   &.show > .nav-link {
-    color: #8ff0d4;
+    color: var(--theme-primary-hover, #8ff0d4);
     .nav-chevron {
       transform: rotate(180deg);
     }
@@ -577,21 +577,21 @@ $sidebar-overlay-z-index: 1025;
     transform: translateX(3px);
 
     .nav-icon {
-      background: rgba(16, 185, 129, 0.18);
-      color: #8ff0d4;
+      background: rgba(var(--theme-primary-rgb, 16, 185, 129), 0.22);
+      color: var(--theme-primary-hover, #8ff0d4);
     }
   }
 
-  /* active state — emerald pill with glow + indicator */
+  /* active state — themed pill with glow + indicator */
   &.active {
     color: #fff;
     background: linear-gradient(
       135deg,
-      rgba(15, 111, 92, 0.9),
-      rgba(16, 185, 129, 0.75)
+      rgba(var(--theme-primary-rgb, 15, 111, 92), 0.9),
+      rgba(var(--theme-primary-rgb, 16, 185, 129), 0.75)
     );
     box-shadow:
-      0 6px 18px rgba(16, 185, 129, 0.28),
+      0 6px 18px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.28),
       inset 0 1px 0 rgba(255, 255, 255, 0.16);
 
     .nav-icon {
@@ -608,8 +608,8 @@ $sidebar-overlay-z-index: 1025;
       width: 4px;
       height: 22px;
       border-radius: 0 4px 4px 0;
-      background: #6ee7c4;
-      box-shadow: 0 0 12px #6ee7c4;
+      background: var(--theme-primary-hover, #6ee7c4);
+      box-shadow: 0 0 12px var(--theme-primary-hover, #6ee7c4);
     }
   }
 }
@@ -638,16 +638,16 @@ $sidebar-overlay-z-index: 1025;
     transform: translateX(3px);
   }
   &:hover::after {
-    background: #6ee7c4;
+    background: var(--theme-primary-hover, #6ee7c4);
   }
 
   &.active {
-    background: rgba(16, 185, 129, 0.16);
+    background: rgba(var(--theme-primary-rgb, 16, 185, 129), 0.2);
     box-shadow: none;
-    color: #aef3dc;
+    color: #fff;
     &::after {
-      background: #6ee7c4;
-      box-shadow: 0 0 8px #6ee7c4;
+      background: var(--theme-primary-hover, #6ee7c4);
+      box-shadow: 0 0 8px var(--theme-primary-hover, #6ee7c4);
     }
   }
 }
@@ -691,8 +691,8 @@ $sidebar-overlay-z-index: 1025;
 
 /* ── Edge tab (sidebar re-open trigger) ── */
 @keyframes edgeTabPulse {
-  0%, 100% { box-shadow: 3px 0 16px rgba(16, 185, 129, 0.38); }
-  50%       { box-shadow: 3px 0 28px rgba(16, 185, 129, 0.68); }
+  0%, 100% { box-shadow: 3px 0 16px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.38); }
+  50%       { box-shadow: 3px 0 28px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.68); }
 }
 
 @keyframes tabLogobeat {
@@ -724,8 +724,8 @@ $sidebar-overlay-z-index: 1025;
     padding: 18px 11px;
     border-radius: 0 16px 16px 0;
     color: #fff;
-    background: linear-gradient(160deg, #10b981 0%, #0f6f5c 100%);
-    box-shadow: 3px 0 16px rgba(16, 185, 129, 0.38);
+    background: linear-gradient(160deg, var(--theme-primary-hover, #10b981) 0%, var(--theme-primary, #0f6f5c) 100%);
+    box-shadow: 3px 0 16px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.38);
     animation: edgeTabPulse 3.5s ease-in-out infinite;
     transition:
       transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
@@ -746,7 +746,7 @@ $sidebar-overlay-z-index: 1025;
 
   &:hover .tab-inner {
     transform: translateX(6px);
-    box-shadow: 5px 0 32px rgba(16, 185, 129, 0.65);
+    box-shadow: 5px 0 32px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.65);
     animation: none;
   }
 
