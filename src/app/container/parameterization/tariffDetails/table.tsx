@@ -36,11 +36,6 @@ const TariffDetailsTable = () => {
 
   const columns: ColumnsType<TTariffDetail> = [
     {
-      title: "#",
-      width: 50,
-      render: (_value, _record, index) => (page - 1) * pageSize + index + 1,
-    },
-    {
       title: "ID",
       dataIndex: "id",
       width: 80,
