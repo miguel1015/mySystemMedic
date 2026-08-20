@@ -3,7 +3,8 @@
 import { Container } from "@/components/container";
 import { useTariffDetailsPaged } from "@/core/hooks/parameterization/tariffDetails/useGetTariffDetailsPaged";
 import { TTariffDetail } from "@/core/interfaces/parameterization/types";
-import { Empty, Input, Table, Tag } from "antd";
+import { EditOutlined } from "@ant-design/icons";
+import { Button, Empty, Input, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useRef, useState } from "react";
 
@@ -14,7 +15,11 @@ const formatCurrency = (value: number) =>
     minimumFractionDigits: 0,
   }).format(value);
 
-const TariffDetailsTable = () => {
+interface TariffDetailsTableProps {
+  onEdit: (record: TTariffDetail) => void;
+}
+
+const TariffDetailsTable = ({ onEdit }: TariffDetailsTableProps) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [search, setSearch] = useState("");
@@ -38,12 +43,12 @@ const TariffDetailsTable = () => {
     {
       title: "ID",
       dataIndex: "id",
-      width: 80,
+      width: 70,
     },
     {
       title: "Código referencia",
       dataIndex: "referenceCode",
-      width: 140,
+      width: 80,
     },
     {
       title: "Descripción",
@@ -53,32 +58,46 @@ const TariffDetailsTable = () => {
     {
       title: "Valor",
       dataIndex: "value",
-      width: 140,
+      width: 80,
       render: (value: number) => formatCurrency(value),
     },
     {
       title: "Tarifario",
       dataIndex: "tariffName",
-      width: 200,
+      width: 180,
       render: (value?: string) => value ?? "-",
     },
     {
       title: "Procedimiento quirúrgico",
       dataIndex: "isSurgicalProcedure",
-      width: 170,
+      width: 80,
       render: (value: boolean) =>
         value ? <Tag color="blue">Sí</Tag> : <Tag>No</Tag>,
     },
     {
       title: "Factor",
       dataIndex: "factors",
-      width: 100,
+      width: 80,
     },
     {
       title: "Grupo quirúrgico",
       dataIndex: "surgicalGroupReferenceCode",
-      width: 160,
+      width: 120,
       render: (value?: string) => value ?? "-",
+    },
+    {
+      title: "Acciones",
+      width: 90,
+      fixed: "right",
+      render: (_, record) => (
+        <Tooltip title="Editar">
+          <Button
+            type="default"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+          />
+        </Tooltip>
+      ),
     },
   ];
 
@@ -86,7 +105,7 @@ const TariffDetailsTable = () => {
     <Container className="py-4">
       <div className="mb-3">
         <Input
-          placeholder="Buscar por descripción..."
+          placeholder="Buscar por código o descripción..."
           onChange={(e) => handleSearch(e.target.value)}
           allowClear
           size="large"

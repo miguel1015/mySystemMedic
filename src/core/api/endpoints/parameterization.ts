@@ -19,6 +19,9 @@ export const PARAMETERIZATION_ENDPOINTS = {
         search ? `&search=${encodeURIComponent(search)}` : ""
       }`,
   },
+  SURGICAL_GROUPS: {
+    GET_ALL: "/api/auth/parameterization/getAll?type=surgical-groups",
+  },
   CONTRACTS: {
     ...makeParamCrud("contracts"),
     BY_INSURER: (insurerId: string | number) =>

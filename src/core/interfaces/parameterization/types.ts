@@ -38,6 +38,12 @@ export interface TTariffDetail {
   surgicalGroupReferenceCode?: string;
 }
 
+export interface TSurgicalGroup {
+  id: number;
+  referenceCode: string;
+  qxGroup: string;
+}
+
 export interface TTariffDetailsPaged {
   items: TTariffDetail[];
   totalCount: number;
