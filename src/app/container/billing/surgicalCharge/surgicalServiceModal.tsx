@@ -101,6 +101,8 @@ const SurgicalServiceModal = ({
           showSearch
           optionFilterProp="label"
           style={{ width: "100%" }}
+          getPopupContainer={() => document.body}
+          dropdownStyle={{ zIndex: 1060 }}
         />
       </div>
 
