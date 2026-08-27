@@ -161,4 +161,9 @@ export const CARE_ENDPOINTS = {
     UPDATE: (id: IdParam) => `/api/auth/care/billing-movements/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/billing-movements/${id}`,
   },
+  SURGICAL_CHARGES: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/surgical-charges/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/surgical-charges",
+  },
 }

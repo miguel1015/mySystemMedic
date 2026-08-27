@@ -22,6 +22,9 @@ export const PARAMETERIZATION_ENDPOINTS = {
   SURGICAL_GROUPS: {
     GET_ALL: "/api/auth/parameterization/getAll?type=surgical-groups",
   },
+  SURGICAL_ACCESS_ROUTES: {
+    GET_ALL: "/api/auth/parameterization/getAll?type=surgical-access-routes",
+  },
   CONTRACTS: {
     ...makeParamCrud("contracts"),
     BY_INSURER: (insurerId: string | number) =>

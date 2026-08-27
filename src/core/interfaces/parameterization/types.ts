@@ -35,13 +35,19 @@ export interface TTariffDetail {
   tariffId: number;
   tariffName?: string;
   surgicalGroupId: number;
-  surgicalGroupReferenceCode?: string;
+  surgicalGroupQxGroup?: string;
+  paymentMethodDescription?: string;
 }
 
 export interface TSurgicalGroup {
   id: number;
   referenceCode: string;
   qxGroup: string;
+}
+
+export interface TSurgicalAccessRoute {
+  id: number;
+  name: string;
 }
 
 export interface TTariffDetailsPaged {
