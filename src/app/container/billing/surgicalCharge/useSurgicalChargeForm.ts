@@ -3,6 +3,7 @@
 import { useTariffs } from "@/core/hooks/parameterization/tariffs/useGetAllTariffs"
 import { useTariffDetails } from "@/core/hooks/parameterization/tariffDetails/useGetAllTariffDetails"
 import { useSurgicalAccessRoutes } from "@/core/hooks/parameterization/surgicalAccessRoutes/useGetAllSurgicalAccessRoutes"
+import { useSurgicalGroupConcepts } from "@/core/hooks/parameterization/surgicalGroupConcepts/useGetAllSurgicalGroupConcepts"
 import { useUserProfiles } from "@/core/hooks/users/useProfile"
 import { useGetUsersByProfile } from "@/core/hooks/users/useGetUsersByProfile"
 import { useCreateSurgicalCharge } from "@/core/hooks/care/surgicalCharges/useCreateSurgicalCharge"
@@ -37,6 +38,7 @@ export function useSurgicalChargeForm(admissionId: number) {
   const { data: tariffDetails, isLoading: loadingTariffDetails } = useTariffDetails()
   const { data: accessRoutes, isLoading: loadingAccessRoutes } = useSurgicalAccessRoutes()
   const { data: profiles, isLoading: loadingProfiles } = useUserProfiles()
+  const { data: surgicalGroupConcepts } = useSurgicalGroupConcepts()
 
   const [tariffId, setTariffId] = useState<number | null>(null)
   const [specialty, setSpecialty] = useState<string | null>(null)
@@ -87,12 +89,25 @@ export function useSurgicalChargeForm(admissionId: number) {
   }
 
   const fetchConcepts = () => {
-    if (!canFetchConcepts || !selectedService || !tariffDetails) return
+    if (!canFetchConcepts || !selectedService || !tariffId) return
 
-    const matches = tariffDetails.filter(
-      (detail) =>
-        detail.tariffId === tariffId && detail.surgicalGroupId === selectedService.surgicalGroupId,
-    )
+    const matches = (surgicalGroupConcepts ?? [])
+      .filter((concept) => concept.surgicalGroupId === selectedService.surgicalGroupId)
+      .map(
+        (concept): TTariffDetail => ({
+          id: concept.id,
+          referenceCode: concept.code,
+          description: concept.label,
+          value: concept.approxValue,
+          isSurgicalProcedure: false,
+          factors: 1,
+          tariffId,
+          tariffName: selectedTariff?.name,
+          surgicalGroupId: concept.surgicalGroupId ?? selectedService.surgicalGroupId,
+          surgicalGroupQxGroup: concept.surgicalGroupQxGroup ?? selectedService.surgicalGroupQxGroup ?? undefined,
+          paymentMethodDescription: concept.label,
+        }),
+      )
 
     setConcepts(matches)
     setSelectedConceptIds(matches.map((m) => m.id))

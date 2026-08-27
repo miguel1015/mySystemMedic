@@ -50,6 +50,19 @@ export interface TSurgicalAccessRoute {
   name: string;
 }
 
+export interface TSurgicalGroupConcept {
+  id: number;
+  surgicalGroupId: number | null;
+  surgicalGroupQxGroup?: string | null;
+  conceptType: string;
+  label: string;
+  code: number;
+  uvb: number;
+  exactValue: number;
+  approxValue: number;
+  measurementUnitValue: number;
+}
+
 export interface TTariffDetailsPaged {
   items: TTariffDetail[];
   totalCount: number;

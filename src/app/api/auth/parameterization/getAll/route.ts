@@ -12,6 +12,7 @@ const TYPE_TO_ENDPOINT: Record<string, string> = {
   "tariffdetails-paged": "/api/tariffdetails/paged",
   "surgical-groups": "/api/surgicalgroups",
   "surgical-access-routes": "/api/surgicalaccessroutes",
+  "surgical-group-concepts": "/api/surgicalgroupconcepts",
   medicines: "/api/medicines",
   "medical-devices": "/api/medical-devices",
   "contract-catalogs": "/api/contracts/catalogs",
