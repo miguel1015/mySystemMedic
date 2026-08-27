@@ -2,6 +2,7 @@
 
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
+import RHFAntdInputNumber from "@/components/inputNumber";
 import SelectAutocomplete from "@/components/select";
 import { useTariffs } from "@/core/hooks/parameterization/tariffs/useGetAllTariffs";
 import { useSurgicalGroups } from "@/core/hooks/parameterization/surgicalGroups/useGetAllSurgicalGroups";
@@ -85,12 +86,20 @@ const TariffDetailForm: React.FC<TariffDetailFormProps> = ({
           control={control}
         />
 
-        <Input
+        <RHFAntdInputNumber
           name="factors"
           label="Factor"
           placeholder="Factor"
-          type="number"
           control={control}
+          decimalSeparator=","
+          formatter={(value) =>
+            value === undefined || value === null
+              ? ""
+              : String(value).replace(".", ",")
+          }
+          parser={(displayValue) =>
+            displayValue ? Number(displayValue.replace(",", ".")) : 0
+          }
         />
 
         <SelectAutocomplete

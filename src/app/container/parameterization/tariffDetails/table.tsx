@@ -15,6 +15,12 @@ const formatCurrency = (value: number) =>
     minimumFractionDigits: 0,
   }).format(value);
 
+const formatFactor = (value: number) =>
+  new Intl.NumberFormat("es-CO", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 4,
+  }).format(value);
+
 interface TariffDetailsTableProps {
   onEdit: (record: TTariffDetail) => void;
 }
@@ -78,10 +84,11 @@ const TariffDetailsTable = ({ onEdit }: TariffDetailsTableProps) => {
       title: "Factor",
       dataIndex: "factors",
       width: 80,
+      render: (value: number) => formatFactor(value),
     },
     {
       title: "Grupo quirúrgico",
-      dataIndex: "surgicalGroupReferenceCode",
+      dataIndex: "surgicalGroupQxGroup",
       width: 120,
       render: (value?: string) => value ?? "-",
     },
