@@ -111,10 +111,24 @@ const SurgicalChargeFlow = ({ admissionId, onBack }: { admissionId: number; onBa
               block
               disabled={!form.tariffId}
               onClick={() => form.setServiceModalOpen(true)}
+              title={
+                form.selectedService
+                  ? `${form.selectedService.code} - ${form.selectedService.name}`
+                  : undefined
+              }
+              style={{ display: "flex", overflow: "hidden" }}
             >
-              {form.selectedService
-                ? `${form.selectedService.code} - ${form.selectedService.name}`
-                : "Seleccione el servicio a cargar"}
+              <span
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {form.selectedService
+                  ? `${form.selectedService.code} - ${form.selectedService.name}`
+                  : "Seleccione el servicio a cargar"}
+              </span>
             </Button>
           </div>
 
