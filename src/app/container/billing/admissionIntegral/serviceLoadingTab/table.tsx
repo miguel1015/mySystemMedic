@@ -21,12 +21,14 @@ const MOVEMENT_TYPE_LABELS: Record<BillingMovementType, string> = {
   service: "Servicio",
   medicine: "Medicamento",
   supply: "Insumo",
+  surgery: "Cirugía",
 }
 
 const MOVEMENT_TYPE_COLORS: Record<BillingMovementType, string> = {
   service: "blue",
   medicine: "green",
   supply: "purple",
+  surgery: "gold",
 }
 
 const MovementsTable = ({ movements, admissionId, loading, onEdit }: MovementsTableProps) => {

@@ -23,6 +23,7 @@ const MOVEMENT_TYPE_LABELS: Record<BillingMovementType, string> = {
   service: "Servicio",
   medicine: "Medicamento",
   supply: "Insumo",
+  surgery: "Cirugía",
 }
 
 const InvoicePreviewModal = ({

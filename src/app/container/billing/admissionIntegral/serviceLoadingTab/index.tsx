@@ -29,7 +29,9 @@ interface ServiceLoadingTabProps {
   loading: boolean
 }
 
-const PICKER_LABELS: Record<BillingMovementType, string> = {
+type PickerMovementType = Exclude<BillingMovementType, "surgery">
+
+const PICKER_LABELS: Record<PickerMovementType, string> = {
   service: "Servicios",
   medicine: "Medicamentos",
   supply: "Insumos",
@@ -45,7 +47,7 @@ const ServiceLoadingTab = ({
   const { data: medicines = [], isLoading: isLoadingMedicines } = useMedicines()
   const { data: medicalDevices = [], isLoading: isLoadingDevices } = useMedicalDevices()
 
-  const [openPicker, setOpenPicker] = useState<BillingMovementType | null>(null)
+  const [openPicker, setOpenPicker] = useState<PickerMovementType | null>(null)
   const [draft, setDraft] = useState<MovementDraft | null>(null)
 
   const servicePickerRows: PickerRow[] = useMemo(
@@ -85,13 +87,13 @@ const ServiceLoadingTab = ({
     [medicalDevices],
   )
 
-  const pickerData: Record<BillingMovementType, { rows: PickerRow[]; loading: boolean }> = {
+  const pickerData: Record<PickerMovementType, { rows: PickerRow[]; loading: boolean }> = {
     service: { rows: servicePickerRows, loading: isLoadingTariffs },
     medicine: { rows: medicinePickerRows, loading: isLoadingMedicines },
     supply: { rows: supplyPickerRows, loading: isLoadingDevices },
   }
 
-  const handlePickItem = (movementType: BillingMovementType, row: PickerRow) => {
+  const handlePickItem = (movementType: PickerMovementType, row: PickerRow) => {
     setOpenPicker(null)
     setDraft({
       movementType,
@@ -102,6 +104,7 @@ const ServiceLoadingTab = ({
       unitValue: row.value,
       contractId: admission?.convenioId ?? null,
       serviceCategory: movementType === "service" ? BILLING_SERVICE_CATEGORIES[0] : null,
+      conceptType: null,
       notes: null,
     })
   }
@@ -117,13 +120,14 @@ const ServiceLoadingTab = ({
       unitValue: movement.unitValue,
       contractId: movement.contractId,
       serviceCategory: movement.serviceCategory,
+      conceptType: movement.conceptType,
       notes: movement.notes,
     })
   }
 
   const formTitle = draft?.id
     ? "Editar movimiento"
-    : draft
+    : draft && draft.movementType !== "surgery"
       ? `Agregar ${PICKER_LABELS[draft.movementType].toLowerCase()}`
       : ""
 

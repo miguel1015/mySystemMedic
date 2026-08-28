@@ -18,6 +18,7 @@ export interface MovementDraft {
   unitValue: number
   contractId: number | null
   serviceCategory: string | null
+  conceptType: string | null
   notes: string | null
 }
 
@@ -76,16 +77,19 @@ export function useMovementForm({ admissionId, admission, draft, onDone }: UseMo
   const onSubmit = (values: MovementFormValues) => {
     if (!draft) return
 
+    const isSurgery = draft.movementType === "surgery"
+
     const payload = {
       movementType: draft.movementType,
       itemId: draft.itemId,
       itemCode: draft.itemCode,
-      name: values.name,
-      quantity: values.quantity,
+      name: isSurgery ? draft.name : values.name,
+      quantity: isSurgery ? draft.quantity : values.quantity,
       unitValue: values.unitValue,
       contractId: values.contractId,
-      serviceCategory: values.serviceCategory ?? null,
-      notes: values.notes ?? null,
+      serviceCategory: isSurgery ? draft.serviceCategory : (values.serviceCategory ?? null),
+      conceptType: draft.conceptType,
+      notes: isSurgery ? draft.notes : (values.notes ?? null),
     }
 
     if (draft.id) {

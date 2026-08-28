@@ -24,6 +24,7 @@ const MOVEMENT_TYPE_LABELS: Record<BillingMovementType, string> = {
   service: "Servicios",
   medicine: "Medicamentos",
   supply: "Insumos",
+  surgery: "Cirugía",
 }
 
 const sectionCardStyle: React.CSSProperties = {
@@ -42,13 +43,13 @@ const InvoicingTab = ({ admission, movements, ripsValidation }: InvoicingTabProp
   const [previewOpen, setPreviewOpen] = useState(false)
 
   const totals = useMemo(() => {
-    const byType: Record<BillingMovementType, number> = { service: 0, medicine: 0, supply: 0 }
+    const byType: Record<BillingMovementType, number> = { service: 0, medicine: 0, supply: 0, surgery: 0 }
 
     movements.forEach((movement) => {
       byType[movement.movementType] += movement.totalValue ?? movement.quantity * movement.unitValue
     })
 
-    const subtotalGeneral = byType.service + byType.medicine + byType.supply
+    const subtotalGeneral = byType.service + byType.medicine + byType.supply + byType.surgery
 
     return { byType, subtotalGeneral, total: subtotalGeneral }
   }, [movements])

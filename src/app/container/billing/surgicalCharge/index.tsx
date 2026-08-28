@@ -43,7 +43,7 @@ const SurgicalChargeFlow = ({ admissionId, onBack }: { admissionId: number; onBa
   const { data: admission, isLoading: isLoadingAdmission } = useGetAdmissionById(admissionId)
   const { data: patient, isLoading: isLoadingPatient } = useGetPatientById(admission?.patientId ?? null)
 
-  const form = useSurgicalChargeForm(admissionId)
+  const form = useSurgicalChargeForm(admissionId, admission)
 
   const tariffOptions = form.tariffs.map((t) => ({ value: t.id!, label: t.name }))
   const accessRouteOptions = form.accessRoutes.map((r) => ({ value: r.id, label: r.name }))
@@ -226,7 +226,7 @@ const SurgicalChargeFlow = ({ admissionId, onBack }: { admissionId: number; onBa
         service={form.selectedService}
         concepts={form.preliquidatedConcepts}
         isSaving={form.isSaving}
-        onAccept={() => form.acceptPreliquidation(onBack)}
+        onAccept={() => form.acceptPreliquidation()}
       />
     </Container>
   )

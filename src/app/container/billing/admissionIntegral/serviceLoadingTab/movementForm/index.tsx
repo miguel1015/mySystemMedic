@@ -46,12 +46,34 @@ const MovementForm = ({
 
   if (!draft) return null
 
+  const isSurgery = draft.movementType === "surgery"
+
   return (
     <div>
       <h5 style={{ marginBottom: 16, fontWeight: 700 }}>{title}</h5>
 
+      {isSurgery && (
+        <div
+          style={{
+            padding: "10px 14px",
+            borderRadius: 8,
+            background: "rgba(15, 111, 92, 0.06)",
+            marginBottom: 16,
+            fontSize: 13,
+            color: "var(--dash-text-secondary, #6b7280)",
+          }}
+        >
+          Este concepto proviene de la liquidación de cirugía. Solo puede editarse el valor unitario.
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)}>
-        <RHFAntdInput name="name" control={control} label="Nombre del servicio / elemento" />
+        <RHFAntdInput
+          name="name"
+          control={control}
+          label="Nombre del servicio / elemento"
+          disabled={isSurgery}
+        />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <RHFAntdInputNumber
@@ -60,6 +82,7 @@ const MovementForm = ({
             min={1}
             precision={0}
             label="Cantidad"
+            disabled={isSurgery}
           />
           <RHFAntdInputNumber
             name="unitValue"

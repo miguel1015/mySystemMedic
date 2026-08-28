@@ -6,12 +6,11 @@ import { useSurgicalAccessRoutes } from "@/core/hooks/parameterization/surgicalA
 import { useSurgicalGroupConcepts } from "@/core/hooks/parameterization/surgicalGroupConcepts/useGetAllSurgicalGroupConcepts"
 import { useUserProfiles } from "@/core/hooks/users/useProfile"
 import { useGetUsersByProfile } from "@/core/hooks/users/useGetUsersByProfile"
-import { useCreateSurgicalCharge } from "@/core/hooks/care/surgicalCharges/useCreateSurgicalCharge"
+import { useCreateBillingMovement } from "@/core/hooks/care/billing/useCreateBillingMovement"
 import { TTariffDetail } from "@/core/interfaces/parameterization/types"
-import {
-  SurgicalChargeConceptInput,
-  SurgicalWayType,
-} from "@/core/interfaces/care/surgicalCharge"
+import { SURGICAL_CONCEPT_TYPES } from "@/core/interfaces/care/billing"
+import { AdmissionResponse } from "@/core/interfaces/care/types"
+import { SurgicalWayType } from "@/core/interfaces/care/surgicalCharge"
 import { useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import { roundToNearestHundred } from "./utils"
@@ -25,6 +24,7 @@ export interface SelectedSurgicalService {
 }
 
 export interface PreliquidatedConcept extends TTariffDetail {
+  conceptType: string
   rawValue: number
   roundedValue: number
   percentageApplied: number
@@ -33,12 +33,27 @@ export interface PreliquidatedConcept extends TTariffDetail {
 
 const PERCENTAGE_APPLIED_DEFAULT = 100
 
-export function useSurgicalChargeForm(admissionId: number) {
+const ALLOWED_SURGICAL_SPECIALTIES = ["ortopedista", "cirujano general"]
+
+const normalize = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+
+export function useSurgicalChargeForm(admissionId: number, admission: AdmissionResponse | undefined) {
   const { data: tariffs, isLoading: loadingTariffs } = useTariffs()
   const { data: tariffDetails, isLoading: loadingTariffDetails } = useTariffDetails()
   const { data: accessRoutes, isLoading: loadingAccessRoutes } = useSurgicalAccessRoutes()
-  const { data: profiles, isLoading: loadingProfiles } = useUserProfiles()
+  const { data: allProfiles, isLoading: loadingProfiles } = useUserProfiles()
   const { data: surgicalGroupConcepts } = useSurgicalGroupConcepts()
+
+  const profiles = useMemo(
+    () =>
+      (allProfiles ?? []).filter((p) => ALLOWED_SURGICAL_SPECIALTIES.includes(normalize(p.name))),
+    [allProfiles],
+  )
 
   const [tariffId, setTariffId] = useState<number | null>(null)
   const [specialty, setSpecialty] = useState<string | null>(null)
@@ -50,9 +65,9 @@ export function useSurgicalChargeForm(admissionId: number) {
   const [serviceModalOpen, setServiceModalOpen] = useState(false)
   const [preliquidationOpen, setPreliquidationOpen] = useState(false)
 
-  const [concepts, setConcepts] = useState<TTariffDetail[]>([])
+  const [concepts, setConcepts] = useState<(TTariffDetail & { conceptType: string })[]>([])
   const [selectedConceptIds, setSelectedConceptIds] = useState<number[]>([])
-  const [annexedConcepts, setAnnexedConcepts] = useState<TTariffDetail[]>([])
+  const [annexedConcepts, setAnnexedConcepts] = useState<(TTariffDetail & { conceptType: string })[]>([])
 
   const { data: doctors, isLoading: loadingDoctors } = useGetUsersByProfile(specialty ?? "")
 
@@ -75,6 +90,15 @@ export function useSurgicalChargeForm(admissionId: number) {
     setAnnexedConcepts([])
   }
 
+  const resetForm = () => {
+    setTariffId(null)
+    setSpecialty(null)
+    setSurgicalWayType(null)
+    setAccessRouteId(null)
+    setDoctorId(null)
+    resetService()
+  }
+
   const handleSelectTariff = (id: number | null) => {
     setTariffId(id)
     resetService()
@@ -91,23 +115,33 @@ export function useSurgicalChargeForm(admissionId: number) {
   const fetchConcepts = () => {
     if (!canFetchConcepts || !selectedService || !tariffId) return
 
-    const matches = (surgicalGroupConcepts ?? [])
-      .filter((concept) => concept.surgicalGroupId === selectedService.surgicalGroupId)
-      .map(
-        (concept): TTariffDetail => ({
-          id: concept.id,
-          referenceCode: concept.code,
-          description: concept.label,
-          value: concept.approxValue,
-          isSurgicalProcedure: false,
-          factors: 1,
-          tariffId,
-          tariffName: selectedTariff?.name,
-          surgicalGroupId: concept.surgicalGroupId ?? selectedService.surgicalGroupId,
-          surgicalGroupQxGroup: concept.surgicalGroupQxGroup ?? selectedService.surgicalGroupQxGroup ?? undefined,
-          paymentMethodDescription: concept.label,
-        }),
+    const qxGroup = selectedService.surgicalGroupQxGroup
+
+    const matches: (TTariffDetail & { conceptType: string })[] = []
+
+    for (const { value: conceptType, label } of SURGICAL_CONCEPT_TYPES) {
+      const concept = (surgicalGroupConcepts ?? []).find(
+        (c) => c.surgicalGroupId === selectedService.surgicalGroupId && c.conceptType === conceptType,
       )
+      if (!concept) continue
+
+      const displayName = qxGroup ? `${label} - ${qxGroup}` : label
+
+      matches.push({
+        id: concept.id,
+        referenceCode: concept.code,
+        description: displayName,
+        value: concept.approxValue,
+        isSurgicalProcedure: false,
+        factors: 1,
+        tariffId,
+        tariffName: selectedTariff?.name,
+        surgicalGroupId: concept.surgicalGroupId ?? selectedService.surgicalGroupId,
+        surgicalGroupQxGroup: concept.surgicalGroupQxGroup ?? qxGroup ?? undefined,
+        paymentMethodDescription: displayName,
+        conceptType,
+      })
+    }
 
     setConcepts(matches)
     setSelectedConceptIds(matches.map((m) => m.id))
@@ -137,57 +171,60 @@ export function useSurgicalChargeForm(admissionId: number) {
     [annexedConcepts],
   )
 
-  const createSurgicalCharge = useCreateSurgicalCharge()
+  const createMovement = useCreateBillingMovement()
+  const [isSaving, setIsSaving] = useState(false)
 
-  const acceptPreliquidation = (onDone: () => void) => {
+  const acceptPreliquidation = async () => {
     if (!selectedService || !tariffId || !specialty || !surgicalWayType || !accessRouteId || !doctorId) {
       toast.error("Falta información obligatoria para cargar la cirugía.")
+      return
+    }
+
+    if (!admission?.convenioId) {
+      toast.error("La admisión no tiene un convenio asociado para cargar la cirugía.")
       return
     }
 
     const doctor = doctors?.find((d) => d.id === doctorId)
     const accessRoute = accessRoutes?.find((a) => a.id === accessRouteId)
 
-    const conceptsPayload: SurgicalChargeConceptInput[] = preliquidatedConcepts.map((c) => ({
-      tariffDetailId: c.id,
-      referenceCode: c.referenceCode,
-      description: c.description,
-      paymentMethodDescription: c.paymentMethodDescription ?? null,
-      baseValue: c.value,
-      unit: c.factors,
-      rawValue: c.rawValue,
-      roundedValue: c.roundedValue,
-      percentageApplied: c.percentageApplied,
-    }))
+    const notes = [
+      `Cirugía: ${selectedService.code} - ${selectedService.name}`,
+      `Vía: ${surgicalWayType}`,
+      `Acceso: ${accessRoute?.name ?? ""}`,
+      `Especialidad: ${specialty}`,
+      `Médico: ${doctor?.fullName ?? ""}`,
+    ].join(" | ")
 
-    createSurgicalCharge.mutate(
-      {
-        admissionId,
-        tariffId,
-        tariffName: selectedTariff?.name ?? null,
-        surgicalGroupId: selectedService.surgicalGroupId,
-        surgicalGroupQxGroup: selectedService.surgicalGroupQxGroup,
-        serviceCode: selectedService.code,
-        serviceName: selectedService.name,
-        specialty,
-        doctorId,
-        doctorName: doctor?.fullName ?? "",
-        surgicalWayType,
-        accessRouteId,
-        accessRouteName: accessRoute?.name ?? "",
-        concepts: conceptsPayload,
-      },
-      {
-        onSuccess: () => {
-          toast.success("Cirugía cargada correctamente al paciente.")
-          setPreliquidationOpen(false)
-          onDone()
-        },
-        onError: (err: Error) => {
-          toast.error(err.message || "No se pudo cargar la cirugía.")
-        },
-      },
-    )
+    setIsSaving(true)
+    try {
+      await Promise.all(
+        preliquidatedConcepts.map((concept) =>
+          createMovement.mutateAsync({
+            admissionId,
+            movementType: "surgery",
+            itemId: concept.id,
+            itemCode: String(concept.referenceCode),
+            name: concept.description,
+            quantity: 1,
+            unitValue: concept.percentageValue,
+            contractId: admission.convenioId,
+            serviceCategory: null,
+            conceptType: concept.conceptType,
+            notes,
+          }),
+        ),
+      )
+
+      toast.success("Cirugía cargada correctamente al paciente.")
+      setPreliquidationOpen(false)
+      resetForm()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "No se pudo cargar la cirugía."
+      toast.error(message)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return {
@@ -233,7 +270,7 @@ export function useSurgicalChargeForm(admissionId: number) {
     canPreliquidate,
     fetchConcepts,
 
-    isSaving: createSurgicalCharge.isPending,
+    isSaving,
     acceptPreliquidation,
   }
 }

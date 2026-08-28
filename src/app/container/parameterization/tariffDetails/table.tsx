@@ -60,6 +60,10 @@ const TariffDetailsTable = ({ onEdit }: TariffDetailsTableProps) => {
       title: "Descripción",
       dataIndex: "description",
       width: 350,
+      render: (value: string, record) =>
+        record.isSurgicalProcedure && record.surgicalGroupQxGroup
+          ? `${value} - ${record.surgicalGroupQxGroup}`
+          : value,
     },
     {
       title: "Valor",

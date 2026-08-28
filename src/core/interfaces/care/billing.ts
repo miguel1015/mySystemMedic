@@ -1,4 +1,4 @@
-export type BillingMovementType = "service" | "medicine" | "supply"
+export type BillingMovementType = "service" | "medicine" | "supply" | "surgery"
 
 export const BILLING_SERVICE_CATEGORIES = [
   "Consulta",
@@ -10,6 +10,16 @@ export const BILLING_SERVICE_CATEGORIES = [
 ] as const
 
 export type BillingServiceCategory = (typeof BILLING_SERVICE_CATEGORIES)[number]
+
+export const SURGICAL_CONCEPT_TYPES = [
+  { value: "HONORARIO_CIRUJANO", label: "Honorario cirujano" },
+  { value: "HONORARIO_ANESTESIOLOGO", label: "Honorario anestesiólogo" },
+  { value: "HONORARIO_AYUDANTIA", label: "Honorario ayudantía" },
+  { value: "DERECHO_SALA", label: "Derechos de sala" },
+  { value: "MATERIALES", label: "Materiales de cirugía" },
+] as const
+
+export type SurgicalConceptType = (typeof SURGICAL_CONCEPT_TYPES)[number]["value"]
 
 export interface BillingMovementResponse {
   id: number
@@ -24,6 +34,7 @@ export interface BillingMovementResponse {
   contractId: number | null
   contractName: string | null
   serviceCategory: string | null
+  conceptType: string | null
   notes: string | null
   isActive: boolean
   createdAt: string
@@ -40,6 +51,7 @@ export interface BillingMovementCreateRequest {
   unitValue: number
   contractId: number | null
   serviceCategory: string | null
+  conceptType: string | null
   notes: string | null
 }
 
