@@ -19,6 +19,7 @@ export interface MovementDraft {
   contractId: number | null
   serviceCategory: string | null
   conceptType: string | null
+  conceptDetails: string | null
   notes: string | null
 }
 
@@ -89,6 +90,7 @@ export function useMovementForm({ admissionId, admission, draft, onDone }: UseMo
       contractId: values.contractId,
       serviceCategory: isSurgery ? draft.serviceCategory : (values.serviceCategory ?? null),
       conceptType: draft.conceptType,
+      conceptDetails: draft.conceptDetails,
       notes: isSurgery ? draft.notes : (values.notes ?? null),
     }
 

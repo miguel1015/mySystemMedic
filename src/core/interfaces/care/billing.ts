@@ -21,6 +21,29 @@ export const SURGICAL_CONCEPT_TYPES = [
 
 export type SurgicalConceptType = (typeof SURGICAL_CONCEPT_TYPES)[number]["value"]
 
+export interface SurgicalConceptDetail {
+  itemId: number
+  conceptType: string
+  code: number
+  label: string
+  qxGroup: string | null
+  unitValue: number
+}
+
+export function parseConceptDetails(json: string | null | undefined): SurgicalConceptDetail[] {
+  if (!json) return []
+  try {
+    const parsed = JSON.parse(json)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+export function serializeConceptDetails(details: SurgicalConceptDetail[]): string {
+  return JSON.stringify(details)
+}
+
 export interface BillingMovementResponse {
   id: number
   admissionId: number
@@ -35,6 +58,7 @@ export interface BillingMovementResponse {
   contractName: string | null
   serviceCategory: string | null
   conceptType: string | null
+  conceptDetails: string | null
   notes: string | null
   isActive: boolean
   createdAt: string
@@ -52,6 +76,7 @@ export interface BillingMovementCreateRequest {
   contractId: number | null
   serviceCategory: string | null
   conceptType: string | null
+  conceptDetails: string | null
   notes: string | null
 }
 

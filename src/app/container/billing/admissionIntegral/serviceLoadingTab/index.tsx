@@ -20,6 +20,7 @@ import { useMemo, useState } from "react"
 import ItemPickerModal, { PickerRow } from "./itemPickerModal"
 import MovementForm from "./movementForm"
 import { MovementDraft } from "./movementForm/useMovementForm"
+import SurgicalMovementEditModal from "./surgicalMovementEditModal"
 import MovementsTable from "./table"
 
 interface ServiceLoadingTabProps {
@@ -49,6 +50,9 @@ const ServiceLoadingTab = ({
 
   const [openPicker, setOpenPicker] = useState<PickerMovementType | null>(null)
   const [draft, setDraft] = useState<MovementDraft | null>(null)
+  const [surgeryEditMovement, setSurgeryEditMovement] = useState<BillingMovementResponse | null>(
+    null,
+  )
 
   const servicePickerRows: PickerRow[] = useMemo(
     () =>
@@ -105,11 +109,17 @@ const ServiceLoadingTab = ({
       contractId: admission?.convenioId ?? null,
       serviceCategory: movementType === "service" ? BILLING_SERVICE_CATEGORIES[0] : null,
       conceptType: null,
+      conceptDetails: null,
       notes: null,
     })
   }
 
   const handleEdit = (movement: BillingMovementResponse) => {
+    if (movement.movementType === "surgery" && movement.conceptDetails) {
+      setSurgeryEditMovement(movement)
+      return
+    }
+
     setDraft({
       id: movement.id,
       movementType: movement.movementType,
@@ -121,6 +131,7 @@ const ServiceLoadingTab = ({
       contractId: movement.contractId,
       serviceCategory: movement.serviceCategory,
       conceptType: movement.conceptType,
+      conceptDetails: movement.conceptDetails,
       notes: movement.notes,
     })
   }
@@ -188,6 +199,14 @@ const ServiceLoadingTab = ({
           onSaved={() => setDraft(null)}
         />
       </Modal>
+
+      <SurgicalMovementEditModal
+        open={!!surgeryEditMovement}
+        admissionId={admissionId}
+        movement={surgeryEditMovement}
+        onClose={() => setSurgeryEditMovement(null)}
+        onSaved={() => setSurgeryEditMovement(null)}
+      />
     </div>
   )
 }

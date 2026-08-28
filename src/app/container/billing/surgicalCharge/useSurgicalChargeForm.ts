@@ -8,7 +8,11 @@ import { useUserProfiles } from "@/core/hooks/users/useProfile"
 import { useGetUsersByProfile } from "@/core/hooks/users/useGetUsersByProfile"
 import { useCreateBillingMovement } from "@/core/hooks/care/billing/useCreateBillingMovement"
 import { TTariffDetail } from "@/core/interfaces/parameterization/types"
-import { SURGICAL_CONCEPT_TYPES } from "@/core/interfaces/care/billing"
+import {
+  SURGICAL_CONCEPT_TYPES,
+  SurgicalConceptDetail,
+  serializeConceptDetails,
+} from "@/core/interfaces/care/billing"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import { SurgicalWayType } from "@/core/interfaces/care/surgicalCharge"
 import { useMemo, useState } from "react"
@@ -196,25 +200,33 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
       `Médico: ${doctor?.fullName ?? ""}`,
     ].join(" | ")
 
+    const conceptDetails: SurgicalConceptDetail[] = preliquidatedConcepts.map((concept) => ({
+      itemId: concept.id,
+      conceptType: concept.conceptType,
+      code: concept.referenceCode,
+      label: concept.description,
+      qxGroup: concept.surgicalGroupQxGroup ?? null,
+      unitValue: concept.percentageValue,
+    }))
+
+    const totalValue = conceptDetails.reduce((sum, c) => sum + c.unitValue, 0)
+
     setIsSaving(true)
     try {
-      await Promise.all(
-        preliquidatedConcepts.map((concept) =>
-          createMovement.mutateAsync({
-            admissionId,
-            movementType: "surgery",
-            itemId: concept.id,
-            itemCode: String(concept.referenceCode),
-            name: concept.description,
-            quantity: 1,
-            unitValue: concept.percentageValue,
-            contractId: admission.convenioId,
-            serviceCategory: null,
-            conceptType: concept.conceptType,
-            notes,
-          }),
-        ),
-      )
+      await createMovement.mutateAsync({
+        admissionId,
+        movementType: "surgery",
+        itemId: selectedService.tariffDetailId,
+        itemCode: String(selectedService.code),
+        name: selectedService.name,
+        quantity: 1,
+        unitValue: totalValue,
+        contractId: admission.convenioId,
+        serviceCategory: null,
+        conceptType: null,
+        conceptDetails: serializeConceptDetails(conceptDetails),
+        notes,
+      })
 
       toast.success("Cirugía cargada correctamente al paciente.")
       setPreliquidationOpen(false)
