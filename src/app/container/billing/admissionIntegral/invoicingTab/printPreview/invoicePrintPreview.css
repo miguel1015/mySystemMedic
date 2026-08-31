@@ -1,0 +1,320 @@
+/* ════════════════════════════
+   FACTURA — PRINTABLE DOCUMENT
+════════════════════════════ */
+.invoice-print-page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 14mm;
+  background: #fff;
+  color: #000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10.5px;
+  line-height: 1.4;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  /* Clips .invoice-print-header-rule's bleed exactly at the sheet's own
+     edges, instead of letting it overflow into the scroll container and
+     throw off its centering. */
+  overflow-x: hidden;
+}
+
+.invoice-print-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Every physical printed page repeats the whole <thead> — entity header,
+   patient/billing info and the column titles — same idea as a paper
+   invoice continuing onto a second sheet. */
+.invoice-print-table thead {
+  display: table-header-group;
+}
+
+.invoice-print-table tfoot {
+  display: table-footer-group;
+}
+
+.invoice-print-header-cell {
+  padding: 0 0 10px;
+}
+
+.invoice-print-header {
+  position: relative;
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.invoice-print-logo {
+  --logo-scale: 0.6;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: calc(348px * var(--logo-scale));
+  height: calc(80px * var(--logo-scale));
+  overflow: hidden;
+}
+
+.invoice-print-logo img {
+  position: absolute;
+  left: calc(-72px * var(--logo-scale));
+  top: calc(-206px * var(--logo-scale));
+  width: calc(491px * var(--logo-scale));
+  height: calc(491px * var(--logo-scale));
+  max-width: none;
+  max-height: none;
+}
+
+.invoice-print-entity {
+  width: 100%;
+  text-align: center;
+}
+
+.invoice-print-entity-name {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.invoice-print-entity-line {
+  font-size: 9.5px;
+}
+
+.invoice-print-badge {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.invoice-print-badge-title {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.invoice-print-badge-number {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.invoice-print-info-grid {
+  display: grid;
+  /* Shrink each column to fit its own longest row instead of forcing a
+     rigid 50/50 split — that split is what left a big empty gap on
+     whichever side happens to have shorter values (e.g. "SOAT", a date).
+     minmax(0, ...) plus the value's own max-width below keep a single
+     unusually long value from stretching the grid past the sheet. */
+  grid-template-columns: minmax(0, max-content) minmax(0, max-content);
+  justify-content: space-between;
+  gap: 2px 24px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 9.5px;
+}
+
+.invoice-print-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.invoice-print-label {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.invoice-print-value {
+  overflow-wrap: anywhere;
+  max-width: 70mm;
+}
+
+/* Printing already has no side padding on .invoice-print-page (the @page
+   margin handles it instead), so this border-top already reaches the true
+   edges of the sheet there. On screen, .invoice-print-header-rule below
+   takes over instead, since the page simulates paper with 14mm of side
+   padding that this border can't bleed past. */
+.invoice-print-columns th {
+  border-top: 2px solid #000;
+  border-bottom: 1px dashed #666;
+  padding: 5px 6px;
+  font-size: 9.5px;
+  text-align: left;
+  background: #fff;
+}
+
+@media screen {
+  .invoice-print-columns th {
+    border-top: none;
+  }
+}
+
+/* A plain block (not a table cell) placed right after the patient info
+   grid — negative margins bleed it past the page's 14mm side padding to
+   reach the true sheet edges, right where the column-header row begins.
+   Table cells ignore margin, which is why this can't just live on the
+   <tr>/<th> the way the rest of that row's borders do. */
+.invoice-print-header-rule {
+  margin: 0 -14mm;
+  border-top: 2px solid #000;
+}
+
+@media print {
+  .invoice-print-header-rule {
+    display: none;
+  }
+}
+
+.invoice-print-columns th.invoice-print-col-number,
+.invoice-print-columns th.invoice-print-col-qty {
+  text-align: center;
+}
+
+.invoice-print-columns th.invoice-print-col-unit,
+.invoice-print-columns th.invoice-print-col-total {
+  text-align: right;
+}
+
+.invoice-print-table td {
+  padding: 3px 6px;
+  font-size: 9.5px;
+  vertical-align: top;
+}
+
+.invoice-print-col-number {
+  width: 26px;
+  text-align: center;
+}
+
+.invoice-print-col-code {
+  width: 60px;
+}
+
+.invoice-print-col-qty {
+  width: 44px;
+  text-align: center;
+}
+
+.invoice-print-col-unit,
+.invoice-print-col-total {
+  width: 90px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.invoice-print-group-title td {
+  padding-top: 8px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.invoice-print-subitem {
+  padding-left: 14px;
+}
+
+.invoice-print-subtotal-row td {
+  border-top: 1px solid #000;
+  border-bottom: 1px dashed #666;
+  font-weight: bold;
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
+
+.invoice-print-empty-note {
+  padding: 16px 6px;
+  color: #555;
+  font-style: italic;
+}
+
+.invoice-print-footer-cell {
+  padding-top: 10px;
+}
+
+.invoice-print-totals {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.invoice-print-totals-box {
+  min-width: 260px;
+  border: 1px solid #000;
+}
+
+.invoice-print-totals-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 10px;
+  font-size: 10px;
+}
+
+.invoice-print-totals-row + .invoice-print-totals-row {
+  border-top: 1px solid #ccc;
+}
+
+.invoice-print-totals-row--grand {
+  font-weight: bold;
+  font-size: 12px;
+  border-top: 1px solid #000 !important;
+}
+
+.invoice-print-words {
+  margin-top: 10px;
+  font-size: 9.5px;
+  border-top: 1px solid #000;
+  padding-top: 6px;
+}
+
+/* ── Screen wrapper (inside modal) ── */
+.invoice-print-screen-wrap {
+  background: var(--dash-bg, #eef1f0);
+  padding: 20px 0;
+  max-height: 72vh;
+  overflow-y: auto;
+}
+
+/*
+ * The print copy lives in a portal appended directly to <body> (see
+ * InvoicePrintPreviewModal), completely outside the modal's spot in the
+ * page tree — same reasoning as the HCI print preview: printing the
+ * in-modal copy directly used to leave a blank leading page because
+ * `visibility:hidden` on ancestors doesn't collapse their layout height.
+ */
+.invoice-print-portal {
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  visibility: hidden;
+}
+
+/* ── Print scoping ── */
+@media print {
+  body > *:not(.invoice-print-portal) {
+    display: none !important;
+  }
+  .invoice-print-portal {
+    position: static;
+    left: auto;
+    visibility: visible;
+    display: block !important;
+  }
+  .invoice-print-page {
+    box-shadow: none;
+    margin: 0;
+    width: auto;
+    min-height: 0;
+    padding: 0 !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+}

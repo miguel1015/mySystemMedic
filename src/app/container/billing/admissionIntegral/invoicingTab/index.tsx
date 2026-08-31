@@ -12,7 +12,7 @@ import type { Dayjs } from "dayjs"
 import { useMemo, useState } from "react"
 import { RipsValidationResult } from "../ripsTab"
 import { formatCurrency } from "../utils"
-import InvoicePreviewModal from "./invoicePreviewModal"
+import InvoicePrintPreviewModal from "./printPreview/InvoicePrintPreviewModal"
 
 interface InvoicingTabProps {
   admission: AdmissionResponse | undefined
@@ -165,16 +165,12 @@ const InvoicingTab = ({ admission, movements, ripsValidation }: InvoicingTabProp
         </p>
       )}
 
-      <InvoicePreviewModal
+      <InvoicePrintPreviewModal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
         admission={admission}
         movements={movements}
-        serviceStartDate={serviceStartDate ? serviceStartDate.toISOString() : null}
-        serviceEndDate={serviceEndDate ? serviceEndDate.toISOString() : null}
         invoicePrefix={invoicePrefix}
-        subtotalGeneral={totals.subtotalGeneral}
-        total={totals.total}
       />
     </div>
   )

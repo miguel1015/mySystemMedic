@@ -6,6 +6,7 @@ export const BILLING_SERVICE_CATEGORIES = [
   "Imagen diagnóstica / RX",
   "Laboratorio",
   "Procedimiento quirúrgico",
+  "Estancia",
   "Otro",
 ] as const
 
