@@ -29,6 +29,7 @@ export interface SelectedSurgicalService {
 
 export interface PreliquidatedConcept extends TTariffDetail {
   conceptType: string
+  rawLabel: string
   rawValue: number
   roundedValue: number
   percentageApplied: number
@@ -69,9 +70,9 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
   const [serviceModalOpen, setServiceModalOpen] = useState(false)
   const [preliquidationOpen, setPreliquidationOpen] = useState(false)
 
-  const [concepts, setConcepts] = useState<(TTariffDetail & { conceptType: string })[]>([])
+  const [concepts, setConcepts] = useState<(TTariffDetail & { conceptType: string; rawLabel: string })[]>([])
   const [selectedConceptIds, setSelectedConceptIds] = useState<number[]>([])
-  const [annexedConcepts, setAnnexedConcepts] = useState<(TTariffDetail & { conceptType: string })[]>([])
+  const [annexedConcepts, setAnnexedConcepts] = useState<(TTariffDetail & { conceptType: string; rawLabel: string })[]>([])
 
   const { data: doctors, isLoading: loadingDoctors } = useGetUsersByProfile(specialty ?? "")
 
@@ -121,7 +122,7 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
 
     const qxGroup = selectedService.surgicalGroupQxGroup
 
-    const matches: (TTariffDetail & { conceptType: string })[] = []
+    const matches: (TTariffDetail & { conceptType: string; rawLabel: string })[] = []
 
     for (const { value: conceptType, label } of SURGICAL_CONCEPT_TYPES) {
       const concept = (surgicalGroupConcepts ?? []).find(
@@ -144,6 +145,7 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
         surgicalGroupQxGroup: concept.surgicalGroupQxGroup ?? qxGroup ?? undefined,
         paymentMethodDescription: displayName,
         conceptType,
+        rawLabel: label,
       })
     }
 
@@ -204,7 +206,7 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
       itemId: concept.id,
       conceptType: concept.conceptType,
       code: concept.referenceCode,
-      label: concept.description,
+      label: concept.rawLabel,
       qxGroup: concept.surgicalGroupQxGroup ?? null,
       unitValue: concept.percentageValue,
     }))
