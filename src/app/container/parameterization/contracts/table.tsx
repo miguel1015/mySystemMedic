@@ -42,29 +42,29 @@ const ContractsTable = ({ onEdit }: ContractsTableProps) => {
   const columns: ColumnsType<TContract> = [
     {
       title: "#",
-      width: 60,
+      width: "5%",
       render: (_value, _record, index) => index + 1,
     },
     {
       title: "Nombre del contrato",
       dataIndex: "contractName",
-      width: 250,
+      width: "25%",
     },
     {
       title: "Fecha de inicio",
       dataIndex: "startDate",
-      width: 150,
+      width: "15%",
     },
     {
       title: "Fecha final",
       dataIndex: "endDate",
-      width: 150,
+      width: "15%",
       render: (value: string | null) => value ?? "—",
     },
     {
       title: "Estado",
       dataIndex: "contractStatusDescription",
-      width: 130,
+      width: "15%",
       render: (value: string) => (
         <Tag color={STATUS_COLORS[value?.toLowerCase()] ?? "default"}>
           {value ? value.charAt(0).toUpperCase() + value.slice(1) : "—"}
@@ -73,6 +73,7 @@ const ContractsTable = ({ onEdit }: ContractsTableProps) => {
     },
     {
       title: "Acciones",
+      width: "25%",
       render: (_, record) => (
         <Space>
           <CustomButton
@@ -115,7 +116,7 @@ const ContractsTable = ({ onEdit }: ContractsTableProps) => {
         rowKey="id"
         pagination={{ pageSize: 10 }}
         loading={{ spinning: isLoading, tip: "Cargando contratos..." }}
-        scroll={{ x: "max-content" }}
+        tableLayout="fixed"
       />
 
       <ModalConfirm
