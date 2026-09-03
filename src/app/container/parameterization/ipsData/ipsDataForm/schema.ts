@@ -2,9 +2,12 @@ import { z } from "zod"
 
 export const providerSchema = z.object({
   name: z.string().min(1, "Nombre es obligatorio"),
-  identificationType: z
-    .string()
-    .min(1, "Tipo de identificación es obligatorio"),
+  identificationTypeId: z
+    .number({
+      required_error: "Tipo de identificación es obligatorio",
+      invalid_type_error: "Tipo de identificación es obligatorio",
+    })
+    .positive("Tipo de identificación es obligatorio"),
   nit: z.string().min(1, "NIT es obligatorio"),
   verificationDigit: z
     .string()
@@ -38,7 +41,7 @@ export type TProviderForm = z.infer<typeof providerSchema>
 
 export const providerDefaultValues: Partial<TProviderForm> = {
   name: "",
-  identificationType: "",
+  identificationTypeId: undefined,
   nit: "",
   verificationDigit: "",
   address: "",

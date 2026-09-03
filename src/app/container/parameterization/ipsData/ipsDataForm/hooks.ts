@@ -46,7 +46,7 @@ export function useProviderForm() {
     if (provider) {
       reset({
         name: provider.name ?? "",
-        identificationType: provider.identificationType ?? "",
+        identificationTypeId: provider.identificationTypeId,
         nit: provider.nit ?? "",
         verificationDigit: provider.verificationDigit ?? "",
         address: provider.address ?? "",
@@ -95,10 +95,13 @@ export function useProviderForm() {
     );
   };
 
+  const submitForm = handleSubmit(onSubmit, () => {
+    toast.error("Revise los campos obligatorios del formulario");
+  });
+
   return {
     control,
-    handleSubmit,
-    onSubmit,
+    submitForm,
     setValue,
     watchedValues,
     cityOptions,

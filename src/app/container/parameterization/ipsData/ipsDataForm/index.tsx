@@ -11,8 +11,7 @@ import { useProviderForm } from "./hooks";
 export default function IpsDataForm() {
   const {
     control,
-    handleSubmit,
-    onSubmit,
+    submitForm,
     setValue,
     watchedValues,
     cityOptions,
@@ -31,7 +30,7 @@ export default function IpsDataForm() {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={submitForm}>
         <div className="d-flex justify-content-center mb-4">
           <Button type="primary" htmlType="submit" loading={isUpdating}>
             Actualizar datos
@@ -191,7 +190,7 @@ export default function IpsDataForm() {
                 control={control}
               />
               <Select
-                name="documentType"
+                name="identificationTypeId"
                 label="Tipo de documento"
                 placeholder="Tipo de documento"
                 control={control}

@@ -204,7 +204,7 @@ export interface TContractDetail extends ContractDetail {
 export interface TProvider {
   id: number;
   name: string;
-  identificationType: string;
+  identificationTypeId: number;
   nit: string;
   verificationDigit: string;
   address: string;
