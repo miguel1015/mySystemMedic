@@ -17,6 +17,7 @@ import { AdmissionResponse } from "@/core/interfaces/care/types"
 import { SurgicalWayType } from "@/core/interfaces/care/surgicalCharge"
 import { useMemo, useState } from "react"
 import toast from "react-hot-toast"
+import { getSurgicalWayLiquidationPercentage } from "./constants"
 import { roundToNearestHundred } from "./utils"
 
 export interface SelectedSurgicalService {
@@ -35,8 +36,6 @@ export interface PreliquidatedConcept extends TTariffDetail {
   percentageApplied: number
   percentageValue: number
 }
-
-const PERCENTAGE_APPLIED_DEFAULT = 100
 
 const ALLOWED_SURGICAL_SPECIALTIES = ["ortopedista", "cirujano general"]
 
@@ -170,11 +169,11 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
       annexedConcepts.map((concept) => {
         const rawValue = concept.value * concept.factors
         const roundedValue = roundToNearestHundred(rawValue)
-        const percentageApplied = PERCENTAGE_APPLIED_DEFAULT
+        const percentageApplied = getSurgicalWayLiquidationPercentage(surgicalWayType, concept.conceptType)
         const percentageValue = (roundedValue * percentageApplied) / 100
         return { ...concept, rawValue, roundedValue, percentageApplied, percentageValue }
       }),
-    [annexedConcepts],
+    [annexedConcepts, surgicalWayType],
   )
 
   const createMovement = useCreateBillingMovement()
@@ -209,6 +208,7 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
       label: concept.rawLabel,
       qxGroup: concept.surgicalGroupQxGroup ?? null,
       unitValue: concept.percentageValue,
+      percentageApplied: concept.percentageApplied,
     }))
 
     const totalValue = conceptDetails.reduce((sum, c) => sum + c.unitValue, 0)

@@ -29,6 +29,7 @@ export interface SurgicalConceptDetail {
   label: string
   qxGroup: string | null
   unitValue: number
+  percentageApplied?: number
 }
 
 export function parseConceptDetails(json: string | null | undefined): SurgicalConceptDetail[] {

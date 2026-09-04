@@ -106,6 +106,12 @@ const SurgicalMovementEditModal = ({
       ),
     },
     {
+      title: "%",
+      dataIndex: "percentageApplied",
+      width: 70,
+      render: (value?: number) => (value != null ? `${value}%` : "—"),
+    },
+    {
       title: "Valor",
       dataIndex: "unitValue",
       width: 180,
@@ -145,7 +151,7 @@ const SurgicalMovementEditModal = ({
         columns={columns}
         dataSource={concepts}
         pagination={false}
-        scroll={{ x: 600 }}
+        scroll={{ x: 670 }}
       />
 
       <div
