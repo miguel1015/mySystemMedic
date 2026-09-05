@@ -82,15 +82,18 @@ function buildMovementRows(movement: BillingMovementResponse): Omit<InvoicePrevi
           totalValue: null,
           isHeader: true,
         },
-        ...concepts.map((concept, index) => ({
-          key: `mov-${movement.id}-concept-${index}`,
-          code: String(concept.code),
-          description: concept.qxGroup ? `${concept.label} - ${concept.qxGroup}` : concept.label,
-          quantity: 1,
-          unitValue: concept.unitValue,
-          totalValue: concept.unitValue,
-          isSubItem: true,
-        })),
+        ...concepts.map((concept, index) => {
+          const label = concept.qxGroup ? `${concept.label} - ${concept.qxGroup}` : concept.label
+          return {
+            key: `mov-${movement.id}-concept-${index}`,
+            code: String(concept.code),
+            description: concept.procedureName ? `${concept.procedureName} — ${label}` : label,
+            quantity: 1,
+            unitValue: concept.unitValue,
+            totalValue: concept.unitValue,
+            isSubItem: true,
+          }
+        }),
       ]
     }
   }

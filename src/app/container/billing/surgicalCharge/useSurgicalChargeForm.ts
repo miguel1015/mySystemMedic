@@ -15,9 +15,9 @@ import {
 } from "@/core/interfaces/care/billing"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import { SurgicalWayType } from "@/core/interfaces/care/surgicalCharge"
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import { getSurgicalWayLiquidationPercentage } from "./constants"
+import { DEFAULT_LIQUIDATION_PERCENTAGE, getSurgicalWayLiquidationPercentage } from "./constants"
 import { roundToNearestHundred } from "./utils"
 
 export interface SelectedSurgicalService {
@@ -37,12 +37,31 @@ export interface PreliquidatedConcept extends TTariffDetail {
   percentageValue: number
 }
 
+export interface AnnexedProcedure {
+  tempId: string
+  service: SelectedSurgicalService
+  specialty: string
+  surgicalWayType: SurgicalWayType
+  accessRouteId: number
+  accessRouteName: string
+  doctorId: number
+  doctorName: string
+  concepts: (TTariffDetail & { conceptType: string; rawLabel: string })[]
+}
+
+export interface PreliquidatedProcedure extends Omit<AnnexedProcedure, "concepts"> {
+  concepts: PreliquidatedConcept[]
+  total: number
+}
+
 const ALLOWED_SURGICAL_SPECIALTIES = ["ortopedista", "cirujano general"]
+
+const DIACRITICS_PATTERN = new RegExp("[\\u0300-\\u036f]", "g")
 
 const normalize = (value: string) =>
   value
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(DIACRITICS_PATTERN, "")
     .trim()
     .toLowerCase()
 
@@ -71,7 +90,8 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
 
   const [concepts, setConcepts] = useState<(TTariffDetail & { conceptType: string; rawLabel: string })[]>([])
   const [selectedConceptIds, setSelectedConceptIds] = useState<number[]>([])
-  const [annexedConcepts, setAnnexedConcepts] = useState<(TTariffDetail & { conceptType: string; rawLabel: string })[]>([])
+  const [annexedProcedures, setAnnexedProcedures] = useState<AnnexedProcedure[]>([])
+  const nextTempIdRef = useRef(0)
 
   const { data: doctors, isLoading: loadingDoctors } = useGetUsersByProfile(specialty ?? "")
 
@@ -85,22 +105,25 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
   )
 
   const canAnnex = concepts.length > 0 && selectedConceptIds.length > 0
-  const canPreliquidate = annexedConcepts.length > 0
+  const canPreliquidate = annexedProcedures.length > 0
 
   const resetService = () => {
     setSelectedService(null)
     setConcepts([])
     setSelectedConceptIds([])
-    setAnnexedConcepts([])
   }
 
-  const resetForm = () => {
-    setTariffId(null)
+  const resetDraft = () => {
     setSpecialty(null)
     setSurgicalWayType(null)
     setAccessRouteId(null)
     setDoctorId(null)
     resetService()
+  }
+
+  const resetForm = () => {
+    setTariffId(null)
+    resetDraft()
   }
 
   const handleSelectTariff = (id: number | null) => {
@@ -112,7 +135,6 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
     setSelectedService(service)
     setConcepts([])
     setSelectedConceptIds([])
-    setAnnexedConcepts([])
     setServiceModalOpen(false)
   }
 
@@ -150,7 +172,6 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
 
     setConcepts(matches)
     setSelectedConceptIds(matches.map((m) => m.id))
-    setAnnexedConcepts([])
   }
 
   const closeConcepts = () => {
@@ -159,29 +180,61 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
   }
 
   const annexConcepts = () => {
+    if (!selectedService || !specialty || !surgicalWayType || !accessRouteId || !doctorId) return
+
     const chosen = concepts.filter((c) => selectedConceptIds.includes(c.id))
-    setAnnexedConcepts(chosen)
-    toast.success("Conceptos anexados correctamente.")
+    const accessRouteName = accessRoutes?.find((a) => a.id === accessRouteId)?.name ?? ""
+    const doctorName = doctors?.find((d) => d.id === doctorId)?.fullName ?? ""
+
+    const procedure: AnnexedProcedure = {
+      tempId: String(nextTempIdRef.current++),
+      service: selectedService,
+      specialty,
+      surgicalWayType,
+      accessRouteId,
+      accessRouteName,
+      doctorId,
+      doctorName,
+      concepts: chosen,
+    }
+
+    setAnnexedProcedures((prev) => [...prev, procedure])
+    resetDraft()
+    toast.success("Procedimiento anexado correctamente.")
   }
 
-  const preliquidatedConcepts: PreliquidatedConcept[] = useMemo(
+  const removeAnnexedProcedure = (tempId: string) => {
+    setAnnexedProcedures((prev) => prev.filter((p) => p.tempId !== tempId))
+  }
+
+  const preliquidatedProcedures: PreliquidatedProcedure[] = useMemo(
     () =>
-      annexedConcepts.map((concept) => {
-        const rawValue = concept.value * concept.factors
-        const roundedValue = roundToNearestHundred(rawValue)
-        const percentageApplied = getSurgicalWayLiquidationPercentage(surgicalWayType, concept.conceptType)
-        const percentageValue = (roundedValue * percentageApplied) / 100
-        return { ...concept, rawValue, roundedValue, percentageApplied, percentageValue }
+      annexedProcedures.map((procedure, index) => {
+        // El primer procedimiento anexado siempre se liquida al 100%, sin importar
+        // el tipo de vía seleccionado: esa regla solo aplica desde el segundo en adelante.
+        const isFirstProcedure = index === 0
+
+        const preliquidatedConcepts = procedure.concepts.map((concept) => {
+          const rawValue = concept.value * concept.factors
+          const roundedValue = roundToNearestHundred(rawValue)
+          const percentageApplied = isFirstProcedure
+            ? DEFAULT_LIQUIDATION_PERCENTAGE
+            : getSurgicalWayLiquidationPercentage(procedure.surgicalWayType, concept.conceptType)
+          const percentageValue = (roundedValue * percentageApplied) / 100
+          return { ...concept, rawValue, roundedValue, percentageApplied, percentageValue }
+        })
+        const total = preliquidatedConcepts.reduce((sum, c) => sum + c.percentageValue, 0)
+        return { ...procedure, concepts: preliquidatedConcepts, total }
       }),
-    [annexedConcepts, surgicalWayType],
+    [annexedProcedures],
   )
 
   const createMovement = useCreateBillingMovement()
   const [isSaving, setIsSaving] = useState(false)
 
   const acceptPreliquidation = async () => {
-    if (!selectedService || !tariffId || !specialty || !surgicalWayType || !accessRouteId || !doctorId) {
-      toast.error("Falta información obligatoria para cargar la cirugía.")
+    if (preliquidatedProcedures.length === 0) {
+      toast.error("No hay procedimientos anexados para liquidar.")
       return
     }
 
@@ -190,37 +243,46 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
       return
     }
 
-    const doctor = doctors?.find((d) => d.id === doctorId)
-    const accessRoute = accessRoutes?.find((a) => a.id === accessRouteId)
-
-    const notes = [
-      `Cirugía: ${selectedService.code} - ${selectedService.name}`,
-      `Vía: ${surgicalWayType}`,
-      `Acceso: ${accessRoute?.name ?? ""}`,
-      `Especialidad: ${specialty}`,
-      `Médico: ${doctor?.fullName ?? ""}`,
-    ].join(" | ")
-
-    const conceptDetails: SurgicalConceptDetail[] = preliquidatedConcepts.map((concept) => ({
-      itemId: concept.id,
-      conceptType: concept.conceptType,
-      code: concept.referenceCode,
-      label: concept.rawLabel,
-      qxGroup: concept.surgicalGroupQxGroup ?? null,
-      unitValue: concept.percentageValue,
-      percentageApplied: concept.percentageApplied,
-    }))
+    const conceptDetails: SurgicalConceptDetail[] = preliquidatedProcedures.flatMap((procedure) =>
+      procedure.concepts.map((concept) => ({
+        itemId: concept.id,
+        conceptType: concept.conceptType,
+        code: concept.referenceCode,
+        label: concept.rawLabel,
+        qxGroup: concept.surgicalGroupQxGroup ?? null,
+        unitValue: concept.percentageValue,
+        percentageApplied: concept.percentageApplied,
+        procedureName: procedure.service.name,
+        procedureCode: procedure.service.code,
+        surgicalWayType: procedure.surgicalWayType,
+      })),
+    )
 
     const totalValue = conceptDetails.reduce((sum, c) => sum + c.unitValue, 0)
+
+    const notes = preliquidatedProcedures
+      .map((procedure) =>
+        [
+          `Cirugía: ${procedure.service.code} - ${procedure.service.name}`,
+          `Vía: ${procedure.surgicalWayType}`,
+          `Acceso: ${procedure.accessRouteName}`,
+          `Especialidad: ${procedure.specialty}`,
+          `Médico: ${procedure.doctorName}`,
+        ].join(" | "),
+      )
+      .join("\n---\n")
+
+    const name = preliquidatedProcedures.map((p) => p.service.name).join(" + ")
+    const firstProcedure = preliquidatedProcedures[0]
 
     setIsSaving(true)
     try {
       await createMovement.mutateAsync({
         admissionId,
         movementType: "surgery",
-        itemId: selectedService.tariffDetailId,
-        itemCode: String(selectedService.code),
-        name: selectedService.name,
+        itemId: firstProcedure.service.tariffDetailId,
+        itemCode: String(firstProcedure.service.code),
+        name,
         quantity: 1,
         unitValue: totalValue,
         contractId: admission.convenioId,
@@ -232,6 +294,7 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
 
       toast.success("Cirugía cargada correctamente al paciente.")
       setPreliquidationOpen(false)
+      setAnnexedProcedures([])
       resetForm()
     } catch (err) {
       const message = err instanceof Error ? err.message : "No se pudo cargar la cirugía."
@@ -276,8 +339,9 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
     setSelectedConceptIds,
     closeConcepts,
     annexConcepts,
-    annexedConcepts,
-    preliquidatedConcepts,
+    annexedProcedures,
+    removeAnnexedProcedure,
+    preliquidatedProcedures,
 
     canFetchConcepts,
     canAnnex,

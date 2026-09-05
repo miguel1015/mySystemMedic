@@ -7,6 +7,7 @@ import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
 import { MedicineBoxOutlined } from "@ant-design/icons"
 import { Button, Select } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
+import AnnexedProceduresList from "./annexedProceduresList"
 import ConceptsTable from "./conceptsTable"
 import PatientInfoCard from "./patientInfoCard"
 import PatientPicker from "./patientPicker"
@@ -189,6 +190,13 @@ const SurgicalChargeFlow = ({ admissionId, onBack }: { admissionId: number; onBa
         </div>
       </div>
 
+      {form.annexedProcedures.length > 0 && (
+        <AnnexedProceduresList
+          procedures={form.annexedProcedures}
+          onRemove={form.removeAnnexedProcedure}
+        />
+      )}
+
       {form.concepts.length > 0 && (
         <ConceptsTable
           concepts={form.concepts}
@@ -223,8 +231,7 @@ const SurgicalChargeFlow = ({ admissionId, onBack }: { admissionId: number; onBa
       <PreliquidationModal
         open={form.preliquidationOpen}
         onClose={() => form.setPreliquidationOpen(false)}
-        service={form.selectedService}
-        concepts={form.preliquidatedConcepts}
+        procedures={form.preliquidatedProcedures}
         isSaving={form.isSaving}
         onAccept={() => form.acceptPreliquidation()}
       />
