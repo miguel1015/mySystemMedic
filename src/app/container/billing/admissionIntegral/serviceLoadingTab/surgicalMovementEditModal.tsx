@@ -96,11 +96,6 @@ const SurgicalMovementEditModal = ({
       dataIndex: "label",
       render: (_, record) => (
         <div>
-          {record.procedureName && (
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--theme-primary, #0F6F5C)" }}>
-              {record.procedureName}
-            </div>
-          )}
           <div>{record.label}</div>
           {record.qxGroup && (
             <div style={{ fontSize: 12, color: "var(--dash-text-tertiary, #9ca3af)" }}>

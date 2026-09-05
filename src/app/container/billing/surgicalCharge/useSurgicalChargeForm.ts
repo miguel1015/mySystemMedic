@@ -243,58 +243,49 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
       return
     }
 
-    const conceptDetails: SurgicalConceptDetail[] = preliquidatedProcedures.flatMap((procedure) =>
-      procedure.concepts.map((concept) => ({
-        itemId: concept.id,
-        conceptType: concept.conceptType,
-        code: concept.referenceCode,
-        label: concept.rawLabel,
-        qxGroup: concept.surgicalGroupQxGroup ?? null,
-        unitValue: concept.percentageValue,
-        percentageApplied: concept.percentageApplied,
-        procedureName: procedure.service.name,
-        procedureCode: procedure.service.code,
-        surgicalWayType: procedure.surgicalWayType,
-      })),
-    )
+    setIsSaving(true)
+    try {
+      for (const procedure of preliquidatedProcedures) {
+        const conceptDetails: SurgicalConceptDetail[] = procedure.concepts.map((concept) => ({
+          itemId: concept.id,
+          conceptType: concept.conceptType,
+          code: concept.referenceCode,
+          label: concept.rawLabel,
+          qxGroup: concept.surgicalGroupQxGroup ?? null,
+          unitValue: concept.percentageValue,
+          percentageApplied: concept.percentageApplied,
+        }))
 
-    const totalValue = conceptDetails.reduce((sum, c) => sum + c.unitValue, 0)
-
-    const notes = preliquidatedProcedures
-      .map((procedure) =>
-        [
+        const notes = [
           `Cirugía: ${procedure.service.code} - ${procedure.service.name}`,
           `Vía: ${procedure.surgicalWayType}`,
           `Acceso: ${procedure.accessRouteName}`,
           `Especialidad: ${procedure.specialty}`,
           `Médico: ${procedure.doctorName}`,
-        ].join(" | "),
-      )
-      .join("\n---\n")
+        ].join(" | ")
 
-    const name = preliquidatedProcedures.map((p) => p.service.name).join(" + ")
-    const firstProcedure = preliquidatedProcedures[0]
+        await createMovement.mutateAsync({
+          admissionId,
+          movementType: "surgery",
+          itemId: procedure.service.tariffDetailId,
+          itemCode: String(procedure.service.code),
+          name: procedure.service.name,
+          quantity: 1,
+          unitValue: procedure.total,
+          contractId: admission.convenioId,
+          serviceCategory: null,
+          conceptType: null,
+          conceptDetails: serializeConceptDetails(conceptDetails),
+          notes,
+        })
 
-    setIsSaving(true)
-    try {
-      await createMovement.mutateAsync({
-        admissionId,
-        movementType: "surgery",
-        itemId: firstProcedure.service.tariffDetailId,
-        itemCode: String(firstProcedure.service.code),
-        name,
-        quantity: 1,
-        unitValue: totalValue,
-        contractId: admission.convenioId,
-        serviceCategory: null,
-        conceptType: null,
-        conceptDetails: serializeConceptDetails(conceptDetails),
-        notes,
-      })
+        // Se retira de la lista tan pronto se registra su movimiento, para que un
+        // fallo a mitad de camino no vuelva a facturar los procedimientos ya cargados.
+        setAnnexedProcedures((prev) => prev.filter((p) => p.tempId !== procedure.tempId))
+      }
 
-      toast.success("Cirugía cargada correctamente al paciente.")
+      toast.success("Cirugías cargadas correctamente al paciente.")
       setPreliquidationOpen(false)
-      setAnnexedProcedures([])
       resetForm()
     } catch (err) {
       const message = err instanceof Error ? err.message : "No se pudo cargar la cirugía."
