@@ -161,4 +161,11 @@ export const CARE_ENDPOINTS = {
     UPDATE: (id: IdParam) => `/api/auth/care/billing-movements/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/billing-movements/${id}`,
   },
+  ELECTRONIC_INVOICE: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/billing-movements/by-admission/${admissionId}/electronic-invoice`,
+    CREATE: (admissionId: IdParam) =>
+      `/api/auth/care/billing-movements/by-admission/${admissionId}/electronic-invoice`,
+    GET_ALL: "/api/auth/care/electronic-invoices",
+  },
 }

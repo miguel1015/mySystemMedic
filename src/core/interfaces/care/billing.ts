@@ -86,3 +86,30 @@ export type BillingMovementUpdateRequest = Omit<
   BillingMovementCreateRequest,
   "admissionId"
 >
+
+export interface ElectronicInvoiceResponse {
+  id: number
+  admissionId: number
+  invoiceNum: string
+  success: boolean
+  cufe: string | null
+  stateDian: string | null
+  pdfUrl: string | null
+  pdfBase64: string | null
+  errorMessage: string | null
+  createdAt: string
+}
+
+export interface ElectronicInvoiceListItem {
+  id: number
+  admissionId: number
+  invoiceNum: string
+  cufe: string | null
+  stateDian: string | null
+  pdfUrl: string | null
+  pdfBase64: string | null
+  createdAt: string
+  patientName: string
+  patientDocument: string | null
+  insurerName: string | null
+}

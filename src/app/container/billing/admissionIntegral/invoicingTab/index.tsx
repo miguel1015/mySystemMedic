@@ -1,10 +1,14 @@
 "use client"
 
+import { useCreateElectronicInvoice } from "@/core/hooks/care/billing/useCreateElectronicInvoice"
+import { useGetElectronicInvoiceByAdmission } from "@/core/hooks/care/billing/useGetElectronicInvoiceByAdmission"
 import { BillingMovementResponse, BillingMovementType } from "@/core/interfaces/care/billing"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import {
+  CheckCircleFilled,
   EyeOutlined,
   FileDoneOutlined,
+  FilePdfOutlined,
   SendOutlined,
 } from "@ant-design/icons"
 import { Button, DatePicker, Descriptions, Input, Skeleton, message } from "antd"
@@ -35,7 +39,7 @@ const sectionCardStyle: React.CSSProperties = {
   marginBottom: 20,
 }
 
-const InvoicingTab = ({ admission, movements, ripsValidation }: InvoicingTabProps) => {
+const InvoicingTab = ({ admission, movements }: InvoicingTabProps) => {
   const [messageApi, contextHolder] = message.useMessage()
   const [serviceStartDate, setServiceStartDate] = useState<Dayjs | null>(null)
   const [serviceEndDate, setServiceEndDate] = useState<Dayjs | null>(null)
@@ -55,14 +59,40 @@ const InvoicingTab = ({ admission, movements, ripsValidation }: InvoicingTabProp
   }, [movements])
 
   const hasMovements = movements.length > 0
-  const isRipsValid = ripsValidation?.isValid ?? false
-  const canElectronicInvoice = hasMovements && isRipsValid
+  // TODO: RIPS aún no se está validando en este flujo; por ahora la facturación
+  // electrónica solo depende de que haya movimientos cargados.
+  const canElectronicInvoice = hasMovements
 
-  const handleElectronicInvoice = () => {
-    if (!canElectronicInvoice) return
-    messageApi.info(
-      "Facturación electrónica: próximamente. La integración con el proveedor de facturación electrónica está en desarrollo.",
-    )
+  const { data: electronicInvoice, isLoading: isLoadingElectronicInvoice } =
+    useGetElectronicInvoiceByAdmission(admission?.id)
+  const createElectronicInvoice = useCreateElectronicInvoice()
+
+  const isAlreadyIssued = electronicInvoice?.success ?? false
+
+  const handleElectronicInvoice = async () => {
+    if (!canElectronicInvoice || !admission) return
+
+    try {
+      const result = await createElectronicInvoice.mutateAsync(admission.id)
+      if (result.success) {
+        messageApi.success(`Factura electrónica emitida. CUFE: ${result.cufe}`)
+      } else {
+        messageApi.error(
+          result.errorMessage || "La DIAN rechazó la factura electrónica.",
+        )
+      }
+    } catch (err) {
+      messageApi.error(err instanceof Error ? err.message : "No se pudo emitir la factura electrónica.")
+    }
+  }
+
+  const handleViewPdf = () => {
+    if (!electronicInvoice) return
+    if (electronicInvoice.pdfUrl) {
+      window.open(electronicInvoice.pdfUrl, "_blank", "noopener,noreferrer")
+    } else if (electronicInvoice.pdfBase64) {
+      window.open(`data:application/pdf;base64,${electronicInvoice.pdfBase64}`, "_blank", "noopener,noreferrer")
+    }
   }
 
   if (!admission) {
@@ -147,21 +177,40 @@ const InvoicingTab = ({ admission, movements, ripsValidation }: InvoicingTabProp
         >
           Previsualizar factura
         </Button>
-        <Button
-          type="primary"
-          size="large"
-          icon={<SendOutlined />}
-          onClick={handleElectronicInvoice}
-          disabled={!canElectronicInvoice}
-        >
-          Facturación electrónica
-        </Button>
+        {isAlreadyIssued ? (
+          <Button
+            size="large"
+            icon={<FilePdfOutlined />}
+            onClick={handleViewPdf}
+            disabled={!electronicInvoice?.pdfUrl && !electronicInvoice?.pdfBase64}
+          >
+            Ver factura electrónica (CUFE: {electronicInvoice?.cufe})
+          </Button>
+        ) : (
+          <Button
+            type="primary"
+            size="large"
+            icon={<SendOutlined />}
+            onClick={handleElectronicInvoice}
+            loading={createElectronicInvoice.isPending}
+            disabled={!canElectronicInvoice || isLoadingElectronicInvoice}
+          >
+            Facturación electrónica
+          </Button>
+        )}
       </div>
 
-      {!canElectronicInvoice && (
+      {isAlreadyIssued && (
+        <p style={{ marginTop: 10, fontSize: 13, color: "var(--dash-text-secondary, #6b7280)" }}>
+          <CheckCircleFilled style={{ color: "#16a34a", marginRight: 6 }} />
+          Esta admisión ya fue facturada electrónicamente.
+        </p>
+      )}
+
+      {!isAlreadyIssued && !canElectronicInvoice && (
         <p style={{ marginTop: 10, fontSize: 13, color: "var(--dash-text-tertiary, #9ca3af)" }}>
           <FileDoneOutlined /> Para habilitar la facturación electrónica, carga al menos un
-          movimiento y valida la información RIPS desde el tab RIPS.
+          movimiento de facturación.
         </p>
       )}
 
