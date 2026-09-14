@@ -15,6 +15,7 @@ interface MovementsTableProps {
   admissionId: number
   loading: boolean
   onEdit: (movement: BillingMovementResponse) => void
+  readOnly?: boolean
 }
 
 const MOVEMENT_TYPE_LABELS: Record<BillingMovementType, string> = {
@@ -31,7 +32,13 @@ const MOVEMENT_TYPE_COLORS: Record<BillingMovementType, string> = {
   surgery: "gold",
 }
 
-const MovementsTable = ({ movements, admissionId, loading, onEdit }: MovementsTableProps) => {
+const MovementsTable = ({
+  movements,
+  admissionId,
+  loading,
+  onEdit,
+  readOnly = false,
+}: MovementsTableProps) => {
   const deleteMovement = useDeleteBillingMovement()
   const [toDelete, setToDelete] = useState<BillingMovementResponse | null>(null)
 
@@ -107,11 +114,16 @@ const MovementsTable = ({ movements, admissionId, loading, onEdit }: MovementsTa
       fixed: "right",
       render: (_, record) => (
         <Space>
-          <Tooltip title="Editar">
-            <Button icon={<EditOutlined />} onClick={() => onEdit(record)} />
+          <Tooltip title={readOnly ? "Admisión facturada: no se puede editar" : "Editar"}>
+            <Button icon={<EditOutlined />} onClick={() => onEdit(record)} disabled={readOnly} />
           </Tooltip>
-          <Tooltip title="Eliminar">
-            <Button danger icon={<DeleteOutlined />} onClick={() => setToDelete(record)} />
+          <Tooltip title={readOnly ? "Admisión facturada: no se puede eliminar" : "Eliminar"}>
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => setToDelete(record)}
+              disabled={readOnly}
+            />
           </Tooltip>
         </Space>
       ),

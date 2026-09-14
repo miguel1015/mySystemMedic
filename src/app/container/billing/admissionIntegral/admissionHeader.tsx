@@ -8,6 +8,7 @@ import { formatDateTime } from "./utils"
 interface AdmissionHeaderProps {
   admission: AdmissionResponse | undefined
   loading: boolean
+  isInvoiced?: boolean
 }
 
 function getInitials(fullName: string) {
@@ -41,7 +42,7 @@ const metaValueStyle: React.CSSProperties = {
   color: "var(--dash-text-primary, #111827)",
 }
 
-const AdmissionHeader = ({ admission, loading }: AdmissionHeaderProps) => {
+const AdmissionHeader = ({ admission, loading, isInvoiced }: AdmissionHeaderProps) => {
   if (loading || !admission) {
     return (
       <div style={cardStyle}>
@@ -81,6 +82,7 @@ const AdmissionHeader = ({ admission, loading }: AdmissionHeaderProps) => {
           >
             {admission.nombrePaciente}
             <Tag color="green">Admisión #{admission.id}</Tag>
+            {isInvoiced && <Tag color="default">Facturada</Tag>}
           </div>
 
           <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>

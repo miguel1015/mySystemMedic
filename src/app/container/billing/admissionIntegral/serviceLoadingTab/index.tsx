@@ -28,6 +28,7 @@ interface ServiceLoadingTabProps {
   admissionId: number
   movements: BillingMovementResponse[]
   loading: boolean
+  readOnly?: boolean
 }
 
 type PickerMovementType = Exclude<BillingMovementType, "surgery">
@@ -43,6 +44,7 @@ const ServiceLoadingTab = ({
   admissionId,
   movements,
   loading,
+  readOnly = false,
 }: ServiceLoadingTabProps) => {
   const { data: tariffDetails = [], isLoading: isLoadingTariffs } = useTariffDetails()
   const { data: medicines = [], isLoading: isLoadingMedicines } = useMedicines()
@@ -149,7 +151,7 @@ const ServiceLoadingTab = ({
           size="large"
           icon={<ExperimentOutlined />}
           onClick={() => setOpenPicker("service")}
-          disabled={!admission}
+          disabled={!admission || readOnly}
         >
           Servicios
         </Button>
@@ -157,7 +159,7 @@ const ServiceLoadingTab = ({
           size="large"
           icon={<MedicineBoxOutlined />}
           onClick={() => setOpenPicker("medicine")}
-          disabled={!admission}
+          disabled={!admission || readOnly}
         >
           Medicamentos
         </Button>
@@ -165,7 +167,7 @@ const ServiceLoadingTab = ({
           size="large"
           icon={<ToolOutlined />}
           onClick={() => setOpenPicker("supply")}
-          disabled={!admission}
+          disabled={!admission || readOnly}
         >
           Insumos
         </Button>
@@ -176,6 +178,7 @@ const ServiceLoadingTab = ({
         admissionId={admissionId}
         loading={loading}
         onEdit={handleEdit}
+        readOnly={readOnly}
       />
 
       {openPicker && (

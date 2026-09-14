@@ -4,8 +4,9 @@ import { Container } from "@/components/container"
 import Title from "@/components/title"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import { useGetBillingMovementsByAdmission } from "@/core/hooks/care/billing/useGetBillingMovementsByAdmission"
-import { DollarOutlined, FileTextOutlined, SolutionOutlined } from "@ant-design/icons"
-import { Tabs } from "antd"
+import { useGetElectronicInvoiceByAdmission } from "@/core/hooks/care/billing/useGetElectronicInvoiceByAdmission"
+import { CheckCircleFilled, DollarOutlined, FileTextOutlined, SolutionOutlined } from "@ant-design/icons"
+import { Alert, Tabs } from "antd"
 import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import AdmissionHeader from "./admissionHeader"
@@ -28,6 +29,9 @@ const AdmissionIntegralContainer = () => {
     data: movements = [],
     isLoading: isLoadingMovements,
   } = useGetBillingMovementsByAdmission(admissionId)
+
+  const { data: electronicInvoice } = useGetElectronicInvoiceByAdmission(admissionId ?? undefined)
+  const isInvoiced = electronicInvoice?.success ?? false
 
   const [ripsValidation, setRipsValidation] = useState<RipsValidationResult | null>(null)
 
@@ -62,6 +66,7 @@ const AdmissionIntegralContainer = () => {
           admissionId={admissionId}
           movements={movements}
           loading={isLoadingMovements}
+          readOnly={isInvoiced}
         />
       ),
     },
@@ -109,7 +114,18 @@ const AdmissionIntegralContainer = () => {
         Cargue de servicios, validación RIPS y facturación de la admisión seleccionada
       </p>
 
-      <AdmissionHeader admission={admission} loading={isLoadingAdmission} />
+      <AdmissionHeader admission={admission} loading={isLoadingAdmission} isInvoiced={isInvoiced} />
+
+      {isInvoiced && (
+        <Alert
+          type="success"
+          showIcon
+          icon={<CheckCircleFilled />}
+          message="Esta admisión ya fue facturada electrónicamente"
+          description="Los movimientos de facturación quedaron cerrados y no se pueden agregar, editar ni eliminar. Puedes revisar la factura emitida en la pestaña de Facturación."
+          style={{ marginBottom: 20 }}
+        />
+      )}
 
       <Tabs type="card" items={tabItems} destroyInactiveTabPane={false} />
     </Container>
