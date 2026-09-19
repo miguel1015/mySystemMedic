@@ -2,7 +2,11 @@
 
 import ModalConfirm from "@/components/modalConfirmation.tsx"
 import { useDeleteBillingMovement } from "@/core/hooks/care/billing/useDeleteBillingMovement"
-import { BillingMovementResponse, BillingMovementType } from "@/core/interfaces/care/billing"
+import {
+  BillingMovementResponse,
+  BillingMovementType,
+  parseConceptDetails,
+} from "@/core/interfaces/care/billing"
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons"
 import { Button, Empty, Space, Table, Tag, Tooltip } from "antd"
 import type { ColumnsType } from "antd/es/table"
@@ -30,6 +34,23 @@ const MOVEMENT_TYPE_COLORS: Record<BillingMovementType, string> = {
   medicine: "green",
   supply: "purple",
   surgery: "gold",
+}
+
+// Subtítulo bajo el nombre del movimiento. Para "service" es el serviceCategory
+// que elige/autoclasifica el usuario (Consulta, Procedimiento, etc.). Las cirugías
+// no tienen serviceCategory (siempre es null), así que se arma uno fijo con el
+// grupo quirúrgico tomado del primer concepto liquidado, si existe.
+function getMovementSubtitle(record: BillingMovementResponse): string | null {
+  if (record.serviceCategory) return record.serviceCategory
+
+  if (record.movementType === "surgery") {
+    const [firstConcept] = parseConceptDetails(record.conceptDetails)
+    return firstConcept?.qxGroup
+      ? `Procedimiento quirúrgico · ${firstConcept.qxGroup}`
+      : "Procedimiento quirúrgico"
+  }
+
+  return null
 }
 
 const MovementsTable = ({
@@ -63,16 +84,17 @@ const MovementsTable = ({
     {
       title: "Nombre del servicio / elemento",
       dataIndex: "name",
-      render: (value: string, record) => (
-        <div>
-          <div style={{ fontWeight: 600 }}>{value}</div>
-          {record.serviceCategory && (
-            <div style={{ fontSize: 12, color: "var(--dash-text-tertiary, #9ca3af)" }}>
-              {record.serviceCategory}
-            </div>
-          )}
-        </div>
-      ),
+      render: (value: string, record) => {
+        const subtitle = getMovementSubtitle(record)
+        return (
+          <div>
+            <div style={{ fontWeight: 600 }}>{value}</div>
+            {subtitle && (
+              <div style={{ fontSize: 12, color: "var(--dash-text-tertiary, #9ca3af)" }}>{subtitle}</div>
+            )}
+          </div>
+        )
+      },
     },
     { title: "Cantidad", dataIndex: "quantity", width: 100, align: "center" },
     {

@@ -7,7 +7,6 @@ export const BILLING_SERVICE_CATEGORIES = [
   "Laboratorio",
   "Procedimiento quirúrgico",
   "Estancia",
-  "Otro",
 ] as const
 
 export type BillingServiceCategory = (typeof BILLING_SERVICE_CATEGORIES)[number]

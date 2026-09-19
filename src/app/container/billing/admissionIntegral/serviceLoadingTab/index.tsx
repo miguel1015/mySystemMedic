@@ -4,11 +4,7 @@ import Modal from "@/components/modal"
 import { useMedicalDevices } from "@/core/hooks/parameterization/medicalDevices/useGetAllMedicalDevices"
 import { useMedicines } from "@/core/hooks/parameterization/medicines/useGetAllMedicines"
 import { useTariffDetails } from "@/core/hooks/parameterization/tariffDetails/useGetAllTariffDetails"
-import {
-  BILLING_SERVICE_CATEGORIES,
-  BillingMovementResponse,
-  BillingMovementType,
-} from "@/core/interfaces/care/billing"
+import { BillingMovementResponse, BillingMovementType } from "@/core/interfaces/care/billing"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import {
   ExperimentOutlined,
@@ -17,6 +13,7 @@ import {
 } from "@ant-design/icons"
 import { Button } from "antd"
 import { useMemo, useState } from "react"
+import { classifyServiceCategoryByCode } from "./classifyTariffCode"
 import ItemPickerModal, { PickerRow } from "./itemPickerModal"
 import MovementForm from "./movementForm"
 import { MovementDraft } from "./movementForm/useMovementForm"
@@ -109,7 +106,8 @@ const ServiceLoadingTab = ({
       quantity: 1,
       unitValue: row.value,
       contractId: admission?.convenioId ?? null,
-      serviceCategory: movementType === "service" ? BILLING_SERVICE_CATEGORIES[0] : null,
+      serviceCategory:
+        movementType === "service" ? classifyServiceCategoryByCode(row.code) : null,
       conceptType: null,
       conceptDetails: null,
       notes: null,

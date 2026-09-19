@@ -2,26 +2,29 @@ import { BillingMovementResponse, parseConceptDetails } from "@/core/interfaces/
 
 export type InvoiceGroupKey =
   | "consultas"
-  | "procedimientosDiagnosticos"
-  | "procedimientosTerapeuticos"
   | "estancias"
+  | "procedimientosDiagnosticos"
+  | "procedimientosQuirurgicos"
+  | "procedimientosNoQuirurgicos"
   | "materiales"
   | "medicamentos"
 
 export const INVOICE_GROUP_ORDER: InvoiceGroupKey[] = [
   "consultas",
-  "procedimientosDiagnosticos",
-  "procedimientosTerapeuticos",
   "estancias",
+  "procedimientosDiagnosticos",
+  "procedimientosQuirurgicos",
+  "procedimientosNoQuirurgicos",
   "materiales",
   "medicamentos",
 ]
 
 export const INVOICE_GROUP_LABELS: Record<InvoiceGroupKey, string> = {
   consultas: "Consultas",
-  procedimientosDiagnosticos: "Procedimientos diagnósticos",
-  procedimientosTerapeuticos: "Procedimientos terapéuticos quirúrgicos",
   estancias: "Estancias",
+  procedimientosDiagnosticos: "Procedimientos diagnósticos",
+  procedimientosQuirurgicos: "Procedimientos quirúrgicos",
+  procedimientosNoQuirurgicos: "Procedimientos no quirúrgicos",
   materiales: "Materiales e insumos",
   medicamentos: "Medicamentos",
 }
@@ -48,7 +51,7 @@ export interface InvoiceGroup {
 function classifyMovement(movement: BillingMovementResponse): InvoiceGroupKey {
   if (movement.movementType === "medicine") return "medicamentos"
   if (movement.movementType === "supply") return "materiales"
-  if (movement.movementType === "surgery") return "procedimientosTerapeuticos"
+  if (movement.movementType === "surgery") return "procedimientosQuirurgicos"
 
   switch (movement.serviceCategory) {
     case "Consulta":
@@ -58,10 +61,14 @@ function classifyMovement(movement: BillingMovementResponse): InvoiceGroupKey {
       return "procedimientosDiagnosticos"
     case "Estancia":
       return "estancias"
-    case "Procedimiento":
     case "Procedimiento quirúrgico":
+      return "procedimientosQuirurgicos"
+    case "Procedimiento":
     default:
-      return "procedimientosTerapeuticos"
+      // "Otro" ya no es una opción seleccionable en el formulario, pero movimientos
+      // antiguos guardados con esa categoría (u otro valor inesperado) caen aquí en
+      // vez de perderse de la prefactura.
+      return "procedimientosNoQuirurgicos"
   }
 }
 
