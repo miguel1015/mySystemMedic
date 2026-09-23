@@ -30,7 +30,8 @@ const AdmissionIntegralContainer = () => {
     isLoading: isLoadingMovements,
   } = useGetBillingMovementsByAdmission(admissionId)
 
-  const { data: electronicInvoice } = useGetElectronicInvoiceByAdmission(admissionId ?? undefined)
+  const { data: electronicInvoice, isLoading: isLoadingElectronicInvoice } =
+    useGetElectronicInvoiceByAdmission(admissionId ?? undefined)
   const isInvoiced = electronicInvoice?.success ?? false
 
   const [ripsValidation, setRipsValidation] = useState<RipsValidationResult | null>(null)
@@ -98,6 +99,8 @@ const AdmissionIntegralContainer = () => {
           admission={admission}
           movements={movements}
           ripsValidation={ripsValidation}
+          electronicInvoice={electronicInvoice}
+          isLoadingElectronicInvoice={isLoadingElectronicInvoice}
         />
       ),
     },

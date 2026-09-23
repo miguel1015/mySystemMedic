@@ -1,8 +1,7 @@
 "use client"
 
 import { useCreateElectronicInvoice } from "@/core/hooks/care/billing/useCreateElectronicInvoice"
-import { useGetElectronicInvoiceByAdmission } from "@/core/hooks/care/billing/useGetElectronicInvoiceByAdmission"
-import { BillingMovementResponse, BillingMovementType } from "@/core/interfaces/care/billing"
+import { BillingMovementResponse, BillingMovementType, ElectronicInvoiceResponse } from "@/core/interfaces/care/billing"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import {
   CheckCircleFilled,
@@ -22,6 +21,8 @@ interface InvoicingTabProps {
   admission: AdmissionResponse | undefined
   movements: BillingMovementResponse[]
   ripsValidation: RipsValidationResult | null
+  electronicInvoice: ElectronicInvoiceResponse | null | undefined
+  isLoadingElectronicInvoice: boolean
 }
 
 const MOVEMENT_TYPE_LABELS: Record<BillingMovementType, string> = {
@@ -39,7 +40,12 @@ const sectionCardStyle: React.CSSProperties = {
   marginBottom: 20,
 }
 
-const InvoicingTab = ({ admission, movements }: InvoicingTabProps) => {
+const InvoicingTab = ({
+  admission,
+  movements,
+  electronicInvoice,
+  isLoadingElectronicInvoice,
+}: InvoicingTabProps) => {
   const [messageApi, contextHolder] = message.useMessage()
   const [serviceStartDate, setServiceStartDate] = useState<Dayjs | null>(null)
   const [serviceEndDate, setServiceEndDate] = useState<Dayjs | null>(null)
@@ -63,8 +69,6 @@ const InvoicingTab = ({ admission, movements }: InvoicingTabProps) => {
   // electrónica solo depende de que haya movimientos cargados.
   const canElectronicInvoice = hasMovements
 
-  const { data: electronicInvoice, isLoading: isLoadingElectronicInvoice } =
-    useGetElectronicInvoiceByAdmission(admission?.id)
   const createElectronicInvoice = useCreateElectronicInvoice()
 
   const isAlreadyIssued = electronicInvoice?.success ?? false
