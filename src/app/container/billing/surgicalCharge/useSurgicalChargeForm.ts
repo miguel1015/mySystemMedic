@@ -276,6 +276,7 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
           serviceCategory: null,
           conceptType: null,
           conceptDetails: serializeConceptDetails(conceptDetails),
+          tipoItem: "Procedimiento quirúrgico",
           notes,
         })
 

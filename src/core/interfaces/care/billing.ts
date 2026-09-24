@@ -60,6 +60,7 @@ export interface BillingMovementResponse {
   serviceCategory: string | null
   conceptType: string | null
   conceptDetails: string | null
+  tipoItem: string | null
   notes: string | null
   isActive: boolean
   createdAt: string
@@ -78,6 +79,9 @@ export interface BillingMovementCreateRequest {
   serviceCategory: string | null
   conceptType: string | null
   conceptDetails: string | null
+  // Tipo de servicio (serviceCategory) que el backend reenvía como TipoItem en cada
+  // línea de la factura electrónica.
+  tipoItem: string | null
   notes: string | null
 }
 

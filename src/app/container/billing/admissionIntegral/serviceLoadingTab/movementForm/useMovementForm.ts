@@ -79,6 +79,7 @@ export function useMovementForm({ admissionId, admission, draft, onDone }: UseMo
     if (!draft) return
 
     const isSurgery = draft.movementType === "surgery"
+    const serviceCategory = isSurgery ? draft.serviceCategory : (values.serviceCategory ?? null)
 
     const payload = {
       movementType: draft.movementType,
@@ -88,9 +89,10 @@ export function useMovementForm({ admissionId, admission, draft, onDone }: UseMo
       quantity: isSurgery ? draft.quantity : values.quantity,
       unitValue: values.unitValue,
       contractId: values.contractId,
-      serviceCategory: isSurgery ? draft.serviceCategory : (values.serviceCategory ?? null),
+      serviceCategory,
       conceptType: draft.conceptType,
       conceptDetails: draft.conceptDetails,
+      tipoItem: serviceCategory,
       notes: isSurgery ? draft.notes : (values.notes ?? null),
     }
 

@@ -74,6 +74,7 @@ const SurgicalMovementEditModal = ({
           serviceCategory: movement.serviceCategory,
           conceptType: movement.conceptType,
           conceptDetails: serializeConceptDetails(concepts),
+          tipoItem: movement.tipoItem,
           notes: movement.notes,
         },
       },
