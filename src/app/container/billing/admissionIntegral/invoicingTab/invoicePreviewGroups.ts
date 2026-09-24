@@ -1,32 +1,37 @@
 import { BillingMovementResponse, parseConceptDetails } from "@/core/interfaces/care/billing"
 
 export type InvoiceGroupKey =
-  | "consultas"
-  | "estancias"
-  | "procedimientosDiagnosticos"
-  | "procedimientosQuirurgicos"
-  | "procedimientosNoQuirurgicos"
-  | "materiales"
+  | "consulta"
+  | "procedimientos"
+  | "imagenDiagnostica"
+  | "laboratorio"
+  | "procedimientoQuirurgico"
+  | "estancia"
+  | "insumos"
   | "medicamentos"
 
+// Mismo orden y mismos textos que MediNexus envía como TipoItem a la factura
+// electrónica (ElectronicInvoiceMapper), para que la prefactura se vea igual.
 export const INVOICE_GROUP_ORDER: InvoiceGroupKey[] = [
-  "consultas",
-  "estancias",
-  "procedimientosDiagnosticos",
-  "procedimientosQuirurgicos",
-  "procedimientosNoQuirurgicos",
-  "materiales",
+  "consulta",
+  "procedimientos",
+  "imagenDiagnostica",
+  "laboratorio",
+  "procedimientoQuirurgico",
+  "estancia",
+  "insumos",
   "medicamentos",
 ]
 
 export const INVOICE_GROUP_LABELS: Record<InvoiceGroupKey, string> = {
-  consultas: "Consultas",
-  estancias: "Estancias",
-  procedimientosDiagnosticos: "Procedimientos diagnósticos",
-  procedimientosQuirurgicos: "Procedimientos quirúrgicos",
-  procedimientosNoQuirurgicos: "Procedimientos no quirúrgicos",
-  materiales: "Materiales e insumos",
-  medicamentos: "Medicamentos",
+  consulta: "CONSULTA",
+  procedimientos: "PROCEDIMIENTOS",
+  imagenDiagnostica: "IMAGEN DIAGNÓSTICA / RX",
+  laboratorio: "LABORATORIO",
+  procedimientoQuirurgico: "PROCEDIMIENTO QUIRÚRGICO",
+  estancia: "ESTANCIA",
+  insumos: "INSUMOS",
+  medicamentos: "MEDICAMENTOS",
 }
 
 export interface InvoicePreviewRow {
@@ -50,25 +55,26 @@ export interface InvoiceGroup {
 
 function classifyMovement(movement: BillingMovementResponse): InvoiceGroupKey {
   if (movement.movementType === "medicine") return "medicamentos"
-  if (movement.movementType === "supply") return "materiales"
-  if (movement.movementType === "surgery") return "procedimientosQuirurgicos"
+  if (movement.movementType === "supply") return "insumos"
+  if (movement.movementType === "surgery") return "procedimientoQuirurgico"
 
   switch (movement.serviceCategory) {
     case "Consulta":
-      return "consultas"
-    case "Laboratorio":
+      return "consulta"
     case "Imagen diagnóstica / RX":
-      return "procedimientosDiagnosticos"
-    case "Estancia":
-      return "estancias"
+      return "imagenDiagnostica"
+    case "Laboratorio":
+      return "laboratorio"
     case "Procedimiento quirúrgico":
-      return "procedimientosQuirurgicos"
+      return "procedimientoQuirurgico"
+    case "Estancia":
+      return "estancia"
     case "Procedimiento":
     default:
       // "Otro" ya no es una opción seleccionable en el formulario, pero movimientos
       // antiguos guardados con esa categoría (u otro valor inesperado) caen aquí en
       // vez de perderse de la prefactura.
-      return "procedimientosNoQuirurgicos"
+      return "procedimientos"
   }
 }
 
