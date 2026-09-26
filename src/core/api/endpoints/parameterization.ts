@@ -45,4 +45,21 @@ export const PARAMETERIZATION_ENDPOINTS = {
   },
   MEDICINES: makeParamCrud("medicines"),
   MEDICAL_DEVICES: makeParamCrud("medical-devices"),
+  ELECTRONIC_INVOICING_SETTINGS: {
+    GET: "/api/auth/parameterization/electronic-invoicing",
+    CITIES: (stateId: string | number) =>
+      `/api/auth/parameterization/electronic-invoicing/cities?stateId=${stateId}`,
+    COMPANY: "/api/auth/parameterization/electronic-invoicing/company",
+    SOFTWARE: "/api/auth/parameterization/electronic-invoicing/software",
+    ENVIRONMENT: "/api/auth/parameterization/electronic-invoicing/environment",
+    RESOLUTIONS: "/api/auth/parameterization/electronic-invoicing/resolutions",
+    RESOLUTION: (id: string | number) =>
+      `/api/auth/parameterization/electronic-invoicing/resolutions/${id}`,
+    ACTIVATE_RESOLUTION: (id: string | number) =>
+      `/api/auth/parameterization/electronic-invoicing/resolutions/${id}/activate`,
+    CERTIFICATE: "/api/auth/parameterization/electronic-invoicing/certificate",
+    GENERAL: "/api/auth/parameterization/electronic-invoicing/general",
+    NUMBERING: (id: string | number) =>
+      `/api/auth/parameterization/electronic-invoicing/numberings/${id}`,
+  },
 }
