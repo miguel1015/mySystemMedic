@@ -75,7 +75,7 @@ const AdmissionIntegralContainer = () => {
       key: "rips",
       label: (
         <span>
-          <SolutionOutlined /> RIPS
+          <SolutionOutlined /> Validación RIPS
         </span>
       ),
       children: (

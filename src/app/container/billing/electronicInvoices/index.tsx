@@ -5,10 +5,18 @@ import Modal from "@/components/modal"
 import Title from "@/components/title"
 import { useGetAllElectronicInvoices } from "@/core/hooks/care/billing/useGetAllElectronicInvoices"
 import { ElectronicInvoiceListItem } from "@/core/interfaces/care/billing"
-import { FileDoneOutlined, FilePdfOutlined, LinkOutlined, SearchOutlined } from "@ant-design/icons"
+import {
+  FileDoneOutlined,
+  FilePdfOutlined,
+  LinkOutlined,
+  SearchOutlined,
+  SolutionOutlined,
+} from "@ant-design/icons"
 import { Button, Input, Space, Spin, Table, Tooltip } from "antd"
 import type { ColumnsType } from "antd/es/table"
+import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
+import { RipsStatusTag } from "../rips/RipsStatusTag"
 
 const DIAN_SEARCH_URL = "https://catalogo-vpfe-hab.dian.gov.co/User/SearchDocument"
 
@@ -29,6 +37,7 @@ export default function ElectronicInvoicesContainer() {
   const { data: invoices, isLoading } = useGetAllElectronicInvoices()
   const [search, setSearch] = useState("")
   const [previewInvoice, setPreviewInvoice] = useState<ElectronicInvoiceListItem | null>(null)
+  const router = useRouter()
 
   const filtered = useMemo(() => {
     const term = search.toLowerCase().trim()
@@ -98,8 +107,14 @@ export default function ElectronicInvoicesContainer() {
         ),
     },
     {
+      // Mientras no exista la integración con el MUV, todas las facturas quedan pendientes.
+      title: "Estado RIPS",
+      width: 150,
+      render: () => <RipsStatusTag status="pending" />,
+    },
+    {
       title: "Acciones",
-      width: 260,
+      width: 360,
       align: "center",
       fixed: "right",
       render: (_, record) => (
@@ -123,6 +138,9 @@ export default function ElectronicInvoicesContainer() {
             onClick={() => setPreviewInvoice(record)}
           >
             Ver PDF
+          </Button>
+          <Button icon={<SolutionOutlined />} onClick={() => router.push(`/billing/rips/${record.id}`)}>
+            RIPS
           </Button>
         </Space>
       ),
@@ -190,7 +208,6 @@ export default function ElectronicInvoicesContainer() {
             style={{ width: "100%", height: "75vh", border: "none" }}
           />
         )}
-      </Modal>
-    </Container>
+      </Modal>    </Container>
   )
 }
