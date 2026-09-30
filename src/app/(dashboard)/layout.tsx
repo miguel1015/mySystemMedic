@@ -4,6 +4,7 @@ import SidebarEdgeTab from "@/components/Layout/Dashboard/Sidebar/SidebarEdgeTab
 import SidebarNav from "@/components/Layout/Dashboard/Sidebar/SidebarNav";
 import SidebarOverlay from "@/components/Layout/Dashboard/Sidebar/SidebarOverlay";
 import SidebarProvider from "@/components/Layout/Dashboard/SidebarProvider";
+import RouteGuard from "@/components/Layout/Dashboard/RouteGuard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/option";
 import LayoutLoading from "./layoutLoading";
@@ -33,7 +34,9 @@ export default async function Layout({
         </Sidebar>
         <div className="wrapper dash-layout-wrapper">
           <div className="dash-content-area">
-            <div className="dash-content-inner">{children}</div>
+            <div className="dash-content-inner">
+              <RouteGuard>{children}</RouteGuard>
+            </div>
           </div>
         </div>
         <SidebarEdgeTab />

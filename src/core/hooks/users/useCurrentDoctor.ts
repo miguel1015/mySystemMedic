@@ -2,13 +2,13 @@
 
 import { useMemo } from "react";
 import { buildFullName } from "@/core/utils/user";
+import { isAdministratorRole } from "@/core/constants/roles";
 import { useAuthSession } from "@/core/hooks/authentication/useAuthSession";
 import type { GetUser } from "@/core/interfaces/user/users";
 import { useGetUsers } from "./useGetUsers";
 import { useGetUserById } from "./useGetByIdUser";
 import { useMe } from "./useMeUser";
 
-const ADMIN_ROLE_ID = 1;
 const DOCTOR_ROLE_ID = 2;
 
 export interface DoctorOption {
@@ -56,7 +56,7 @@ export function useCurrentDoctor() {
     [sessionUser?.firstName, sessionUser?.lastName].filter(Boolean).join(" ") ||
     "";
 
-  const canAssignDoctor = sessionUser?.role === ADMIN_ROLE_ID;
+  const canAssignDoctor = isAdministratorRole(sessionUser?.roleName);
 
   const doctorOptions: DoctorOption[] = useMemo(() => {
     const doctors = users_.filter((user) => user.userRoleId === DOCTOR_ROLE_ID);
@@ -67,7 +67,7 @@ export function useCurrentDoctor() {
     }));
 
     if (
-      sessionUser?.role === ADMIN_ROLE_ID &&
+      canAssignDoctor &&
       currentUserId !== undefined &&
       !options.some((option) => option.value === currentUserId)
     ) {
@@ -85,7 +85,7 @@ export function useCurrentDoctor() {
       return [{ value: currentUserId, label: currentDoctor }];
     }
     return [];
-  }, [users_, currentUserId, currentDoctor, currentDoctorUser, sessionUser]);
+  }, [users_, currentUserId, currentDoctor, currentDoctorUser, canAssignDoctor]);
 
   const defaultDoctorId = useMemo(() => {
     if (

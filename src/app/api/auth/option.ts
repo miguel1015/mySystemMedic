@@ -37,6 +37,7 @@ export const authOptions: NextAuthOptions = {
             firstName: me.firstName,
             lastName: me.lastName,
             role: me.userRoleId,
+            roleName: me.userRoleName,
             profileId: me.userProfileId,
             userProfileName: me.userProfileName,
             statusId: me.userStatusId,

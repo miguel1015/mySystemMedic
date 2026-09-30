@@ -2,48 +2,8 @@
 
 import { useMenu } from "@/core/hooks/authentication/UseMenu";
 import { BackendMenu } from "@/types/typeModules";
-import {
-  faArrowsTurnRight,
-  faBoxesStacked,
-  faCalculator,
-  faCapsules,
-  faCashRegister,
-  faChartBar,
-  faChartPie,
-  faClipboardList,
-  faDoorClosed,
-  faDoorOpen,
-  faFileContract,
-  faFileInvoice,
-  faFileInvoiceDollar,
-  faFileMedical,
-  faFlag,
-  faHandHoldingMedical,
-  faHeartPulse,
-  faHome,
-  faHospital,
-  faHospitalUser,
-  faInbox,
-  faClipboardUser,
-  faKitMedical,
-  faMoneyBillWave,
-  faNotesMedical,
-  faPaperclip,
-  faScrewdriverWrench,
-  faShieldHeart,
-  faStethoscope,
-  faSyringe,
-  faTags,
-  faTruckMedical,
-  faUserDoctor,
-  faUserInjured,
-  faUsersGear,
-  faVials,
-  faWallet,
-  faWarehouse,
-  faXRay,
-  IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
+import { getNavIcon } from "./navIcons";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
 import Loading from "@/components/loading";
@@ -53,50 +13,6 @@ interface SidebarNavProps {
 }
 
 export default function SidebarNav({ id }: SidebarNavProps) {
-  const iconMap: Record<string, IconDefinition> = {
-    faClipboardUser: faClipboardUser,
-    faStethoscope: faStethoscope,
-    faXRay: faXRay,
-    faVials: faVials,
-    faUserDoctor: faUserDoctor,
-    faArrowsTurnRight: faArrowsTurnRight,
-    faTruckMedical: faTruckMedical,
-    faBoxesStacked: faBoxesStacked,
-    faCashRegister: faCashRegister,
-    faInbox: faInbox,
-    faBuildingHospital: faHospital,
-    faHandshakeMedical: faHandHoldingMedical,
-    faFileContract: faFileContract,
-    faTags: faTags,
-    faShieldHeart: faShieldHeart,
-    faCapsules: faCapsules,
-    faUsersGear: faUsersGear,
-    faSyringe: faSyringe,
-    faWarehouse: faWarehouse,
-    faScrewdriverWrench: faScrewdriverWrench,
-    faWallet: faWallet,
-    faClipboardList: faClipboardList,
-    faDoorOpen: faDoorOpen,
-    faUserInjured: faUserInjured,
-    faHeartPulse: faHeartPulse,
-    faHospitalUser: faHospitalUser,
-    faFileMedical: faFileMedical,
-    faNotesMedical: faNotesMedical,
-    faKitMedical: faKitMedical,
-    faDoorClosed: faDoorClosed,
-    faFileInvoice: faFileInvoice,
-    faPaperclip: faPaperclip,
-    faFileInvoiceDollar: faFileInvoiceDollar,
-    faChartBar: faChartBar,
-    faChartPie: faChartPie,
-    faMoneyBillWave: faMoneyBillWave,
-    faFlag: faFlag,
-    faCalculator: faCalculator,
-  };
-
-  const getIcon = (icon?: string): IconDefinition | undefined =>
-    icon ? iconMap[icon] : undefined;
-
   const { data, isLoading } = useMenu(Number(id));
   const modules = data?.modules ?? [];
 
@@ -111,7 +27,7 @@ export default function SidebarNav({ id }: SidebarNavProps) {
     return menus
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((menu) => {
-        const icon = getIcon(menu.icon);
+        const icon = getNavIcon(menu.icon);
 
         if (menu.subMenus?.length) {
           return (
@@ -126,7 +42,7 @@ export default function SidebarNav({ id }: SidebarNavProps) {
                   <SidebarNavItem
                     key={sub.id}
                     href={normalizeRoute(sub.route)}
-                    icon={getIcon(sub.icon)}
+                    icon={getNavIcon(sub.icon)}
                   >
                     {sub.name}
                   </SidebarNavItem>

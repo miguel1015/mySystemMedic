@@ -1,18 +1,26 @@
+import { isSuperAdminRole } from "@/core/constants/roles";
+import { useAuthSession } from "@/core/hooks/authentication/useAuthSession";
 import { useUserDocumentType } from "@/core/hooks/users/useDocumentTypes";
 import { useUserProfiles } from "@/core/hooks/users/useProfile";
 import { useUserRoles } from "@/core/hooks/users/useRole";
 import { useUserStatuses } from "@/core/hooks/users/useStatuses";
 
 export function useSelectOptions() {
+  const { data: session } = useAuthSession();
   const { data: dataRol } = useUserRoles();
   const { data: dataProfile } = useUserProfiles();
   const { data: dataDocumentType } = useUserDocumentType();
   const { data: dataStatuses } = useUserStatuses();
 
-  const roleOptions = (dataRol ?? []).map((r) => ({
-    value: r.id,
-    label: r.name,
-  }));
+  // Solo un SuperAdmin puede asignar el rol SuperAdmin (el backend también lo valida).
+  const canAssignSuperAdmin = isSuperAdminRole(session?.user?.roleName);
+
+  const roleOptions = (dataRol ?? [])
+    .filter((r) => canAssignSuperAdmin || !isSuperAdminRole(r.name))
+    .map((r) => ({
+      value: r.id,
+      label: r.name,
+    }));
 
   const profilesOptions = (dataProfile ?? []).map((r) => ({
     value: r.id,

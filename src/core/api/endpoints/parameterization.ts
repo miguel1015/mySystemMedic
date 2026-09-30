@@ -62,4 +62,18 @@ export const PARAMETERIZATION_ENDPOINTS = {
     NUMBERING: (id: string | number) =>
       `/api/auth/parameterization/electronic-invoicing/numberings/${id}`,
   },
+  ACCESS_CONTROL: {
+    ROLES: "/api/auth/parameterization/access-control/roles",
+    ROLE: (id: string | number) => `/api/auth/parameterization/access-control/roles/${id}`,
+    NAVIGATION_TREE: "/api/auth/parameterization/access-control/navigation-tree",
+    ROLE_PERMISSIONS: (id: string | number) =>
+      `/api/auth/parameterization/access-control/roles/${id}/permissions`,
+    ROLE_PROFILES: (id: string | number) =>
+      `/api/auth/parameterization/access-control/roles/${id}/profiles`,
+    PROFILE: (id: string | number) => `/api/auth/parameterization/access-control/profiles/${id}`,
+    ROLE_USERS: (id: string | number) =>
+      `/api/auth/parameterization/access-control/roles/${id}/users`,
+    USER_ROLE: (id: string | number) =>
+      `/api/auth/parameterization/access-control/users/${id}/role`,
+  },
 }

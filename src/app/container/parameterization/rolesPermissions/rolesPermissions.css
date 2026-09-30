@@ -1,0 +1,219 @@
+/* Parametrización > Roles y permisos */
+
+.rp-subtitle {
+  color: var(--dash-text-secondary, #6b7280);
+  margin: -12px 0 20px;
+}
+
+.rp-panel {
+  background: var(--dash-surface, #fff);
+  border: 1px solid var(--dash-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* ---------- Lista de roles ---------- */
+
+.rp-roles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  max-height: 68vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.rp-role-item {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--dash-border-subtle, #eef0f3);
+  border-left: 4px solid transparent;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: var(--dash-text-primary, #111827);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.rp-role-item:hover {
+  background: var(--dash-surface-hover, #f9fafb);
+}
+
+.rp-role-item:focus-visible {
+  outline: 2px solid var(--theme-primary, #0f6f5c);
+  outline-offset: 2px;
+}
+
+.rp-role-item.is-selected {
+  border-color: var(--theme-primary, #0f6f5c);
+  border-left-color: var(--theme-primary, #0f6f5c);
+  background: var(--dash-surface-hover, #f3faf8);
+}
+
+.rp-role-item.is-inactive {
+  opacity: 0.6;
+}
+
+.rp-role-name {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rp-role-description {
+  color: var(--dash-text-secondary, #6b7280);
+  font-size: 0.85rem;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rp-role-meta {
+  color: var(--dash-text-tertiary, #9ca3af);
+  font-size: 0.78rem;
+  margin-top: 4px;
+  display: flex;
+  gap: 12px;
+}
+
+/* ---------- Detalle del rol ---------- */
+
+.rp-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.rp-detail-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rp-detail-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--theme-primary, #0f6f5c);
+  color: #fff;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.rp-detail-title h4 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.rp-detail-title p {
+  margin: 2px 0 0;
+  color: var(--dash-text-secondary, #6b7280);
+}
+
+/* ---------- Permisos ---------- */
+
+.rp-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.rp-toolbar .rp-counter {
+  margin-left: auto;
+  color: var(--dash-text-secondary, #6b7280);
+  font-size: 0.9rem;
+}
+
+.rp-module-card {
+  height: 100%;
+  border: 1px solid var(--dash-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--dash-surface, #fff);
+  overflow: hidden;
+}
+
+.rp-module-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--dash-surface-hover, #f9fafb);
+  border-bottom: 1px solid var(--dash-border, #e5e7eb);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.rp-module-body {
+  padding: 8px 14px 12px;
+}
+
+.rp-menu {
+  padding: 6px 0;
+}
+
+.rp-menu + .rp-menu {
+  border-top: 1px dashed var(--dash-border-subtle, #eef0f3);
+}
+
+.rp-view-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rp-view-icon {
+  width: 16px;
+  color: var(--dash-text-tertiary, #9ca3af);
+}
+
+.rp-view-route {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--dash-text-tertiary, #9ca3af);
+  margin-left: 24px;
+}
+
+.rp-submenus {
+  margin: 4px 0 0 24px;
+  padding-left: 12px;
+  border-left: 2px solid var(--dash-border-subtle, #eef0f3);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rp-savebar {
+  position: sticky;
+  bottom: 12px;
+  z-index: 5;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--theme-primary, #0f6f5c);
+  background: var(--dash-surface, #fff);
+  box-shadow: var(--dash-shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.12));
+}
+
+.rp-cell-secondary {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--dash-text-secondary, #6b7280);
+}
