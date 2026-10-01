@@ -5,7 +5,11 @@ import { Container } from "@/components/container"
 import Title from "@/components/title"
 import { INSTITUTION_PROVIDER_ID } from "@/app/container/care/clinicalRecords/initialClinicalHistory/printPreview/printDocument.utils"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
-import { useGetAllElectronicInvoices } from "@/core/hooks/care/billing/useGetAllElectronicInvoices"
+import {
+  useDownloadAttachedDocument,
+  useGetElectronicInvoiceAttachedDocument,
+  useGetElectronicInvoiceById,
+} from "@/core/hooks/care/billing/useElectronicInvoiceDocuments"
 import { useGetBillingMovementsByAdmission } from "@/core/hooks/care/billing/useGetBillingMovementsByAdmission"
 import { useGetDatosClinicosEgresoByAdmission } from "@/core/hooks/care/dischargeNote/useGetDatosClinicosEgresoByAdmission"
 import { useGetDiagnosticosEgresoByIds } from "@/core/hooks/care/dischargeNote/useGetDiagnosticosEgresoByIds"
@@ -299,14 +303,18 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
   const router = useRouter()
   const [messageApi, contextHolder] = message.useMessage()
 
-  // No existe endpoint de factura por id; se toma del listado (queda en caché cuando
-  // se llega desde "Visualización de factura").
-  const { data: invoices, isLoading: isLoadingInvoices } = useGetAllElectronicInvoices()
-  const invoice = useMemo(
-    () => invoices?.find((item) => item.id === invoiceId) ?? null,
-    [invoices, invoiceId],
-  )
+  const { data: invoice = null, isLoading: isLoadingInvoices } =
+    useGetElectronicInvoiceById(invoiceId)
   const admissionId = invoice?.admissionId ?? null
+
+  // XML (AttachedDocument) que viaja como xmlFevFile junto al RIPS.
+  const {
+    data: attachedDocument,
+    isLoading: isLoadingAttached,
+    isError: isAttachedError,
+    error: attachedError,
+  } = useGetElectronicInvoiceAttachedDocument(invoice?.id ?? null)
+  const downloadXml = useDownloadAttachedDocument()
 
   const { data: admission, isLoading: isLoadingAdmission } = useGetAdmissionById(admissionId)
   const { data: patient, isLoading: isLoadingPatient } = useGetPatientById(
@@ -368,6 +376,19 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
   )
 
   const json = useMemo(() => (result ? JSON.stringify(result.rips, null, 2) : ""), [result])
+
+  // Cuerpo de POST /api/PaquetesFevRips/CargarFevRips. El Base64 del XML se recorta para
+  // no llenar la pantalla; el envío real lleva el contenido completo.
+  const muvPackagePreview = useMemo(() => {
+    if (!result) return ""
+    const base64 = attachedDocument?.base64
+    const xmlFevFile = base64
+      ? base64.length > 120
+        ? `${base64.slice(0, 120)}… (${base64.length.toLocaleString("es-CO")} caracteres)`
+        : base64
+      : null
+    return JSON.stringify({ rips: result.rips, xmlFevFile }, null, 2)
+  }, [result, attachedDocument])
 
   const handleCopy = async () => {
     try {
@@ -469,9 +490,37 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
       key: "muv",
       label: "Validación MUV",
       children: (
-        <Empty
-          description="Aún no se ha enviado al Mecanismo Único de Validación. Aquí aparecerán el CUV o los errores (RVC/RVG) que devuelva el Ministerio."
-        />
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <Alert
+            type="info"
+            showIcon
+            title="Aún no se ha enviado al Mecanismo Único de Validación"
+            description="Aquí aparecerán el CUV o los errores (RVC/RVG) que devuelva el Ministerio. Abajo está el paquete tal como se enviará a CargarFevRips: el RIPS más el XML de la factura en Base64."
+          />
+          {!attachedDocument && (
+            <Alert
+              type="warning"
+              showIcon
+              title="Falta el XML de la factura"
+              description="Sin el AttachedDocument el MUV no puede validar el RIPS. Revise que Facturación Electrónica lo haya generado para esta factura."
+            />
+          )}
+          <pre
+            style={{
+              ...monoStyle,
+              fontSize: 12,
+              background: "var(--dash-surface-muted, #f8fafc)",
+              border: "1px solid var(--dash-border, #e5e7eb)",
+              borderRadius: 8,
+              padding: 14,
+              maxHeight: "55vh",
+              overflow: "auto",
+              margin: 0,
+            }}
+          >
+            {muvPackagePreview}
+          </pre>
+        </div>
       ),
     },
   ]
@@ -554,6 +603,33 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
                       children: <CodeCell value={provider?.enableCode} />,
                     },
                     { key: "eps", label: "EPS", children: invoice?.insurerName ?? "-" },
+                    {
+                      key: "xml",
+                      label: "XML factura (AttachedDocument)",
+                      children: isLoadingAttached ? (
+                        <Skeleton.Button active size="small" />
+                      ) : attachedDocument ? (
+                        <Space size={8} wrap>
+                          <Tag color="success" style={{ marginInlineEnd: 0 }}>
+                            Disponible
+                          </Tag>
+                          <Button
+                            size="small"
+                            icon={<DownloadOutlined />}
+                            loading={downloadXml.isPending}
+                            onClick={() => invoice && downloadXml.mutate(invoice.id)}
+                          >
+                            Descargar
+                          </Button>
+                        </Space>
+                      ) : (
+                        <Tooltip title={isAttachedError ? attachedError?.message : undefined}>
+                          <Tag color="error" style={{ marginInlineEnd: 0 }}>
+                            No disponible
+                          </Tag>
+                        </Tooltip>
+                      ),
+                    },
                     {
                       key: "cuv",
                       label: "CUV",

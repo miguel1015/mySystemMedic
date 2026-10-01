@@ -115,4 +115,22 @@ export interface ElectronicInvoiceListItem {
   patientName: string
   patientDocument: string | null
   insurerName: string | null
+  patientEmail: string | null
+  // Indica si MediNexus ya tiene guardado el XML (AttachedDocument). Si es false, el
+  // backend lo pide a Facturación Electrónica la primera vez que se consulta.
+  hasAttachedDocument: boolean
+}
+
+// AttachedDocument: XML de la factura firmada + respuesta de la DIAN, en Base64. Es el
+// que se envía al adquiriente y el que exige el MUV (xmlFevFile) junto al RIPS.
+export interface ElectronicInvoiceAttachedDocument {
+  id: number
+  invoiceNum: string
+  fileName: string
+  base64: string
+}
+
+export interface ElectronicInvoiceSendEmailResponse {
+  email: string
+  message: string
 }

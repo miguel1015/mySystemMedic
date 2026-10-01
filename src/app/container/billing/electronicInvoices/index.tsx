@@ -3,20 +3,24 @@
 import { Container } from "@/components/container"
 import Modal from "@/components/modal"
 import Title from "@/components/title"
+import { useDownloadAttachedDocument } from "@/core/hooks/care/billing/useElectronicInvoiceDocuments"
 import { useGetAllElectronicInvoices } from "@/core/hooks/care/billing/useGetAllElectronicInvoices"
 import { ElectronicInvoiceListItem } from "@/core/interfaces/care/billing"
 import {
+  CodeOutlined,
   FileDoneOutlined,
   FilePdfOutlined,
   LinkOutlined,
+  MailOutlined,
   SearchOutlined,
   SolutionOutlined,
 } from "@ant-design/icons"
-import { Button, Input, Space, Spin, Table, Tooltip } from "antd"
+import { Button, Input, Space, Spin, Table, Tooltip, message } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import { RipsStatusTag } from "../rips/RipsStatusTag"
+import SendEmailModal from "./sendEmailModal"
 
 const DIAN_SEARCH_URL = "https://catalogo-vpfe-hab.dian.gov.co/User/SearchDocument"
 
@@ -37,7 +41,16 @@ export default function ElectronicInvoicesContainer() {
   const { data: invoices, isLoading } = useGetAllElectronicInvoices()
   const [search, setSearch] = useState("")
   const [previewInvoice, setPreviewInvoice] = useState<ElectronicInvoiceListItem | null>(null)
+  const [emailInvoice, setEmailInvoice] = useState<ElectronicInvoiceListItem | null>(null)
   const router = useRouter()
+  const [messageApi, contextHolder] = message.useMessage()
+  const downloadXml = useDownloadAttachedDocument()
+
+  const handleDownloadXml = (record: ElectronicInvoiceListItem) => {
+    downloadXml.mutate(record.id, {
+      onError: (error) => messageApi.error(error.message || "No se pudo descargar el XML"),
+    })
+  }
 
   const filtered = useMemo(() => {
     const term = search.toLowerCase().trim()
@@ -114,7 +127,7 @@ export default function ElectronicInvoicesContainer() {
     },
     {
       title: "Acciones",
-      width: 360,
+      width: 560,
       align: "center",
       fixed: "right",
       render: (_, record) => (
@@ -139,6 +152,20 @@ export default function ElectronicInvoicesContainer() {
           >
             Ver PDF
           </Button>
+          <Tooltip title="XML validado por la DIAN (AttachedDocument)">
+            <Button
+              icon={<CodeOutlined />}
+              loading={downloadXml.isPending && downloadXml.variables === record.id}
+              onClick={() => handleDownloadXml(record)}
+            >
+              XML
+            </Button>
+          </Tooltip>
+          <Tooltip title="Enviar PDF y XML por correo">
+            <Button icon={<MailOutlined />} onClick={() => setEmailInvoice(record)}>
+              Correo
+            </Button>
+          </Tooltip>
           <Button icon={<SolutionOutlined />} onClick={() => router.push(`/billing/rips/${record.id}`)}>
             RIPS
           </Button>
@@ -149,6 +176,7 @@ export default function ElectronicInvoicesContainer() {
 
   return (
     <Container>
+      {contextHolder}
       <div
         style={{
           display: "flex",
@@ -208,6 +236,9 @@ export default function ElectronicInvoicesContainer() {
             style={{ width: "100%", height: "75vh", border: "none" }}
           />
         )}
-      </Modal>    </Container>
+      </Modal>
+
+      <SendEmailModal invoice={emailInvoice} onClose={() => setEmailInvoice(null)} />
+    </Container>
   )
 }

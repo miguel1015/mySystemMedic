@@ -167,5 +167,9 @@ export const CARE_ENDPOINTS = {
     CREATE: (admissionId: IdParam) =>
       `/api/auth/care/billing-movements/by-admission/${admissionId}/electronic-invoice`,
     GET_ALL: "/api/auth/care/electronic-invoices",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/electronic-invoices/${id}`,
+    ATTACHED_DOCUMENT: (id: IdParam) =>
+      `/api/auth/care/electronic-invoices/${id}/attached-document`,
+    SEND_EMAIL: (id: IdParam) => `/api/auth/care/electronic-invoices/${id}/send-email`,
   },
 }
