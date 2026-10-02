@@ -18,6 +18,7 @@ interface Props {
   attentionLabel: string;
   attentionDate: string;
   attentionTime: string;
+  showSex?: boolean;
 }
 
 export const ClinicalDocumentHeader = ({
@@ -30,6 +31,7 @@ export const ClinicalDocumentHeader = ({
   attentionLabel,
   attentionDate,
   attentionTime,
+  showSex = false,
 }: Props) => (
   <div className="hci-print-header-block">
     <div className="hci-print-header">
@@ -90,6 +92,12 @@ export const ClinicalDocumentHeader = ({
           {calculateAge(patient.birthDate)}
         </span>
       </div>
+      {showSex && (
+        <div className="hci-print-row">
+          <span className="hci-print-label">Sexo:</span>
+          <span className="hci-print-value">{patient.sex || emptyDash}</span>
+        </div>
+      )}
       <div className="hci-print-row">
         <span className="hci-print-label">Convenio:</span>
         <span className="hci-print-value">{contractName || emptyDash}</span>

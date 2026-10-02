@@ -7,6 +7,7 @@ import {
   AlertOutlined,
   DollarOutlined,
   ExperimentOutlined,
+  FileAddOutlined,
   FileTextOutlined,
   FormOutlined,
   InboxOutlined,
@@ -107,6 +108,16 @@ const actions = [
     shadowColor: "#c41d7f25",
   },
   {
+    key: "medical-orders",
+    label: "Órdenes Médicas",
+    icon: <FileAddOutlined style={{ fontSize: 28 }} />,
+    path: "/care/medicalOrders",
+    color: "#13a8a8",
+    hoverBackground: "#13a8a812",
+    iconBackground: "#13a8a815",
+    shadowColor: "#13a8a825",
+  },
+  {
     key: "transfer-service",
     label: "Trasladar servicios",
     icon: <SwapOutlined style={{ fontSize: 28 }} />,
@@ -115,16 +126,6 @@ const actions = [
     hoverBackground: "#0958d912",
     iconBackground: "#0958d915",
     shadowColor: "#0958d925",
-  },
-  {
-    key: "billing",
-    label: "Admisión integral",
-    icon: <DollarOutlined style={{ fontSize: 28 }} />,
-    path: "/billing/admissionIntegral",
-    color: "#0f6f5c",
-    hoverBackground: "#0f6f5c12",
-    iconBackground: "#0f6f5c15",
-    shadowColor: "#0f6f5c25",
   },
 ]
 

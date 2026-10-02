@@ -1,0 +1,129 @@
+.hes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.hes-description {
+  color: var(--dash-text-secondary, #6b7280);
+  margin: -8px 0 18px;
+}
+
+.hes-card {
+  border: 1px solid var(--dash-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--dash-surface, #ffffff);
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.hes-card-flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.hes-card-title {
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--dash-text-primary, #111827);
+}
+
+.hes-patient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px 20px;
+}
+
+.hes-label {
+  display: block;
+  font-size: 12px;
+  color: var(--dash-text-secondary, #6b7280);
+  margin-bottom: 2px;
+}
+
+.hes-value {
+  font-weight: 600;
+  color: var(--dash-text-primary, #111827);
+  overflow-wrap: anywhere;
+}
+
+.hes-control-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(280px, 1.4fr) minmax(180px, 0.8fr);
+  gap: 16px;
+  align-items: end;
+}
+
+.hes-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--dash-border, #e5e7eb);
+  border-radius: 8px;
+  background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.03);
+}
+
+.hes-field > span {
+  color: var(--dash-text-primary, #111827);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.hes-field-signature {
+  background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.06);
+  border-color: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.24);
+}
+
+.hes-required {
+  color: #ff4d4f;
+}
+
+.hes-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--dash-border, #e5e7eb);
+  flex-wrap: wrap;
+}
+
+.hes-muted {
+  color: var(--dash-text-secondary, #6b7280);
+  font-size: 13px;
+}
+
+.hes-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--dash-border, #e5e7eb);
+}
+
+@media (max-width: 980px) {
+  .hes-control-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hes-field-signature {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .hes-control-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hes-field-signature {
+    grid-column: auto;
+  }
+}

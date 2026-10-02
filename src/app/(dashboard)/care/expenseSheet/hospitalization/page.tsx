@@ -1,11 +1,14 @@
-import ExpenseSheetModule from "../../../../container/care/expenseSheetModule"
+import { Suspense } from "react"
+import HospitalizationExpenseSheet from "../../../../container/care/hospitalizationExpenseSheet"
 
-export default function HospitalizationExpenseSheetPage() {
+interface PageProps {
+  searchParams: { admissionId?: string }
+}
+
+export default function HospitalizationExpenseSheetPage({ searchParams }: PageProps) {
   return (
-    <ExpenseSheetModule
-      title="Hoja de Gastos Hospitalizacion"
-      description="Gestion de medicamentos, insumos quirurgicos y material esteril utilizados por el paciente seleccionado."
-      context="surgery"
-    />
+    <Suspense fallback={null}>
+      <HospitalizationExpenseSheet key={searchParams.admissionId} />
+    </Suspense>
   )
 }

@@ -121,6 +121,43 @@ export const CARE_ENDPOINTS = {
     UPDATE: (id: IdParam) => `/api/auth/care/procedimientos-diagnosticos/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/procedimientos-diagnosticos/${id}`,
   },
+  ESTUDIOS_RAYOS_X: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/estudios-rayos-x/by-admission/${admissionId}`,
+    ESTUDIOS_DISPONIBLES: "/api/auth/care/estudios-rayos-x/estudios-disponibles",
+    CREATE: "/api/auth/care/estudios-rayos-x",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/estudios-rayos-x/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/estudios-rayos-x/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/estudios-rayos-x/${id}`,
+  },
+  HOJAS_GASTOS: {
+    ASISTENCIALES: "/api/auth/care/hojas-gastos/asistenciales",
+    CONCEPTOS: "/api/auth/care/hojas-gastos/conceptos",
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/hojas-gastos/by-admission/${admissionId}`,
+    SAVE_BATCH: "/api/auth/care/hojas-gastos/batch",
+    UPDATE_CANTIDAD: (id: IdParam) => `/api/auth/care/hojas-gastos/${id}/cantidad`,
+    DELETE: (id: IdParam) => `/api/auth/care/hojas-gastos/${id}`,
+  },
+  ORDENES_MEDICAS: {
+    ASISTENCIALES: "/api/auth/care/ordenes-medicas/asistenciales",
+    CONCEPTOS: "/api/auth/care/ordenes-medicas/conceptos",
+    VIAS: "/api/auth/care/ordenes-medicas/vias",
+    UNIDADES: "/api/auth/care/ordenes-medicas/unidades",
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/ordenes-medicas/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/ordenes-medicas",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/ordenes-medicas/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/ordenes-medicas/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/ordenes-medicas/${id}`,
+  },
+  APLICACIONES_ORDENES: {
+    PROFESIONALES: "/api/auth/care/aplicaciones-ordenes/profesionales",
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/aplicaciones-ordenes/by-admission/${admissionId}`,
+    GET_ITEM: (itemId: IdParam) => `/api/auth/care/aplicaciones-ordenes/item/${itemId}`,
+    CREATE: "/api/auth/care/aplicaciones-ordenes",
+  },
   DESCRIPCIONES_QUIRURGICAS: {
     GET_BY_ADMISSION: (admissionId: IdParam) =>
       `/api/auth/care/descripciones-quirurgicas/by-admission/${admissionId}`,

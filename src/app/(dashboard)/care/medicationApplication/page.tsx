@@ -1,10 +1,14 @@
-import ClinicalActionModule from "../../../container/care/clinicalActionModule"
+import { Suspense } from "react"
+import MedicationApplicationContainer from "../../../container/care/medicationApplication"
 
-export default function MedicationApplicationPage() {
+interface PageProps {
+  searchParams: { admissionId?: string }
+}
+
+export default function MedicationApplicationPage({ searchParams }: PageProps) {
   return (
-    <ClinicalActionModule
-      title="Aplicacion de Medicamentos"
-      description="Registro de aplicaciones de medicamentos para el paciente seleccionado."
-    />
+    <Suspense fallback={null}>
+      <MedicationApplicationContainer key={searchParams.admissionId ?? "sin-paciente"} />
+    </Suspense>
   )
 }

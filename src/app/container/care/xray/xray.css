@@ -1,0 +1,80 @@
+/* ── Informe radiológico (impresión) ── */
+.xray-print-text-section {
+  margin-bottom: 6px;
+}
+
+.xray-print-text {
+  margin: 0 0 6px;
+  font-size: 9.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-align: justify;
+}
+
+.xray-print-signature {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.xray-print-signature .hci-print-signature-box {
+  width: 60%;
+}
+
+/* ── Vista en pantalla ── */
+.xray-patient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px 20px;
+}
+
+.xray-patient-label {
+  display: block;
+  font-size: 12px;
+  color: var(--dash-text-secondary, #6b7280);
+  margin-bottom: 2px;
+}
+
+.xray-patient-value {
+  font-weight: 600;
+  color: var(--dash-text-primary, #111827);
+  overflow-wrap: anywhere;
+}
+
+.xray-card {
+  border: 1px solid var(--dash-border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--dash-surface, #ffffff);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.xray-card-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 14px;
+  color: var(--dash-text-primary, #111827);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.xray-form-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) 1fr;
+  gap: 0 16px;
+}
+
+.xray-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .xray-form-row {
+    grid-template-columns: 1fr;
+  }
+}

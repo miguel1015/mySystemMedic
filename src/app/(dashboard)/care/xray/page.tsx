@@ -1,10 +1,14 @@
-import ClinicalActionModule from "../../../container/care/clinicalActionModule"
+import { Suspense } from "react"
+import XrayContainer from "../../../container/care/xray"
 
-export default function XrayPage() {
+interface PageProps {
+  searchParams: { admissionId?: string }
+}
+
+export default function XrayPage({ searchParams }: PageProps) {
   return (
-    <ClinicalActionModule
-      title="Rayos X"
-      description="Gestion de ordenes y resultados de imagenologia del paciente seleccionado."
-    />
+    <Suspense fallback={null}>
+      <XrayContainer key={searchParams.admissionId} />
+    </Suspense>
   )
 }
