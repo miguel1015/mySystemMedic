@@ -226,9 +226,24 @@ export interface BuildRipsArgs {
   professional: RipsProfessional | null
 }
 
-// Catálogos que hoy solo tienen Id + Name en MediNexus. Hasta que tengan su columna
-// Code con el valor de la tabla SISPRO, el campo sale en null.
-const PENDING_CATALOG_CODE = "El catálogo no tiene código SISPRO"
+// El valor seleccionado en MediNexus no tiene el código de la tabla de referencia SISPRO
+// (columna Code del catálogo vacía): el campo sale en null.
+const PENDING_CATALOG_CODE = "El valor seleccionado no tiene código SISPRO"
+
+// codPaisResidencia / codPaisOrigen: código numérico ISO 3166 de 3 dígitos (Colombia = 170).
+function toCountryCode(code: string | null | undefined): string | null {
+  const value = code?.trim().toUpperCase()
+  if (!value) return null
+  if (/^\d{3}$/.test(value)) return value
+  if (value === "CO" || value === "COL" || value === "COLOMBIA") return "170"
+  return null
+}
+
+// codServicio es numérico (código REPS del servicio habilitado).
+function toServiceCode(code: string | null | undefined): number | null {
+  const value = Number(code)
+  return code && Number.isInteger(value) ? value : null
+}
 
 const pad = (value: number) => String(value).padStart(2, "0")
 
@@ -307,6 +322,16 @@ export function buildRips({
   const profesionalTipoDoc = professional?.documentTypeCode ?? null
   const profesionalNumDoc = professional?.documentNumber ?? null
 
+  // Códigos de catálogo. Finalidad y causa salen del egreso si existe; si no, de la admisión.
+  const modalidad = admission.careModalityCode ?? null
+  const grupoServicios = admission.serviceClassificationCode ?? null
+  const codServicio = toServiceCode(admission.serviceGroupCode)
+  const finalidad =
+    diagnosticoEgreso?.codigoFinalidadConsulta ?? admission.carePurposeCode ?? null
+  const causaMotivo = diagnosticoEgreso?.codigoCausaExterna ?? admission.careReasonCode ?? null
+  const viaIngreso = admission.admissionTypeCode ?? null
+  const condicionEgreso = diagnosticoEgreso?.codigoCondicionSalida ?? null
+
   const servicios: RipsServicios = {
     consultas: [],
     procedimientos: [],
@@ -318,10 +343,12 @@ export function buildRips({
   }
 
   const noteCommonMissing = (group: string) => {
-    addMissing(group, "modalidadGrupoServicioTecSal", PENDING_CATALOG_CODE)
-    addMissing(group, "grupoServicios", PENDING_CATALOG_CODE)
-    addMissing(group, "codServicio", "No se registra el servicio habilitado (REPS)")
-    addMissing(group, "finalidadTecnologiaSalud", PENDING_CATALOG_CODE)
+    if (!modalidad) addMissing(group, "modalidadGrupoServicioTecSal", PENDING_CATALOG_CODE)
+    if (!grupoServicios) addMissing(group, "grupoServicios", PENDING_CATALOG_CODE)
+    if (codServicio === null) {
+      addMissing(group, "codServicio", "El grupo de servicio de la admisión no tiene código REPS")
+    }
+    if (!finalidad) addMissing(group, "finalidadTecnologiaSalud", PENDING_CATALOG_CODE)
     addMissing(group, "conceptoRecaudo", "No se registra copago / cuota moderadora")
     if (!profesionalNumDoc) {
       addMissing(group, "numDocumentoIdentificacion", "No se identificó el profesional tratante")
@@ -331,33 +358,43 @@ export function buildRips({
     }
   }
 
-  const checkCups = (group: string, code: string | null) => {
+  const checkCups = (group: string, code: string | null, hasCupsCode: boolean) => {
     if (!code) {
       addMissing(group, "código CUPS", "El cargo no tiene código")
     } else if (!CUPS_PATTERN.test(code)) {
-      addMissing(group, "código CUPS", "Hay códigos que no tienen formato CUPS (6 caracteres)")
+      addMissing(
+        group,
+        "código CUPS",
+        hasCupsCode
+          ? "Hay códigos CUPS sin el formato de 6 caracteres"
+          : "Hay detalles de tarifa sin CUPS equivalente (se usa el código del manual tarifario)",
+      )
     }
   }
 
   for (const movement of movements.filter((item) => item.isActive !== false)) {
     const group = classifyMovement(movement)
     const code = movement.itemCode?.trim() || null
+    // Servicios y cirugías se reportan con el CUPS del detalle de tarifa; si no lo tiene,
+    // se usa el código del manual tarifario (y se avisa si no tiene formato CUPS).
+    const cups = movement.cupsCode?.trim() || null
+    const procedureCode = cups ?? code
 
     if (group === "consultas") {
-      checkCups("Consultas", code)
+      checkCups("Consultas", procedureCode, !!cups)
       noteCommonMissing("Consultas")
-      addMissing("Consultas", "causaMotivoAtencion", PENDING_CATALOG_CODE)
+      if (!causaMotivo) addMissing("Consultas", "causaMotivoAtencion", PENDING_CATALOG_CODE)
       addMissing("Consultas", "tipoDiagnosticoPrincipal", "No se registra si el diagnóstico es impresión o confirmado")
       servicios.consultas.push({
         codPrestador,
         fechaInicioAtencion,
         numAutorizacion: null,
-        codConsulta: code,
-        modalidadGrupoServicioTecSal: null,
-        grupoServicios: null,
-        codServicio: null,
-        finalidadTecnologiaSalud: null,
-        causaMotivoAtencion: null,
+        codConsulta: procedureCode,
+        modalidadGrupoServicioTecSal: modalidad,
+        grupoServicios,
+        codServicio,
+        finalidadTecnologiaSalud: finalidad,
+        causaMotivoAtencion: causaMotivo,
         codDiagnosticoPrincipal: principal,
         codDiagnosticoPrincipalCIE11: null,
         nomCodDiagnosticoPrincipalCIE11: null,
@@ -381,20 +418,20 @@ export function buildRips({
         codigoVIDA: null,
       })
     } else if (group === "procedimientos") {
-      checkCups("Procedimientos", code)
+      checkCups("Procedimientos", procedureCode, !!cups)
       noteCommonMissing("Procedimientos")
-      addMissing("Procedimientos", "viaIngresoServicioSalud", PENDING_CATALOG_CODE)
+      if (!viaIngreso) addMissing("Procedimientos", "viaIngresoServicioSalud", PENDING_CATALOG_CODE)
       servicios.procedimientos.push({
         codPrestador,
         fechaInicioAtencion,
         idMIPRES: null,
         numAutorizacion: null,
-        codProcedimiento: code,
-        viaIngresoServicioSalud: null,
-        modalidadGrupoServicioTecSal: null,
-        grupoServicios: null,
-        codServicio: null,
-        finalidadTecnologiaSalud: null,
+        codProcedimiento: procedureCode,
+        viaIngresoServicioSalud: viaIngreso,
+        modalidadGrupoServicioTecSal: modalidad,
+        grupoServicios,
+        codServicio,
+        finalidadTecnologiaSalud: finalidad,
         tipoDocumentoIdentificacion: profesionalTipoDoc,
         numDocumentoIdentificacion: profesionalNumDoc,
         codDiagnosticoPrincipal: principal,
@@ -453,18 +490,15 @@ export function buildRips({
     } else {
       const isSupply = movement.movementType === "supply"
       if (!code) addMissing("Otros servicios", "codTecnologiaSalud", "El cargo no tiene código")
-      if (!isSupply) {
-        addMissing("Otros servicios", "tipoOS", "Falta definir el tipo de otro servicio para estancias")
-      }
       addMissing("Otros servicios", "conceptoRecaudo", "No se registra copago / cuota moderadora")
       servicios.otrosServicios.push({
         codPrestador,
         numAutorizacion: null,
         idMIPRES: null,
         fechaSuministroTecnologia: toRipsDateTime(movement.createdAt),
-        // "01" = dispositivos médicos e insumos (tabla TipoOtrosServicios).
-        tipoOS: isSupply ? "01" : null,
-        codTecnologiaSalud: code,
+        // Tabla TipoOtrosServicios: 01 = dispositivos médicos e insumos, 03 = estancias.
+        tipoOS: isSupply ? "01" : "03",
+        codTecnologiaSalud: isSupply ? code : procedureCode,
         nomTecnologiaSalud: movement.name,
         cantidadOS: movement.quantity,
         tipoDocumentoIdentificacion: profesionalTipoDoc,
@@ -488,8 +522,10 @@ export function buildRips({
 
   if (isUrgencias || isHospitalizacion) {
     const groupLabel = isUrgencias ? "Urgencias" : "Hospitalización"
-    addMissing(groupLabel, "causaMotivoAtencion", PENDING_CATALOG_CODE)
-    addMissing(groupLabel, "condicionDestinoUsuarioEgreso", PENDING_CATALOG_CODE)
+    if (!causaMotivo) addMissing(groupLabel, "causaMotivoAtencion", PENDING_CATALOG_CODE)
+    if (diagnosticoEgreso && !condicionEgreso) {
+      addMissing(groupLabel, "condicionDestinoUsuarioEgreso", PENDING_CATALOG_CODE)
+    }
     if (!diagnosticoEgreso) {
       addMissing(groupLabel, "diagnóstico y fecha de egreso", "No hay egreso registrado")
     }
@@ -497,7 +533,7 @@ export function buildRips({
     const egreso: EgresoFields = {
       codPrestador,
       fechaInicioAtencion,
-      causaMotivoAtencion: null,
+      causaMotivoAtencion: causaMotivo,
       codDiagnosticoPrincipal: diagnosticosIngreso[0]?.codigo ?? principal,
       codDiagnosticoPrincipalCIE11: null,
       nomCodDiagnosticoPrincipalCIE11: null,
@@ -513,7 +549,7 @@ export function buildRips({
       codDiagnosticoRelacionadoE3: null,
       codDiagnosticoRelacionadoE3CIE11: null,
       nomCodDiagnosticoRelacionadoE3CIE11: null,
-      condicionDestinoUsuarioEgreso: null,
+      condicionDestinoUsuarioEgreso: condicionEgreso,
       codDiagnosticoCausaMuerte: null,
       codDiagnosticoCausaMuerteCIE11: null,
       nomCodDiagnosticoCausaMuerteCIE11: null,
@@ -525,10 +561,10 @@ export function buildRips({
     if (isUrgencias) {
       servicios.urgencias.push(egreso)
     } else {
-      addMissing(groupLabel, "viaIngresoServicioSalud", PENDING_CATALOG_CODE)
+      if (!viaIngreso) addMissing(groupLabel, "viaIngresoServicioSalud", PENDING_CATALOG_CODE)
       servicios.hospitalizacion.push({
         ...egreso,
-        viaIngresoServicioSalud: null,
+        viaIngresoServicioSalud: viaIngreso,
         numAutorizacion: null,
         codComplicacion: null,
         codComplicacionCIE11: null,
@@ -541,25 +577,37 @@ export function buildRips({
     addMissing("Servicios", "codDiagnosticoPrincipal", "No hay diagnósticos de ingreso ni de egreso")
   }
 
-  addMissing("Usuario", "tipoUsuario", "Se define por paciente; hoy solo existe en el contrato")
-  addMissing("Usuario", "codSexo", PENDING_CATALOG_CODE)
-  addMissing("Usuario", "codPaisResidencia / codPaisOrigen", "El país no tiene código numérico ISO")
-  addMissing("Usuario", "codMunicipioResidencia", "La respuesta del paciente no incluye el código DANE")
-  addMissing("Usuario", "codZonaTerritorialResidencia", PENDING_CATALOG_CODE)
-  addMissing("Usuario", "incapacidad", PENDING_CATALOG_CODE)
+  // tipoUsuario sale del convenio de la admisión (tabla RIPSTipoUsuarioVersion2).
+  const tipoUsuario = admission.healthUserTypeCode ?? null
+  const codSexo = patient?.sexCode ?? null
+  const codPaisResidencia = toCountryCode(patient?.residenceCountryCode)
+  const codPaisOrigen = toCountryCode(patient?.birthCountryCode)
+  const codMunicipio = /^\d{5}$/.test(patient?.cityCode ?? "") ? patient!.cityCode! : null
+  const codZona = patient?.zoneCode ?? null
+
+  if (!tipoUsuario) addMissing("Usuario", "tipoUsuario", "El tipo de usuario del convenio no tiene código SISPRO")
+  if (!codSexo) addMissing("Usuario", "codSexo", PENDING_CATALOG_CODE)
+  if (!codPaisResidencia || !codPaisOrigen) {
+    addMissing("Usuario", "codPaisResidencia / codPaisOrigen", "El país no tiene el código numérico ISO (Colombia = 170)")
+  }
+  if (!codMunicipio) addMissing("Usuario", "codMunicipioResidencia", "El municipio no tiene código DANE de 5 dígitos")
+  if (!codZona) addMissing("Usuario", "codZonaTerritorialResidencia", PENDING_CATALOG_CODE)
+  // incapacidad (LstSiNo) indica si la atención generó una incapacidad, no si el paciente
+  // tiene discapacidad. Mientras no se capture en la atención se reporta "NO".
+  addMissing("Usuario", "incapacidad", "No se registra si la atención generó incapacidad; se reporta NO")
 
   const usuario: RipsUsuario = {
     tipoDocumentoIdentificacion: admission.documentTypeCode || null,
     numDocumentoIdentificacion: admission.documentoPatiente || patient?.documentNumber || null,
-    tipoUsuario: null,
+    tipoUsuario,
     fechaNacimiento: toRipsDate(patient?.birthDate),
-    codSexo: null,
-    codPaisResidencia: null,
-    codMunicipioResidencia: null,
-    codZonaTerritorialResidencia: null,
-    incapacidad: null,
+    codSexo,
+    codPaisResidencia,
+    codMunicipioResidencia: codMunicipio,
+    codZonaTerritorialResidencia: codZona,
+    incapacidad: "NO",
     consecutivo: 1,
-    codPaisOrigen: null,
+    codPaisOrigen,
     registroSIRAS: null,
     servicios,
   }

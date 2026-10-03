@@ -497,10 +497,13 @@ export interface DiagnosticoEgresoResponse {
   descripcionDiagnosticoEgreso3: string | null;
   finalidadConsultaId: number;
   nombreFinalidadConsulta: string;
+  codigoFinalidadConsulta?: string | null;
   causaExternaId: number;
   nombreCausaExterna: string;
+  codigoCausaExterna?: string | null;
   condicionSalidaId: number;
   descripcionCondicionSalida: string;
+  codigoCondicionSalida?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

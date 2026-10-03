@@ -35,11 +35,16 @@ export interface GetPatient extends PatientData {
   documentTypeCode: string;
   documentTypeName: string;
   sexName: string;
+  sexCode?: string | null;
   birthCountryName: string;
+  birthCountryCode?: string | null;
   residenceCountryName: string;
+  residenceCountryCode?: string | null;
   stateName: string;
   cityName: string;
+  cityCode?: string | null;
   zoneName: string;
+  zoneCode?: string | null;
   maritalStatusName: string;
   disabilityName: string;
   bloodGroupName: string;
@@ -130,10 +135,20 @@ export interface AdmissionResponse {
   careScopeName: string;
   carePurposeId: number;
   carePurposeName: string;
+  // Códigos SISPRO para el RIPS (null si el catálogo aún no tiene código).
+  careModalityCode?: string | null;
+  careReasonCode?: string | null;
+  serviceClassificationCode?: string | null;
+  serviceGroupCode?: string | null;
+  admissionTypeCode?: string | null;
+  carePurposeCode?: string | null;
   epsId: number;
   epsNombre: string;
   convenioId: number;
   convenioNombre: string;
+  healthUserTypeCode?: string | null;
+  coverageCode?: string | null;
+  paymentModalityCode?: string | null;
   isActive: boolean;
   createdAt: string;
 }

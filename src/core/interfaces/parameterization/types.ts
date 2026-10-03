@@ -29,6 +29,8 @@ export interface TTariffDetail {
   id: number;
   referenceCode: number;
   description: string;
+  // Código CUPS equivalente para el RIPS (6 caracteres).
+  cupsCode?: string | null;
   value: number;
   isSurgicalProcedure: boolean;
   factors: number;

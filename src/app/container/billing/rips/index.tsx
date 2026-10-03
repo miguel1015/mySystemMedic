@@ -676,7 +676,7 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
                       children: (
                         <CodeCell
                           value={usuario.tipoUsuario}
-                          hint="Se define por paciente; hoy solo existe en el contrato"
+                          hint="El tipo de usuario del convenio no tiene código SISPRO"
                         />
                       ),
                     },
@@ -704,9 +704,12 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
                     },
                     {
                       key: "incapacidad",
-                      label: "Incapacidad",
+                      // Si la atención generó incapacidad (LstSiNo); no es la discapacidad del paciente.
+                      label: "Incapacidad generada",
                       children: (
-                        <WithName name={patient?.disabilityName} code={usuario.incapacidad} />
+                        <Tooltip title="Aún no se registra en la atención; se reporta NO">
+                          <span style={monoStyle}>{usuario.incapacidad}</span>
+                        </Tooltip>
                       ),
                     },
                   ]}

@@ -62,6 +62,8 @@ export interface BillingMovementResponse {
   conceptDetails: string | null
   tipoItem: string | null
   notes: string | null
+  // CUPS del detalle de tarifa (servicios y cirugías) que se reporta en el RIPS.
+  cupsCode?: string | null
   isActive: boolean
   createdAt: string
   updatedAt: string
