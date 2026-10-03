@@ -76,4 +76,21 @@ export const PARAMETERIZATION_ENDPOINTS = {
     USER_ROLE: (id: string | number) =>
       `/api/auth/parameterization/access-control/users/${id}/role`,
   },
+  // Tabla CUPS (SISPRO) y homologación del manual tarifario a CUPS.
+  CUPS: {
+    SEARCH: (search: string, type?: string) =>
+      `/api/auth/parameterization/cups?search=${encodeURIComponent(search)}${
+        type ? `&type=${type}` : ""
+      }&take=20`,
+    SUGGESTIONS: (description: string, type?: string) =>
+      `/api/auth/parameterization/cups/suggestions?description=${encodeURIComponent(description)}${
+        type ? `&type=${type}` : ""
+      }&take=5`,
+    HOMOLOGATION: (status: string, search: string, page: number, pageSize: number) =>
+      `/api/auth/parameterization/cups/homologation?status=${status}&search=${encodeURIComponent(
+        search,
+      )}&page=${page}&pageSize=${pageSize}`,
+    UPDATE_HOMOLOGATION: (referenceCode: string | number) =>
+      `/api/auth/parameterization/cups/homologation/${referenceCode}`,
+  },
 }

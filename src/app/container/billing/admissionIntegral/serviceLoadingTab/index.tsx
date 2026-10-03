@@ -14,6 +14,7 @@ import {
 import { Button } from "antd"
 import { useMemo, useState } from "react"
 import { classifyServiceCategoryByCode } from "./classifyTariffCode"
+import CupsRequiredModal, { CupsRequiredItem } from "./cupsRequiredModal"
 import ItemPickerModal, { PickerRow } from "./itemPickerModal"
 import MovementForm from "./movementForm"
 import { MovementDraft } from "./movementForm/useMovementForm"
@@ -50,6 +51,10 @@ const ServiceLoadingTab = ({
   const [openPicker, setOpenPicker] = useState<PickerMovementType | null>(null)
   const [draft, setDraft] = useState<MovementDraft | null>(null)
   const [surgeryEditMovement, setSurgeryEditMovement] = useState<BillingMovementResponse | null>(
+    null,
+  )
+  // Servicio elegido cuya tarifa no tiene CUPS: se pide homologarlo antes de cargarlo.
+  const [cupsPending, setCupsPending] = useState<{ row: PickerRow; item: CupsRequiredItem } | null>(
     null,
   )
 
@@ -96,8 +101,7 @@ const ServiceLoadingTab = ({
     supply: { rows: supplyPickerRows, loading: isLoadingDevices },
   }
 
-  const handlePickItem = (movementType: PickerMovementType, row: PickerRow) => {
-    setOpenPicker(null)
+  const startDraft = (movementType: PickerMovementType, row: PickerRow) => {
     setDraft({
       movementType,
       itemId: row.id,
@@ -112,6 +116,27 @@ const ServiceLoadingTab = ({
       conceptDetails: null,
       notes: null,
     })
+  }
+
+  const handlePickItem = (movementType: PickerMovementType, row: PickerRow) => {
+    setOpenPicker(null)
+
+    if (movementType === "service") {
+      const detail = tariffDetails.find((d) => d.id === row.id)
+      if (detail && !detail.cupsCode) {
+        setCupsPending({
+          row,
+          item: {
+            referenceCode: detail.referenceCode,
+            description: detail.description,
+            serviceCategory: classifyServiceCategoryByCode(row.code),
+          },
+        })
+        return
+      }
+    }
+
+    startDraft(movementType, row)
   }
 
   const handleEdit = (movement: BillingMovementResponse) => {
@@ -200,6 +225,15 @@ const ServiceLoadingTab = ({
           onSaved={() => setDraft(null)}
         />
       </Modal>
+
+      <CupsRequiredModal
+        item={cupsPending?.item ?? null}
+        onCancel={() => setCupsPending(null)}
+        onAssigned={() => {
+          if (cupsPending) startDraft("service", cupsPending.row)
+          setCupsPending(null)
+        }}
+      />
 
       <SurgicalMovementEditModal
         open={!!surgeryEditMovement}
