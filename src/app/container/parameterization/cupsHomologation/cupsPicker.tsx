@@ -125,6 +125,10 @@ export default function CupsPicker({
         }}
         style={{ width: "100%" }}
         popupMatchSelectWidth={520}
+        // El modal del proyecto usa z-index 1055 y el desplegable de antd 1050: sin esto la
+        // lista queda detrás. Se monta en el body para que el modal no la recorte.
+        getPopupContainer={() => document.body}
+        styles={{ popup: { root: { zIndex: 1060 } } }}
       />
 
       {value && (

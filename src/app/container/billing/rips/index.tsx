@@ -472,7 +472,8 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
             style={{
               ...monoStyle,
               fontSize: 12,
-              background: "var(--dash-surface-muted, #f8fafc)",
+              background: "var(--dash-surface-2, #fbfcfc)",
+              color: "var(--dash-text-primary, #0f1f1b)",
               border: "1px solid var(--dash-border, #e5e7eb)",
               borderRadius: 8,
               padding: 14,
@@ -509,7 +510,8 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
             style={{
               ...monoStyle,
               fontSize: 12,
-              background: "var(--dash-surface-muted, #f8fafc)",
+              background: "var(--dash-surface-2, #fbfcfc)",
+              color: "var(--dash-text-primary, #0f1f1b)",
               border: "1px solid var(--dash-border, #e5e7eb)",
               borderRadius: 8,
               padding: 14,
