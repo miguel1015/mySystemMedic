@@ -48,6 +48,7 @@ import { useRouter } from "next/navigation"
 import { useMemo } from "react"
 import { RipsStatusTag } from "./RipsStatusTag"
 import {
+  RipsMissingField,
   RipsServiceGroupKey,
   RipsServicios,
   buildRips,
@@ -129,8 +130,8 @@ function buildServiceRows(
   servicios: RipsServicios,
   movements: BillingMovementResponse[],
 ): Record<RipsServiceGroupKey, ServiceRow[]> {
-  // Los nombres no viajan en el JSON de consultas y procedimientos; se toman de los
-  // cargos en el mismo orden en que buildRips los recorrió.
+  // Los nombres no viajan en el JSON de consultas, procedimientos y medicamentos; se toman
+  // de los cargos en el mismo orden en que buildRips los recorrió.
   const namesByGroup: Record<RipsServiceGroupKey, string[]> = {
     consultas: [],
     procedimientos: [],
@@ -169,11 +170,11 @@ function buildServiceRows(
       vrServicio: item.vrServicio,
       extra: item.fechaInicioAtencion,
     })),
-    medicamentos: servicios.medicamentos.map((item) => ({
+    medicamentos: servicios.medicamentos.map((item, index) => ({
       key: `m-${item.consecutivo}`,
       consecutivo: item.consecutivo,
       codigo: item.codTecnologiaSalud,
-      descripcion: item.nomTecnologiaSalud,
+      descripcion: namesByGroup.medicamentos[index] ?? "-",
       diagnostico: item.codDiagnosticoPrincipal,
       profesional: item.numDocumentoIdentificacion,
       cantidad: item.cantidadMedicamento,
@@ -185,7 +186,7 @@ function buildServiceRows(
       key: `o-${item.consecutivo}`,
       consecutivo: item.consecutivo,
       codigo: item.codTecnologiaSalud,
-      descripcion: item.nomTecnologiaSalud,
+      descripcion: item.nomTecnologiaSalud ?? "-",
       diagnostico: null,
       profesional: item.numDocumentoIdentificacion,
       cantidad: item.cantidadOS,
@@ -361,8 +362,7 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
       diagnosticoEgreso,
       professional: professionalUser
         ? {
-            // El catálogo de tipos de documento de usuarios no expone el código (CC, TI...).
-            documentTypeCode: null,
+            documentTypeCode: professionalUser.documentTypeCode ?? null,
             documentNumber: professionalUser.documentNumber ?? null,
             name: hcInicial?.nombreProfesional ?? null,
           }
@@ -413,14 +413,17 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
   const usuario = result?.rips.usuarios[0]
 
   const missingByGroup = useMemo(() => {
-    const groups = new Map<string, { field: string; reason: string }[]>()
+    const groups = new Map<string, RipsMissingField[]>()
     for (const item of result?.missing ?? []) {
       const list = groups.get(item.group) ?? []
-      list.push({ field: item.field, reason: item.reason })
+      list.push(item)
       groups.set(item.group, list)
     }
     return Array.from(groups.entries())
   }, [result])
+
+  const errorCount = result?.missing.filter((item) => item.severity === "error").length ?? 0
+  const warningCount = (result?.missing.length ?? 0) - errorCount
 
   const serviceTabs = serviceRows
     ? GROUP_ORDER.filter((group) => serviceRows[group].length > 0).map((group) => ({
@@ -602,7 +605,7 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
                     {
                       key: "prestador",
                       label: "Código prestador (REPS)",
-                      children: <CodeCell value={provider?.enableCode} />,
+                      children: <CodeCell value={result.codPrestador} />,
                     },
                     { key: "eps", label: "EPS", children: invoice?.insurerName ?? "-" },
                     {
@@ -727,10 +730,15 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
                 {
                   key: "missing",
                   label: (
-                    <Space>
-                      <ExclamationCircleOutlined style={{ color: "#d97706" }} />
+                    <Space wrap>
+                      <ExclamationCircleOutlined
+                        style={{ color: errorCount > 0 ? "#dc2626" : "#d97706" }}
+                      />
                       <span>
-                        {result.missing.length} datos pendientes para que el RIPS sea válido
+                        {errorCount > 0
+                          ? `${errorCount} errores que el MUV rechazaría`
+                          : "Sin errores de rechazo detectados"}
+                        {warningCount > 0 && ` · ${warningCount} avisos`}
                       </span>
                     </Space>
                   ),
@@ -742,6 +750,12 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
                           <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
                             {items.map((item) => (
                               <li key={`${item.field}-${item.reason}`}>
+                                <Tag
+                                  color={item.severity === "error" ? "error" : "warning"}
+                                  style={{ marginInlineEnd: 6 }}
+                                >
+                                  {item.severity === "error" ? "Error" : "Aviso"}
+                                </Tag>
                                 <span style={monoStyle}>{item.field}</span>: {item.reason}
                               </li>
                             ))}

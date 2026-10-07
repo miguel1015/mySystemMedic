@@ -64,6 +64,13 @@ export interface BillingMovementResponse {
   notes: string | null
   // CUPS del detalle de tarifa (servicios y cirugías) que se reporta en el RIPS.
   cupsCode?: string | null
+  // Tipo RIPS del código en la tabla CUPSRips: AC = consulta, AP = procedimiento,
+  // AT = estancia / otros servicios. null si el código no está en la tabla.
+  cupsRipsType?: string | null
+  // Si el código está habilitado en CUPSRips (el MUV rechaza los deshabilitados).
+  cupsEnabled?: boolean | null
+  // Código de la unidad mínima de dispensación del medicamento (tabla UPR), ej. 66 = tableta.
+  medicinePresentationCode?: string | null
   isActive: boolean
   createdAt: string
   updatedAt: string
