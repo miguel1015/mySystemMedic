@@ -14,7 +14,12 @@ export interface CupsSuggestion {
   ripsType: CupsRipsType | null
   // 0 a 1: qué tanto se parecen las descripciones. Es solo una ayuda para elegir.
   score: number
+  // Hoja del manual tarifario que homologa el CUPS; null si es por similitud de la descripción.
+  source: CupsSuggestionSource | null
 }
+
+// T = tarifas 2026, H2 / H1 = homologadores, SOD = reemplazo vigente de un CUPS "SOD" deshabilitado.
+export type CupsSuggestionSource = "T" | "H2" | "H1" | "SOD"
 
 export interface CupsHomologationItem {
   referenceCode: number

@@ -82,10 +82,10 @@ export const PARAMETERIZATION_ENDPOINTS = {
       `/api/auth/parameterization/cups?search=${encodeURIComponent(search)}${
         type ? `&type=${type}` : ""
       }&take=20`,
-    SUGGESTIONS: (description: string, type?: string) =>
+    SUGGESTIONS: (description: string, type?: string, referenceCode?: number) =>
       `/api/auth/parameterization/cups/suggestions?description=${encodeURIComponent(description)}${
         type ? `&type=${type}` : ""
-      }&take=5`,
+      }${referenceCode != null ? `&referenceCode=${referenceCode}` : ""}&take=5`,
     HOMOLOGATION: (status: string, search: string, page: number, pageSize: number) =>
       `/api/auth/parameterization/cups/homologation?status=${status}&search=${encodeURIComponent(
         search,

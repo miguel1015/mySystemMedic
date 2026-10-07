@@ -37,10 +37,16 @@ export function useCupsSearch(search: string, type?: CupsRipsType) {
   })
 }
 
-export function useCupsSuggestions(description: string | null | undefined, type?: CupsRipsType) {
+// Con `referenceCode` el backend devuelve primero los CUPS que homologa el manual tarifario.
+export function useCupsSuggestions(
+  description: string | null | undefined,
+  type?: CupsRipsType,
+  referenceCode?: number,
+) {
   return useQuery({
-    queryKey: ["cups", "suggestions", description ?? null, type ?? null],
-    queryFn: () => request<CupsSuggestion[]>(ENDPOINTS.CUPS.SUGGESTIONS(description!, type)),
+    queryKey: ["cups", "suggestions", description ?? null, type ?? null, referenceCode ?? null],
+    queryFn: () =>
+      request<CupsSuggestion[]>(ENDPOINTS.CUPS.SUGGESTIONS(description!, type, referenceCode)),
     enabled: !!description?.trim(),
     staleTime: Infinity,
   })

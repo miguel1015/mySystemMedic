@@ -4,6 +4,7 @@ import CupsPicker, { CupsOption } from "@/app/container/parameterization/cupsHom
 import Modal from "@/components/modal"
 import {
   ripsTypeForServiceCategory,
+  useCupsSuggestions,
   useUpdateCupsHomologation,
 } from "@/core/hooks/parameterization/cups/useCups"
 import { Alert, Button, Space } from "antd"
@@ -27,6 +28,10 @@ interface CupsRequiredModalProps {
 export default function CupsRequiredModal({ item, onCancel, onAssigned }: CupsRequiredModalProps) {
   const [value, setValue] = useState<CupsOption | null>(null)
   const update = useUpdateCupsHomologation()
+  const type = ripsTypeForServiceCategory(item?.serviceCategory)
+  // Misma consulta que hace CupsPicker (queda en caché): solo para elegir el texto de ayuda.
+  const { data: suggestions = [] } = useCupsSuggestions(item?.description, type, item?.referenceCode)
+  const fromManual = suggestions.some((s) => s.source)
 
   useEffect(() => {
     setValue(null)
@@ -69,13 +74,15 @@ export default function CupsRequiredModal({ item, onCancel, onAssigned }: CupsRe
           </p>
           <CupsPicker
             description={item.description}
-            type={ripsTypeForServiceCategory(item.serviceCategory)}
+            type={type}
+            referenceCode={item.referenceCode}
             value={value}
             onChange={setValue}
           />
           <small style={{ color: "var(--dash-text-secondary, #6b7280)" }}>
-            Las sugerencias comparan descripciones; verifique que el CUPS corresponda al servicio
-            prestado.
+            {fromManual
+              ? "El manual tarifario homologa este código a varios CUPS: elija el que corresponda al servicio prestado."
+              : "Las sugerencias comparan descripciones; verifique que el CUPS corresponda al servicio prestado."}
           </small>
           {update.isError && (
             <Alert type="error" showIcon title="No se pudo asignar el CUPS" description={update.error.message} />
