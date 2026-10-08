@@ -3,10 +3,12 @@
 import RHFAntdInput from "@/components/input"
 import RHFAntdInputNumber from "@/components/inputNumber"
 import RHFAntdSelect from "@/components/select"
+import { useGetProfessionals } from "@/core/hooks/users/useGetProfessionals"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import { BILLING_SERVICE_CATEGORIES, BillingMovementResponse } from "@/core/interfaces/care/billing"
 import { SaveOutlined } from "@ant-design/icons"
 import { Button } from "antd"
+import { useMemo } from "react"
 import { useWatch } from "react-hook-form"
 import { formatCurrency } from "../../utils"
 import { MovementDraft, useMovementForm } from "./useMovementForm"
@@ -39,6 +41,18 @@ const MovementForm = ({
     draft,
     onDone: onSaved,
   })
+
+  const { data: professionals = [], isLoading: isLoadingProfessionals } = useGetProfessionals()
+  const professionalOptions = useMemo(
+    () =>
+      professionals.map((professional) => ({
+        value: professional.id,
+        label: [professional.fullName, professional.documentTypeCode, professional.documentNumber]
+          .filter(Boolean)
+          .join(" · "),
+      })),
+    [professionals],
+  )
 
   const quantity = useWatch({ control, name: "quantity" })
   const unitValue = useWatch({ control, name: "unitValue" })
@@ -107,6 +121,16 @@ const MovementForm = ({
             options={serviceCategoryOptions}
           />
         )}
+
+        <RHFAntdSelect
+          name="professionalUserId"
+          control={control}
+          label="Profesional que prestó u ordenó el servicio"
+          placeholder="Seleccione el profesional"
+          options={professionalOptions}
+          loading={isLoadingProfessionals}
+          helperText="Se reporta en el RIPS. Por defecto, el médico de la historia clínica de ingreso."
+        />
 
         <div
           style={{

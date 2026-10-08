@@ -447,6 +447,8 @@ export interface DatosClinicosEgresoResponse {
   justificacionHospitalizacion: string | null;
   ordenes: string | null;
   diagnosticoEgresoId: number | null;
+  // Médico que firma la nota de egreso; null en notas anteriores a este campo.
+  userId?: number | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -471,6 +473,7 @@ export interface DatosClinicosEgresoCreateRequest {
   evoluciones: string | null;
   justificacionHospitalizacion: string | null;
   ordenes: string | null;
+  userId?: number | null;
 }
 
 export type DatosClinicosEgresoUpdateRequest = Omit<

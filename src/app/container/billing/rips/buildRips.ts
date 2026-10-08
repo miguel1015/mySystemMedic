@@ -5,6 +5,7 @@ import type {
 } from "@/core/interfaces/care/hciInicial"
 import type { AdmissionResponse, GetPatient } from "@/core/interfaces/care/types"
 import type { TProvider } from "@/core/interfaces/parameterization/types"
+import type { FevSummary } from "./parseFevXml"
 
 // Estructura del RIPS como soporte de la FEV en salud (Resolución 948 de 2026, Documento
 // Técnico 1 v001 del 4 de junio de 2026). Todos los campos van siempre presentes: sin dato se
@@ -12,9 +13,11 @@ import type { TProvider } from "@/core/interfaces/parameterization/types"
 // tiene, o tiene con un valor que el MUV rechaza, se reporta en `missing`.
 //
 // Cuando el ejemplo del documento técnico contradice su tabla de campos prevalece la tabla
-// (numeral 1.7), salvo en nomComplicacionCIE11: la tabla de hospitalización trae
-// "nomcodComplicacionCIE11", que es una errata; se usa el nombre de procedimientos y de los
-// ejemplos.
+// (numeral 1.7). Para la complicación CIE-11 se usa nomCodComplicacionCIE11, el nombre de las
+// ejemplificaciones oficiales de procedimientos y hospitalización y de la tabla de
+// hospitalización, consistente con los demás nomCod*CIE11.
+//
+// Las propiedades van en el orden de las ejemplificaciones oficiales de la Res. 948.
 
 type Nullable<T> = T | null
 
@@ -50,15 +53,15 @@ export interface RipsConsulta extends DiagnosticFields {
   conceptoRecaudo: string
   valorPagoModerador: number
   numFEVPagoModerador: null
-  consecutivo: number
   codigoVIDA: null
+  consecutivo: number
 }
 
 export interface RipsProcedimiento extends DiagnosticFields {
   codPrestador: Nullable<string>
   fechaInicioAtencion: Nullable<string>
-  idMIPRES: null
   numAutorizacion: null
+  idMIPRES: null
   codProcedimiento: Nullable<string>
   viaIngresoServicioSalud: Nullable<string>
   modalidadGrupoServicioTecSal: Nullable<string>
@@ -72,13 +75,13 @@ export interface RipsProcedimiento extends DiagnosticFields {
   nomCodDiagnosticoRelacionadoCIE11: null
   codComplicacion: null
   codComplicacionCIE11: null
-  nomComplicacionCIE11: null
+  nomCodComplicacionCIE11: null
   vrServicio: number
   conceptoRecaudo: string
   valorPagoModerador: number
   numFEVPagoModerador: null
-  consecutivo: number
   codigoVIDA: null
+  consecutivo: number
 }
 
 interface EgresoFields extends DiagnosticFields {
@@ -102,8 +105,8 @@ interface EgresoFields extends DiagnosticFields {
   codDiagnosticoCausaMuerteCIE11: null
   nomCodDiagnosticoCausaMuerteCIE11: null
   fechaEgreso: Nullable<string>
-  consecutivo: number
   codigoVIDA: null
+  consecutivo: number
 }
 
 export type RipsUrgencia = EgresoFields
@@ -113,7 +116,7 @@ export interface RipsHospitalizacion extends EgresoFields {
   numAutorizacion: null
   codComplicacion: null
   codComplicacionCIE11: null
-  nomComplicacionCIE11: null
+  nomCodComplicacionCIE11: null
 }
 
 // La Res. 948 eliminó numAutorizacion (M02) de medicamentos.
@@ -141,8 +144,8 @@ export interface RipsMedicamento extends DiagnosticFields {
   conceptoRecaudo: string
   valorPagoModerador: number
   numFEVPagoModerador: null
-  consecutivo: number
   codigoVIDA: null
+  consecutivo: number
 }
 
 export interface RipsOtroServicio {
@@ -162,8 +165,8 @@ export interface RipsOtroServicio {
   conceptoRecaudo: string
   valorPagoModerador: number
   numFEVPagoModerador: null
-  consecutivo: number
   codigoVIDA: null
+  consecutivo: number
 }
 
 export interface RipsServicios {
@@ -236,6 +239,9 @@ export interface BuildRipsArgs {
   diagnosticosIngreso: Cie10CodeResponse[]
   diagnosticoEgreso: DiagnosticoEgresoResponse | null
   professional: RipsProfessional | null
+  // Factura electrónica leída del XML. undefined: aún no se ha cargado (no se valida);
+  // null: no hay XML o no se pudo leer.
+  fev?: FevSummary | null
 }
 
 // El valor seleccionado en MediNexus no tiene el código de la tabla de referencia SISPRO
@@ -418,6 +424,7 @@ export function buildRips({
   diagnosticosIngreso,
   diagnosticoEgreso,
   professional,
+  fev,
 }: BuildRipsArgs): RipsBuildResult {
   const missingMap = new Map<string, RipsMissingField>()
   const addIssue = (
@@ -478,12 +485,6 @@ export function buildRips({
   const fechaInicioAtencion = toRipsDateTime(admission.admissionDate)
   const fechaEgreso = toRipsDateTime(diagnosticoEgreso?.fechaEgreso)
 
-  // Profesional que atendió (el de la historia clínica de ingreso).
-  const profesionalTipoDoc = professional?.documentTypeCode?.trim().toUpperCase() || null
-  const profesionalNumDoc = professional?.documentNumber?.trim() || null
-  const profesionalTipoDocValido =
-    profesionalTipoDoc && TIPOS_DOCUMENTO_PROFESIONAL.has(profesionalTipoDoc) ? profesionalTipoDoc : null
-
   // Códigos de catálogo. Finalidad y causa salen del egreso si existe; si no, de la admisión.
   const modalidad = admission.careModalityCode ?? null
   const grupoServicios = admission.serviceClassificationCode ?? null
@@ -504,18 +505,32 @@ export function buildRips({
     otrosServicios: [],
   }
 
-  const checkProfessional = (group: string) => {
-    if (!professional) {
-      addIssue(group, "tipo / numDocumentoIdentificacion", "No hay historia clínica de ingreso: no se identificó el profesional tratante")
-      return
+  // Profesional que prestó, prescribió u ordenó cada cargo (RVG11: debe estar en ReTHUS). Los
+  // cargos sin profesional, anteriores a ese dato, usan el médico de la HC inicial.
+  const resolveProfessional = (group: string, movement: BillingMovementResponse) => {
+    const hasOwn = movement.professionalUserId != null
+    if (!hasOwn && !professional) {
+      addIssue(group, "tipo / numDocumentoIdentificacion", `${movement.name}: el cargo no tiene profesional y no hay historia clínica de ingreso de donde tomarlo`)
+      return { tipoDocumentoIdentificacion: null, numDocumentoIdentificacion: null }
     }
-    if (!profesionalNumDoc) {
-      addIssue(group, "numDocumentoIdentificacion", "El profesional tratante no tiene número de documento")
+    if (!hasOwn) {
+      addWarning(group, "tipo / numDocumentoIdentificacion", "Hay cargos sin profesional: se reporta el médico de la historia clínica de ingreso. Asígnelo en la carga de servicios")
     }
-    if (!profesionalTipoDoc) {
-      addIssue(group, "tipoDocumentoIdentificacion", "El tipo de documento del profesional no tiene código")
-    } else if (!profesionalTipoDocValido) {
-      addIssue(group, "tipoDocumentoIdentificacion", `El tipo de documento ${profesionalTipoDoc} del profesional no está en TipoIdPISIS (CC, CE, CD, PA, SC, PE, DE o PT)`)
+
+    const tipo = (hasOwn ? movement.professionalDocumentTypeCode : professional?.documentTypeCode)?.trim().toUpperCase() || null
+    const numero = (hasOwn ? movement.professionalDocumentNumber : professional?.documentNumber)?.trim() || null
+    const quien = hasOwn
+      ? `${movement.name} (${movement.professionalName ?? "profesional del cargo"})`
+      : "El médico de la historia clínica de ingreso"
+    if (!numero) addIssue(group, "numDocumentoIdentificacion", `${quien}: no tiene número de documento`)
+    if (!tipo) {
+      addIssue(group, "tipoDocumentoIdentificacion", `${quien}: el tipo de documento no tiene código`)
+    } else if (!TIPOS_DOCUMENTO_PROFESIONAL.has(tipo)) {
+      addIssue(group, "tipoDocumentoIdentificacion", `${quien}: el tipo de documento ${tipo} no está en TipoIdPISIS (CC, CE, CD, PA, SC, PE, DE o PT)`)
+    }
+    return {
+      tipoDocumentoIdentificacion: tipo && TIPOS_DOCUMENTO_PROFESIONAL.has(tipo) ? tipo : null,
+      numDocumentoIdentificacion: numero,
     }
   }
 
@@ -529,7 +544,6 @@ export function buildRips({
     if (!principal) {
       addIssue(group, "codDiagnosticoPrincipal", "No hay diagnósticos en la historia clínica de ingreso ni en el egreso")
     }
-    checkProfessional(group)
   }
 
   const checkValue = (group: string, name: string, value: number) => {
@@ -576,6 +590,7 @@ export function buildRips({
     if (group === "consultas") {
       checkCups("Consultas", movement, procedureCode)
       checkCommon("Consultas")
+      const profesional = resolveProfessional("Consultas", movement)
       if (!causaMotivo) addIssue("Consultas", "causaMotivoAtencion", PENDING_CATALOG_CODE)
       addWarning("Consultas", "tipoDiagnosticoPrincipal", "No se registra si el diagnóstico está confirmado; se reporta 01 (impresión diagnóstica)")
       const vrServicio = money(movement.totalValue)
@@ -603,34 +618,33 @@ export function buildRips({
         codDiagnosticoRelacionado3CIE11: null,
         nomCodDiagnosticoRelacionado3CIE11: null,
         tipoDiagnosticoPrincipal: TIPO_DIAGNOSTICO_IMPRESION,
-        tipoDocumentoIdentificacion: profesionalTipoDocValido,
-        numDocumentoIdentificacion: profesionalNumDoc,
+        ...profesional,
         vrServicio,
         conceptoRecaudo: CONCEPTO_RECAUDO_NO_APLICA,
         valorPagoModerador: 0,
         numFEVPagoModerador: null,
-        consecutivo: servicios.consultas.length + 1,
         codigoVIDA: null,
+        consecutivo: servicios.consultas.length + 1,
       })
     } else if (group === "procedimientos") {
       checkCups("Procedimientos", movement, procedureCode)
       checkCommon("Procedimientos")
+      const profesional = resolveProfessional("Procedimientos", movement)
       if (!viaIngreso) addIssue("Procedimientos", "viaIngresoServicioSalud", PENDING_CATALOG_CODE)
       const vrServicio = money(movement.totalValue)
       checkValue("Procedimientos", movement.name, vrServicio)
       servicios.procedimientos.push({
         codPrestador,
         fechaInicioAtencion,
-        idMIPRES: null,
         numAutorizacion: null,
+        idMIPRES: null,
         codProcedimiento: procedureCode,
         viaIngresoServicioSalud: viaIngreso,
         modalidadGrupoServicioTecSal: modalidad,
         grupoServicios,
         codServicio,
         finalidadTecnologiaSalud: finalidad,
-        tipoDocumentoIdentificacion: profesionalTipoDocValido,
-        numDocumentoIdentificacion: profesionalNumDoc,
+        ...profesional,
         codDiagnosticoPrincipal: principal,
         codDiagnosticoPrincipalCIE11: null,
         nomCodDiagnosticoPrincipalCIE11: null,
@@ -639,13 +653,13 @@ export function buildRips({
         nomCodDiagnosticoRelacionadoCIE11: null,
         codComplicacion: null,
         codComplicacionCIE11: null,
-        nomComplicacionCIE11: null,
+        nomCodComplicacionCIE11: null,
         vrServicio,
         conceptoRecaudo: CONCEPTO_RECAUDO_NO_APLICA,
         valorPagoModerador: 0,
         numFEVPagoModerador: null,
-        consecutivo: servicios.procedimientos.length + 1,
         codigoVIDA: null,
+        consecutivo: servicios.procedimientos.length + 1,
       })
     } else if (group === "medicamentos") {
       // Para medicamentos con CUM (tipo 01) la concentración y la unidad de medida van en 0 y
@@ -659,6 +673,8 @@ export function buildRips({
         addIssue("Medicamentos", "codDiagnosticoPrincipal", "No hay diagnósticos en la historia clínica de ingreso ni en el egreso")
       }
       addWarning("Medicamentos", "diasTratamiento", "No se registran días de tratamiento; se reporta 1")
+      // M16 / M17: profesional que prescribe el medicamento.
+      const profesional = resolveProfessional("Medicamentos", movement)
 
       const vrUnitMedicamento = money(movement.unitValue)
       const vrServicio = money(movement.totalValue)
@@ -686,16 +702,15 @@ export function buildRips({
         unidadMinDispensa,
         cantidadMedicamento: movement.quantity,
         diasTratamiento: DIAS_TRATAMIENTO_APLICACION,
-        tipoDocumentoIdentificacion: profesionalTipoDocValido,
-        numDocumentoIdentificacion: profesionalNumDoc,
+        ...profesional,
         vrUnitMedicamento,
         vrDispensacion: 0,
         vrServicio,
         conceptoRecaudo: CONCEPTO_RECAUDO_NO_APLICA,
         valorPagoModerador: 0,
         numFEVPagoModerador: null,
-        consecutivo: servicios.medicamentos.length + 1,
         codigoVIDA: null,
+        consecutivo: servicios.medicamentos.length + 1,
       })
     } else {
       const isSupply = movement.movementType === "supply"
@@ -707,7 +722,11 @@ export function buildRips({
         // Estancias y traslados se reportan con CUPS.
         checkCups("Otros servicios", movement, codTecnologiaSalud)
       }
-      if (isSupply) checkProfessional("Otros servicios")
+      // El profesional solo se informa en dispositivos, servicios complementarios y honorarios
+      // (RVC050); en estancias va null.
+      const profesional = isSupply
+        ? resolveProfessional("Otros servicios", movement)
+        : { tipoDocumentoIdentificacion: null, numDocumentoIdentificacion: null }
       const vrUnitOS = money(movement.unitValue)
       const vrServicio = money(movement.totalValue)
       checkValue("Otros servicios", movement.name, vrServicio)
@@ -721,17 +740,15 @@ export function buildRips({
         // Obligatorio para dispositivos médicos e insumos (hasta 200 caracteres).
         nomTecnologiaSalud: movement.name.trim().slice(0, 200) || null,
         cantidadOS: movement.quantity,
-        // El profesional solo se informa en dispositivos, servicios complementarios y honorarios.
-        tipoDocumentoIdentificacion: isSupply ? profesionalTipoDocValido : null,
-        numDocumentoIdentificacion: isSupply ? profesionalNumDoc : null,
+        ...profesional,
         vrUnitOS,
         vrDispensacion: 0,
         vrServicio,
         conceptoRecaudo: CONCEPTO_RECAUDO_NO_APLICA,
         valorPagoModerador: 0,
         numFEVPagoModerador: null,
-        consecutivo: servicios.otrosServicios.length + 1,
         codigoVIDA: null,
+        consecutivo: servicios.otrosServicios.length + 1,
       })
     }
   }
@@ -779,10 +796,10 @@ export function buildRips({
       ),
     )
 
-    const egreso: EgresoFields = {
-      codPrestador,
-      fechaInicioAtencion,
-      causaMotivoAtencion: causaMotivo,
+    // Urgencias y hospitalización comparten estos bloques, pero hospitalización intercala sus
+    // propios campos (vía de ingreso, autorización y complicación); se arman por partes para
+    // respetar el orden de cada grupo.
+    const diagnosticosEgresoFields = {
       codDiagnosticoPrincipal: diagnosticoIngreso,
       codDiagnosticoPrincipalCIE11: null,
       nomCodDiagnosticoPrincipalCIE11: null,
@@ -798,17 +815,25 @@ export function buildRips({
       codDiagnosticoRelacionadoE3: null,
       codDiagnosticoRelacionadoE3CIE11: null,
       nomCodDiagnosticoRelacionadoE3CIE11: null,
+    } as const
+    const cierreEgresoFields = {
       condicionDestinoUsuarioEgreso: condicionEgreso,
       codDiagnosticoCausaMuerte: null,
       codDiagnosticoCausaMuerteCIE11: null,
       nomCodDiagnosticoCausaMuerteCIE11: null,
       fechaEgreso,
-      consecutivo: 1,
       codigoVIDA: null,
-    }
+      consecutivo: 1,
+    } as const
 
     if (isUrgencias) {
-      servicios.urgencias.push(egreso)
+      servicios.urgencias.push({
+        codPrestador,
+        fechaInicioAtencion,
+        causaMotivoAtencion: causaMotivo,
+        ...diagnosticosEgresoFields,
+        ...cierreEgresoFields,
+      })
     } else {
       if (!viaIngreso) {
         addIssue(groupLabel, "viaIngresoServicioSalud", PENDING_CATALOG_CODE)
@@ -816,12 +841,16 @@ export function buildRips({
         addIssue(groupLabel, "viaIngresoServicioSalud", `La vía de ingreso ${viaIngreso} no aplica a hospitalización: use derivado de consulta externa (02), de urgencias (03), referido (13) u otra que aplique`)
       }
       servicios.hospitalizacion.push({
-        ...egreso,
+        codPrestador,
         viaIngresoServicioSalud: viaIngreso,
+        fechaInicioAtencion,
         numAutorizacion: null,
+        causaMotivoAtencion: causaMotivo,
+        ...diagnosticosEgresoFields,
         codComplicacion: null,
         codComplicacionCIE11: null,
-        nomComplicacionCIE11: null,
+        nomCodComplicacionCIE11: null,
+        ...cierreEgresoFields,
       })
     }
   }
@@ -872,6 +901,7 @@ export function buildRips({
   addWarning("Usuario", "incapacidad", "No se registra si la atención generó incapacidad; se reporta NO")
 
   const usuario: RipsUsuario = {
+    consecutivo: 1,
     tipoDocumentoIdentificacion: tipoDocumento,
     numDocumentoIdentificacion: numDocumento,
     tipoUsuario,
@@ -881,7 +911,6 @@ export function buildRips({
     codMunicipioResidencia: codMunicipio,
     codZonaTerritorialResidencia: codZona,
     incapacidad: INCAPACIDAD_NO,
-    consecutivo: 1,
     codPaisOrigen,
     registroSIRAS: null,
     servicios,
@@ -897,6 +926,59 @@ export function buildRips({
   // Cada usuario debe tener al menos un servicio (RVG03 / RVG07).
   if (Object.values(servicios).every((items) => items.length === 0)) {
     addIssue("Servicios", "servicios", "La admisión no tiene servicios para reportar (RVG03)")
+  }
+
+  // ---------- Cruce con la factura electrónica ----------
+  if (fev === null) {
+    addWarning("Factura", "xmlFevFile", "No se pudo leer el XML de la factura: el RIPS no se comparó con la factura electrónica")
+  } else if (fev) {
+    if (fev.invoiceNum !== invoiceNum) {
+      addIssue("Factura", "numFactura", `El número del RIPS (${invoiceNum}) no coincide con el de la factura electrónica (${fev.invoiceNum ?? "sin número"}) (RVC004)`)
+    }
+    const fevNit = toNit(fev.supplierNit)
+    if (numDocumentoIdObligado && fevNit !== numDocumentoIdObligado) {
+      addIssue("Factura", "numDocumentoIdObligado", `El NIT del RIPS (${numDocumentoIdObligado}) no coincide con el del emisor de la factura (${fevNit ?? "sin NIT"}) (RVC001)`)
+    }
+    // Fuera de pago por evento los servicios van en 0 (RVC034) y no suman el valor facturado.
+    const valorFactura = fev.lineExtensionAmount === null ? null : toMoney(fev.lineExtensionAmount)
+    if (isEvento && valorFactura === null) {
+      addIssue("Factura", "vrServicio", "La factura electrónica no tiene LineExtensionAmount: no se puede comparar el valor (RVG08)")
+    } else if (isEvento && valorFactura !== totalServicios) {
+      addIssue("Factura", "vrServicio", `La suma de los servicios del RIPS (${totalServicios}) no coincide con el valor de la factura (${valorFactura}). Revise si se anularon o agregaron cargos después de facturar (RVG08)`)
+    }
+    if (!fev.customizationId?.startsWith("SS-")) {
+      addIssue("Factura", "CustomizationID", `La factura es de tipo de operación ${fev.customizationId ?? "sin tipo"}, no una FEV en salud (SS-CUFE, SS-SinAporte, etc.): debe emitirse con los campos del sector salud`)
+    }
+    if (!fev.hasHealthExtension) {
+      addIssue("Factura", "CustomTagGeneral", "La factura no trae los campos adicionales del sector salud (UBLExtensions / CustomTagGeneral) (FED060)")
+    }
+    if (!fev.periodStart || !fev.periodEnd) {
+      addIssue("Factura", "InvoicePeriod", "La factura no trae el periodo de facturación (InvoicePeriod StartDate / EndDate) (VFE020 / VFE021)")
+    } else {
+      // Fechas de los servicios y de egreso dentro del periodo facturado (RVC014 / RVC044).
+      const { periodStart, periodEnd } = fev
+      const outOfPeriod = (value: string | null) => {
+        const day = value?.slice(0, 10)
+        return !!day && (day < periodStart || day > periodEnd)
+      }
+      const period = `${periodStart} a ${periodEnd}`
+      const datedServices: [string, string | null][] = [
+        ...servicios.consultas.map((item): [string, string | null] => ["Consultas", item.fechaInicioAtencion]),
+        ...servicios.procedimientos.map((item): [string, string | null] => ["Procedimientos", item.fechaInicioAtencion]),
+        ...servicios.medicamentos.map((item): [string, string | null] => ["Medicamentos", item.fechaDispensAdmon]),
+        ...servicios.otrosServicios.map((item): [string, string | null] => ["Otros servicios", item.fechaSuministroTecnologia]),
+      ]
+      for (const [group, date] of datedServices) {
+        if (outOfPeriod(date)) {
+          addIssue(group, "fecha del servicio", `Hay servicios con fecha fuera del periodo facturado (${period}) (RVC014)`)
+        }
+      }
+      for (const [group, items] of [["Urgencias", servicios.urgencias], ["Hospitalización", servicios.hospitalizacion]] as const) {
+        if (items.some((item) => outOfPeriod(item.fechaEgreso))) {
+          addIssue(group, "fechaEgreso", `La fecha de egreso está fuera del periodo facturado (${period}) (RVC044)`)
+        }
+      }
+    }
   }
 
   // Primero los errores, luego los avisos.

@@ -76,6 +76,15 @@ export interface UserByProfile {
   userProfileName: string;
 }
 
+// Médico activo con su documento, para asignarlo a cargos y reportarlo en el RIPS.
+export interface ProfessionalOption {
+  id: number;
+  fullName: string;
+  userProfileName: string | null;
+  documentTypeCode: string | null;
+  documentNumber: string;
+}
+
 export interface TCountries {
   id: number;
   code: string;

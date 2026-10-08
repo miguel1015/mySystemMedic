@@ -17,6 +17,7 @@ import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetH
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
 import { useGetProvider } from "@/core/hooks/parameterization/providers/useGetProvider"
 import { useGetUserById } from "@/core/hooks/users/useGetByIdUser"
+import { useGetProfessionals } from "@/core/hooks/users/useGetProfessionals"
 import type { BillingMovementResponse } from "@/core/interfaces/care/billing"
 import {
   ArrowLeftOutlined,
@@ -46,6 +47,7 @@ import {
 import type { ColumnsType } from "antd/es/table"
 import { useRouter } from "next/navigation"
 import { useMemo } from "react"
+import { parseFevXml } from "./parseFevXml"
 import { RipsStatusTag } from "./RipsStatusTag"
 import {
   RipsMissingField,
@@ -338,7 +340,35 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
     useGetDiagnosticosEgresoByIds([activeDischarge?.diagnosticoEgresoId])
   const diagnosticoEgreso = diagnosticosEgresoData[0] ?? null
 
+  // Médico de la HC inicial: respaldo para los cargos sin profesional. La lista de
+  // profesionales la ve cualquier rol; el detalle por id solo los administradores.
+  const { data: professionals = [] } = useGetProfessionals()
   const { data: professionalUser } = useGetUserById(hcInicial?.userId ?? 0)
+  const hcProfessional = useMemo(() => {
+    const listed = professionals.find((item) => item.id === hcInicial?.userId)
+    if (listed) {
+      return {
+        documentTypeCode: listed.documentTypeCode,
+        documentNumber: listed.documentNumber,
+        name: hcInicial?.nombreProfesional ?? listed.fullName,
+      }
+    }
+    if (professionalUser) {
+      return {
+        documentTypeCode: professionalUser.documentTypeCode ?? null,
+        documentNumber: professionalUser.documentNumber ?? null,
+        name: hcInicial?.nombreProfesional ?? null,
+      }
+    }
+    return null
+  }, [professionals, professionalUser, hcInicial])
+
+  // Factura leída del XML para cruzarla con el RIPS. Mientras carga queda undefined (no se
+  // valida); si no hay XML o no se puede leer, null.
+  const fev = useMemo(() => {
+    if (isLoadingAttached) return undefined
+    return parseFevXml(attachedDocument?.base64)
+  }, [isLoadingAttached, attachedDocument])
 
   const isLoading =
     isLoadingInvoices ||
@@ -360,15 +390,10 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
       movements,
       diagnosticosIngreso: hcInicial?.analisisDiagnosticosPlan?.diagnosticos ?? [],
       diagnosticoEgreso,
-      professional: professionalUser
-        ? {
-            documentTypeCode: professionalUser.documentTypeCode ?? null,
-            documentNumber: professionalUser.documentNumber ?? null,
-            name: hcInicial?.nombreProfesional ?? null,
-          }
-        : null,
+      professional: hcProfessional,
+      fev,
     })
-  }, [invoice, admission, patient, provider, movements, hcInicial, diagnosticoEgreso, professionalUser])
+  }, [invoice, admission, patient, provider, movements, hcInicial, diagnosticoEgreso, hcProfessional, fev])
 
   const serviceRows = useMemo(
     () => (result ? buildServiceRows(result.rips.usuarios[0].servicios, movements) : null),

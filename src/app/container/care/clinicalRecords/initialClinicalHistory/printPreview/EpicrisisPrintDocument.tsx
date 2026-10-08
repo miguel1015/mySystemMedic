@@ -1,6 +1,8 @@
 "use client";
 
+import dayjs from "dayjs";
 import type { GetUser } from "@/core/interfaces/user/users";
+import { buildFullName } from "@/core/utils/user";
 import type { TProvider } from "@/core/interfaces/parameterization/types";
 import type {
   HCInicialResponse,
@@ -353,6 +355,10 @@ export const EpicrisisPrintDocument = ({
           case "notaEgreso": {
             const nota = entry.data;
             const diagnostico = entry.diagnostico;
+            // Médico que firmó la nota; las notas anteriores a este dato usan el de la vista.
+            const egresoDoctorUser = nota.userId ? findUser(nota.userId) : undefined;
+            // fechaEgreso llega en UTC: se muestra en hora local.
+            const fechaEgreso = diagnostico?.fechaEgreso ? dayjs(diagnostico.fechaEgreso) : null;
             return (
               <GenericClinicalPrintDocument
                 key={`nota-egreso-${nota.id}`}
@@ -363,10 +369,10 @@ export const EpicrisisPrintDocument = ({
                 contractName={contractName}
                 documentTitle="Nota de Egreso"
                 attentionLabel="Fecha y hora de egreso:"
-                attentionDate={diagnostico?.fechaEgreso ?? ""}
-                attentionTime={diagnostico?.fechaEgreso?.slice(11, 16) ?? ""}
-                doctorName={doctorName}
-                doctorUser={doctorUser}
+                attentionDate={fechaEgreso?.format("YYYY-MM-DD") ?? ""}
+                attentionTime={fechaEgreso?.format("HH:mm") ?? ""}
+                doctorName={egresoDoctorUser ? buildFullName(egresoDoctorUser) : doctorName}
+                doctorUser={egresoDoctorUser ?? doctorUser}
                 sections={[
                   {
                     title: "Signos vitales",

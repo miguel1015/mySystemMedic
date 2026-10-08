@@ -224,6 +224,8 @@ const DischargeNoteContainer = () => {
             admissionDate={admission?.admissionDate ?? ""}
             contractName={admission?.convenioNombre ?? ""}
             doctorUser={selectedDoctorUser}
+            doctorId={selectedDoctorId}
+            onDoctorLoaded={setSelectedDoctorId}
           />
         </div>
 

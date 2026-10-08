@@ -5,6 +5,7 @@ import toast from "react-hot-toast"
 import { z } from "zod"
 import { useCreateBillingMovement } from "@/core/hooks/care/billing/useCreateBillingMovement"
 import { useUpdateBillingMovement } from "@/core/hooks/care/billing/useUpdateBillingMovement"
+import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import { BillingMovementResponse, BillingMovementType } from "@/core/interfaces/care/billing"
 
@@ -21,6 +22,7 @@ export interface MovementDraft {
   conceptType: string | null
   conceptDetails: string | null
   notes: string | null
+  professionalUserId: number | null
 }
 
 const movementSchema = z.object({
@@ -36,6 +38,7 @@ const movementSchema = z.object({
     .min(1, "Seleccione un convenio"),
   serviceCategory: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
+  professionalUserId: z.number().nullable().optional(),
 })
 
 export type MovementFormValues = z.infer<typeof movementSchema>
@@ -50,8 +53,11 @@ interface UseMovementFormArgs {
 export function useMovementForm({ admissionId, admission, draft, onDone }: UseMovementFormArgs) {
   const createMovement = useCreateBillingMovement()
   const updateMovement = useUpdateBillingMovement()
+  // Por defecto el profesional del cargo es el médico que firmó la HC inicial.
+  const { data: hcInicial } = useGetHCInicialByAdmission(admissionId)
+  const defaultProfessionalId = hcInicial?.userId ?? null
 
-  const { control, handleSubmit, reset } = useForm<MovementFormValues>({
+  const { control, handleSubmit, reset, getValues, setValue } = useForm<MovementFormValues>({
     resolver: zodResolver(movementSchema),
     defaultValues: {
       name: "",
@@ -60,6 +66,7 @@ export function useMovementForm({ admissionId, admission, draft, onDone }: UseMo
       contractId: undefined as unknown as number,
       serviceCategory: null,
       notes: null,
+      professionalUserId: null,
     },
   })
 
@@ -72,8 +79,16 @@ export function useMovementForm({ admissionId, admission, draft, onDone }: UseMo
       contractId: draft.contractId ?? (admission?.convenioId as number | undefined),
       serviceCategory: draft.serviceCategory,
       notes: draft.notes,
+      professionalUserId: draft.professionalUserId,
     } as MovementFormValues)
   }, [draft, admission?.convenioId, reset])
+
+  // En cargos nuevos se propone el médico de la HC inicial (puede llegar después de abrir el
+  // formulario); no se pisa si ya se eligió otro.
+  useEffect(() => {
+    if (!draft || draft.id || !defaultProfessionalId) return
+    if (getValues("professionalUserId") == null) setValue("professionalUserId", defaultProfessionalId)
+  }, [draft, defaultProfessionalId, getValues, setValue])
 
   const onSubmit = (values: MovementFormValues) => {
     if (!draft) return
@@ -94,6 +109,7 @@ export function useMovementForm({ admissionId, admission, draft, onDone }: UseMo
       conceptDetails: draft.conceptDetails,
       tipoItem: serviceCategory,
       notes: isSurgery ? draft.notes : (values.notes ?? null),
+      professionalUserId: values.professionalUserId ?? null,
     }
 
     if (draft.id) {

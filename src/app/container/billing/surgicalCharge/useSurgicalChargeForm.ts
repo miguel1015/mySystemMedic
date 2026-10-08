@@ -278,6 +278,7 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
           conceptDetails: serializeConceptDetails(conceptDetails),
           tipoItem: "Procedimiento quirúrgico",
           notes,
+          professionalUserId: procedure.doctorId,
         })
 
         // Se retira de la lista tan pronto se registra su movimiento, para que un

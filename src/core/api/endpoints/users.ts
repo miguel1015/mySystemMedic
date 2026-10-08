@@ -22,4 +22,7 @@ export const USERS_ENDPOINTS = {
   USERS_BY_PROFILE: {
     GET_ALL: "/api/auth/users/users/by-profile",
   },
+  PROFESSIONALS: {
+    GET_ALL: "/api/auth/users/users/professionals",
+  },
 }

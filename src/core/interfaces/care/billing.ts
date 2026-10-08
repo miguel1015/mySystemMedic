@@ -71,6 +71,12 @@ export interface BillingMovementResponse {
   cupsEnabled?: boolean | null
   // Código de la unidad mínima de dispensación del medicamento (tabla UPR), ej. 66 = tableta.
   medicinePresentationCode?: string | null
+  // Profesional que prestó, prescribió u ordenó el servicio; el RIPS reporta su documento.
+  // Null en cargos anteriores a este campo (el RIPS usa el de la HC inicial).
+  professionalUserId?: number | null
+  professionalName?: string | null
+  professionalDocumentTypeCode?: string | null
+  professionalDocumentNumber?: string | null
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -92,6 +98,8 @@ export interface BillingMovementCreateRequest {
   // línea de la factura electrónica.
   tipoItem: string | null
   notes: string | null
+  // Si se omite al actualizar, el backend conserva el profesional ya registrado.
+  professionalUserId?: number | null
 }
 
 export type BillingMovementUpdateRequest = Omit<

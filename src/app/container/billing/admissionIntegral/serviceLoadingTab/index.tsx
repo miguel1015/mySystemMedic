@@ -115,6 +115,7 @@ const ServiceLoadingTab = ({
       conceptType: null,
       conceptDetails: null,
       notes: null,
+      professionalUserId: null,
     })
   }
 
@@ -158,6 +159,7 @@ const ServiceLoadingTab = ({
       conceptType: movement.conceptType,
       conceptDetails: movement.conceptDetails,
       notes: movement.notes,
+      professionalUserId: movement.professionalUserId ?? null,
     })
   }
 

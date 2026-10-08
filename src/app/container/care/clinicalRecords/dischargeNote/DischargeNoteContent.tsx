@@ -69,6 +69,10 @@ interface DischargeNoteContentProps {
   admissionDate?: string
   contractName?: string
   doctorUser?: GetUser
+  // Médico seleccionado: se guarda como el que firma la nota.
+  doctorId?: number
+  // Al abrir una nota guardada, informa su médico para mostrarlo seleccionado.
+  onDoctorLoaded?: (userId: number) => void
 }
 
 export function DischargeNoteContent({
@@ -79,6 +83,8 @@ export function DischargeNoteContent({
   admissionDate = "",
   contractName = "",
   doctorUser,
+  doctorId,
+  onDoctorLoaded,
 }: DischargeNoteContentProps) {
   const resolvedPatient: PrintPatient = patient ?? {
     name: "",
@@ -347,6 +353,7 @@ export function DischargeNoteContent({
         evoluciones: evolucionesTxt.trim() || null,
         justificacionHospitalizacion: justificacion.trim() || null,
         ordenes: ordenes.trim() || null,
+        userId: doctorId ?? null,
       }
 
       const savedDatosClinicos = datosClinicosId
@@ -431,6 +438,7 @@ export function DischargeNoteContent({
     setEvolucionesTxt(datosClinicos.evoluciones ?? "")
     setJustificacion(datosClinicos.justificacionHospitalizacion ?? "")
     setOrdenes(datosClinicos.ordenes ?? "")
+    if (datosClinicos.userId) onDoctorLoaded?.(datosClinicos.userId)
 
     if (diagnostico) {
       setAmbitoEgreso(diagnostico.ambitoEgresoId)
