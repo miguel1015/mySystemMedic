@@ -90,7 +90,7 @@ const ServiceLoadingTab = ({
           id: device.id as number,
           code: device.ripsCode,
           name: device.elementName,
-          value: 0,
+          value: device.price ?? 0,
         })),
     [medicalDevices],
   )

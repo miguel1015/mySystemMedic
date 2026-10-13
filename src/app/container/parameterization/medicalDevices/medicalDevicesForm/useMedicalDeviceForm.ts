@@ -26,7 +26,14 @@ const schema = z.object({
   elementName: z.string().min(1, "Nombre de elemento es obligatorio"),
   elementTypeId: requiredSelect("un tipo de elemento"),
   elementUsageId: requiredSelect("un uso del elemento"),
-  ripsCode: z.string().min(1, "Código RIPS es obligatorio"),
+  // El código RIPS lo genera el back al crear; aquí solo se muestra.
+  ripsCode: z.string().optional(),
+  price: z
+    .number({
+      required_error: "Precio es obligatorio",
+      invalid_type_error: "Precio debe ser un número válido",
+    })
+    .min(0, "El precio no puede ser negativo"),
   isReusable: requiredBooleanSelect("si es reintegrable"),
   isInvasive: requiredBooleanSelect("si es invasivo"),
 });
@@ -38,6 +45,7 @@ const defaultValues: Partial<TMedicalDeviceForm> = {
   elementTypeId: undefined,
   elementUsageId: undefined,
   ripsCode: "",
+  price: undefined,
   isReusable: undefined,
   isInvasive: undefined,
 };
@@ -64,6 +72,7 @@ export function useMedicalDeviceForm({
         elementTypeId: medicalDeviceData.elementTypeId,
         elementUsageId: medicalDeviceData.elementUsageId,
         ripsCode: medicalDeviceData.ripsCode ?? "",
+        price: medicalDeviceData.price ?? undefined,
         isReusable: String(Boolean(medicalDeviceData.isReusable)) as
           | "true"
           | "false",
@@ -79,7 +88,7 @@ export function useMedicalDeviceForm({
       elementName: data.elementName,
       elementTypeId: data.elementTypeId,
       elementUsageId: data.elementUsageId,
-      ripsCode: data.ripsCode,
+      price: data.price,
       isReusable: data.isReusable === "true",
       isInvasive: data.isInvasive === "true",
       ...(editUserId ? { isActive: medicalDeviceData?.isActive ?? true } : {}),

@@ -103,6 +103,7 @@ export interface TMedicalDevice {
   elementUsageId: number;
   elementUsageName?: string;
   ripsCode: string;
+  price?: number | null;
   isReusable: boolean;
   isInvasive: boolean;
   isActive?: boolean;

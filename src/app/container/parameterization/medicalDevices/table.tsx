@@ -71,6 +71,19 @@ const MedicalDevicesTable = ({ onEdit }: MedicalDevicesProps) => {
       width: "auto",
     },
     {
+      title: "Precio",
+      dataIndex: "price",
+      width: 120,
+      render: (value?: number | null) =>
+        value != null
+          ? new Intl.NumberFormat("es-CO", {
+              style: "currency",
+              currency: "COP",
+              minimumFractionDigits: 0,
+            }).format(value)
+          : "-",
+    },
+    {
       title: "Reintegrable",
       dataIndex: "isReusable",
       width: 120,

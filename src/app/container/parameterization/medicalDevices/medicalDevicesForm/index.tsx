@@ -70,8 +70,19 @@ const MedicalDevicesForm: React.FC<TUtils> = ({
         <Input
           name="ripsCode"
           label="Código RIPS"
-          placeholder="Código RIPS"
+          placeholder="Se genera al guardar"
           control={control}
+          disabled
+        />
+
+        <Input
+          name="price"
+          label="Precio"
+          placeholder="Precio"
+          control={control}
+          type="number"
+          min={0}
+          step="0.01"
         />
 
         <SelectAutocomplete
