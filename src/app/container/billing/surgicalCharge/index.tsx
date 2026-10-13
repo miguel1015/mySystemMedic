@@ -7,6 +7,7 @@ import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
 import { MedicineBoxOutlined } from "@ant-design/icons"
 import { Button, Select } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
+import CupsRequiredModal from "../admissionIntegral/serviceLoadingTab/cupsRequiredModal"
 import AnnexedProceduresList from "./annexedProceduresList"
 import ConceptsTable from "./conceptsTable"
 import PatientInfoCard from "./patientInfoCard"
@@ -226,6 +227,20 @@ const SurgicalChargeFlow = ({ admissionId, onBack }: { admissionId: number; onBa
         specialty={form.specialty}
         onSpecialtyChange={form.setSpecialty}
         onSelect={form.handleSelectService}
+      />
+
+      <CupsRequiredModal
+        item={
+          form.cupsPending
+            ? {
+                referenceCode: form.cupsPending.code,
+                description: form.cupsPending.name,
+                serviceCategory: null,
+              }
+            : null
+        }
+        onCancel={form.cancelCupsPending}
+        onAssigned={form.confirmCupsAssigned}
       />
 
       <PreliquidationModal

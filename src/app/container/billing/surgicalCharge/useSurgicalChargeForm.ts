@@ -87,6 +87,8 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
 
   const [serviceModalOpen, setServiceModalOpen] = useState(false)
   const [preliquidationOpen, setPreliquidationOpen] = useState(false)
+  // Cirugía elegida cuya tarifa no tiene CUPS: se pide homologarla antes de seleccionarla.
+  const [cupsPending, setCupsPending] = useState<SelectedSurgicalService | null>(null)
 
   const [concepts, setConcepts] = useState<(TTariffDetail & { conceptType: string; rawLabel: string })[]>([])
   const [selectedConceptIds, setSelectedConceptIds] = useState<number[]>([])
@@ -131,11 +133,27 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
     resetService()
   }
 
-  const handleSelectService = (service: SelectedSurgicalService) => {
+  const selectService = (service: SelectedSurgicalService) => {
     setSelectedService(service)
     setConcepts([])
     setSelectedConceptIds([])
+  }
+
+  const handleSelectService = (service: SelectedSurgicalService) => {
     setServiceModalOpen(false)
+
+    const detail = tariffDetails?.find((d) => d.id === service.tariffDetailId)
+    if (detail && !detail.cupsCode) {
+      setCupsPending(service)
+      return
+    }
+
+    selectService(service)
+  }
+
+  const confirmCupsAssigned = () => {
+    if (cupsPending) selectService(cupsPending)
+    setCupsPending(null)
   }
 
   const fetchConcepts = () => {
@@ -326,6 +344,9 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
     setServiceModalOpen,
     preliquidationOpen,
     setPreliquidationOpen,
+    cupsPending,
+    cancelCupsPending: () => setCupsPending(null),
+    confirmCupsAssigned,
 
     concepts,
     selectedConceptIds,
