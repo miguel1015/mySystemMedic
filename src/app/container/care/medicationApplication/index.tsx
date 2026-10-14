@@ -45,7 +45,8 @@ import "./medicationApplication.css"
 const { TextArea } = Input
 
 const FUTURE_TOLERANCE_MS = 5 * 60 * 1000
-const APPLICABLE_STATES: EstadoOrdenItem[] = ["Pendiente", "En proceso"]
+// Las vencidas siguen admitiendo aplicaciones (registro tardío); solo se advierte.
+const APPLICABLE_STATES: EstadoOrdenItem[] = ["Pendiente", "En proceso", "Vencida"]
 
 const ESTADO_COLORS: Record<EstadoOrdenItem, string> = {
   Pendiente: "gold",
@@ -226,8 +227,6 @@ const MedicationApplicationContainer = () => {
         errors.push("La fecha y hora de aplicación no puede ser futura.")
       if (aplicacion.getTime() < new Date(orden.fechaOrden).getTime() - 60 * 1000)
         errors.push("La aplicación no puede ser anterior a la fecha de la orden.")
-      if (orden.fechaVencimiento && aplicacion.getTime() > new Date(orden.fechaVencimiento).getTime())
-        errors.push("La fecha de aplicación es posterior al vencimiento de la orden.")
     }
 
     if (cantidad === null || !Number.isFinite(cantidad) || cantidad <= 0)
@@ -432,7 +431,6 @@ const MedicationApplicationContainer = () => {
 
   const blockedReason: Record<string, string> = {
     Aplicada: "Esta orden ya fue aplicada/realizada en su totalidad.",
-    Vencida: "Esta orden está vencida y no admite nuevas aplicaciones.",
     Cancelada: "Esta orden fue cancelada y no admite aplicaciones.",
   }
 
@@ -599,6 +597,15 @@ const MedicationApplicationContainer = () => {
                     />
                   ) : (
                     <>
+                      {selected.estado === "Vencida" && (
+                        <Alert
+                          type="warning"
+                          showIcon
+                          style={{ marginBottom: 16 }}
+                          title="Esta orden está vencida"
+                          description={`Venció el ${formatDateTime(selected.fechaVencimiento)}. Puede registrar la aplicación, pero quedará constancia de que se hizo sobre una orden vencida.`}
+                        />
+                      )}
                       {showErrors && (
                         <Alert
                           type="error"
