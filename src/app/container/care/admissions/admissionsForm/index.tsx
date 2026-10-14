@@ -3,6 +3,7 @@
 import GridContainer from "@/components/componentLayout"
 import SelectAutocomplete from "@/components/select"
 import Input from "@/components/input"
+import RHFAntdInputNumber from "@/components/inputNumber"
 import {
   Alert,
   Avatar,
@@ -16,6 +17,7 @@ import {
   CalendarOutlined,
   CheckCircleFilled,
   ClearOutlined,
+  DollarOutlined,
   FileSearchOutlined,
   ManOutlined,
   SaveOutlined,
@@ -24,7 +26,11 @@ import {
   UserOutlined,
   WomanOutlined,
 } from "@ant-design/icons"
-import { useAdmissionForm } from "./useAdmissionForm"
+import {
+  HEALTH_PAYMENT_FIELDS,
+  YES_NO_OPTIONS,
+  useAdmissionForm,
+} from "./useAdmissionForm"
 import {
   AdmissionResponse,
   PatientMiniResponse,
@@ -89,6 +95,7 @@ export default function AdmissionsForm({
     isEditDataReady,
     hasServiceClassification,
     hasSelectedInsurer,
+    healthPaymentApplies,
     careModalityOptions,
     careReasonOptions,
     serviceClassificationOptions,
@@ -329,6 +336,52 @@ export default function AdmissionsForm({
                 onChange={handleAgreementChange}
                 onClear={handleAgreementClear}
               />
+            </GridContainer>
+          </div>
+
+          <div style={sectionCardStyle}>
+            <p style={sectionTitleStyle}>
+              <DollarOutlined />
+              Datos de Facturacion
+            </p>
+            <Divider style={{ margin: "8px 0 16px" }} />
+
+            <GridContainer columns="col-4" gap="g-4">
+              <Input
+                name="policyNumber"
+                label="Numero de poliza"
+                placeholder="Opcional"
+                maxLength={50}
+                control={control}
+              />
+              {HEALTH_PAYMENT_FIELDS.map((field) => (
+                <div key={field.applies}>
+                  <SelectAutocomplete
+                    name={field.applies}
+                    label={field.label}
+                    placeholder="No"
+                    control={control}
+                    options={YES_NO_OPTIONS}
+                  />
+                  {healthPaymentApplies[field.applies] && (
+                    <RHFAntdInputNumber
+                      name={field.value}
+                      label={`Valor ${field.label.toLowerCase()}`}
+                      placeholder="0"
+                      control={control}
+                      min={0}
+                      precision={0}
+                      prefix="$"
+                      formatter={(value) =>
+                        `${value ?? ""}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                      }
+                      parser={(displayValue) =>
+                        Number((displayValue ?? "").replace(/\D/g, ""))
+                      }
+                    />
+                  )}
+                </div>
+              ))}
             </GridContainer>
           </div>
 

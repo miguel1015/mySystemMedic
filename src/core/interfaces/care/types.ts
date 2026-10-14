@@ -105,6 +105,12 @@ export interface AdmissionCreateRequest {
   carePurposeId: number;
   epsId: number;
   convenioId: number;
+  // Datos del sector salud para la factura electrónica (0 = no aplica).
+  policyNumber?: string | null;
+  copayValue: number;
+  moderatorFeeValue: number;
+  sharedPaymentsValue: number;
+  advancePaymentValue: number;
 }
 
 export type AdmissionUpdateRequest = Omit<AdmissionCreateRequest, "document">;
@@ -149,6 +155,11 @@ export interface AdmissionResponse {
   healthUserTypeCode?: string | null;
   coverageCode?: string | null;
   paymentModalityCode?: string | null;
+  policyNumber?: string | null;
+  copayValue?: number;
+  moderatorFeeValue?: number;
+  sharedPaymentsValue?: number;
+  advancePaymentValue?: number;
   isActive: boolean;
   createdAt: string;
 }

@@ -66,6 +66,12 @@ export function useTransferServiceForm({
       carePurposeId: admission.carePurposeId,
       epsId: admission.epsId,
       convenioId: admission.convenioId,
+      // El PUT reemplaza toda la admisión: se conservan los datos de facturación.
+      policyNumber: admission.policyNumber ?? null,
+      copayValue: admission.copayValue ?? 0,
+      moderatorFeeValue: admission.moderatorFeeValue ?? 0,
+      sharedPaymentsValue: admission.sharedPaymentsValue ?? 0,
+      advancePaymentValue: admission.advancePaymentValue ?? 0,
     }
 
     updateAdmission.mutate(

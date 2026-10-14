@@ -41,6 +41,26 @@ const normalizeClearedSelectValues = (value: unknown) => {
   );
 };
 
+// Pagos del usuario que viajan en la factura electrónica (ExtensionSalud). Cada uno
+// se marca SI/NO; con SI se pide el valor y con NO se envía 0.
+export const HEALTH_PAYMENT_FIELDS = [
+  { applies: "copayApplies", value: "copayValue", label: "Copago" },
+  { applies: "moderatorFeeApplies", value: "moderatorFeeValue", label: "Cuota moderadora" },
+  { applies: "sharedPaymentsApplies", value: "sharedPaymentsValue", label: "Pagos compartidos" },
+  { applies: "advancePaymentApplies", value: "advancePaymentValue", label: "Anticipo" },
+] as const;
+
+export const YES_NO_OPTIONS = [
+  { value: "NO", label: "No" },
+  { value: "SI", label: "Si" },
+];
+
+const yesNoField = z.enum(["SI", "NO"]).optional();
+const healthAmountField = z
+  .number({ invalid_type_error: "Ingrese un valor válido" })
+  .min(0, "El valor no puede ser negativo")
+  .optional();
+
 const admissionSchema = z.preprocess(normalizeClearedSelectValues, z.object({
   firstName: z.string().optional(),
   secondName: z.string().optional(),
@@ -79,6 +99,28 @@ const admissionSchema = z.preprocess(normalizeClearedSelectValues, z.object({
   agreementId: z
     .number({ required_error: "El convenio es obligatorio" })
     .min(1, "Seleccione un convenio"),
+  policyNumber: z
+    .string()
+    .max(50, "El número de póliza no puede superar 50 caracteres")
+    .optional(),
+  copayApplies: yesNoField,
+  copayValue: healthAmountField,
+  moderatorFeeApplies: yesNoField,
+  moderatorFeeValue: healthAmountField,
+  sharedPaymentsApplies: yesNoField,
+  sharedPaymentsValue: healthAmountField,
+  advancePaymentApplies: yesNoField,
+  advancePaymentValue: healthAmountField,
+}).superRefine((data, ctx) => {
+  for (const field of HEALTH_PAYMENT_FIELDS) {
+    if (data[field.applies] === "SI" && !(Number(data[field.value]) > 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [field.value],
+        message: `Ingrese el valor de ${field.label.toLowerCase()}`,
+      });
+    }
+  }
 }));
 
 export type AdmissionFormValues = z.infer<typeof admissionSchema>;
@@ -119,7 +161,25 @@ const getEmptyValues = (): AdmissionFormValues => ({
   carePurpose: undefined as unknown as number,
   insurerId: undefined as unknown as number,
   agreementId: undefined as unknown as number,
+  policyNumber: "",
+  copayApplies: "NO",
+  copayValue: undefined,
+  moderatorFeeApplies: "NO",
+  moderatorFeeValue: undefined,
+  sharedPaymentsApplies: "NO",
+  sharedPaymentsValue: undefined,
+  advancePaymentApplies: "NO",
+  advancePaymentValue: undefined,
 });
+
+const toYesNo = (value?: number | null) => (value && value > 0 ? "SI" : "NO");
+
+const amountOrUndefined = (value?: number | null) =>
+  value && value > 0 ? value : undefined;
+
+// Con NO (o el select limpiado) el concepto no aplica y se envía 0.
+const appliedAmount = (applies: "SI" | "NO" | undefined, value?: number) =>
+  applies === "SI" ? value ?? 0 : 0;
 
 const toOptions = (data: { id: number; name: string }[] | undefined) =>
   (data ?? []).map((x) => ({ value: x.id, label: x.name }));
@@ -153,6 +213,12 @@ export function useAdmissionForm({
   const selectedServiceClassification = watch("serviceClassification");
   const selectedInsurerId = watch("insurerId");
   const selectedAgreementId = watch("agreementId");
+  const healthPaymentApplies = {
+    copayApplies: watch("copayApplies") === "SI",
+    moderatorFeeApplies: watch("moderatorFeeApplies") === "SI",
+    sharedPaymentsApplies: watch("sharedPaymentsApplies") === "SI",
+    advancePaymentApplies: watch("advancePaymentApplies") === "SI",
+  };
   const previousSelectedInsurerRef = useRef<number | undefined>(undefined);
   const hasInitializedInsurerRef = useRef(false);
   const initializedAdmissionIdRef = useRef<number | null>(null);
@@ -370,6 +436,15 @@ export function useAdmissionForm({
       carePurpose: initialAdmission.carePurposeId,
       insurerId: initialAdmission.epsId,
       agreementId: initialAdmission.convenioId,
+      policyNumber: initialAdmission.policyNumber ?? "",
+      copayApplies: toYesNo(initialAdmission.copayValue),
+      copayValue: amountOrUndefined(initialAdmission.copayValue),
+      moderatorFeeApplies: toYesNo(initialAdmission.moderatorFeeValue),
+      moderatorFeeValue: amountOrUndefined(initialAdmission.moderatorFeeValue),
+      sharedPaymentsApplies: toYesNo(initialAdmission.sharedPaymentsValue),
+      sharedPaymentsValue: amountOrUndefined(initialAdmission.sharedPaymentsValue),
+      advancePaymentApplies: toYesNo(initialAdmission.advancePaymentValue),
+      advancePaymentValue: amountOrUndefined(initialAdmission.advancePaymentValue),
     };
 
     initializedAdmissionIdRef.current = initialAdmission.id;
@@ -448,6 +523,11 @@ export function useAdmissionForm({
     carePurposeId: data.carePurpose,
     epsId: data.insurerId,
     convenioId: data.agreementId,
+    policyNumber: data.policyNumber?.trim() || null,
+    copayValue: appliedAmount(data.copayApplies, data.copayValue),
+    moderatorFeeValue: appliedAmount(data.moderatorFeeApplies, data.moderatorFeeValue),
+    sharedPaymentsValue: appliedAmount(data.sharedPaymentsApplies, data.sharedPaymentsValue),
+    advancePaymentValue: appliedAmount(data.advancePaymentApplies, data.advancePaymentValue),
   });
 
   const handleSearchPatient = async (docOverride?: string) => {
@@ -591,6 +671,7 @@ export function useAdmissionForm({
     isEditDataReady,
     hasServiceClassification: !!selectedServiceClassification,
     hasSelectedInsurer: !!selectedInsurerId,
+    healthPaymentApplies,
     handleAgreementChange,
     handleAgreementClear,
     ...catalogOptions,
