@@ -1,6 +1,7 @@
 import { ENDPOINTS } from "@/core/api/endpoints"
 import type { ElectronicInvoiceResponse } from "@/core/interfaces/care/billing"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { NEXT_INVOICE_NUMBER_KEY } from "./useGetNextInvoiceNumber"
 
 export class ElectronicInvoiceAlreadyIssuedError extends Error {
   constructor() {
@@ -42,6 +43,7 @@ export function useCreateElectronicInvoice() {
       queryClient.invalidateQueries({
         queryKey: ["electronic-invoice", "by-admission", String(admissionId)],
       })
+      queryClient.invalidateQueries({ queryKey: NEXT_INVOICE_NUMBER_KEY })
     },
   })
 }

@@ -15,7 +15,7 @@ interface InvoicePrintDocumentProps {
   patient?: GetPatient
   insurance?: Insurance
   movements: BillingMovementResponse[]
-  invoicePrefix: string
+  invoiceNumber: string
 }
 
 const emptyDash = "—"
@@ -34,7 +34,7 @@ export const InvoicePrintDocument = ({
   patient,
   insurance,
   movements,
-  invoicePrefix,
+  invoiceNumber,
 }: InvoicePrintDocumentProps) => {
   const groups = useMemo(() => buildInvoiceGroups(movements), [movements])
   const nonEmptyGroups = groups.filter((group: InvoiceGroup) => group.rows.length > 0)
@@ -78,8 +78,7 @@ export const InvoicePrintDocument = ({
                 <div className="invoice-print-badge">
                   <div className="invoice-print-badge-title">Vista preliminar</div>
                   <div className="invoice-print-badge-number">
-                    {invoicePrefix ? `${invoicePrefix}-` : ""}
-                    {admission.id}
+                    {invoiceNumber || admission.id}
                   </div>
                 </div>
               </div>

@@ -120,6 +120,12 @@ export interface ElectronicInvoiceResponse {
   createdAt: string
 }
 
+export interface ElectronicInvoiceNextNumberResponse {
+  prefix: string
+  nextNumber: number
+  invoiceNum: string
+}
+
 export interface ElectronicInvoiceListItem {
   id: number
   admissionId: number

@@ -21,7 +21,7 @@ interface InvoicePrintPreviewModalProps {
   onClose: () => void
   admission: AdmissionResponse
   movements: BillingMovementResponse[]
-  invoicePrefix: string
+  invoiceNumber: string
 }
 
 const InvoicePrintPreviewModal = ({
@@ -29,7 +29,7 @@ const InvoicePrintPreviewModal = ({
   onClose,
   admission,
   movements,
-  invoicePrefix,
+  invoiceNumber,
 }: InvoicePrintPreviewModalProps) => {
   const { data: provider, isLoading: isLoadingProvider } = useGetProvider(
     open ? INSTITUTION_PROVIDER_ID : 0,
@@ -50,7 +50,7 @@ const InvoicePrintPreviewModal = ({
       patient={patient}
       insurance={insurance}
       movements={movements}
-      invoicePrefix={invoicePrefix}
+      invoiceNumber={invoiceNumber}
     />
   )
 

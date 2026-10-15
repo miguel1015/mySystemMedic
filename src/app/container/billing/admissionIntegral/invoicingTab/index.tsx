@@ -10,8 +10,9 @@ import {
   FilePdfOutlined,
   SendOutlined,
 } from "@ant-design/icons"
+import { useGetNextInvoiceNumber } from "@/core/hooks/care/billing/useGetNextInvoiceNumber"
 import { Button, DatePicker, Descriptions, Input, Skeleton, message } from "antd"
-import type { Dayjs } from "dayjs"
+import dayjs from "dayjs"
 import { useMemo, useState } from "react"
 import { RipsValidationResult } from "../ripsTab"
 import { formatCurrency } from "../utils"
@@ -47,10 +48,8 @@ const InvoicingTab = ({
   isLoadingElectronicInvoice,
 }: InvoicingTabProps) => {
   const [messageApi, contextHolder] = message.useMessage()
-  const [serviceStartDate, setServiceStartDate] = useState<Dayjs | null>(null)
-  const [serviceEndDate, setServiceEndDate] = useState<Dayjs | null>(null)
-  const [invoicePrefix, setInvoicePrefix] = useState("")
   const [previewOpen, setPreviewOpen] = useState(false)
+  const serviceStartDate = useMemo(() => dayjs(), [])
 
   const totals = useMemo(() => {
     const byType: Record<BillingMovementType, number> = { service: 0, medicine: 0, supply: 0, surgery: 0 }
@@ -72,6 +71,16 @@ const InvoicingTab = ({
   const createElectronicInvoice = useCreateElectronicInvoice()
 
   const isAlreadyIssued = electronicInvoice?.success ?? false
+
+  // Si la admisión ya se facturó se muestra su número real; si no, el siguiente
+  // consecutivo de la resolución activa.
+  const { data: nextInvoiceNumber, isLoading: isLoadingNextInvoiceNumber } =
+    useGetNextInvoiceNumber(!isAlreadyIssued)
+
+  const invoiceNumber =
+    isAlreadyIssued && electronicInvoice?.invoiceNum
+      ? electronicInvoice.invoiceNum
+      : nextInvoiceNumber?.invoiceNum ?? ""
 
   const handleElectronicInvoice = async () => {
     if (!canElectronicInvoice || !admission) return
@@ -114,24 +123,19 @@ const InvoicingTab = ({
             <span style={{ fontSize: 13, fontWeight: 600 }}>Fecha de inicio del servicio</span>
             <DatePicker
               value={serviceStartDate}
-              onChange={setServiceStartDate}
+              format="DD/MM/YYYY"
+              disabled
               style={{ width: "100%" }}
             />
           </label>
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600 }}>Fecha de fin del servicio</span>
-            <DatePicker
-              value={serviceEndDate}
-              onChange={setServiceEndDate}
-              style={{ width: "100%" }}
-            />
-          </label>
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600 }}>Prefijo de factura</span>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>
+              {isAlreadyIssued ? "Número de factura" : "Consecutivo de factura"}
+            </span>
             <Input
-              value={invoicePrefix}
-              onChange={(e) => setInvoicePrefix(e.target.value)}
-              placeholder="Ej. FEV"
+              value={isLoadingNextInvoiceNumber && !isAlreadyIssued ? "Cargando..." : invoiceNumber}
+              placeholder="Sin resolución activa"
+              disabled
             />
           </label>
         </div>
@@ -223,7 +227,7 @@ const InvoicingTab = ({
         onClose={() => setPreviewOpen(false)}
         admission={admission}
         movements={movements}
-        invoicePrefix={invoicePrefix}
+        invoiceNumber={invoiceNumber}
       />
     </div>
   )
