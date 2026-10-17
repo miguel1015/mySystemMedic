@@ -31,6 +31,7 @@ import {
   YES_NO_OPTIONS,
   useAdmissionForm,
 } from "./useAdmissionForm"
+import { INVOICE_OPERATION_TYPE_OPTIONS } from "@/core/constants/invoiceOperationTypes"
 import {
   AdmissionResponse,
   PatientMiniResponse,
@@ -96,6 +97,7 @@ export default function AdmissionsForm({
     hasServiceClassification,
     hasSelectedInsurer,
     healthPaymentApplies,
+    withoutContribution,
     careModalityOptions,
     careReasonOptions,
     serviceClassificationOptions,
@@ -347,12 +349,28 @@ export default function AdmissionsForm({
             <Divider style={{ margin: "8px 0 16px" }} />
 
             <GridContainer columns="col-4" gap="g-4">
+              <SelectAutocomplete
+                name="invoiceOperationType"
+                label="Tipo de factura"
+                placeholder="Seleccione"
+                control={control}
+                options={INVOICE_OPERATION_TYPE_OPTIONS}
+              />
               <Input
                 name="policyNumber"
                 label="Numero de poliza"
-                placeholder="Opcional"
+                placeholder={withoutContribution ? "No aplica" : "Opcional"}
                 maxLength={50}
                 control={control}
+                disabled={withoutContribution}
+              />
+              <Input
+                name="collectionCufe"
+                label="Recaudo (CUFE)"
+                placeholder={withoutContribution ? "No aplica" : "CUFE de la factura del recaudo"}
+                maxLength={100}
+                control={control}
+                disabled={withoutContribution}
               />
               {HEALTH_PAYMENT_FIELDS.map((field) => (
                 <div key={field.applies}>
@@ -362,8 +380,9 @@ export default function AdmissionsForm({
                     placeholder="No"
                     control={control}
                     options={YES_NO_OPTIONS}
+                    disabled={withoutContribution}
                   />
-                  {healthPaymentApplies[field.applies] && (
+                  {!withoutContribution && healthPaymentApplies[field.applies] && (
                     <RHFAntdInputNumber
                       name={field.value}
                       label={`Valor ${field.label.toLowerCase()}`}

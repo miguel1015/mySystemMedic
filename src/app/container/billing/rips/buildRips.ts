@@ -5,6 +5,11 @@ import type {
 } from "@/core/interfaces/care/hciInicial"
 import type { AdmissionResponse, GetPatient } from "@/core/interfaces/care/types"
 import type { TProvider } from "@/core/interfaces/parameterization/types"
+import {
+  INVOICE_OPERATION_TYPES,
+  getInvoiceOperationTypeLabel,
+  isWithoutContribution,
+} from "@/core/constants/invoiceOperationTypes"
 import type { FevSummary } from "./parseFevXml"
 
 // Estructura del RIPS como soporte de la FEV en salud (Resolución 948 de 2026, Documento
@@ -248,9 +253,24 @@ export interface BuildRipsArgs {
 // (columna Code del catálogo vacía): el campo sale en null.
 const PENDING_CATALOG_CODE = "El valor seleccionado no tiene código SISPRO"
 
-// conceptoRecaudo (tabla conceptoRecaudo): MediNexus no registra copagos ni cuotas
-// moderadoras, así que se reporta 05 = No aplica. El MUV no acepta el campo en null.
+// conceptoRecaudo (tabla conceptoRecaudo): 01 copago, 02 cuota moderadora, 03 pagos
+// compartidos en planes voluntarios, 04 anticipo, 05 no aplica. El MUV no acepta el campo en
+// null. Los pagos se registran en la admisión (uno por concepto) y el RIPS admite un solo
+// concepto por servicio: se reporta el primero con valor, en este orden de prioridad, en un
+// único servicio (la consulta si la hay); los demás servicios van con 05 y 0.
 const CONCEPTO_RECAUDO_NO_APLICA = "05"
+const CONCEPTOS_RECAUDO = [
+  { code: "01", field: "copayValue", label: "copago" },
+  { code: "02", field: "moderatorFeeValue", label: "cuota moderadora" },
+  { code: "03", field: "sharedPaymentsValue", label: "pagos compartidos" },
+  { code: "04", field: "advancePaymentValue", label: "anticipo" },
+] as const
+
+// Tipos de factura que, según su definición, comprueban o reciben un recaudo del usuario.
+const TIPOS_FACTURA_CON_RECAUDO = new Set<string>([
+  INVOICE_OPERATION_TYPES.CUFE,
+  INVOICE_OPERATION_TYPES.RECAUDO,
+])
 
 // modalidadPago 04 = Pago por evento. Solo en evento el valor del servicio va mayor a cero;
 // en las demás modalidades se informa 0 (RVC034).
@@ -580,6 +600,39 @@ export function buildRips({
     addIssue("Procedimientos", "finalidadTecnologiaSalud", `La finalidad ${finalidad} no aplica a procedimientos (RIPSFinalidadConsultaVersion2)`)
   }
 
+  // Tipo de factura (TIPO_FACTURACION de la FEV) y concepto de recaudo de la admisión.
+  const invoiceOperationType = admission.invoiceOperationType ?? null
+  const invoiceOperationTypeLabel = getInvoiceOperationTypeLabel(invoiceOperationType)
+  if (!invoiceOperationTypeLabel) {
+    addIssue("Factura", "TIPO_FACTURACION", "La admisión no tiene tipo de factura (SS-CUFE, SS-Recaudo, SS-Sin aporte o SS-Reporte)")
+  }
+  // En SS-SinAporte no hay aportes del usuario: todos los servicios van con 05 y 0 aunque
+  // la admisión tenga valores guardados.
+  const conceptosConValor = isWithoutContribution(invoiceOperationType)
+    ? []
+    : CONCEPTOS_RECAUDO.filter((concepto) => toMoney(admission[concepto.field] ?? 0) > 0)
+  const recaudo = conceptosConValor[0] ?? null
+  if (conceptosConValor.length > 1) {
+    addWarning("Factura", "conceptoRecaudo", `La admisión tiene ${conceptosConValor.map((c) => c.label).join(", ")}; el RIPS admite un concepto por servicio y se reporta solo el ${recaudo?.label}`)
+  }
+  if (!recaudo && invoiceOperationType && TIPOS_FACTURA_CON_RECAUDO.has(invoiceOperationType)) {
+    addWarning("Factura", "conceptoRecaudo", `La factura es ${invoiceOperationTypeLabel}, que comprueba un recaudo, pero la admisión no tiene copago, cuota moderadora, pagos compartidos ni anticipo`)
+  }
+  const recaudoMovementId = recaudo
+    ? (activeMovements.find((item) => classifyMovement(item) === "consultas") ?? activeMovements[0])?.id
+    : undefined
+  const recaudoFields = (group: string, movement: BillingMovementResponse, vrServicio: number) => {
+    if (!recaudo || movement.id !== recaudoMovementId) {
+      return { conceptoRecaudo: CONCEPTO_RECAUDO_NO_APLICA, valorPagoModerador: 0, numFEVPagoModerador: null }
+    }
+    const valorPagoModerador = toMoney(admission[recaudo.field] ?? 0)
+    if (valorPagoModerador > vrServicio) {
+      addWarning(group, "valorPagoModerador", `${movement.name}: el valor del ${recaudo.label} (${valorPagoModerador}) supera el valor del servicio (${vrServicio})`)
+    }
+    // numFEVPagoModerador: el CUFE / número de la factura del recaudo aún no se envía.
+    return { conceptoRecaudo: recaudo.code, valorPagoModerador, numFEVPagoModerador: null }
+  }
+
   for (const movement of activeMovements) {
     const group = classifyMovement(movement)
     const code = movement.itemCode?.trim() || null
@@ -620,9 +673,7 @@ export function buildRips({
         tipoDiagnosticoPrincipal: TIPO_DIAGNOSTICO_IMPRESION,
         ...profesional,
         vrServicio,
-        conceptoRecaudo: CONCEPTO_RECAUDO_NO_APLICA,
-        valorPagoModerador: 0,
-        numFEVPagoModerador: null,
+        ...recaudoFields("Consultas", movement, vrServicio),
         codigoVIDA: null,
         consecutivo: servicios.consultas.length + 1,
       })
@@ -655,9 +706,7 @@ export function buildRips({
         codComplicacionCIE11: null,
         nomCodComplicacionCIE11: null,
         vrServicio,
-        conceptoRecaudo: CONCEPTO_RECAUDO_NO_APLICA,
-        valorPagoModerador: 0,
-        numFEVPagoModerador: null,
+        ...recaudoFields("Procedimientos", movement, vrServicio),
         codigoVIDA: null,
         consecutivo: servicios.procedimientos.length + 1,
       })
@@ -706,9 +755,7 @@ export function buildRips({
         vrUnitMedicamento,
         vrDispensacion: 0,
         vrServicio,
-        conceptoRecaudo: CONCEPTO_RECAUDO_NO_APLICA,
-        valorPagoModerador: 0,
-        numFEVPagoModerador: null,
+        ...recaudoFields("Medicamentos", movement, vrServicio),
         codigoVIDA: null,
         consecutivo: servicios.medicamentos.length + 1,
       })
@@ -744,9 +791,7 @@ export function buildRips({
         vrUnitOS,
         vrDispensacion: 0,
         vrServicio,
-        conceptoRecaudo: CONCEPTO_RECAUDO_NO_APLICA,
-        valorPagoModerador: 0,
-        numFEVPagoModerador: null,
+        ...recaudoFields("Otros servicios", movement, vrServicio),
         codigoVIDA: null,
         consecutivo: servicios.otrosServicios.length + 1,
       })
@@ -948,6 +993,10 @@ export function buildRips({
     }
     if (!fev.customizationId?.startsWith("SS-")) {
       addIssue("Factura", "CustomizationID", `La factura es de tipo de operación ${fev.customizationId ?? "sin tipo"}, no una FEV en salud (SS-CUFE, SS-SinAporte, etc.): debe emitirse con los campos del sector salud`)
+    } else if (invoiceOperationType && fev.customizationId !== invoiceOperationType) {
+      // Advertencia mientras Facelec empieza a usar TIPO_FACTURACION para el CustomizationID;
+      // después debe pasar a error, porque el conceptoRecaudo del RIPS depende de ese tipo.
+      addWarning("Factura", "CustomizationID", `La factura se emitió como ${fev.customizationId}, pero la admisión tiene tipo de factura ${invoiceOperationTypeLabel}`)
     }
     if (!fev.hasHealthExtension) {
       addIssue("Factura", "CustomTagGeneral", "La factura no trae los campos adicionales del sector salud (UBLExtensions / CustomTagGeneral) (FED060)")

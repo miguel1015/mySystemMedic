@@ -11,6 +11,10 @@ import {
   SendOutlined,
 } from "@ant-design/icons"
 import { useGetNextInvoiceNumber } from "@/core/hooks/care/billing/useGetNextInvoiceNumber"
+import {
+  getInvoiceOperationTypeLabel,
+  isWithoutContribution,
+} from "@/core/constants/invoiceOperationTypes"
 import { Button, DatePicker, Descriptions, Input, Skeleton, message } from "antd"
 import dayjs from "dayjs"
 import { useMemo, useState } from "react"
@@ -66,7 +70,11 @@ const InvoicingTab = ({
   const hasMovements = movements.length > 0
   // TODO: RIPS aún no se está validando en este flujo; por ahora la facturación
   // electrónica solo depende de que haya movimientos cargados.
-  const canElectronicInvoice = hasMovements
+  // El tipo de factura (TIPO_FACTURACION) se escoge en la admisión y el backend lo exige.
+  const invoiceOperationTypeLabel = getInvoiceOperationTypeLabel(admission?.invoiceOperationType)
+  const hasInvoiceOperationType = !!invoiceOperationTypeLabel
+  const withoutContribution = isWithoutContribution(admission?.invoiceOperationType)
+  const canElectronicInvoice = hasMovements && hasInvoiceOperationType
 
   const createElectronicInvoice = useCreateElectronicInvoice()
 
@@ -157,6 +165,38 @@ const InvoicingTab = ({
       </div>
 
       <div style={sectionCardStyle}>
+        <h6 style={{ fontWeight: 700, marginBottom: 14 }}>Datos de facturación en salud</h6>
+        <Descriptions
+          bordered
+          size="small"
+          column={{ xs: 1, sm: 2, md: 4 }}
+          items={[
+            {
+              key: "invoiceOperationType",
+              label: "Tipo de factura",
+              children: invoiceOperationTypeLabel ?? (
+                <span style={{ color: "#dc2626" }}>Sin seleccionar</span>
+              ),
+            },
+            {
+              key: "policyNumber",
+              label: "Número de póliza",
+              children: withoutContribution ? "No aplica" : admission.policyNumber || "—",
+            },
+            {
+              key: "collectionCufe",
+              label: "Recaudo (CUFE)",
+              children: withoutContribution ? "No aplica" : admission.collectionCufe || "—",
+            },
+            { key: "copay", label: "Copago", children: formatCurrency(withoutContribution ? 0 : admission.copayValue ?? 0) },
+            { key: "moderatorFee", label: "Cuota moderadora", children: formatCurrency(withoutContribution ? 0 : admission.moderatorFeeValue ?? 0) },
+            { key: "sharedPayments", label: "Pagos compartidos", children: formatCurrency(withoutContribution ? 0 : admission.sharedPaymentsValue ?? 0) },
+            { key: "advancePayment", label: "Anticipo", children: formatCurrency(withoutContribution ? 0 : admission.advancePaymentValue ?? 0) },
+          ]}
+        />
+      </div>
+
+      <div style={sectionCardStyle}>
         <h6 style={{ fontWeight: 700, marginBottom: 14 }}>Resumen financiero</h6>
         <div style={{ display: "grid", gap: 8, maxWidth: 380 }}>
           {(Object.keys(MOVEMENT_TYPE_LABELS) as BillingMovementType[]).map((type) => (
@@ -215,10 +255,17 @@ const InvoicingTab = ({
         </p>
       )}
 
-      {!isAlreadyIssued && !canElectronicInvoice && (
+      {!isAlreadyIssued && !hasMovements && (
         <p style={{ marginTop: 10, fontSize: 13, color: "var(--dash-text-tertiary, #9ca3af)" }}>
           <FileDoneOutlined /> Para habilitar la facturación electrónica, carga al menos un
           movimiento de facturación.
+        </p>
+      )}
+
+      {!isAlreadyIssued && !hasInvoiceOperationType && (
+        <p style={{ marginTop: 10, fontSize: 13, color: "var(--dash-text-tertiary, #9ca3af)" }}>
+          <FileDoneOutlined /> Para habilitar la facturación electrónica, selecciona el tipo de
+          factura en la admisión.
         </p>
       )}
 

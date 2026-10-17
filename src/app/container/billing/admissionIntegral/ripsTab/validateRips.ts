@@ -2,6 +2,7 @@ import type { DiagnosticoEgresoResponse } from "@/core/interfaces/care/hciInicia
 import type { Cie10CodeResponse } from "@/core/interfaces/care/hciInicial"
 import type { BillingMovementResponse } from "@/core/interfaces/care/billing"
 import type { AdmissionResponse } from "@/core/interfaces/care/types"
+import { getInvoiceOperationTypeLabel } from "@/core/constants/invoiceOperationTypes"
 
 export interface RipsValidationResult {
   isValid: boolean
@@ -37,6 +38,10 @@ export function validateRips({
 
   if (!admission.convenioId) {
     issues.push("La admisión no tiene convenio/contrato asociado.")
+  }
+
+  if (!getInvoiceOperationTypeLabel(admission.invoiceOperationType)) {
+    issues.push("La admisión no tiene tipo de factura (SS-CUFE, SS-Recaudo, SS-Sin aporte o SS-Reporte).")
   }
 
   if (diagnosticosIngreso.length === 0) {

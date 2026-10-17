@@ -1,3 +1,5 @@
+import type { InvoiceOperationType } from "@/core/constants/invoiceOperationTypes";
+
 export interface PatientCatalog {
   id: number;
   name: string;
@@ -111,6 +113,11 @@ export interface AdmissionCreateRequest {
   moderatorFeeValue: number;
   sharedPaymentsValue: number;
   advancePaymentValue: number;
+  // Tipo de factura (SS-CUFE, SS-Recaudo, SS-SinAporte, SS-Reporte). Obligatorio al crear;
+  // en la edición puede ir null en admisiones anteriores al campo.
+  invoiceOperationType: InvoiceOperationType | null;
+  // CUFE de la factura que comprueba el recaudo. Por ahora solo se registra.
+  collectionCufe?: string | null;
 }
 
 export type AdmissionUpdateRequest = Omit<AdmissionCreateRequest, "document">;
@@ -160,6 +167,8 @@ export interface AdmissionResponse {
   moderatorFeeValue?: number;
   sharedPaymentsValue?: number;
   advancePaymentValue?: number;
+  invoiceOperationType?: InvoiceOperationType | null;
+  collectionCufe?: string | null;
   isActive: boolean;
   createdAt: string;
 }

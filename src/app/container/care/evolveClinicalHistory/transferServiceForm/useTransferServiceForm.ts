@@ -72,6 +72,8 @@ export function useTransferServiceForm({
       moderatorFeeValue: admission.moderatorFeeValue ?? 0,
       sharedPaymentsValue: admission.sharedPaymentsValue ?? 0,
       advancePaymentValue: admission.advancePaymentValue ?? 0,
+      invoiceOperationType: admission.invoiceOperationType ?? null,
+      collectionCufe: admission.collectionCufe ?? null,
     }
 
     updateAdmission.mutate(

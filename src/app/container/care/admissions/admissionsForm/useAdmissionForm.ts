@@ -17,6 +17,10 @@ import { useUpdateAdmission } from "@/core/hooks/care/admissions/useUpdateAdmiss
 import { useContractsByInsurer } from "@/core/hooks/parameterization/contracts/useGetAllContracts";
 import { useInsurers } from "@/core/hooks/utils/useInsurer";
 import {
+  INVOICE_OPERATION_TYPES,
+  isWithoutContribution,
+} from "@/core/constants/invoiceOperationTypes";
+import {
   PatientNotFoundError,
   patientByDocumentService,
 } from "@/core/hooks/care/triage/useSearchPatientByDocument";
@@ -99,9 +103,17 @@ const admissionSchema = z.preprocess(normalizeClearedSelectValues, z.object({
   agreementId: z
     .number({ required_error: "El convenio es obligatorio" })
     .min(1, "Seleccione un convenio"),
+  invoiceOperationType: z.nativeEnum(INVOICE_OPERATION_TYPES, {
+    required_error: "El tipo de factura es obligatorio",
+    invalid_type_error: "Seleccione un tipo de factura",
+  }),
   policyNumber: z
     .string()
     .max(50, "El número de póliza no puede superar 50 caracteres")
+    .optional(),
+  collectionCufe: z
+    .string()
+    .max(100, "El CUFE del recaudo no puede superar 100 caracteres")
     .optional(),
   copayApplies: yesNoField,
   copayValue: healthAmountField,
@@ -112,6 +124,8 @@ const admissionSchema = z.preprocess(normalizeClearedSelectValues, z.object({
   advancePaymentApplies: yesNoField,
   advancePaymentValue: healthAmountField,
 }).superRefine((data, ctx) => {
+  // En SS-SinAporte los pagos quedan bloqueados y se envían en 0.
+  if (isWithoutContribution(data.invoiceOperationType)) return;
   for (const field of HEALTH_PAYMENT_FIELDS) {
     if (data[field.applies] === "SI" && !(Number(data[field.value]) > 0)) {
       ctx.addIssue({
@@ -161,7 +175,10 @@ const getEmptyValues = (): AdmissionFormValues => ({
   carePurpose: undefined as unknown as number,
   insurerId: undefined as unknown as number,
   agreementId: undefined as unknown as number,
+  // Sin valor por defecto: el tipo de factura se debe escoger.
+  invoiceOperationType: undefined as unknown as AdmissionFormValues["invoiceOperationType"],
   policyNumber: "",
+  collectionCufe: "",
   copayApplies: "NO",
   copayValue: undefined,
   moderatorFeeApplies: "NO",
@@ -219,6 +236,7 @@ export function useAdmissionForm({
     sharedPaymentsApplies: watch("sharedPaymentsApplies") === "SI",
     advancePaymentApplies: watch("advancePaymentApplies") === "SI",
   };
+  const withoutContribution = isWithoutContribution(watch("invoiceOperationType"));
   const previousSelectedInsurerRef = useRef<number | undefined>(undefined);
   const hasInitializedInsurerRef = useRef(false);
   const initializedAdmissionIdRef = useRef<number | null>(null);
@@ -231,6 +249,19 @@ export function useAdmissionForm({
     if (!selectedServiceClassification) return;
     setValue("serviceGroup", undefined as unknown as number);
   }, [isEdit, selectedServiceClassification, setValue]);
+
+  // Al pasar a SS-SinAporte se limpian póliza, recaudo y pagos para que no queden
+  // valores ocultos tras los campos bloqueados.
+  useEffect(() => {
+    if (!withoutContribution) return;
+    const clear = { shouldDirty: true, shouldValidate: false };
+    setValue("policyNumber", "", clear);
+    setValue("collectionCufe", "", clear);
+    for (const field of HEALTH_PAYMENT_FIELDS) {
+      setValue(field.applies, "NO", clear);
+      setValue(field.value, undefined, clear);
+    }
+  }, [withoutContribution, setValue]);
 
   useEffect(() => {
     const previousSelectedInsurer = previousSelectedInsurerRef.current;
@@ -436,7 +467,11 @@ export function useAdmissionForm({
       carePurpose: initialAdmission.carePurposeId,
       insurerId: initialAdmission.epsId,
       agreementId: initialAdmission.convenioId,
+      invoiceOperationType:
+        initialAdmission.invoiceOperationType ??
+        (undefined as unknown as AdmissionFormValues["invoiceOperationType"]),
       policyNumber: initialAdmission.policyNumber ?? "",
+      collectionCufe: initialAdmission.collectionCufe ?? "",
       copayApplies: toYesNo(initialAdmission.copayValue),
       copayValue: amountOrUndefined(initialAdmission.copayValue),
       moderatorFeeApplies: toYesNo(initialAdmission.moderatorFeeValue),
@@ -512,23 +547,32 @@ export function useAdmissionForm({
 
   const isEditDataReady = !isEdit || hasLoadedInitialEditData;
 
-  const buildPayload = (data: AdmissionFormValues): AdmissionUpdateRequest => ({
-    admissionDate: data.admissionDate,
-    careModalityId: data.careModality,
-    careReasonId: data.careReason,
-    serviceClassificationId: data.serviceClassification,
-    serviceGroupId: data.serviceGroup,
-    admissionTypeId: data.admissionType,
-    careScopeId: data.careScope,
-    carePurposeId: data.carePurpose,
-    epsId: data.insurerId,
-    convenioId: data.agreementId,
-    policyNumber: data.policyNumber?.trim() || null,
-    copayValue: appliedAmount(data.copayApplies, data.copayValue),
-    moderatorFeeValue: appliedAmount(data.moderatorFeeApplies, data.moderatorFeeValue),
-    sharedPaymentsValue: appliedAmount(data.sharedPaymentsApplies, data.sharedPaymentsValue),
-    advancePaymentValue: appliedAmount(data.advancePaymentApplies, data.advancePaymentValue),
-  });
+  const buildPayload = (data: AdmissionFormValues): AdmissionUpdateRequest => {
+    // En SS-SinAporte no hay aportes: póliza y recaudo vacíos, pagos en 0.
+    const contributes = !isWithoutContribution(data.invoiceOperationType);
+    const amount = (applies: "SI" | "NO" | undefined, value?: number) =>
+      contributes ? appliedAmount(applies, value) : 0;
+
+    return {
+      admissionDate: data.admissionDate,
+      careModalityId: data.careModality,
+      careReasonId: data.careReason,
+      serviceClassificationId: data.serviceClassification,
+      serviceGroupId: data.serviceGroup,
+      admissionTypeId: data.admissionType,
+      careScopeId: data.careScope,
+      carePurposeId: data.carePurpose,
+      epsId: data.insurerId,
+      convenioId: data.agreementId,
+      invoiceOperationType: data.invoiceOperationType,
+      policyNumber: contributes ? data.policyNumber?.trim() || null : null,
+      collectionCufe: contributes ? data.collectionCufe?.trim() || null : null,
+      copayValue: amount(data.copayApplies, data.copayValue),
+      moderatorFeeValue: amount(data.moderatorFeeApplies, data.moderatorFeeValue),
+      sharedPaymentsValue: amount(data.sharedPaymentsApplies, data.sharedPaymentsValue),
+      advancePaymentValue: amount(data.advancePaymentApplies, data.advancePaymentValue),
+    };
+  };
 
   const handleSearchPatient = async (docOverride?: string) => {
     if (isEdit) return;
@@ -672,6 +716,7 @@ export function useAdmissionForm({
     hasServiceClassification: !!selectedServiceClassification,
     hasSelectedInsurer: !!selectedInsurerId,
     healthPaymentApplies,
+    withoutContribution,
     handleAgreementChange,
     handleAgreementClear,
     ...catalogOptions,
