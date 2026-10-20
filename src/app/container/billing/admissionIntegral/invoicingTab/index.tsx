@@ -37,6 +37,10 @@ const MOVEMENT_TYPE_LABELS: Record<BillingMovementType, string> = {
   surgery: "Cirugía",
 }
 
+// Días del periodo de facturación de la FEV (InvoicePeriod). Debe coincidir con
+// InvoicePeriodDays de ElectronicInvoiceMapper en el backend, que es el que lo envía.
+const INVOICE_PERIOD_DAYS = 22
+
 const sectionCardStyle: React.CSSProperties = {
   background: "var(--dash-surface, #ffffff)",
   border: "1px solid var(--dash-border, #e5e7eb)",
@@ -54,6 +58,10 @@ const InvoicingTab = ({
   const [messageApi, contextHolder] = message.useMessage()
   const [previewOpen, setPreviewOpen] = useState(false)
   const serviceStartDate = useMemo(() => dayjs(), [])
+  const invoicePeriodEndDate = useMemo(
+    () => serviceStartDate.add(INVOICE_PERIOD_DAYS, "day"),
+    [serviceStartDate],
+  )
 
   const totals = useMemo(() => {
     const byType: Record<BillingMovementType, number> = { service: 0, medicine: 0, supply: 0, surgery: 0 }
@@ -131,6 +139,15 @@ const InvoicingTab = ({
             <span style={{ fontSize: 13, fontWeight: 600 }}>Fecha de inicio del servicio</span>
             <DatePicker
               value={serviceStartDate}
+              format="DD/MM/YYYY"
+              disabled
+              style={{ width: "100%" }}
+            />
+          </label>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>Fecha final del periodo</span>
+            <DatePicker
+              value={invoicePeriodEndDate}
               format="DD/MM/YYYY"
               disabled
               style={{ width: "100%" }}
