@@ -57,13 +57,19 @@ export async function GET(_req: Request, { params }: { params: Params }) {
   }
 }
 
-export async function POST(_req: Request, { params }: { params: Params }) {
+export async function POST(req: Request, { params }: { params: Params }) {
   try {
     const session = await getSession()
+    // Periodo de facturación (periodStart / periodEnd) que escoge el usuario.
+    const body = await req.json().catch(() => ({}))
     const data = await apiFetch(
       `${BACKEND_ENDPOINT}/${params.admissionId}/electronic-invoice`,
       session.user.accessToken!,
-      { method: "POST" },
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body ?? {}),
+      },
     )
     return NextResponse.json(data)
   } catch (e: any) {

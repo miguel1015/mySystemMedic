@@ -96,6 +96,8 @@ const AdmissionIntegralContainer = () => {
       ),
       children: (
         <InvoicingTab
+          // Al cambiar de admisión se reinicia el periodo escogido (vuelve a admisión → hoy).
+          key={admissionId}
           admission={admission}
           movements={movements}
           ripsValidation={ripsValidation}
