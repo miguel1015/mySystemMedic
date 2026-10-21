@@ -86,7 +86,7 @@ export const XrayPrintDocument = ({
       admissionDate={admissionDate}
       contractName={contractName}
       documentTitle="Informe de Estudio Radiológico"
-      attentionLabel="Fecha de generación del informe:"
+      // attentionLabel="Fecha de generación del informe:"
       attentionDate={generatedDate}
       attentionTime={generatedTime}
       showSex

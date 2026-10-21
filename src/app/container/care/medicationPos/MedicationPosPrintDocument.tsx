@@ -33,7 +33,7 @@ const ItemsHeader = () => (
     <span>Ítem</span>
     <span>Código CUM</span>
     <span>Medicamento</span>
-    <span>Forma</span>
+    {/* <span>Forma</span> */}
     <span>Concentración</span>
     <span>Dosis</span>
     <span>Vía</span>
@@ -65,7 +65,7 @@ export const MedicationPosPrintDocument = ({
       admissionDate={admissionDate}
       contractName={contractName}
       documentTitle="Orden de Medicamentos POS"
-      attentionLabel="Fecha orden / fórmula:"
+      // attentionLabel="Fecha orden / fórmula:"
       attentionDate={formulaDate}
       attentionTime={formulaTime}
       showSex
@@ -111,7 +111,7 @@ export const MedicationPosPrintDocument = ({
               <span>{index + 1}</span>
               <span>{item.codigoCum || "Sin CUM"}</span>
               <span>{item.nombre}</span>
-              <span>{item.formaFarmaceutica || emptyDash}</span>
+              {/* <span>{item.formaFarmaceutica || emptyDash}</span> */}
               <span>{item.concentracion || emptyDash}</span>
               <span>{item.dosis || emptyDash}</span>
               <span>{item.viaAdministracion}</span>

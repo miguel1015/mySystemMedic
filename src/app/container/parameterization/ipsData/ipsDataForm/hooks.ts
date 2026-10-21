@@ -59,6 +59,7 @@ export function useProviderForm() {
         email: provider.email ?? "",
         logo: provider.logo ?? undefined,
         enableCode: provider.enableCode ?? "",
+        siteCode: provider.siteCode ?? "",
         regimen: provider.regimen ?? "",
         invoiceIssuerName: provider.invoiceIssuerName ?? "",
         invoiceIssuerSign: provider.invoiceIssuerSign ?? undefined,

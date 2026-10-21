@@ -18,6 +18,9 @@ export interface FevSummary {
   periodEnd: string | null
   // UBLExtensions / CustomTagGeneral: campos adicionales del sector salud (FED060).
   hasHealthExtension: boolean
+  // AdditionalInformation CODIGO_PRESTADOR del CustomTagGeneral: código de habilitación
+  // REPS del prestador (sin la sede) con el que se emitió la factura.
+  providerCode: string | null
 }
 
 const firstByLocalName = (root: Document | Element, name: string): Element | null =>
@@ -52,6 +55,13 @@ function findInvoice(attached: Document): Element | null {
   return null
 }
 
+function healthInfoValue(invoice: Element, name: string): string | null {
+  const info = Array.from(invoice.getElementsByTagNameNS("*", "AdditionalInformation")).find(
+    (element) => text(childByLocalName(element, "Name")) === name,
+  )
+  return text(childByLocalName(info ?? null, "Value"))
+}
+
 // Devuelve null si el Base64 no es un AttachedDocument con una factura legible.
 export function parseFevXml(base64: string | null | undefined): FevSummary | null {
   if (!base64) return null
@@ -77,6 +87,7 @@ export function parseFevXml(base64: string | null | undefined): FevSummary | nul
       periodStart: text(childByLocalName(period, "StartDate")),
       periodEnd: text(childByLocalName(period, "EndDate")),
       hasHealthExtension: invoice.getElementsByTagNameNS("*", "CustomTagGeneral").length > 0,
+      providerCode: healthInfoValue(invoice, "CODIGO_PRESTADOR"),
     }
   } catch {
     return null

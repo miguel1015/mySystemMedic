@@ -52,7 +52,6 @@ const toSortKey = (fecha?: string, hora?: string) => {
 };
 
 type EpicrisisEntry =
-  | { type: "hci"; sortKey: number }
   | { type: "evolucion"; data: EvolucionResponse; sortKey: number }
   | {
       type: "evolucionEspecialista";
@@ -110,8 +109,8 @@ export const EpicrisisPrintDocument = ({
       ? diagnosticosEgreso.find((d) => d.id === diagnosticoEgresoId)
       : undefined;
 
+  // La HCI inicial va siempre de primera; el resto se ordena por fecha.
   const entries: EpicrisisEntry[] = [
-    { type: "hci" as const, sortKey: toSortKey(attentionDate, attentionTime) },
     ...evoluciones.map((data): EpicrisisEntry => ({
       type: "evolucion",
       data,
@@ -157,25 +156,21 @@ export const EpicrisisPrintDocument = ({
 
   return (
     <>
+      <HciPrintDocument
+        provider={provider}
+        patient={patient}
+        admissionId={admissionId}
+        admissionDate={admissionDate}
+        attentionDate={attentionDate}
+        attentionTime={attentionTime}
+        contractName={contractName}
+        doctorName={doctorName}
+        doctorUser={doctorUser}
+        hcInicial={hcInicial}
+        diagnoses={diagnoses}
+      />
       {entries.map((entry) => {
         switch (entry.type) {
-          case "hci":
-            return (
-              <HciPrintDocument
-                key="hci-inicial"
-                provider={provider}
-                patient={patient}
-                admissionId={admissionId}
-                admissionDate={admissionDate}
-                attentionDate={attentionDate}
-                attentionTime={attentionTime}
-                contractName={contractName}
-                doctorName={doctorName}
-                doctorUser={doctorUser}
-                hcInicial={hcInicial}
-                diagnoses={diagnoses}
-              />
-            );
           case "evolucion": {
             const evo = entry.data;
             return (

@@ -28,7 +28,16 @@ export const providerSchema = z.object({
   legalRepresentativeSign: z.any().optional(),
   email: z.string().email("Correo electrónico inválido"),
   logo: z.any().optional(),
-  enableCode: z.string().min(1, "Código de habilitación es obligatorio"),
+  // Código de habilitación REPS sin la sede (va solo en el XML de la factura); el RIPS
+  // reporta enableCode + siteCode (12 dígitos).
+  enableCode: z
+    .string()
+    .min(1, "Código de habilitación es obligatorio")
+    .regex(/^\d{10}$/, "Debe tener 10 dígitos (sin la sede)"),
+  siteCode: z
+    .string()
+    .min(1, "Sede es obligatoria")
+    .regex(/^\d{2}$/, "Debe tener 2 dígitos"),
   regimen: z.string().min(1, "Régimen es obligatorio"),
   invoiceIssuerName: z
     .string()
@@ -52,6 +61,7 @@ export const providerDefaultValues: Partial<TProviderForm> = {
   documentNumber: "",
   email: "",
   enableCode: "",
+  siteCode: "",
   regimen: "",
   invoiceIssuerName: "",
   applyTax: false,

@@ -52,7 +52,7 @@ export const ExpenseSheetPrintDocument = ({
         admissionDate={admissionDate}
         contractName={contractName}
         documentTitle={HOJA_TEXTOS[tipoHoja].tituloImpresion}
-        attentionLabel="Fecha de impresión:"
+        // attentionLabel="Fecha de impresión:"
         attentionDate={`${pad(printedAt.getDate())}/${pad(printedAt.getMonth() + 1)}/${printedAt.getFullYear()}`}
         attentionTime={`${pad(printedAt.getHours())}:${pad(printedAt.getMinutes())}`}
       />

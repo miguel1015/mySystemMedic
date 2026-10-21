@@ -15,7 +15,7 @@ interface Props {
   admissionDate: string;
   contractName: string;
   documentTitle: string;
-  attentionLabel: string;
+  attentionLabel?: string;
   attentionDate: string;
   attentionTime: string;
   showSex?: boolean;
@@ -28,7 +28,7 @@ export const ClinicalDocumentHeader = ({
   admissionDate,
   contractName,
   documentTitle,
-  attentionLabel,
+  // attentionLabel,
   attentionDate,
   attentionTime,
   showSex = false,
@@ -112,11 +112,11 @@ export const ClinicalDocumentHeader = ({
       </div>
     </div>
 
-    <div className="hci-print-row">
-      <span className="hci-print-label">{attentionLabel}</span>
-      <span className="hci-print-value">
+    {/* <div className="hci-print-row"> */}
+    {/* <span className="hci-print-label">{attentionLabel}</span> */}
+    {/* <span className="hci-print-value">
         {attentionDate || emptyDash} {attentionTime || emptyDash}
       </span>
-    </div>
+    </div> */}
   </div>
 );

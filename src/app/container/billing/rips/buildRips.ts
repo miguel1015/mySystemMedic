@@ -459,12 +459,20 @@ export function buildRips({
   const addWarning = (group: string, field: string, reason: string) =>
     addIssue(group, field, reason, "warning")
 
-  // Código de habilitación REPS: 12 dígitos (10 del prestador + 2 de la sede), sin guiones.
-  const codPrestador = provider?.enableCode?.replace(/[^0-9]/g, "") || null
-  if (!codPrestador) {
+  // Código de habilitación REPS: 12 dígitos = enableCode (10 del prestador) + siteCode
+  // (2 de la sede), sin guiones. El XML de la factura lleva solo los 10 del prestador.
+  const enableCode = provider?.enableCode?.replace(/[^0-9]/g, "") || null
+  const siteCode = provider?.siteCode?.replace(/[^0-9]/g, "") || null
+  const codPrestador = enableCode && siteCode ? `${enableCode}${siteCode}` : null
+  if (!enableCode) {
     addIssue("Factura", "codPrestador", "El prestador no tiene código de habilitación REPS")
-  } else if (codPrestador.length !== 12) {
-    addIssue("Factura", "codPrestador", "El código de habilitación REPS debe tener 12 dígitos (prestador + sede)")
+  } else if (enableCode.length !== 10) {
+    addIssue("Factura", "codPrestador", "El código de habilitación REPS debe tener 10 dígitos (sin la sede)")
+  }
+  if (!siteCode) {
+    addIssue("Factura", "codPrestador", "El prestador no tiene la sede REPS (2 dígitos) en Datos de la IPS")
+  } else if (siteCode.length !== 2) {
+    addIssue("Factura", "codPrestador", "La sede REPS debe tener 2 dígitos")
   }
 
   const numDocumentoIdObligado = toNit(provider?.nit)
@@ -1000,6 +1008,8 @@ export function buildRips({
     }
     if (!fev.hasHealthExtension) {
       addIssue("Factura", "CustomTagGeneral", "La factura no trae los campos adicionales del sector salud (UBLExtensions / CustomTagGeneral) (FED060)")
+    } else if (enableCode && fev.providerCode !== enableCode) {
+      addIssue("Factura", "codPrestador", `El código de habilitación de la IPS (${enableCode}) no coincide con el CODIGO_PRESTADOR de la factura electrónica (${fev.providerCode ?? "sin código"})`)
     }
     if (!fev.periodStart || !fev.periodEnd) {
       addIssue("Factura", "InvoicePeriod", "La factura no trae el periodo de facturación (InvoicePeriod StartDate / EndDate) (VFE020 / VFE021)")

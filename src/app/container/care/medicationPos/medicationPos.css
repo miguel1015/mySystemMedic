@@ -5,7 +5,7 @@
 
 .mp-print-row {
   display: grid;
-  grid-template-columns: 22px 62px 1.3fr 54px 56px 46px 58px 46px 42px 42px 1.2fr;
+  grid-template-columns: 22px 62px 1.3fr 56px 46px 58px 46px 42px 42px 1.2fr;
   gap: 4px;
   font-size: 8.5px;
   padding: 3px 0;

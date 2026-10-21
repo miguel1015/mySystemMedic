@@ -227,6 +227,7 @@ export interface TProvider {
   email: string;
   logo: string | null;
   enableCode: string;
+  siteCode: string | null;
   regimen: string;
   invoiceIssuerName: string;
   invoiceIssuerSign: string | null;

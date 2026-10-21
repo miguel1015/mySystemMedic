@@ -214,12 +214,24 @@ export default function IpsDataForm() {
                   />
                 </div>
               </div>
-              <Input
-                name="enableCode"
-                label="Código de habilitación"
-                placeholder="Código de habilitación"
-                control={control}
-              />
+              <div className="d-flex gap-2">
+                <div style={{ flex: 3 }}>
+                  <Input
+                    name="enableCode"
+                    label="Código de habilitación"
+                    placeholder="10 dígitos"
+                    control={control}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <Input
+                    name="siteCode"
+                    label="Sede"
+                    placeholder="01"
+                    control={control}
+                  />
+                </div>
+              </div>
               <Input
                 name="phone"
                 label="Teléfono"

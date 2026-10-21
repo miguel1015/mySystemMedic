@@ -599,8 +599,9 @@ const InitialClinicalHistoryContainer = () => {
         patient={patient}
         admissionId={admissionId}
         admissionDate={admission?.admissionDate ?? ""}
-        attentionDate={admissionDate}
-        attentionTime={admissionTime}
+        // Con la HCI clausurada el formulario queda vacío: se usa la fecha guardada.
+        attentionDate={existingHCInicial?.admissionDate?.slice(0, 10) || admissionDate}
+        attentionTime={existingHCInicial?.admissionTime || admissionTime}
         contractName={admission?.convenioNombre ?? ""}
         doctorName={selectedDoctor}
         doctorUser={selectedDoctorUser}
