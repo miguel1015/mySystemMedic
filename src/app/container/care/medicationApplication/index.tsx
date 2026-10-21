@@ -5,6 +5,7 @@ import Title from "@/components/title"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import { useActiveAdmissions } from "@/core/hooks/care/admissions/useGetActiveAdmissions"
 import {
+  useEliminarAplicacion,
   useGetOrdenesParaAplicar,
   useGetProfesionalesAplicacion,
   useRegistrarAplicacion,
@@ -13,10 +14,12 @@ import { useGetViasAdministracion } from "@/core/hooks/care/ordenesMedicas/useOr
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
 import { useCurrentDoctor } from "@/core/hooks/users/useCurrentDoctor"
 import type { AplicacionOrden, OrdenActiva } from "@/core/interfaces/care/aplicacionOrden"
-import { AMBITOS_ORDEN, type AmbitoOrden, type EstadoOrdenItem } from "@/core/interfaces/care/ordenMedica"
+import type { EstadoOrdenItem } from "@/core/interfaces/care/ordenMedica"
 import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
+  DeleteOutlined,
+  EditOutlined,
   FileAddOutlined,
   HistoryOutlined,
   MedicineBoxOutlined,
@@ -28,8 +31,7 @@ import {
   Button,
   Descriptions,
   Empty,
-  Input,
-  InputNumber,
+  Popconfirm,
   Segmented,
   Select,
   Skeleton,
@@ -42,13 +44,24 @@ import {
 import type { ColumnsType } from "antd/es/table"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
+import ApplicationFormFields from "./ApplicationFormFields"
+import EditApplicationModal from "./EditApplicationModal"
 import MedicationApplicationPrintPreviewModal from "./MedicationApplicationPrintPreviewModal"
+import {
+  consumoDe,
+  errorMessage,
+  formatDateTime,
+  formatQty,
+  isMedicine,
+  maxUnidades,
+  nowTimeInput,
+  toRequest,
+  todayInput,
+  validateAplicacion,
+  type AplicacionFormValues,
+} from "./medicationApplication.utils"
 import "./medicationApplication.css"
 
-const { TextArea } = Input
-
-const FUTURE_TOLERANCE_MS = 5 * 60 * 1000
-const MAX_DOSIS = 1000000
 // Las vencidas siguen admitiendo aplicaciones (registro tardío); solo se advierte.
 const APPLICABLE_STATES: EstadoOrdenItem[] = ["Pendiente", "En proceso", "Vencida"]
 
@@ -60,49 +73,13 @@ const ESTADO_COLORS: Record<EstadoOrdenItem, string> = {
   Cancelada: "default",
 }
 
-const pad = (n: number) => n.toString().padStart(2, "0")
-const todayInput = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
-const nowTimeInput = () => {
-  const d = new Date()
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) return "—"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString("es-CO", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
-
-const formatQty = (value: number) =>
-  Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, "")
-
-const isMedicine = (orden: OrdenActiva) => orden.tipoOrden === "Medicamento"
-
-// En medicamentos la cantidad de la orden son unidades (ampollas, viales...): lo
-// que descuenta son las unidades consumidas. Una orden fraccionaria admite
-// completar la última unidad.
-const maxUnidades = (orden: OrdenActiva) => Math.ceil(orden.cantidadPendiente)
-
 // En medicamentos la dosis es libre y la diligencia quien aplica; en estudios y
 // procedimientos se sugiere 1 sin superar lo pendiente.
 const suggestedQuantity = (orden: OrdenActiva) =>
   isMedicine(orden) || orden.cantidadPendiente <= 0 ? null : Math.min(1, orden.cantidadPendiente)
 
 const suggestedUnidades = (orden: OrdenActiva) =>
-  isMedicine(orden) && maxUnidades(orden) > 0 ? 1 : null
-
-const errorMessage = (err: unknown, fallback: string) =>
-  err instanceof Error && err.message ? err.message : fallback
+  isMedicine(orden) && maxUnidades(orden.cantidadPendiente) > 0 ? 1 : null
 
 const MedicationApplicationContainer = () => {
   const router = useRouter()
@@ -133,20 +110,22 @@ const MedicationApplicationContainer = () => {
   const { data: vias, isLoading: loadingVias } = useGetViasAdministracion()
   const { me } = useCurrentDoctor()
   const registrar = useRegistrarAplicacion()
+  const eliminar = useEliminarAplicacion()
 
   /* ─────────────── Estado de la vista ─────────────── */
 
   const [filtro, setFiltro] = useState<"activas" | "todas">("activas")
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null)
-  const [fecha, setFecha] = useState(todayInput)
-  const [hora, setHora] = useState(nowTimeInput)
-  const [cantidad, setCantidad] = useState<number | null>(null)
-  const [unidades, setUnidades] = useState<number | null>(null)
-  const [viaCodigo, setViaCodigo] = useState<string | undefined>()
-  const [ambito, setAmbito] = useState<AmbitoOrden | undefined>()
-  const [profesionalId, setProfesionalId] = useState<number | undefined>()
-  const [observaciones, setObservaciones] = useState("")
+  const [values, setValues] = useState<AplicacionFormValues>(() => ({
+    fecha: todayInput(),
+    hora: nowTimeInput(),
+    cantidad: null,
+    unidades: null,
+    observaciones: "",
+  }))
+  const patchValues = (patch: Partial<AplicacionFormValues>) => setValues((prev) => ({ ...prev, ...patch }))
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [editing, setEditing] = useState<AplicacionOrden | null>(null)
 
   const ordenesList = useMemo(() => ordenes ?? [], [ordenes])
   const activas = useMemo(
@@ -161,21 +140,23 @@ const MedicationApplicationContainer = () => {
 
   // Profesional por defecto: el usuario en sesión si es un profesional habilitado.
   useEffect(() => {
-    if (profesionalId !== undefined || !profesionales?.length || !me?.id) return
+    if (values.profesionalId !== undefined || !profesionales?.length || !me?.id) return
     const currentId = Number(me.id)
-    if (profesionales.some((p) => p.id === currentId)) setProfesionalId(currentId)
-  }, [profesionales, me?.id, profesionalId])
+    if (profesionales.some((p) => p.id === currentId)) patchValues({ profesionalId: currentId })
+  }, [profesionales, me?.id, values.profesionalId])
 
   const selectOrden = (orden: OrdenActiva) => {
     setSelectedItemId(orden.ordenMedicaItemId)
-    setFecha(todayInput())
-    setHora(nowTimeInput())
-    setCantidad(suggestedQuantity(orden))
-    setUnidades(suggestedUnidades(orden))
-    setViaCodigo(orden.viaAdministracionCodigo ?? undefined)
-    // Por defecto el ámbito de la orden; se cambia si el paciente pasó a otro servicio.
-    setAmbito(orden.ambito)
-    setObservaciones("")
+    patchValues({
+      fecha: todayInput(),
+      hora: nowTimeInput(),
+      cantidad: suggestedQuantity(orden),
+      unidades: suggestedUnidades(orden),
+      viaCodigo: orden.viaAdministracionCodigo ?? undefined,
+      // Por defecto el ámbito de la orden; se cambia si el paciente pasó a otro servicio.
+      ambito: orden.ambito,
+      observaciones: "",
+    })
     setValidationErrors([])
   }
 
@@ -225,44 +206,6 @@ const MedicationApplicationContainer = () => {
 
   /* ─────────────── Registrar ─────────────── */
 
-  const validate = (orden: OrdenActiva) => {
-    const errors: string[] = []
-    const aplicacion = new Date(`${fecha}T${hora}`)
-
-    if (!fecha || !hora) {
-      errors.push("Indique la fecha y la hora de aplicación.")
-    } else if (Number.isNaN(aplicacion.getTime())) {
-      errors.push("La fecha u hora de aplicación no es válida.")
-    } else {
-      if (aplicacion.getTime() > Date.now() + FUTURE_TOLERANCE_MS)
-        errors.push("La fecha y hora de aplicación no puede ser futura.")
-      if (aplicacion.getTime() < new Date(orden.fechaOrden).getTime() - 60 * 1000)
-        errors.push("La aplicación no puede ser anterior a la fecha de la orden.")
-    }
-
-    if (cantidad === null || !Number.isFinite(cantidad) || cantidad <= 0)
-      errors.push("La cantidad administrada debe ser mayor a cero.")
-    else if (!isMedicine(orden) && cantidad > orden.cantidadPendiente)
-      errors.push(
-        `La cantidad administrada (${formatQty(cantidad)}) supera la cantidad pendiente (${formatQty(orden.cantidadPendiente)}).`,
-      )
-
-    if (isMedicine(orden)) {
-      if (unidades === null || !Number.isInteger(unidades) || unidades <= 0)
-        errors.push("Las unidades consumidas deben ser un número entero mayor a cero.")
-      else if (unidades > maxUnidades(orden))
-        errors.push(
-          `Las unidades consumidas (${unidades}) superan la cantidad pendiente (${formatQty(orden.cantidadPendiente)}).`,
-        )
-    }
-
-    if (isMedicine(orden) && !viaCodigo) errors.push("Seleccione la vía de administración.")
-    if (!ambito) errors.push("Seleccione el ámbito de la aplicación.")
-    if (!profesionalId) errors.push("Seleccione el profesional que aplica.")
-
-    return errors
-  }
-
   const handleRegistrar = async () => {
     if (!selected) {
       messageApi.error("Seleccione una orden médica para registrar la aplicación.")
@@ -273,7 +216,7 @@ const MedicationApplicationContainer = () => {
       return
     }
 
-    const errors = validate(selected)
+    const errors = validateAplicacion(selected, values, selected.cantidadPendiente)
     setValidationErrors(errors)
     if (errors.length > 0) {
       messageApi.error("Revise la información de la aplicación.")
@@ -283,13 +226,7 @@ const MedicationApplicationContainer = () => {
     try {
       const actualizada = await registrar.mutateAsync({
         ordenMedicaItemId: selected.ordenMedicaItemId,
-        fechaHoraAplicacion: new Date(`${fecha}T${hora}`).toISOString(),
-        cantidad: cantidad!,
-        unidadesConsumidas: isMedicine(selected) ? unidades : null,
-        viaAdministracionCodigo: isMedicine(selected) ? viaCodigo : null,
-        ambito: ambito!,
-        profesionalId: profesionalId!,
-        observaciones: observaciones.trim(),
+        ...toRequest(selected, values),
       })
 
       const pendiente = actualizada?.cantidadPendiente ?? 0
@@ -298,14 +235,25 @@ const MedicationApplicationContainer = () => {
           ? `${isMedicine(selected) ? "Aplicación" : "Realización"} registrada. Pendiente: ${formatQty(pendiente)} unidad(es).`
           : "Registro exitoso. La orden quedó completamente aplicada.",
       )
-      setObservaciones("")
       setValidationErrors([])
-      setHora(nowTimeInput())
-      // La dosis se conserva: suele repetirse en la siguiente aplicación.
-      if (actualizada && !isMedicine(actualizada)) setCantidad(suggestedQuantity(actualizada))
-      setUnidades(actualizada ? suggestedUnidades(actualizada) : null)
+      patchValues({
+        observaciones: "",
+        hora: nowTimeInput(),
+        // La dosis se conserva: suele repetirse en la siguiente aplicación.
+        ...(actualizada && !isMedicine(actualizada) ? { cantidad: suggestedQuantity(actualizada) } : {}),
+        unidades: actualizada ? suggestedUnidades(actualizada) : null,
+      })
     } catch (err) {
       messageApi.error(errorMessage(err, "No se pudo registrar la aplicación."))
+    }
+  }
+
+  const handleEliminar = async (aplicacion: AplicacionOrden) => {
+    try {
+      await eliminar.mutateAsync(aplicacion.id)
+      messageApi.success(`${isMedicine(aplicacion) ? "Aplicación" : "Realización"} eliminada.`)
+    } catch (err) {
+      messageApi.error(errorMessage(err, "No se pudo eliminar el registro."))
     }
   }
 
@@ -348,18 +296,6 @@ const MedicationApplicationContainer = () => {
       width: 130,
     },
     {
-      title: "Profesional",
-      key: "profesional",
-      render: (_, r) => (
-        <div>
-          <div>{r.profesionalNombre}</div>
-          <small className="ma-muted">
-            {[r.profesionalCargo, r.profesionalDocumento].filter(Boolean).join(" · ")}
-          </small>
-        </div>
-      ),
-    },
-    {
       title: "Evento / observaciones",
       dataIndex: "observaciones",
       key: "observaciones",
@@ -375,6 +311,35 @@ const MedicationApplicationContainer = () => {
           <small className="ma-muted">{formatDateTime(r.createdAt)}</small>
         </div>
       ),
+    },
+    {
+      title: "Acciones",
+      key: "acciones",
+      width: 100,
+      fixed: "right",
+      align: "center",
+      render: (_, r) => {
+        const consumo = consumoDe(r)
+        return (
+          <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
+            <Tooltip title="Editar">
+              <Button type="text" size="small" icon={<EditOutlined />} onClick={() => setEditing(r)} />
+            </Tooltip>
+            <Popconfirm
+              title={`¿Eliminar esta ${isMedicine(r) ? "aplicación" : "realización"}?`}
+              description={`Se devolverán ${formatQty(consumo)} unidad(es) a la orden y se retirará de la hoja de gastos.`}
+              okText="Eliminar"
+              cancelText="Cancelar"
+              okButtonProps={{ danger: true, loading: eliminar.isPending }}
+              onConfirm={() => handleEliminar(r)}
+            >
+              <Tooltip title="Eliminar">
+                <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+              </Tooltip>
+            </Popconfirm>
+          </div>
+        )
+      },
     },
   ]
 
@@ -688,152 +653,17 @@ const MedicationApplicationContainer = () => {
                         />
                       )}
 
-                      <div className="ma-form-grid">
-                        <label className="ma-field">
-                          <span>
-                            Fecha de aplicación <span className="ma-required">*</span>
-                          </span>
-                          <Input
-                            type="date"
-                            value={fecha}
-                            max={todayInput()}
-                            status={showErrors && !fecha ? "error" : undefined}
-                            onChange={(e) => setFecha(e.target.value)}
-                          />
-                        </label>
-                        <label className="ma-field">
-                          <span>
-                            Hora de aplicación <span className="ma-required">*</span>
-                          </span>
-                          <Input
-                            type="time"
-                            value={hora}
-                            status={showErrors && !hora ? "error" : undefined}
-                            onChange={(e) => setHora(e.target.value)}
-                          />
-                        </label>
-                        <label className="ma-field">
-                          <span>
-                            Cantidad administrada <span className="ma-required">*</span>
-                          </span>
-                          <InputNumber
-                            min={0.01}
-                            max={isMedicine(selected) ? MAX_DOSIS : selected.cantidadPendiente}
-                            precision={2}
-                            value={cantidad}
-                            placeholder={isMedicine(selected) ? "Dosis, p. ej. 500" : undefined}
-                            status={
-                              showErrors &&
-                              (cantidad === null ||
-                                cantidad <= 0 ||
-                                (!isMedicine(selected) && cantidad > selected.cantidadPendiente))
-                                ? "error"
-                                : undefined
-                            }
-                            onChange={(value) => setCantidad(typeof value === "number" ? value : null)}
-                            style={{ width: "100%" }}
-                          />
-                          {!isMedicine(selected) && (
-                            <small className="ma-muted">
-                              Máximo pendiente: {formatQty(selected.cantidadPendiente)}
-                            </small>
-                          )}
-                        </label>
-                        <label className="ma-field">
-                          <span>Unidad de medida</span>
-                          <Input value={selected.unidadMedida || (isMedicine(selected) ? "—" : "Unidad")} disabled />
-                        </label>
-                        {isMedicine(selected) && (
-                          <label className="ma-field">
-                            <span>
-                              Unidades consumidas <span className="ma-required">*</span>
-                            </span>
-                            <InputNumber
-                              min={1}
-                              max={maxUnidades(selected)}
-                              precision={0}
-                              value={unidades}
-                              status={
-                                showErrors &&
-                                (unidades === null || unidades <= 0 || unidades > maxUnidades(selected))
-                                  ? "error"
-                                  : undefined
-                              }
-                              onChange={(value) => setUnidades(typeof value === "number" ? value : null)}
-                              style={{ width: "100%" }}
-                            />
-                          </label>
-                        )}
-                        {isMedicine(selected) && (
-                          <label className="ma-field">
-                            <span>
-                              Vía de administración <span className="ma-required">*</span>
-                            </span>
-                            <Select
-                              showSearch
-                              optionFilterProp="label"
-                              value={viaCodigo}
-                              options={viaOptions}
-                              loading={loadingVias}
-                              placeholder="Seleccione la vía"
-                              status={showErrors && !viaCodigo ? "error" : undefined}
-                              onChange={(value) => setViaCodigo(value)}
-                              style={{ width: "100%" }}
-                            />
-                          </label>
-                        )}
-                        <label className="ma-field">
-                          <span>
-                            Ámbito <span className="ma-required">*</span>
-                          </span>
-                          <Select
-                            value={ambito}
-                            options={AMBITOS_ORDEN.map((value) => ({ value, label: value }))}
-                            status={showErrors && !ambito ? "error" : undefined}
-                            onChange={(value: AmbitoOrden) => setAmbito(value)}
-                            style={{ width: "100%" }}
-                          />
-                          {ambito && ambito !== selected.ambito && (
-                            <small className="ma-muted">
-                              Distinto al de la orden ({selected.ambito}).
-                            </small>
-                          )}
-                        </label>
-                        <label className="ma-field ma-field--wide">
-                          <span>
-                            Profesional que {isMedicine(selected) ? "aplica" : "realiza"}{" "}
-                            <span className="ma-required">*</span>
-                          </span>
-                          <Select
-                            showSearch
-                            optionFilterProp="label"
-                            value={profesionalId}
-                            options={profesionalOptions}
-                            loading={loadingProfesionales}
-                            placeholder="Seleccione el profesional"
-                            status={showErrors && !profesionalId ? "error" : undefined}
-                            onChange={(value) => setProfesionalId(value)}
-                            style={{ width: "100%" }}
-                          />
-                        </label>
-                        <label className="ma-field ma-field--full">
-                          <span>
-                            {isMedicine(selected) ? "Evento de la aplicación" : "Observaciones de la realización"}
-                          </span>
-                          <TextArea
-                            rows={3}
-                            maxLength={2000}
-                            showCount
-                            value={observaciones}
-                            placeholder={
-                              isMedicine(selected)
-                                ? "Respuesta del paciente, reacciones adversas, eventos presentados u observaciones..."
-                                : "Observaciones relevantes de la realización del estudio o procedimiento..."
-                            }
-                            onChange={(e) => setObservaciones(e.target.value)}
-                          />
-                        </label>
-                      </div>
+                      <ApplicationFormFields
+                        orden={selected}
+                        values={values}
+                        onChange={patchValues}
+                        disponible={selected.cantidadPendiente}
+                        showErrors={showErrors}
+                        viaOptions={viaOptions}
+                        loadingVias={loadingVias}
+                        profesionalOptions={profesionalOptions}
+                        loadingProfesionales={loadingProfesionales}
+                      />
 
                       <div className="ma-actions">
                         <Button
@@ -864,6 +694,16 @@ const MedicationApplicationContainer = () => {
                     locale={{ emptyText: "Aún no hay registros para esta orden." }}
                   />
                 </div>
+
+                <EditApplicationModal
+                  orden={selected}
+                  aplicacion={editing}
+                  onClose={() => setEditing(null)}
+                  viaOptions={viaOptions}
+                  loadingVias={loadingVias}
+                  profesionalOptions={profesionalOptions}
+                  loadingProfesionales={loadingProfesionales}
+                />
               </>
             )}
           </section>

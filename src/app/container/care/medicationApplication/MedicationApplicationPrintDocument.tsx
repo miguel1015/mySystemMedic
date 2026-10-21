@@ -30,8 +30,7 @@ const pad = (n: number) => n.toString().padStart(2, "0")
 const formatFechaHora = (value: string) => {
   const d = new Date(value)
   if (Number.isNaN(d.getTime())) return value
-  const h = d.getHours() % 12 || 12
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(h)}:${pad(d.getMinutes())} ${d.getHours() < 12 ? "AM" : "PM"}`
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 const formatQty = (value: number) =>
@@ -67,7 +66,7 @@ export const MedicationApplicationPrintDocument = ({
       admissionDate={admissionDate}
       contractName={contractName}
       documentTitle="Aplicación de Medicamentos"
-      attentionLabel="Fecha de impresión:"
+      // attentionLabel="Fecha de impresión:"
       attentionDate={`${pad(printedAt.getDate())}/${pad(printedAt.getMonth() + 1)}/${printedAt.getFullYear()}`}
       attentionTime={`${pad(printedAt.getHours())}:${pad(printedAt.getMinutes())}`}
     />

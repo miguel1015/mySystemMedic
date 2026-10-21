@@ -73,3 +73,6 @@ export interface AplicacionOrdenRequest {
   profesionalId: number
   observaciones?: string
 }
+
+// Datos editables de una aplicación ya registrada.
+export type AplicacionOrdenUpdateRequest = Omit<AplicacionOrdenRequest, "ordenMedicaItemId">

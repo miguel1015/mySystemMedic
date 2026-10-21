@@ -164,6 +164,8 @@ export const CARE_ENDPOINTS = {
       `/api/auth/care/aplicaciones-ordenes/by-admission/${admissionId}`,
     GET_ITEM: (itemId: IdParam) => `/api/auth/care/aplicaciones-ordenes/item/${itemId}`,
     CREATE: "/api/auth/care/aplicaciones-ordenes",
+    UPDATE: (id: IdParam) => `/api/auth/care/aplicaciones-ordenes/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/aplicaciones-ordenes/${id}`,
   },
   DESCRIPCIONES_QUIRURGICAS: {
     GET_BY_ADMISSION: (admissionId: IdParam) =>
