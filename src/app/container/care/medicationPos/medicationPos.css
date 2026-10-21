@@ -1,0 +1,59 @@
+/* ── Medicamentos POS (impresión) ── */
+.mp-print-table {
+  margin-top: 4px;
+}
+
+.mp-print-row {
+  display: grid;
+  grid-template-columns: 22px 62px 1.3fr 54px 56px 46px 58px 46px 42px 42px 1.2fr;
+  gap: 4px;
+  font-size: 8.5px;
+  padding: 3px 0;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.mp-print-row > span {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.mp-print-row--head {
+  font-weight: bold;
+  font-style: italic;
+  border-bottom: 1px solid #000;
+}
+
+.mp-print-center {
+  text-align: center;
+}
+
+/* ── Vista en pantalla (el resto reutiliza las clases mo-* de Órdenes Médicas) ── */
+.mp-form-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.4fr) minmax(200px, 1fr);
+  gap: 16px;
+}
+
+.mp-search {
+  margin-top: 16px;
+}
+
+.mp-posologia-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr 1fr;
+  gap: 6px;
+}
+
+.mp-posologia-grid .ant-select,
+.mp-posologia-grid .ant-input,
+.mp-posologia-grid .ant-input-number,
+.mp-posologia-grid .ant-input-number-group-wrapper {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .mp-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

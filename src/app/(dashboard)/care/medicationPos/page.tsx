@@ -1,10 +1,14 @@
-import ClinicalActionModule from "../../../container/care/clinicalActionModule"
+import { Suspense } from "react"
+import MedicationPosContainer from "../../../container/care/medicationPos"
 
-export default function MedicationPosPage() {
+interface PageProps {
+  searchParams: { admissionId?: string }
+}
+
+export default function MedicationPosPage({ searchParams }: PageProps) {
   return (
-    <ClinicalActionModule
-      title="Medicamentos POS"
-      description="Consulta y gestion de medicamentos POS relacionados con el paciente seleccionado."
-    />
+    <Suspense fallback={null}>
+      <MedicationPosContainer key={searchParams.admissionId} />
+    </Suspense>
   )
 }

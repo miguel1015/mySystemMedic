@@ -150,6 +150,14 @@ export const CARE_ENDPOINTS = {
     UPDATE: (id: IdParam) => `/api/auth/care/ordenes-medicas/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/ordenes-medicas/${id}`,
   },
+  MEDICAMENTOS_POS: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/medicamentos-pos/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/medicamentos-pos",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/medicamentos-pos/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/medicamentos-pos/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/medicamentos-pos/${id}`,
+  },
   APLICACIONES_ORDENES: {
     PROFESIONALES: "/api/auth/care/aplicaciones-ordenes/profesionales",
     GET_BY_ADMISSION: (admissionId: IdParam) =>
