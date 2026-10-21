@@ -1,6 +1,8 @@
 "use client"
 
+import { parseFevXml } from "@/app/container/billing/rips/parseFevXml"
 import { useCreateElectronicInvoice } from "@/core/hooks/care/billing/useCreateElectronicInvoice"
+import { useGetElectronicInvoiceAttachedDocument } from "@/core/hooks/care/billing/useElectronicInvoiceDocuments"
 import { BillingMovementResponse, BillingMovementType, ElectronicInvoiceResponse } from "@/core/interfaces/care/billing"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import {
@@ -16,7 +18,7 @@ import {
   isWithoutContribution,
 } from "@/core/constants/invoiceOperationTypes"
 import { Button, DatePicker, Descriptions, Input, Skeleton, message } from "antd"
-import dayjs from "dayjs"
+import dayjs, { Dayjs } from "dayjs"
 import { useMemo, useState } from "react"
 import { RipsValidationResult } from "../ripsTab"
 import { formatCurrency } from "../utils"
@@ -37,10 +39,6 @@ const MOVEMENT_TYPE_LABELS: Record<BillingMovementType, string> = {
   surgery: "Cirugía",
 }
 
-// Días del periodo de facturación de la FEV (InvoicePeriod). Debe coincidir con
-// InvoicePeriodDays de ElectronicInvoiceMapper en el backend, que es el que lo envía.
-const INVOICE_PERIOD_DAYS = 22
-
 const sectionCardStyle: React.CSSProperties = {
   background: "var(--dash-surface, #ffffff)",
   border: "1px solid var(--dash-border, #e5e7eb)",
@@ -57,11 +55,12 @@ const InvoicingTab = ({
 }: InvoicingTabProps) => {
   const [messageApi, contextHolder] = message.useMessage()
   const [previewOpen, setPreviewOpen] = useState(false)
-  const serviceStartDate = useMemo(() => dayjs(), [])
-  const invoicePeriodEndDate = useMemo(
-    () => serviceStartDate.add(INVOICE_PERIOD_DAYS, "day"),
-    [serviceStartDate],
-  )
+  // Periodo de facturación de la FEV (InvoicePeriod) que se envía al emitir. Por defecto va
+  // de la fecha de admisión a hoy; undefined mientras el usuario no lo cambie.
+  const [periodStartInput, setPeriodStartInput] = useState<Dayjs | null>()
+  const [periodEndInput, setPeriodEndInput] = useState<Dayjs | null>()
+  const today = useMemo(() => dayjs().startOf("day"), [])
+  const defaultPeriodStart = admission?.admissionDate ? dayjs(admission.admissionDate).startOf("day") : null
 
   const totals = useMemo(() => {
     const byType: Record<BillingMovementType, number> = { service: 0, medicine: 0, supply: 0, surgery: 0 }
@@ -82,11 +81,35 @@ const InvoicingTab = ({
   const invoiceOperationTypeLabel = getInvoiceOperationTypeLabel(admission?.invoiceOperationType)
   const hasInvoiceOperationType = !!invoiceOperationTypeLabel
   const withoutContribution = isWithoutContribution(admission?.invoiceOperationType)
-  const canElectronicInvoice = hasMovements && hasInvoiceOperationType
 
   const createElectronicInvoice = useCreateElectronicInvoice()
 
   const isAlreadyIssued = electronicInvoice?.success ?? false
+
+  // Ya emitida, se muestra el periodo con el que salió la factura (leído de su XML).
+  const { data: attachedDocument } = useGetElectronicInvoiceAttachedDocument(
+    electronicInvoice?.id,
+    isAlreadyIssued,
+  )
+  const issuedPeriod = useMemo(() => {
+    const fev = parseFevXml(attachedDocument?.base64)
+    return {
+      start: fev?.periodStart ? dayjs(fev.periodStart) : null,
+      end: fev?.periodEnd ? dayjs(fev.periodEnd) : null,
+    }
+  }, [attachedDocument])
+
+  const periodStart = isAlreadyIssued
+    ? issuedPeriod.start
+    : periodStartInput === undefined ? defaultPeriodStart : periodStartInput
+  const periodEnd = isAlreadyIssued
+    ? issuedPeriod.end
+    : periodEndInput === undefined ? today : periodEndInput
+
+  // El back exige inicio <= fin y fin <= hoy (la fecha de la factura).
+  const hasValidPeriod =
+    !!periodStart && !!periodEnd && !periodStart.isAfter(periodEnd, "day") && !periodEnd.isAfter(today, "day")
+  const canElectronicInvoice = hasMovements && hasInvoiceOperationType && hasValidPeriod
 
   // Si la admisión ya se facturó se muestra su número real; si no, el siguiente
   // consecutivo de la resolución activa.
@@ -99,10 +122,14 @@ const InvoicingTab = ({
       : nextInvoiceNumber?.invoiceNum ?? ""
 
   const handleElectronicInvoice = async () => {
-    if (!canElectronicInvoice || !admission) return
+    if (!canElectronicInvoice || !admission || !periodStart || !periodEnd) return
 
     try {
-      const result = await createElectronicInvoice.mutateAsync(admission.id)
+      const result = await createElectronicInvoice.mutateAsync({
+        admissionId: admission.id,
+        periodStart: periodStart.format("YYYY-MM-DD"),
+        periodEnd: periodEnd.format("YYYY-MM-DD"),
+      })
       if (result.success) {
         messageApi.success(`Factura electrónica emitida. CUFE: ${result.cufe}`)
       } else {
@@ -138,18 +165,28 @@ const InvoicingTab = ({
           <label style={{ display: "grid", gap: 6 }}>
             <span style={{ fontSize: 13, fontWeight: 600 }}>Fecha de inicio del servicio</span>
             <DatePicker
-              value={serviceStartDate}
+              value={periodStart}
+              onChange={setPeriodStartInput}
               format="DD/MM/YYYY"
-              disabled
+              disabled={isAlreadyIssued}
+              disabledDate={(date) =>
+                date.isAfter(today, "day") || (!!periodEnd && date.isAfter(periodEnd, "day"))
+              }
+              placeholder={isAlreadyIssued ? "Sin periodo en la factura" : "Seleccione la fecha"}
               style={{ width: "100%" }}
             />
           </label>
           <label style={{ display: "grid", gap: 6 }}>
             <span style={{ fontSize: 13, fontWeight: 600 }}>Fecha final del periodo</span>
             <DatePicker
-              value={invoicePeriodEndDate}
+              value={periodEnd}
+              onChange={setPeriodEndInput}
               format="DD/MM/YYYY"
-              disabled
+              disabled={isAlreadyIssued}
+              disabledDate={(date) =>
+                date.isAfter(today, "day") || (!!periodStart && date.isBefore(periodStart, "day"))
+              }
+              placeholder={isAlreadyIssued ? "Sin periodo en la factura" : "Seleccione la fecha"}
               style={{ width: "100%" }}
             />
           </label>
@@ -276,6 +313,13 @@ const InvoicingTab = ({
         <p style={{ marginTop: 10, fontSize: 13, color: "var(--dash-text-tertiary, #9ca3af)" }}>
           <FileDoneOutlined /> Para habilitar la facturación electrónica, carga al menos un
           movimiento de facturación.
+        </p>
+      )}
+
+      {!isAlreadyIssued && !hasValidPeriod && (
+        <p style={{ marginTop: 10, fontSize: 13, color: "var(--dash-text-tertiary, #9ca3af)" }}>
+          <FileDoneOutlined /> Para habilitar la facturación electrónica, indica la fecha de inicio
+          y la fecha final del periodo (la final no puede ser posterior a hoy).
         </p>
       )}
 
