@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import HospitalizationExpenseSheet from "../../../../container/care/hospitalizationExpenseSheet"
+import ExpenseSheet from "../../../../container/care/expenseSheet"
 
 interface PageProps {
   searchParams: { admissionId?: string }
@@ -8,7 +8,7 @@ interface PageProps {
 export default function HospitalizationExpenseSheetPage({ searchParams }: PageProps) {
   return (
     <Suspense fallback={null}>
-      <HospitalizationExpenseSheet key={searchParams.admissionId} />
+      <ExpenseSheet key={searchParams.admissionId} tipoHoja="Hospitalizacion" />
     </Suspense>
   )
 }

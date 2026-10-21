@@ -16,7 +16,7 @@ import {
 } from "../clinicalRecords/initialClinicalHistory/printPreview/printPagination"
 import "../clinicalRecords/initialClinicalHistory/printPreview/hciPrintPreview.css"
 import "./xray.css"
-import { formatStudyDate } from "./xray.utils"
+import { formatStudyDate, formatStudyName } from "./xray.utils"
 
 interface Props {
   provider?: TProvider
@@ -53,11 +53,9 @@ const splitIntoChunks = (text: string): string[] => {
   return chunks
 }
 
-const textUnits = (key: string, title: string, text: string): Unit[] => {
-  const chunks = splitIntoChunks(text ?? "")
-  const list = chunks.length > 0 ? chunks : [emptyDash]
-
-  return list.map((chunk, index) => ({
+// Una sección sin diligenciar no se imprime.
+const textUnits = (key: string, title: string, text: string): Unit[] =>
+  splitIntoChunks(text ?? "").map((chunk, index) => ({
     kind: "block",
     id: `${key}-${index}`,
     node: (
@@ -67,7 +65,6 @@ const textUnits = (key: string, title: string, text: string): Unit[] => {
       </div>
     ),
   }))
-}
 
 export const XrayPrintDocument = ({
   provider,
@@ -97,14 +94,15 @@ export const XrayPrintDocument = ({
   )
 
   const units = useMemo<Unit[]>(() => {
+    // El resultado se imprime como el único valor seleccionado, nunca como la
+    // lista de opciones disponibles.
     const studyRows = [
       { label: "Fecha del estudio", value: formatStudyDate(estudio.fechaEstudio) },
-      {
-        label: "Estudio realizado",
-        value: [estudio.codigoEstudio, estudio.nombreEstudio].filter(Boolean).join(" - "),
-      },
-      { label: "Resultado", value: estudio.resultado },
-    ]
+      { label: "Estudio realizado", value: formatStudyName(estudio) },
+      { label: "Técnica utilizada", value: estudio.tecnicaUtilizada?.trim() },
+      { label: "Dato clínico", value: estudio.datoClinico?.trim() },
+      { label: "Resultado del RX", value: estudio.resultado },
+    ].filter((row) => Boolean(row.value))
 
     const list: Unit[] = studyRows.map((row, index) => ({
       kind: "field",
@@ -113,11 +111,11 @@ export const XrayPrintDocument = ({
       sectionTitle: "Datos del estudio",
       isFirst: index === 0,
       label: row.label,
-      value: row.value,
+      value: row.value as string,
     }))
 
     list.push(...textUnits("descripcion", "Descripción", estudio.descripcion))
-    list.push(...textUnits("conclusion", "Conclusión", estudio.conclusion))
+    list.push(...textUnits("conclusion", "Conclusión diagnóstica", estudio.conclusion))
 
     list.push({
       kind: "block",

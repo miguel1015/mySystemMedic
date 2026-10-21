@@ -1,4 +1,4 @@
-import type { ResultadoRayosX } from "@/core/interfaces/care/rayosX"
+import type { EstudioRayosXResponse, ResultadoRayosX } from "@/core/interfaces/care/rayosX"
 
 const pad = (n: number) => n.toString().padStart(2, "0")
 
@@ -33,6 +33,12 @@ export const calculateAgeLabel = (birthDate?: string | null) => {
   if (age < 0) return ""
   return `${age} ${age === 1 ? "año" : "años"}`
 }
+
+// Los estudios antiguos se eligieron del Manual Tarifario y conservan su código;
+// los nuevos solo tienen el nombre escrito por el radiólogo.
+export const formatStudyName = (
+  estudio: Pick<EstudioRayosXResponse, "codigoEstudio" | "nombreEstudio">,
+) => [estudio.codigoEstudio, estudio.nombreEstudio].filter(Boolean).join(" - ")
 
 export const RESULTADO_COLORS: Record<ResultadoRayosX, string> = {
   Normal: "green",

@@ -1,7 +1,6 @@
 import { create, getAll, remove, updatePut } from "@/core/api/baseService"
 import { ENDPOINTS } from "@/core/api/endpoints"
 import type {
-  EstudioRadiologicoDisponible,
   EstudioRayosXCreateRequest,
   EstudioRayosXResponse,
   EstudioRayosXUpdateRequest,
@@ -13,15 +12,6 @@ const byAdmissionKey = (admissionId?: number | string) => [
   "by-admission",
   String(admissionId),
 ]
-
-export function useGetEstudiosRadiologicosDisponibles() {
-  return useQuery({
-    queryKey: ["estudios-rayos-x", "estudios-disponibles"],
-    queryFn: () =>
-      getAll<EstudioRadiologicoDisponible[]>(ENDPOINTS.ESTUDIOS_RAYOS_X.ESTUDIOS_DISPONIBLES),
-    staleTime: 10 * 60 * 1000,
-  })
-}
 
 export function useGetEstudiosRayosXByAdmission(admissionId?: number | string) {
   return useQuery({

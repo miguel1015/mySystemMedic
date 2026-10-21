@@ -13,13 +13,14 @@ import { useGetViasAdministracion } from "@/core/hooks/care/ordenesMedicas/useOr
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
 import { useCurrentDoctor } from "@/core/hooks/users/useCurrentDoctor"
 import type { AplicacionOrden, OrdenActiva } from "@/core/interfaces/care/aplicacionOrden"
-import type { EstadoOrdenItem } from "@/core/interfaces/care/ordenMedica"
+import { AMBITOS_ORDEN, type AmbitoOrden, type EstadoOrdenItem } from "@/core/interfaces/care/ordenMedica"
 import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
   FileAddOutlined,
   HistoryOutlined,
   MedicineBoxOutlined,
+  PrinterOutlined,
   UserOutlined,
 } from "@ant-design/icons"
 import {
@@ -35,16 +36,19 @@ import {
   Spin,
   Table,
   Tag,
+  Tooltip,
   message,
 } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
+import MedicationApplicationPrintPreviewModal from "./MedicationApplicationPrintPreviewModal"
 import "./medicationApplication.css"
 
 const { TextArea } = Input
 
 const FUTURE_TOLERANCE_MS = 5 * 60 * 1000
+const MAX_DOSIS = 1000000
 // Las vencidas siguen admitiendo aplicaciones (registro tardío); solo se advierte.
 const APPLICABLE_STATES: EstadoOrdenItem[] = ["Pendiente", "En proceso", "Vencida"]
 
@@ -84,18 +88,18 @@ const formatQty = (value: number) =>
 
 const isMedicine = (orden: OrdenActiva) => orden.tipoOrden === "Medicamento"
 
-// Dosis sugerida por aplicación: total / número de aplicaciones (frecuencia y
-// duración), sin superar lo pendiente. Si no hay datos, 1 o lo pendiente.
-const suggestedQuantity = (orden: OrdenActiva) => {
-  const pending = orden.cantidadPendiente
-  if (pending <= 0) return null
-  if (orden.frecuenciaHoras && orden.duracionDias) {
-    const doses = Math.max(1, Math.floor((orden.duracionDias * 24) / orden.frecuenciaHoras))
-    const perDose = Math.round((orden.cantidad / doses) * 100) / 100
-    if (perDose > 0) return Math.min(perDose, pending)
-  }
-  return Math.min(1, pending)
-}
+// En medicamentos la cantidad de la orden son unidades (ampollas, viales...): lo
+// que descuenta son las unidades consumidas. Una orden fraccionaria admite
+// completar la última unidad.
+const maxUnidades = (orden: OrdenActiva) => Math.ceil(orden.cantidadPendiente)
+
+// En medicamentos la dosis es libre y la diligencia quien aplica; en estudios y
+// procedimientos se sugiere 1 sin superar lo pendiente.
+const suggestedQuantity = (orden: OrdenActiva) =>
+  isMedicine(orden) || orden.cantidadPendiente <= 0 ? null : Math.min(1, orden.cantidadPendiente)
+
+const suggestedUnidades = (orden: OrdenActiva) =>
+  isMedicine(orden) && maxUnidades(orden) > 0 ? 1 : null
 
 const errorMessage = (err: unknown, fallback: string) =>
   err instanceof Error && err.message ? err.message : fallback
@@ -137,7 +141,9 @@ const MedicationApplicationContainer = () => {
   const [fecha, setFecha] = useState(todayInput)
   const [hora, setHora] = useState(nowTimeInput)
   const [cantidad, setCantidad] = useState<number | null>(null)
+  const [unidades, setUnidades] = useState<number | null>(null)
   const [viaCodigo, setViaCodigo] = useState<string | undefined>()
+  const [ambito, setAmbito] = useState<AmbitoOrden | undefined>()
   const [profesionalId, setProfesionalId] = useState<number | undefined>()
   const [observaciones, setObservaciones] = useState("")
   const [validationErrors, setValidationErrors] = useState<string[]>([])
@@ -148,6 +154,8 @@ const MedicationApplicationContainer = () => {
     [ordenesList],
   )
   const visibles = filtro === "activas" ? activas : ordenesList
+  const hayAplicaciones = ordenesList.some((o) => o.aplicaciones?.length)
+  const [printOpen, setPrintOpen] = useState(false)
   const selected = ordenesList.find((o) => o.ordenMedicaItemId === selectedItemId) ?? null
   const canApply = selected !== null && APPLICABLE_STATES.includes(selected.estado)
 
@@ -163,7 +171,10 @@ const MedicationApplicationContainer = () => {
     setFecha(todayInput())
     setHora(nowTimeInput())
     setCantidad(suggestedQuantity(orden))
+    setUnidades(suggestedUnidades(orden))
     setViaCodigo(orden.viaAdministracionCodigo ?? undefined)
+    // Por defecto el ámbito de la orden; se cambia si el paciente pasó a otro servicio.
+    setAmbito(orden.ambito)
     setObservaciones("")
     setValidationErrors([])
   }
@@ -231,12 +242,22 @@ const MedicationApplicationContainer = () => {
 
     if (cantidad === null || !Number.isFinite(cantidad) || cantidad <= 0)
       errors.push("La cantidad administrada debe ser mayor a cero.")
-    else if (cantidad > orden.cantidadPendiente)
+    else if (!isMedicine(orden) && cantidad > orden.cantidadPendiente)
       errors.push(
         `La cantidad administrada (${formatQty(cantidad)}) supera la cantidad pendiente (${formatQty(orden.cantidadPendiente)}).`,
       )
 
+    if (isMedicine(orden)) {
+      if (unidades === null || !Number.isInteger(unidades) || unidades <= 0)
+        errors.push("Las unidades consumidas deben ser un número entero mayor a cero.")
+      else if (unidades > maxUnidades(orden))
+        errors.push(
+          `Las unidades consumidas (${unidades}) superan la cantidad pendiente (${formatQty(orden.cantidadPendiente)}).`,
+        )
+    }
+
     if (isMedicine(orden) && !viaCodigo) errors.push("Seleccione la vía de administración.")
+    if (!ambito) errors.push("Seleccione el ámbito de la aplicación.")
     if (!profesionalId) errors.push("Seleccione el profesional que aplica.")
 
     return errors
@@ -264,7 +285,9 @@ const MedicationApplicationContainer = () => {
         ordenMedicaItemId: selected.ordenMedicaItemId,
         fechaHoraAplicacion: new Date(`${fecha}T${hora}`).toISOString(),
         cantidad: cantidad!,
+        unidadesConsumidas: isMedicine(selected) ? unidades : null,
         viaAdministracionCodigo: isMedicine(selected) ? viaCodigo : null,
+        ambito: ambito!,
         profesionalId: profesionalId!,
         observaciones: observaciones.trim(),
       })
@@ -272,13 +295,15 @@ const MedicationApplicationContainer = () => {
       const pendiente = actualizada?.cantidadPendiente ?? 0
       messageApi.success(
         pendiente > 0
-          ? `${isMedicine(selected) ? "Aplicación" : "Realización"} registrada. Pendiente: ${formatQty(pendiente)}${selected.unidadMedida ? ` ${selected.unidadMedida}` : ""}.`
+          ? `${isMedicine(selected) ? "Aplicación" : "Realización"} registrada. Pendiente: ${formatQty(pendiente)} unidad(es).`
           : "Registro exitoso. La orden quedó completamente aplicada.",
       )
       setObservaciones("")
       setValidationErrors([])
       setHora(nowTimeInput())
-      setCantidad(actualizada ? suggestedQuantity(actualizada) : null)
+      // La dosis se conserva: suele repetirse en la siguiente aplicación.
+      if (actualizada && !isMedicine(actualizada)) setCantidad(suggestedQuantity(actualizada))
+      setUnidades(actualizada ? suggestedUnidades(actualizada) : null)
     } catch (err) {
       messageApi.error(errorMessage(err, "No se pudo registrar la aplicación."))
     }
@@ -295,10 +320,19 @@ const MedicationApplicationContainer = () => {
       render: (value: string) => formatDateTime(value),
     },
     {
-      title: "Cantidad",
+      title: "Dosis / cantidad",
       key: "cantidad",
-      width: 110,
-      render: (_, r) => `${formatQty(r.cantidad)}${r.unidadMedida ? ` ${r.unidadMedida}` : ""}`,
+      width: 130,
+      render: (_, r) =>
+        r.tipoOrden === "Medicamento"
+          ? `${formatQty(r.cantidad)}${r.unidadMedida ? ` ${r.unidadMedida}` : ""}`
+          : formatQty(r.cantidad),
+    },
+    {
+      title: "Unidades",
+      dataIndex: "unidadesConsumidas",
+      key: "unidades",
+      width: 100,
     },
     {
       title: "Vía",
@@ -306,6 +340,12 @@ const MedicationApplicationContainer = () => {
       key: "via",
       width: 140,
       render: (value?: string | null) => value || "—",
+    },
+    {
+      title: "Ámbito",
+      dataIndex: "ambito",
+      key: "ambito",
+      width: 130,
     },
     {
       title: "Profesional",
@@ -346,9 +386,22 @@ const MedicationApplicationContainer = () => {
         <MedicineBoxOutlined style={{ fontSize: 22, color: "#389e0d" }} />
         <Title level={3}>Aplicación de Medicamentos</Title>
       </div>
-      <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
-        Volver
-      </Button>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
+          Volver
+        </Button>
+        {admissionId && (
+          <Tooltip title={hayAplicaciones ? undefined : "No hay aplicaciones registradas para imprimir."}>
+            <Button
+              icon={<PrinterOutlined />}
+              disabled={!hayAplicaciones}
+              onClick={() => setPrintOpen(true)}
+            >
+              Imprimir
+            </Button>
+          </Tooltip>
+        )}
+      </div>
     </div>
   )
 
@@ -392,9 +445,9 @@ const MedicationApplicationContainer = () => {
 
   const renderOrdenCard = (orden: OrdenActiva) => {
     const isSelected = orden.ordenMedicaItemId === selectedItemId
-    const unidad = orden.unidadMedida ? ` ${orden.unidadMedida}` : ""
     const detalleMedicamento = [
-      `Cant.: ${formatQty(orden.cantidad)}${unidad}`,
+      `Cant.: ${formatQty(orden.cantidad)} und.`,
+      orden.unidadMedida ? `Dosis en ${orden.unidadMedida}` : "",
       orden.frecuenciaHoras ? `c/${orden.frecuenciaHoras} horas` : "",
       orden.duracionDias ? `${orden.duracionDias} día(s)` : "",
       orden.viaAdministracion ?? "",
@@ -423,7 +476,7 @@ const MedicationApplicationContainer = () => {
         <div className="ma-order-progress">
           {isMedicine(orden) ? "Aplicadas" : "Realizadas"}: {formatQty(orden.cantidadAplicada)}/
           {formatQty(orden.cantidad)}
-          {orden.cantidadPendiente > 0 && ` · Pendiente: ${formatQty(orden.cantidadPendiente)}${unidad}`}
+          {orden.cantidadPendiente > 0 && ` · Pendiente: ${formatQty(orden.cantidadPendiente)}`}
         </div>
       </button>
     )
@@ -441,6 +494,14 @@ const MedicationApplicationContainer = () => {
       {contextHolder}
       {header}
       {patientSelector}
+
+      <MedicationApplicationPrintPreviewModal
+        open={printOpen}
+        onClose={() => setPrintOpen(false)}
+        admission={admission}
+        patient={patientRecord}
+        ordenes={ordenesList}
+      />
 
       {/* ════ Encabezado del paciente ════ */}
       <div className="ma-card">
@@ -544,12 +605,17 @@ const MedicationApplicationContainer = () => {
                           .filter(Boolean)
                           .join(" - "),
                       },
-                      { key: "ambito", label: "Ámbito", children: selected.ambito },
+                      { key: "ambito", label: "Ámbito de la orden", children: selected.ambito },
                       {
                         key: "ordenada",
                         label: "Cantidad ordenada",
-                        children: `${formatQty(selected.cantidad)}${selected.unidadMedida ? ` ${selected.unidadMedida}` : ""}`,
+                        children: isMedicine(selected)
+                          ? `${formatQty(selected.cantidad)} unidad(es)`
+                          : formatQty(selected.cantidad),
                       },
+                      ...(isMedicine(selected)
+                        ? [{ key: "unidad", label: "Unidad de la dosis", children: selected.unidadMedida || "—" }]
+                        : []),
                       {
                         key: "pendiente",
                         label: "Aplicada / pendiente",
@@ -652,26 +718,52 @@ const MedicationApplicationContainer = () => {
                           </span>
                           <InputNumber
                             min={0.01}
-                            max={selected.cantidadPendiente}
+                            max={isMedicine(selected) ? MAX_DOSIS : selected.cantidadPendiente}
                             precision={2}
                             value={cantidad}
+                            placeholder={isMedicine(selected) ? "Dosis, p. ej. 500" : undefined}
                             status={
                               showErrors &&
-                              (cantidad === null || cantidad <= 0 || cantidad > selected.cantidadPendiente)
+                              (cantidad === null ||
+                                cantidad <= 0 ||
+                                (!isMedicine(selected) && cantidad > selected.cantidadPendiente))
                                 ? "error"
                                 : undefined
                             }
                             onChange={(value) => setCantidad(typeof value === "number" ? value : null)}
                             style={{ width: "100%" }}
                           />
-                          <small className="ma-muted">
-                            Máximo pendiente: {formatQty(selected.cantidadPendiente)}
-                          </small>
+                          {!isMedicine(selected) && (
+                            <small className="ma-muted">
+                              Máximo pendiente: {formatQty(selected.cantidadPendiente)}
+                            </small>
+                          )}
                         </label>
                         <label className="ma-field">
                           <span>Unidad de medida</span>
                           <Input value={selected.unidadMedida || (isMedicine(selected) ? "—" : "Unidad")} disabled />
                         </label>
+                        {isMedicine(selected) && (
+                          <label className="ma-field">
+                            <span>
+                              Unidades consumidas <span className="ma-required">*</span>
+                            </span>
+                            <InputNumber
+                              min={1}
+                              max={maxUnidades(selected)}
+                              precision={0}
+                              value={unidades}
+                              status={
+                                showErrors &&
+                                (unidades === null || unidades <= 0 || unidades > maxUnidades(selected))
+                                  ? "error"
+                                  : undefined
+                              }
+                              onChange={(value) => setUnidades(typeof value === "number" ? value : null)}
+                              style={{ width: "100%" }}
+                            />
+                          </label>
+                        )}
                         {isMedicine(selected) && (
                           <label className="ma-field">
                             <span>
@@ -691,8 +783,21 @@ const MedicationApplicationContainer = () => {
                           </label>
                         )}
                         <label className="ma-field">
-                          <span>Ámbito</span>
-                          <Input value={selected.ambito} disabled />
+                          <span>
+                            Ámbito <span className="ma-required">*</span>
+                          </span>
+                          <Select
+                            value={ambito}
+                            options={AMBITOS_ORDEN.map((value) => ({ value, label: value }))}
+                            status={showErrors && !ambito ? "error" : undefined}
+                            onChange={(value: AmbitoOrden) => setAmbito(value)}
+                            style={{ width: "100%" }}
+                          />
+                          {ambito && ambito !== selected.ambito && (
+                            <small className="ma-muted">
+                              Distinto al de la orden ({selected.ambito}).
+                            </small>
+                          )}
                         </label>
                         <label className="ma-field ma-field--wide">
                           <span>

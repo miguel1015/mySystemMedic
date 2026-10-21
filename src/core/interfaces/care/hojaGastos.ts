@@ -6,9 +6,13 @@ export const TIPOS_SERVICIO_GASTOS = [
   "Material estéril",
 ] as const
 
+// Los que se cargan a mano.
 export type TipoServicioGastos = (typeof TIPOS_SERVICIO_GASTOS)[number]
 
-export type ConceptoTipo = "medicine" | "device"
+// "Procedimientos" solo lo generan las aplicaciones de estudios y procedimientos.
+export type TipoServicioRegistro = TipoServicioGastos | "Procedimientos"
+
+export type ConceptoTipo = "medicine" | "device" | "tariff"
 
 export interface AsistencialOption {
   id: number
@@ -48,12 +52,14 @@ export interface HojaGastoRegistro {
   asistencialId: number
   asistencialNombre: string
   asistencialEspecialidad?: string | null
-  tipoServicio: TipoServicioGastos
+  tipoServicio: TipoServicioRegistro
   conceptoTipo: ConceptoTipo
   conceptoId: number
   codigo: string
   descripcion: string
   cantidad: number
+  // Con valor: viene de la aplicación de medicamentos y es de solo lectura.
+  aplicacionOrdenId?: number | null
   userId: number
   usuarioNombre: string
   createdAt: string

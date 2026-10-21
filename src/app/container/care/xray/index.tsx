@@ -7,7 +7,6 @@ import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
 import {
   useCreateEstudioRayosX,
   useDeleteEstudioRayosX,
-  useGetEstudiosRadiologicosDisponibles,
   useGetEstudiosRayosXByAdmission,
   useUpdateEstudioRayosX,
 } from "@/core/hooks/care/rayosX/useEstudiosRayosX"
@@ -37,7 +36,6 @@ import {
   Input,
   Popconfirm,
   Radio,
-  Select,
   Skeleton,
   Table,
   Tag,
@@ -46,7 +44,7 @@ import {
 } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import ClinicalPrintPreviewModal from "../clinicalRecords/initialClinicalHistory/printPreview/ClinicalPrintPreviewModal"
 import {
   formatDateTime,
@@ -57,6 +55,7 @@ import {
   RESULTADO_COLORS,
   calculateAgeLabel,
   formatStudyDate,
+  formatStudyName,
   todayIsoDate,
 } from "./xray.utils"
 import "./xray.css"
@@ -65,7 +64,9 @@ const { TextArea } = Input
 
 interface XrayFormValues {
   fechaEstudio: string
-  tariffDetailId?: number
+  nombreEstudio?: string
+  tecnicaUtilizada?: string
+  datoClinico?: string
   resultado?: ResultadoRayosX
   descripcion?: string
   conclusion?: string
@@ -73,15 +74,19 @@ interface XrayFormValues {
 
 const emptyFormValues = (): XrayFormValues => ({
   fechaEstudio: todayIsoDate(),
-  tariffDetailId: undefined,
+  nombreEstudio: "",
+  tecnicaUtilizada: "",
+  datoClinico: "",
   resultado: undefined,
   descripcion: "",
   conclusion: "",
 })
 
 const toPayload = (values: XrayFormValues): EstudioRayosXUpdateRequest => ({
-  tariffDetailId: Number(values.tariffDetailId),
+  nombreEstudio: (values.nombreEstudio ?? "").trim(),
   fechaEstudio: values.fechaEstudio,
+  tecnicaUtilizada: (values.tecnicaUtilizada ?? "").trim(),
+  datoClinico: (values.datoClinico ?? "").trim(),
   resultado: values.resultado as ResultadoRayosX,
   descripcion: (values.descripcion ?? "").trim(),
   conclusion: (values.conclusion ?? "").trim(),
@@ -125,11 +130,6 @@ const XrayContainer = () => {
   const currentUserId = me?.id ? Number(me.id) : undefined
 
   const {
-    data: estudiosDisponibles,
-    isLoading: loadingEstudios,
-    isError: estudiosError,
-  } = useGetEstudiosRadiologicosDisponibles()
-  const {
     data: historial,
     isLoading: loadingHistorial,
     isError: historialError,
@@ -147,9 +147,9 @@ const XrayContainer = () => {
   const [printEstudio, setPrintEstudio] = useState<EstudioRayosXResponse | null>(null)
   const [generatedAt, setGeneratedAt] = useState("")
 
-  const watchedEstudio = Form.useWatch("tariffDetailId", form)
+  const watchedEstudio = Form.useWatch("nombreEstudio", form)
   const watchedResultado = Form.useWatch("resultado", form)
-  const requiredFilled = Boolean(watchedEstudio) && Boolean(watchedResultado)
+  const requiredFilled = Boolean(watchedEstudio?.trim()) && Boolean(watchedResultado)
 
   /* ─────────────── Paciente ─────────────── */
 
@@ -191,29 +191,6 @@ const XrayContainer = () => {
     phone: patientRecord?.phone || "",
   }
 
-  /* ─────────────── Estudios del Manual Tarifario ─────────────── */
-
-  const estudioOptions = useMemo(() => {
-    const options = (estudiosDisponibles ?? []).map((estudio) => ({
-      value: estudio.tariffDetailId,
-      label: `${estudio.codigo} - ${estudio.nombre}`,
-    }))
-
-    // Si se edita un estudio cuyo ítem ya no aparece en el listado, se conserva
-    // como opción para que el selector muestre el valor guardado.
-    if (
-      editing?.tariffDetailId &&
-      !options.some((option) => option.value === editing.tariffDetailId)
-    ) {
-      options.unshift({
-        value: editing.tariffDetailId,
-        label: `${editing.codigoEstudio} - ${editing.nombreEstudio}`,
-      })
-    }
-
-    return options
-  }, [estudiosDisponibles, editing])
-
   /* ─────────────── Acciones ─────────────── */
 
   const resetForm = () => {
@@ -226,7 +203,9 @@ const XrayContainer = () => {
   const loadForEdit = (estudio: EstudioRayosXResponse) => {
     const values: XrayFormValues = {
       fechaEstudio: estudio.fechaEstudio?.slice(0, 10) || todayIsoDate(),
-      tariffDetailId: estudio.tariffDetailId ?? undefined,
+      nombreEstudio: estudio.nombreEstudio ?? "",
+      tecnicaUtilizada: estudio.tecnicaUtilizada ?? "",
+      datoClinico: estudio.datoClinico ?? "",
       resultado: estudio.resultado,
       descripcion: estudio.descripcion ?? "",
       conclusion: estudio.conclusion ?? "",
@@ -234,7 +213,7 @@ const XrayContainer = () => {
     setEditing(estudio)
     form.resetFields()
     form.setFieldsValue(values)
-    setSavedSnapshot(estudio.tariffDetailId ? JSON.stringify(toPayload(values)) : null)
+    setSavedSnapshot(JSON.stringify(toPayload(values)))
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
@@ -283,7 +262,7 @@ const XrayContainer = () => {
   }
 
   const openPrint = (estudio: EstudioRayosXResponse) => {
-    if (!estudio.codigoEstudio || !estudio.resultado) {
+    if (!estudio.nombreEstudio?.trim() || !estudio.resultado) {
       messageApi.error("El estudio no tiene diligenciados los campos obligatorios.")
       return
     }
@@ -323,7 +302,7 @@ const XrayContainer = () => {
     {
       title: "Estudio",
       key: "estudio",
-      render: (_, record) => `${record.codigoEstudio} - ${record.nombreEstudio}`,
+      render: (_, record) => formatStudyName(record),
     },
     {
       title: "Resultado",
@@ -512,15 +491,6 @@ const XrayContainer = () => {
           />
         )}
 
-        {estudiosError && (
-          <Alert
-            type="error"
-            showIcon
-            style={{ marginBottom: 16 }}
-            title="No se pudo cargar el listado de estudios del Manual Tarifario."
-          />
-        )}
-
         <Form<XrayFormValues>
           form={form}
           layout="vertical"
@@ -539,20 +509,32 @@ const XrayContainer = () => {
 
             <Form.Item
               label="Estudio"
-              name="tariffDetailId"
-              rules={[{ required: true, message: "Seleccione el estudio realizado." }]}
+              name="nombreEstudio"
+              rules={[
+                { required: true, whitespace: true, message: "Ingrese el nombre del estudio realizado." },
+              ]}
             >
-              <Select
-                showSearch
-                optionFilterProp="label"
-                allowClear
-                loading={loadingEstudios}
-                options={estudioOptions}
-                placeholder="Seleccione la radiografía o impresión diagnóstica"
-                notFoundContent={
-                  loadingEstudios ? "Cargando estudios..." : "No hay estudios radiológicos en el Manual Tarifario"
-                }
-                style={{ width: "100%" }}
+              <Input
+                maxLength={500}
+                placeholder="Ej: Radiografía de húmero izquierdo AP y lateral"
+              />
+            </Form.Item>
+          </div>
+
+          <div className="xray-form-row xray-form-row-even">
+            <Form.Item label="Técnica utilizada" name="tecnicaUtilizada">
+              <TextArea
+                rows={2}
+                maxLength={1000}
+                placeholder="Técnica o proyecciones utilizadas para realizar el estudio..."
+              />
+            </Form.Item>
+
+            <Form.Item label="Dato clínico" name="datoClinico">
+              <TextArea
+                rows={2}
+                maxLength={2000}
+                placeholder="Dato clínico o indicación del estudio..."
               />
             </Form.Item>
           </div>
@@ -581,7 +563,7 @@ const XrayContainer = () => {
             />
           </Form.Item>
 
-          <Form.Item label="Conclusión" name="conclusion">
+          <Form.Item label="Conclusión diagnóstica" name="conclusion">
             <TextArea
               rows={5}
               maxLength={4000}
@@ -598,7 +580,7 @@ const XrayContainer = () => {
           <Button icon={<SaveOutlined />} loading={isSaving} onClick={handleSave}>
             {editing ? "Actualizar estudio" : "Guardar estudio"}
           </Button>
-          <Tooltip title={requiredFilled ? "" : "Seleccione el estudio y el resultado para imprimir"}>
+          <Tooltip title={requiredFilled ? "" : "Ingrese el estudio y seleccione el resultado para imprimir"}>
             <Button
               type="primary"
               icon={<PrinterOutlined />}

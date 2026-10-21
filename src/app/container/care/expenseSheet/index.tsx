@@ -30,6 +30,7 @@ import {
   FileTextOutlined,
   HistoryOutlined,
   MedicineBoxOutlined,
+  PrinterOutlined,
   SaveOutlined,
   SearchOutlined,
   UserOutlined,
@@ -52,9 +53,10 @@ import {
 import type { ColumnsType } from "antd/es/table"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
-import "./hospitalizationExpenseSheet.css"
+import ExpenseSheetPrintPreviewModal from "./ExpenseSheetPrintPreviewModal"
+import { HOJA_TEXTOS } from "./expenseSheet.utils"
+import "./expenseSheet.css"
 
-const TIPO_HOJA: TipoHojaGastos = "Hospitalizacion"
 const MAX_CANTIDAD = 100000
 const FUTURE_TOLERANCE_MS = 5 * 60 * 1000
 
@@ -98,10 +100,19 @@ const errorMessage = (err: unknown, fallback: string) =>
 const isValidQuantity = (value: unknown): value is number =>
   typeof value === "number" && Number.isInteger(value) && value > 0 && value <= MAX_CANTIDAD
 
-const HospitalizationExpenseSheet = () => {
+interface ExpenseSheetProps {
+  tipoHoja: TipoHojaGastos
+}
+
+// Hoja de gastos de Urgencias, Hospitalización o Cirugía: cargue manual de
+// medicamentos, insumos y material, más lo que llega desde la aplicación de
+// medicamentos (solo lectura).
+const ExpenseSheet = ({ tipoHoja }: ExpenseSheetProps) => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
+  const textos = HOJA_TEXTOS[tipoHoja]
+  const [printOpen, setPrintOpen] = useState(false)
 
   const admissionId = searchParams.get("admissionId") || undefined
 
@@ -150,7 +161,7 @@ const HospitalizationExpenseSheet = () => {
     data: registros,
     isLoading: loadingRegistros,
     isError: registrosError,
-  } = useGetHojaGastosRegistros(admissionId, TIPO_HOJA)
+  } = useGetHojaGastosRegistros(admissionId, tipoHoja)
 
   const guardar = useGuardarHojaGastos()
   const actualizarCantidad = useActualizarCantidadGasto()
@@ -305,7 +316,7 @@ const HospitalizationExpenseSheet = () => {
     try {
       const result = await guardar.mutateAsync({
         admissionId: Number(admissionId),
-        tipoHoja: TIPO_HOJA,
+        tipoHoja,
         fechaHoraRegistro: new Date(dateTime).toISOString(),
         asistencialId: asistencialId!,
         items: items.map((item) => ({
@@ -455,7 +466,21 @@ const HospitalizationExpenseSheet = () => {
       render: (value: string) => <Tag>{value}</Tag>,
     },
     { title: "Código", dataIndex: "codigo", key: "codigo", width: 110 },
-    { title: "Descripción", dataIndex: "descripcion", key: "descripcion" },
+    {
+      title: "Descripción",
+      dataIndex: "descripcion",
+      key: "descripcion",
+      render: (descripcion: string, record) => (
+        <div>
+          <div>{descripcion}</div>
+          {record.aplicacionOrdenId && (
+            <Tag color="blue" style={{ marginTop: 4 }}>
+              Desde aplicación
+            </Tag>
+          )}
+        </div>
+      ),
+    },
     {
       title: "Cant.",
       dataIndex: "cantidad",
@@ -497,31 +522,36 @@ const HospitalizationExpenseSheet = () => {
       title: "Acciones",
       key: "acciones",
       width: 110,
-      render: (_, record) => (
-        <div style={{ display: "flex", gap: 6 }}>
-          <Tooltip title="Editar cantidad">
-            <Button
-              icon={<EditOutlined />}
-              onClick={() => {
-                setEditingSavedId(record.id)
-                setSavedDraftQty(record.cantidad)
-              }}
-            />
+      render: (_, record) =>
+        record.aplicacionOrdenId ? (
+          <Tooltip title="Proviene de la aplicación de medicamentos; no se modifica desde la hoja.">
+            <span className="hes-muted">Solo lectura</span>
           </Tooltip>
-          <Popconfirm
-            title="¿Eliminar este registro guardado?"
-            description="El registro dejará de hacer parte de la hoja de gastos."
-            okText="Eliminar"
-            cancelText="Cancelar"
-            okButtonProps={{ danger: true, loading: eliminarRegistro.isPending }}
-            onConfirm={() => deleteSaved(record)}
-          >
-            <Tooltip title="Eliminar registro">
-              <Button danger icon={<DeleteOutlined />} />
+        ) : (
+          <div style={{ display: "flex", gap: 6 }}>
+            <Tooltip title="Editar cantidad">
+              <Button
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setEditingSavedId(record.id)
+                  setSavedDraftQty(record.cantidad)
+                }}
+              />
             </Tooltip>
-          </Popconfirm>
-        </div>
-      ),
+            <Popconfirm
+              title="¿Eliminar este registro guardado?"
+              description="El registro dejará de hacer parte de la hoja de gastos."
+              okText="Eliminar"
+              cancelText="Cancelar"
+              okButtonProps={{ danger: true, loading: eliminarRegistro.isPending }}
+              onConfirm={() => deleteSaved(record)}
+            >
+              <Tooltip title="Eliminar registro">
+                <Button danger icon={<DeleteOutlined />} />
+              </Tooltip>
+            </Popconfirm>
+          </div>
+        ),
     },
   ]
 
@@ -531,12 +561,23 @@ const HospitalizationExpenseSheet = () => {
     <div className="hes-header">
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <FileTextOutlined style={{ fontSize: 24, color: "var(--theme-primary, #0F6F5C)" }} />
-        <Title level={3}>Hoja de Gastos Hospitalización</Title>
+        <Title level={3}>{textos.titulo}</Title>
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
           Volver
         </Button>
+        {admissionId && (
+          <Tooltip title={registros?.length ? undefined : "No hay registros guardados para imprimir."}>
+            <Button
+              icon={<PrinterOutlined />}
+              disabled={!registros?.length}
+              onClick={() => setPrintOpen(true)}
+            >
+              Imprimir
+            </Button>
+          </Tooltip>
+        )}
         {admissionId && (
           <Button
             type="primary"
@@ -581,10 +622,16 @@ const HospitalizationExpenseSheet = () => {
       {contextHolder}
       {header}
 
-      <p className="hes-description">
-        Registro de medicamentos, insumos quirúrgicos y material estéril utilizados durante la
-        hospitalización del paciente.
-      </p>
+      <p className="hes-description">{textos.descripcion}</p>
+
+      <ExpenseSheetPrintPreviewModal
+        open={printOpen}
+        onClose={() => setPrintOpen(false)}
+        tipoHoja={tipoHoja}
+        admission={admission}
+        patient={patientRecord}
+        registros={registros ?? []}
+      />
 
       {/* ════ Información del paciente ════ */}
       <div className="hes-card">
@@ -764,7 +811,7 @@ const HospitalizationExpenseSheet = () => {
       <div className="hes-card hes-card-flush">
         <div className="hes-table-header">
           <div style={{ fontWeight: 800, display: "flex", gap: 8, alignItems: "center" }}>
-            <HistoryOutlined /> Registros guardados en esta hospitalización
+            <HistoryOutlined /> Registros guardados en {textos.atencion}
           </div>
           <Tag color="green">{registros?.length ?? 0}</Tag>
         </div>
@@ -783,7 +830,7 @@ const HospitalizationExpenseSheet = () => {
             loading={loadingRegistros}
             pagination={{ pageSize: 10, hideOnSinglePage: true }}
             scroll={{ x: 1100 }}
-            locale={{ emptyText: "Aún no hay gastos guardados para esta hospitalización." }}
+            locale={{ emptyText: `Aún no hay gastos guardados para ${textos.atencion}.` }}
           />
         )}
       </div>
@@ -791,4 +838,4 @@ const HospitalizationExpenseSheet = () => {
   )
 }
 
-export default HospitalizationExpenseSheet
+export default ExpenseSheet

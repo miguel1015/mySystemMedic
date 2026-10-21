@@ -66,6 +66,10 @@
   gap: 0 16px;
 }
 
+.xray-form-row-even {
+  grid-template-columns: 1fr 1fr;
+}
+
 .xray-actions {
   display: flex;
   justify-content: flex-end;

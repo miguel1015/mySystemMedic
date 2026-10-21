@@ -2,16 +2,12 @@ export const RESULTADOS_RAYOS_X = ["Normal", "Anormal", "Limitado", "Concluyente
 
 export type ResultadoRayosX = (typeof RESULTADOS_RAYOS_X)[number]
 
-export interface EstudioRadiologicoDisponible {
-  tariffDetailId: number
-  codigo: string
-  nombre: string
-}
-
 export interface EstudioRayosXCreateRequest {
   admissionId: number
-  tariffDetailId: number
+  nombreEstudio: string
   fechaEstudio: string
+  tecnicaUtilizada: string
+  datoClinico: string
   resultado: ResultadoRayosX
   descripcion: string
   conclusion: string
@@ -22,10 +18,13 @@ export type EstudioRayosXUpdateRequest = Omit<EstudioRayosXCreateRequest, "admis
 export interface EstudioRayosXResponse {
   id: number
   admissionId: number
+  // Solo los estudios registrados cuando se elegían del Manual Tarifario.
   tariffDetailId: number | null
-  codigoEstudio: string
+  codigoEstudio: string | null
   nombreEstudio: string
   fechaEstudio: string
+  tecnicaUtilizada: string
+  datoClinico: string
   resultado: ResultadoRayosX
   descripcion: string
   conclusion: string

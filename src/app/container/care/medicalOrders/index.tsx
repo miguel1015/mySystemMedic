@@ -553,10 +553,10 @@ const MedicalOrdersContainer = () => {
       render: (tipo: TipoOrden) => <Tag color={TIPO_COLORS[tipo] ?? "default"}>{tipo}</Tag>,
     },
     {
-      title: "Cant.",
+      title: "Cant. total (unidades)",
       dataIndex: "cantidad",
       key: "cantidad",
-      width: 110,
+      width: 130,
       render: (cantidad: number, record) => (
         <InputNumber
           min={0.01}

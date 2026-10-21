@@ -1,3 +1,5 @@
+import type { AdmissionResponse, GetPatient } from "@/core/interfaces/care/types";
+
 export const formatDateTime = (value: string) => {
   if (!value) return "";
   const date = new Date(value);
@@ -77,3 +79,25 @@ export const FieldRow = ({
 );
 
 export const INSTITUTION_PROVIDER_ID = 32;
+
+// Datos del paciente para el encabezado a partir de la admisión y del registro
+// del paciente (lo que falte en uno se toma del otro).
+export const buildPrintPatient = (
+  admission?: AdmissionResponse,
+  patient?: GetPatient,
+): PrintPatient => ({
+  name:
+    [patient?.firstName, patient?.middleName, patient?.lastName, patient?.secondLastName]
+      .filter(Boolean)
+      .join(" ") ||
+    admission?.nombrePaciente ||
+    "",
+  documentType: patient?.documentTypeCode || admission?.documentTypeCode || "",
+  documentNumber: patient?.documentNumber || admission?.documentoPatiente || "",
+  careScope: admission?.careScopeName || "",
+  birthDate: patient?.birthDate || "",
+  sex: patient?.sexName || "",
+  insurer: admission?.epsNombre || patient?.insurerName || "",
+  city: patient?.cityName,
+  phone: patient?.phone,
+});

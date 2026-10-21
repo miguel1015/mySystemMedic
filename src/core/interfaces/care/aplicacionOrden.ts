@@ -18,10 +18,14 @@ export interface AplicacionOrden {
   codigo: string
   descripcion: string
   fechaHoraAplicacion: string
+  // Medicamentos: dosis administrada en unidadMedida. Estudios/procedimientos: cantidad realizada.
   cantidad: number
+  // Unidades gastadas (ampollas, viales...): descuentan de la orden.
+  unidadesConsumidas: number
   unidadMedida?: string | null
   viaAdministracionCodigo?: string | null
   viaAdministracion?: string | null
+  ambito: AmbitoOrden
   profesionalId: number
   profesionalNombre: string
   profesionalDocumento?: string | null
@@ -62,7 +66,10 @@ export interface AplicacionOrdenRequest {
   ordenMedicaItemId: number
   fechaHoraAplicacion: string
   cantidad: number
+  // Obligatorio solo para medicamentos.
+  unidadesConsumidas?: number | null
   viaAdministracionCodigo?: string | null
+  ambito: AmbitoOrden
   profesionalId: number
   observaciones?: string
 }
