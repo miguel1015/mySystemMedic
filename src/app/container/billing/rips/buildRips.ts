@@ -592,7 +592,9 @@ export function buildRips({
           ? `${movement.name}: el CUPS ${code} no tiene el formato de 6 caracteres`
           : `${movement.name}: el código ${code} del manual tarifario no está homologado a CUPS`,
       )
-    } else if (!movement.cupsRipsType) {
+    } else if (movement.cupsEnabled == null) {
+      // cupsEnabled solo llega si el CUPS está en el catálogo. No se usa el tipo RIPS: los CUPS
+      // agregados a mano no lo tienen.
       addIssue(group, "código CUPS", `${movement.name}: el código ${code} no existe en la tabla CUPSRips`)
     } else if (movement.cupsEnabled === false) {
       addIssue(group, "código CUPS", `${movement.name}: el CUPS ${code} está deshabilitado en CUPSRips`)

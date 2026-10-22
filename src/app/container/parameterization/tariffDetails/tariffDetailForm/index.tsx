@@ -151,20 +151,7 @@ const TariffDetailForm: React.FC<TariffDetailFormProps> = ({
                 label="Código"
                 placeholder="Ej. 890201"
                 maxLength={10}
-                control={control}
-              />
-              <Input
-                name="newCups.name"
-                label="Nombre"
-                placeholder="Nombre del procedimiento"
-                control={control}
-              />
-              <Input
-                name="newCups.ripsType"
-                label="Tipo RIPS"
-                placeholder="Ej. AP"
-                maxLength={5}
-                helperText="AC consulta, AP procedimiento, AT estancia u otro"
+                helperText="Se guarda con la descripción del detalle como nombre"
                 control={control}
               />
             </GridContainer>

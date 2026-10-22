@@ -36,7 +36,7 @@ export interface TTariffDetail {
   factors: number;
   tariffId: number;
   tariffName?: string;
-  surgicalGroupId: number;
+  surgicalGroupId: number | null;
   surgicalGroupQxGroup?: string;
   paymentMethodDescription?: string;
 }

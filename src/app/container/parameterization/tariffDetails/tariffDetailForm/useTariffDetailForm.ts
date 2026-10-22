@@ -37,18 +37,13 @@ const schema = z.object({
         .trim()
         .min(1, "El código CUPS es obligatorio")
         .max(10, "El código CUPS tiene máximo 10 caracteres"),
-      name: z.string().trim().min(1, "El nombre del CUPS es obligatorio"),
-      ripsType: z
-        .string()
-        .trim()
-        .min(1, "El tipo RIPS es obligatorio")
-        .max(5, "El tipo RIPS tiene máximo 5 caracteres"),
     })
     .nullable(),
   value: requiredNumber("El valor").nonnegative("El valor no puede ser negativo"),
   factors: requiredNumber("El factor").nonnegative("El factor no puede ser negativo"),
   tariffId: requiredSelect("un tarifario"),
-  surgicalGroupId: requiredSelect("un grupo quirúrgico"),
+  // Opcional: solo aplica a procedimientos quirúrgicos.
+  surgicalGroupId: z.number().nullable().optional(),
   isSurgicalProcedure: z.enum(["true", "false"], {
     required_error: "Debe indicar si es procedimiento quirúrgico",
     invalid_type_error: "Debe indicar si es procedimiento quirúrgico",
@@ -104,13 +99,7 @@ export function useTariffDetailForm({ record, onClose }: UseTariffDetailFormProp
   const onSubmit = (data: TTariffDetailForm) => {
     if (!record) return;
 
-    const newCups = data.newCups
-      ? {
-          ...data.newCups,
-          code: data.newCups.code.toUpperCase(),
-          ripsType: data.newCups.ripsType.toUpperCase(),
-        }
-      : null;
+    const newCups = data.newCups ? { code: data.newCups.code.toUpperCase() } : null;
 
     const payload: TTariffDetailUpdate = {
       referenceCode: data.referenceCode,
@@ -121,7 +110,7 @@ export function useTariffDetailForm({ record, onClose }: UseTariffDetailFormProp
       value: data.value,
       factors: data.factors,
       tariffId: data.tariffId,
-      surgicalGroupId: data.surgicalGroupId,
+      surgicalGroupId: data.surgicalGroupId ?? null,
       isSurgicalProcedure: data.isSurgicalProcedure === "true",
     };
 
@@ -143,7 +132,7 @@ export function useTariffDetailForm({ record, onClose }: UseTariffDetailFormProp
     );
   };
 
-  const startNewCups = () => setValue("newCups", { code: "", name: "", ripsType: "" });
+  const startNewCups = () => setValue("newCups", { code: "" });
   const cancelNewCups = () => setValue("newCups", null);
 
   return {

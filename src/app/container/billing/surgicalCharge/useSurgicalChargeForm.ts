@@ -24,7 +24,7 @@ export interface SelectedSurgicalService {
   tariffDetailId: number
   code: number
   name: string
-  surgicalGroupId: number
+  surgicalGroupId: number | null
   surgicalGroupQxGroup: string | null
 }
 

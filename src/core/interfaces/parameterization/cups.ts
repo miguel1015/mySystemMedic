@@ -10,12 +10,10 @@ export interface CupsProcedure {
   isManual: boolean
 }
 
-// CUPS que no está en el catálogo: se agrega al guardar el detalle de tarifa.
+// CUPS que no está en el catálogo: se agrega al guardar el detalle de tarifa, con la
+// descripción del detalle como nombre y sin tipo RIPS.
 export interface NewCups {
   code: string
-  name: string
-  // Libre: AC, AP o AT ubican el cargo en el RIPS; otro valor se clasifica por la categoría.
-  ripsType: string
 }
 
 export interface CupsSuggestion {
