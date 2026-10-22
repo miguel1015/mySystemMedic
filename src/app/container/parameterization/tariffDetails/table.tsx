@@ -57,6 +57,17 @@ const TariffDetailsTable = ({ onEdit }: TariffDetailsTableProps) => {
       width: 80,
     },
     {
+      title: "CUPS",
+      dataIndex: "cupsCode",
+      width: 90,
+      render: (value?: string | null) =>
+        value ? (
+          <span style={{ fontFamily: "monospace" }}>{value}</span>
+        ) : (
+          <Tag color="orange">Sin CUPS</Tag>
+        ),
+    },
+    {
       title: "Descripción",
       dataIndex: "description",
       width: 350,
@@ -116,7 +127,7 @@ const TariffDetailsTable = ({ onEdit }: TariffDetailsTableProps) => {
     <Container className="py-4">
       <div className="mb-3">
         <Input
-          placeholder="Buscar por código o descripción..."
+          placeholder="Buscar por código, CUPS o descripción..."
           onChange={(e) => handleSearch(e.target.value)}
           allowClear
           size="large"

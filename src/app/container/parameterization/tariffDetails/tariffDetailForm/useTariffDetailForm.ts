@@ -25,6 +25,7 @@ const schema = z.object({
     "El código de referencia debe ser mayor a 0",
   ),
   description: z.string().min(1, "La descripción es obligatoria"),
+  cups: z.object({ code: z.string(), name: z.string() }).nullable(),
   value: requiredNumber("El valor").nonnegative("El valor no puede ser negativo"),
   factors: requiredNumber("El factor").nonnegative("El factor no puede ser negativo"),
   tariffId: requiredSelect("un tarifario"),
@@ -40,6 +41,7 @@ export type TTariffDetailForm = z.infer<typeof schema>;
 const defaultValues: Partial<TTariffDetailForm> = {
   referenceCode: undefined,
   description: "",
+  cups: null,
   value: undefined,
   factors: undefined,
   tariffId: undefined,
@@ -65,6 +67,8 @@ export function useTariffDetailForm({ record, onClose }: UseTariffDetailFormProp
       reset({
         referenceCode: record.referenceCode,
         description: record.description,
+        // El nombre del CUPS no viene en el detalle: el formulario lo resuelve del catálogo.
+        cups: record.cupsCode ? { code: record.cupsCode, name: "" } : null,
         value: record.value,
         factors: record.factors,
         tariffId: record.tariffId,
@@ -82,6 +86,8 @@ export function useTariffDetailForm({ record, onClose }: UseTariffDetailFormProp
     const payload: Partial<TTariffDetail> = {
       referenceCode: data.referenceCode,
       description: data.description,
+      // Cadena vacía: el backend lo interpreta como quitar el CUPS.
+      cupsCode: data.cups?.code ?? "",
       value: data.value,
       factors: data.factors,
       tariffId: data.tariffId,

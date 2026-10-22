@@ -1,13 +1,16 @@
 "use client";
 
+import CupsPicker from "@/app/container/parameterization/cupsHomologation/cupsPicker";
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import RHFAntdInputNumber from "@/components/inputNumber";
 import SelectAutocomplete from "@/components/select";
+import { useCupsSearch } from "@/core/hooks/parameterization/cups/useCups";
 import { useTariffs } from "@/core/hooks/parameterization/tariffs/useGetAllTariffs";
 import { useSurgicalGroups } from "@/core/hooks/parameterization/surgicalGroups/useGetAllSurgicalGroups";
 import { TTariffDetail } from "@/core/interfaces/parameterization/types";
 import { Button, Spin } from "antd";
+import { Controller } from "react-hook-form";
 import { useTariffDetailForm } from "./useTariffDetailForm";
 
 const yesNoOptions = [
@@ -30,6 +33,10 @@ const TariffDetailForm: React.FC<TariffDetailFormProps> = ({
   const { data: tariffs, isLoading: loadingTariffs } = useTariffs();
   const { data: surgicalGroups, isLoading: loadingSurgicalGroups } =
     useSurgicalGroups();
+  // Nombre del CUPS que ya tiene el detalle, para mostrarlo junto al código.
+  const { data: currentCups = [] } = useCupsSearch(record?.cupsCode ?? "");
+  const currentCupsName =
+    currentCups.find((c) => c.code === record?.cupsCode)?.name ?? "";
 
   const tariffOptions = (tariffs ?? []).map((tariff) => ({
     value: tariff.id!,
@@ -117,6 +124,28 @@ const TariffDetailForm: React.FC<TariffDetailFormProps> = ({
         placeholder="Descripción"
         control={control}
       />
+
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ display: "block", marginBottom: 4, fontWeight: 500 }}>
+          Código CUPS
+        </label>
+        <Controller
+          name="cups"
+          control={control}
+          render={({ field }) => (
+            <CupsPicker
+              description={record?.description ?? ""}
+              referenceCode={record?.referenceCode}
+              value={
+                field.value && !field.value.name && field.value.code === record?.cupsCode
+                  ? { ...field.value, name: currentCupsName }
+                  : field.value
+              }
+              onChange={field.onChange}
+            />
+          )}
+        />
+      </div>
 
       <div className="d-flex justify-content-end gap-2 mt-3">
         <Button onClick={onClose} disabled={isSubmitting}>

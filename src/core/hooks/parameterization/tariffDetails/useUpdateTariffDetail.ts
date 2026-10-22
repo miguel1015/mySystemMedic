@@ -24,6 +24,8 @@ export function useUpdateTariffDetail() {
     }) => tariffDetailUpdateService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tariffdetails-paged"] });
+      // El CUPS editado aquí también se ve en la pantalla de homologación.
+      queryClient.invalidateQueries({ queryKey: ["cups-homologation"] });
     },
   });
 }
