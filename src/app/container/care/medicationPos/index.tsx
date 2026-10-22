@@ -57,6 +57,7 @@ import { calculateAgeLabel } from "../xray/xray.utils"
 import { MedicationPosPrintDocument } from "./MedicationPosPrintDocument"
 import "../medicalOrders/medicalOrders.css"
 import "./medicationPos.css"
+import { formatDateTime } from "@/core/utils/date"
 
 const { TextArea } = Input
 
@@ -97,19 +98,6 @@ const nowLocalInput = () => toLocalInput(new Date())
 const isoToLocalInput = (value?: string | null) => {
   const date = value ? new Date(value) : null
   return date && !Number.isNaN(date.getTime()) ? toLocalInput(date) : nowLocalInput()
-}
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) return "—"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString("es-CO", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 }
 
 const errorMessage = (err: unknown, fallback: string) =>

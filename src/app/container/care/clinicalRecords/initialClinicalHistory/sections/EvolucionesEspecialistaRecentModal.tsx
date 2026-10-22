@@ -11,6 +11,7 @@ import { useGetEvolucionEspecialistaById } from "@/core/hooks/care/evolucionEspe
 import { useGetEvolucionEspecialistasByAdmission } from "@/core/hooks/care/evolucionEspecialista/useGetEvolucionEspecialistasByAdmission"
 import type { EvolucionEspecialistaResponse } from "@/core/interfaces/care/hciInicial"
 import { EvolucionEspecialistaDetailView } from "./EvolucionEspecialistaDetailView"
+import { formatDate, formatTime } from "@/core/utils/date"
 
 interface Props {
   open: boolean
@@ -22,7 +23,7 @@ interface Props {
 
 const formatDateTime = (fecha: string, hora: string) => {
   if (!fecha) return "—"
-  return `${fecha} · ${hora ? hora.slice(0, 5) : "—"}`
+  return hora ? `${formatDate(fecha)} ${formatTime(hora)}` : formatDate(fecha)
 }
 
 export const EvolucionesEspecialistaRecentModal = ({ open, onClose, admissionId, onEdit, messageApi }: Props) => {

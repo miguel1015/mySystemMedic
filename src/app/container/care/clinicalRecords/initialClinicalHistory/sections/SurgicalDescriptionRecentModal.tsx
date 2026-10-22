@@ -11,6 +11,7 @@ import { useGetDescripcionQuirurgicaById } from "@/core/hooks/care/descripciones
 import { useGetDescripcionQuirurgicaByAdmission } from "@/core/hooks/care/descripcionesQuirurgicas/useGetDescripcionQuirurgicaByAdmission"
 import type { DescripcionQuirurgicaResponse } from "@/core/interfaces/care/hciInicial"
 import { SurgicalDescriptionDetailView } from "./SurgicalDescriptionDetailView"
+import { formatDateTime } from "@/core/utils/date"
 
 interface Props {
   open: boolean
@@ -18,19 +19,6 @@ interface Props {
   admissionId?: string | number
   onEdit: (descripcionQuirurgica: DescripcionQuirurgicaResponse) => void
   messageApi: MessageInstance
-}
-
-const formatDateTime = (value: string) => {
-  if (!value) return "—"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 }
 
 const excerpt = (texto: string, max = 150) =>

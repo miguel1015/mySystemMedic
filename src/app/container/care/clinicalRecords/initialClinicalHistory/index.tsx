@@ -41,28 +41,7 @@ import { SpecialistEvolutionSection } from "./sections/SpecialistEvolutionSectio
 import { SurgicalDescriptionSection } from "./sections/SurgicalDescriptionSection";
 import type { DiagnosisRow } from "./types";
 import "./initialClinicalHistory.css";
-
-const formatAdmissionDate = (value?: string) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
-
-const formatAdmissionTime = (value?: string) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleTimeString("es-CO", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-};
+import { formatDate, formatTime } from "@/core/utils/date";
 
 const calculateAge = (birthDate: string) => {
   const birth = new Date(birthDate);
@@ -306,13 +285,13 @@ const InitialClinicalHistoryContainer = () => {
             <div className="summary-cell">
               <div className="summary-cell-label">Fecha de admisión</div>
               <div className="summary-cell-value">
-                {formatAdmissionDate(admission?.admissionDate) || "—"}
+                {formatDate(admission?.admissionDate, "") || "—"}
               </div>
             </div>
             <div className="summary-cell">
               <div className="summary-cell-label">Hora de admisión</div>
               <div className="summary-cell-value">
-                {formatAdmissionTime(admission?.admissionDate) || "—"}
+                {formatTime(admission?.admissionDate, "") || "—"}
               </div>
             </div>
             <div className="summary-cell">

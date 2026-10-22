@@ -18,6 +18,7 @@ import { HciInicialHistoryList } from "./HciInicialHistoryList"
 import { NonSurgicalProcedureHistoryList } from "./NonSurgicalProcedureHistoryList"
 import { NursingNoteHistoryList } from "./NursingNoteHistoryList"
 import "./clinicalRecordHistoryModal.css"
+import { formatDateTime } from "@/core/utils/date"
 
 export interface ClinicalRecordHistoryModalProps {
   open: boolean
@@ -26,15 +27,6 @@ export interface ClinicalRecordHistoryModalProps {
   admissionId?: string | number
   patientId?: string | number
 }
-
-const formatDateTime = (iso: string) =>
-  new Date(iso).toLocaleString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 
 const formatRelative = (iso: string) => {
   const diffMs = Date.now() - new Date(iso).getTime()

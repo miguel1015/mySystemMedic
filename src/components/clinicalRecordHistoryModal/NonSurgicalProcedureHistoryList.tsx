@@ -9,25 +9,13 @@ import {
   useUpdateProcedimientoNoQx,
 } from "@/core/hooks/care/procedimientosNoQx/useSaveProcedimientoNoQx"
 import type { ProcedimientoNoQxResponse } from "@/core/interfaces/care/hciInicial"
+import { formatDate, formatTime } from "@/core/utils/date"
 
 interface Props {
   admissionId?: string | number
 }
 
 const { TextArea } = Input
-
-const formatDate = (value: string) =>
-  new Date(`${value}T00:00:00`).toLocaleDateString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
-
-const formatTime = (value: string) =>
-  new Date(`1970-01-01T${value}`).toLocaleTimeString("es-CO", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 
 const excerptOf = (text: string, length = 120) =>
   text.length > length ? `${text.slice(0, length).trim()}…` : text

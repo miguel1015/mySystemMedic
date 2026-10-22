@@ -3,19 +3,11 @@
 import { Empty, Typography } from "antd"
 import type { HCInicialResponse } from "@/core/interfaces/care/hciInicial"
 import { antecedentesFields } from "../../constants"
+import { formatDateTime } from "@/core/utils/date"
 
 interface Props {
   hcInicial: HCInicialResponse
 }
-
-const formatDateTime = (iso: string) =>
-  new Date(iso).toLocaleString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 
 interface FieldProps {
   label: string

@@ -4,19 +4,11 @@ import { ExperimentOutlined, FileTextOutlined, HeartOutlined, SolutionOutlined }
 import { Empty, Skeleton, Tag, Typography } from "antd"
 import type { ReactNode } from "react"
 import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission"
+import { formatDateTime } from "@/core/utils/date"
 
 interface Props {
   admissionId?: string | number
 }
-
-const formatDateTime = (iso: string) =>
-  new Date(iso).toLocaleString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 
 interface SectionProps {
   icon: ReactNode

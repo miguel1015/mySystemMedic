@@ -37,6 +37,7 @@ import {
   PatientMiniResponse,
   TriageResponse,
 } from "@/core/interfaces/care/types";
+import { formatDate } from "@/core/utils/date";
 
 const { TextArea } = AntdInput;
 
@@ -609,7 +610,7 @@ function PatientCard({ patient }: { patient: PatientMiniResponse }) {
             )}
             {patient.fechaNacimiento && (
               <Tag icon={<CalendarOutlined />} style={{ margin: 0 }}>
-                {new Date(patient.fechaNacimiento).toLocaleDateString()}
+                {formatDate(patient.fechaNacimiento)}
               </Tag>
             )}
           </div>

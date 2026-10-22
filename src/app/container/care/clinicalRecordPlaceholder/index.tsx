@@ -25,6 +25,7 @@ import { Button, Tag, Typography, message } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ReactNode, useEffect, useState } from "react"
 import "../clinicalRecords/initialClinicalHistory/initialClinicalHistory.css"
+import { formatDateTime } from "@/core/utils/date"
 
 // ─────────────────────────────────────────────────────────────
 // Generic placeholder (default export — used by all other pages)
@@ -81,16 +82,6 @@ export default ClinicalRecordPlaceholder
 // ─────────────────────────────────────────────────────────────
 // Shared helpers
 // ─────────────────────────────────────────────────────────────
-const formatDate = (value: string | null) => {
-  if (!value) return "03/03/2026 20:47"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString("es-CO", {
-    year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit",
-  })
-}
-
 const calculateAge = (birthDate: string) => {
   const birth = new Date(birthDate)
   if (Number.isNaN(birth.getTime())) return "21 años"
@@ -135,7 +126,7 @@ export const SurgicalDescriptionContainer = () => {
     documentNumber:
       admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
     careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
+    admissionDate: formatDateTime(admission?.admissionDate ?? searchParams.get("admissionDate"), "03/03/2026 20:47"),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
     insurer: searchParams.get("insurer") || "EPS Sanitas",
@@ -204,7 +195,7 @@ export const EvolutionsContainer = () => {
     documentNumber:
       admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
     careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
+    admissionDate: formatDateTime(admission?.admissionDate ?? searchParams.get("admissionDate"), "03/03/2026 20:47"),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
     insurer: searchParams.get("insurer") || "EPS Sanitas",
@@ -356,7 +347,7 @@ export const NursingNotesContainer = () => {
     documentNumber:
       admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
     careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
+    admissionDate: formatDateTime(admission?.admissionDate ?? searchParams.get("admissionDate"), "03/03/2026 20:47"),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
     insurer: searchParams.get("insurer") || "EPS Sanitas",
@@ -429,7 +420,7 @@ export const DiagnosticProceduresContainer = () => {
     documentNumber:
       admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
     careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
+    admissionDate: formatDateTime(admission?.admissionDate ?? searchParams.get("admissionDate"), "03/03/2026 20:47"),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
     insurer: searchParams.get("insurer") || "EPS Sanitas",
@@ -579,7 +570,7 @@ export const MinorProceduresContainer = () => {
     documentNumber:
       admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
     careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
+    admissionDate: formatDateTime(admission?.admissionDate ?? searchParams.get("admissionDate"), "03/03/2026 20:47"),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
     insurer: searchParams.get("insurer") || "EPS Sanitas",
@@ -652,7 +643,7 @@ export const MedicalNoteContainer = () => {
     documentNumber:
       admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
     careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
+    admissionDate: formatDateTime(admission?.admissionDate ?? searchParams.get("admissionDate"), "03/03/2026 20:47"),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
     insurer: searchParams.get("insurer") || "EPS Sanitas",
@@ -725,7 +716,7 @@ export const NonSurgicalProceduresContainer = () => {
     documentNumber:
       admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
     careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
+    admissionDate: formatDateTime(admission?.admissionDate ?? searchParams.get("admissionDate"), "03/03/2026 20:47"),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
     insurer: searchParams.get("insurer") || "EPS Sanitas",
@@ -798,7 +789,7 @@ export const SpecialistEvolutionContainer = () => {
     documentNumber:
       admission?.documentoPatiente || searchParams.get("documentNumber") || "1102796382",
     careScope: admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
-    admissionDate: formatDate(admission?.admissionDate ?? searchParams.get("admissionDate")),
+    admissionDate: formatDateTime(admission?.admissionDate ?? searchParams.get("admissionDate"), "03/03/2026 20:47"),
     birthDate: searchParams.get("birthDate") || "2004-08-04",
     sex: searchParams.get("sex") || "Masculino",
     insurer: searchParams.get("insurer") || "EPS Sanitas",

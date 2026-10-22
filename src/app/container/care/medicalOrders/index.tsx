@@ -62,6 +62,7 @@ import type { PrintPatient } from "../clinicalRecords/initialClinicalHistory/pri
 import { calculateAgeLabel } from "../xray/xray.utils"
 import { MedicalOrderPrintDocument } from "./MedicalOrderPrintDocument"
 import "./medicalOrders.css"
+import { formatDateTime } from "@/core/utils/date"
 
 const { TextArea } = Input
 
@@ -143,19 +144,6 @@ const nowLocalInput = () => toLocalInput(new Date())
 const isoToLocalInput = (value?: string | null) => {
   const date = value ? new Date(value) : null
   return date && !Number.isNaN(date.getTime()) ? toLocalInput(date) : nowLocalInput()
-}
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) return "—"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString("es-CO", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 }
 
 const itemKey = (conceptoTipo: string, conceptoId: number) => `${conceptoTipo}-${conceptoId}`

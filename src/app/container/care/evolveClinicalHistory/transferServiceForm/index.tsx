@@ -15,6 +15,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion"
 import { useWatch } from "react-hook-form"
 import { useTransferServiceForm } from "./useTransferServiceForm"
+import { formatDateTime } from "@/core/utils/date"
 
 const CARE_SCOPE_COLORS: Record<string, string> = {
   Triage: "gold",
@@ -226,7 +227,7 @@ export default function TransferServiceForm({
                   <CalendarOutlined /> Fecha de admisión
                 </div>
                 <div style={metaValueStyle}>
-                  {new Date(admission.admissionDate).toLocaleString()}
+                  {formatDateTime(admission.admissionDate)}
                 </div>
               </div>
             </div>

@@ -8,20 +8,12 @@ import { useHCInicialHistoryByPatient } from "@/core/hooks/care/hciInicial/useHC
 import { useDeleteHCInicial } from "@/core/hooks/care/hciInicial/useSaveHCInicial"
 import { HciInicialEditPanel } from "./HciInicialEditPanel"
 import { HciInicialOverview } from "./HciInicialOverview"
+import { formatDateTime } from "@/core/utils/date"
 
 interface Props {
   patientId?: string | number
   admissionId?: string | number
 }
-
-const formatDateTime = (iso: string) =>
-  new Date(iso).toLocaleString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 
 export const HciInicialHistoryList = ({ patientId, admissionId }: Props) => {
   const { records, isLoading } = useHCInicialHistoryByPatient(patientId)

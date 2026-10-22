@@ -299,6 +299,7 @@ const MedicationApplicationContainer = () => {
       title: "Evento / observaciones",
       dataIndex: "observaciones",
       key: "observaciones",
+      width: 220,
       render: (value?: string | null) => value || "—",
     },
     {
@@ -690,7 +691,7 @@ const MedicationApplicationContainer = () => {
                     columns={historyColumns}
                     dataSource={selected.aplicaciones ?? []}
                     pagination={{ pageSize: 5, hideOnSinglePage: true }}
-                    scroll={{ x: 900 }}
+                    scroll={{ x: "max-content" }}
                     locale={{ emptyText: "Aún no hay registros para esta orden." }}
                   />
                 </div>

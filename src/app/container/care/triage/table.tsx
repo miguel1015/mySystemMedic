@@ -12,6 +12,7 @@ import {
   TriageResponse,
 } from "@/core/interfaces/care/types"
 import { useDeleteTriage } from "@/core/hooks/care/triage/useDeleteTriage"
+import { formatDateTime } from "@/core/utils/date"
 
 const PRIORITY_COLOR: Record<TriagePriority, string> = {
   I: "#ff4d4f",
@@ -97,7 +98,7 @@ export default function TriageTable({ data, isLoading }: TriageTableProps) {
         new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime(),
       render: (value: string) => (
         <span style={{ fontFamily: "monospace" }}>
-          {new Date(value).toLocaleString()}
+          {formatDateTime(value)}
         </span>
       ),
     },

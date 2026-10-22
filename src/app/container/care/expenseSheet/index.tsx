@@ -56,6 +56,7 @@ import { useEffect, useMemo, useState } from "react"
 import ExpenseSheetPrintPreviewModal from "./ExpenseSheetPrintPreviewModal"
 import { HOJA_TEXTOS } from "./expenseSheet.utils"
 import "./expenseSheet.css"
+import { formatDateTime } from "@/core/utils/date"
 
 const MAX_CANTIDAD = 100000
 const FUTURE_TOLERANCE_MS = 5 * 60 * 1000
@@ -76,19 +77,6 @@ const pad = (n: number) => n.toString().padStart(2, "0")
 const nowLocalDateTime = () => {
   const d = new Date()
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) return "—"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString("es-CO", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 }
 
 const conceptKey = (tipoServicio: string, conceptoTipo: string, conceptoId: number) =>

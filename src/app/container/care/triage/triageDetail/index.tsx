@@ -16,6 +16,7 @@ import {
   TriagePriority,
   VitalSignsDto,
 } from "@/core/interfaces/care/types"
+import { formatDateTime } from "@/core/utils/date"
 
 const PRIORITY_COLOR: Record<TriagePriority, string> = {
   I: "#ff4d4f",
@@ -212,7 +213,7 @@ export default function TriageDetail({ id }: TriageDetailProps) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 32 }}>
           <Field
             label="Fecha / Hora"
-            value={new Date(data.fechaHora).toLocaleString()}
+            value={formatDateTime(data.fechaHora)}
           />
           <Field
             label="Prioridad"

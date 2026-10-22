@@ -11,6 +11,7 @@ import { useGetNotaMedicaById } from "@/core/hooks/care/notasMedicas/useGetNotaM
 import { useGetNotasMedicasByAdmission } from "@/core/hooks/care/notasMedicas/useGetNotasMedicasByAdmission"
 import type { NotaMedicaResponse } from "@/core/interfaces/care/hciInicial"
 import { NotaMedicaDetailView } from "./NotaMedicaDetailView"
+import { formatDate, formatTime } from "@/core/utils/date"
 
 interface Props {
   open: boolean
@@ -22,7 +23,7 @@ interface Props {
 
 const formatDateTime = (fecha: string, hora: string) => {
   if (!fecha) return "—"
-  return `${fecha} · ${hora ? hora.slice(0, 5) : "—"}`
+  return hora ? `${formatDate(fecha)} ${formatTime(hora)}` : formatDate(fecha)
 }
 
 const excerpt = (texto: string, max = 150) =>

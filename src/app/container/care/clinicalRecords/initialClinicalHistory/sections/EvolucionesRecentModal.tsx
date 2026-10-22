@@ -11,6 +11,7 @@ import { useGetEvolucionById } from "@/core/hooks/care/evoluciones/useGetEvoluci
 import { useGetEvolucionesByAdmission } from "@/core/hooks/care/evoluciones/useGetEvolucionesByAdmission"
 import type { EvolucionResponse } from "@/core/interfaces/care/hciInicial"
 import { EvolucionDetailView } from "./EvolucionDetailView"
+import { formatDate, formatTime } from "@/core/utils/date"
 
 interface Props {
   open: boolean
@@ -22,7 +23,7 @@ interface Props {
 
 const formatDateTime = (fecha: string, hora: string) => {
   if (!fecha) return "—"
-  return `${fecha} · ${hora ? hora.slice(0, 5) : "—"}`
+  return hora ? `${formatDate(fecha)} ${formatTime(hora)}` : formatDate(fecha)
 }
 
 export const EvolucionesRecentModal = ({ open, onClose, admissionId, onEdit, messageApi }: Props) => {

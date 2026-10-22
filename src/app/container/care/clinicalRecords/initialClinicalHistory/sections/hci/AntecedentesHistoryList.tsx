@@ -10,20 +10,12 @@ import { useUpdateObjetivoHCInicial } from "@/core/hooks/care/hciInicial/useSave
 import { antecedentesFields } from "../../constants"
 import { AntecedentesEditPanel } from "./AntecedentesEditPanel"
 import { AntecedentesOverview } from "./AntecedentesOverview"
+import { formatDateTime } from "@/core/utils/date"
 
 interface Props {
   patientId?: string | number
   admissionId?: string | number
 }
-
-const formatDateTime = (iso: string) =>
-  new Date(iso).toLocaleString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 
 const buildExcerpt = (record: HCInicialHistoryRecord) => {
   const o = record.hcInicial.objetivo

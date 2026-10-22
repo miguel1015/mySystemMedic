@@ -46,10 +46,7 @@ import type { ColumnsType } from "antd/es/table"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import ClinicalPrintPreviewModal from "../clinicalRecords/initialClinicalHistory/printPreview/ClinicalPrintPreviewModal"
-import {
-  formatDateTime,
-  type PrintPatient,
-} from "../clinicalRecords/initialClinicalHistory/printPreview/printDocument.utils"
+import { type PrintPatient } from "../clinicalRecords/initialClinicalHistory/printPreview/printDocument.utils"
 import { XrayPrintDocument } from "./XrayPrintDocument"
 import {
   RESULTADO_COLORS,
@@ -59,6 +56,7 @@ import {
   todayIsoDate,
 } from "./xray.utils"
 import "./xray.css"
+import { formatDateTime } from "@/core/utils/date"
 
 const { TextArea } = Input
 
@@ -91,19 +89,6 @@ const toPayload = (values: XrayFormValues): EstudioRayosXUpdateRequest => ({
   descripcion: (values.descripcion ?? "").trim(),
   conclusion: (values.conclusion ?? "").trim(),
 })
-
-const formatAdmissionDate = (value?: string | null) => {
-  if (!value) return ""
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString("es-CO", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
 
 const errorMessage = (err: unknown, fallback: string) =>
   err instanceof Error && err.message ? err.message : fallback
@@ -411,7 +396,7 @@ const XrayContainer = () => {
     { label: "Edad", value: calculateAgeLabel(birthDate) },
     { label: "Sexo", value: sex },
     { label: "N° Admisión / Historia clínica", value: admissionId },
-    { label: "Fecha de admisión", value: formatAdmissionDate(admissionDate) },
+    { label: "Fecha de admisión", value: formatDateTime(admissionDate, "") },
     { label: "Ámbito de atención", value: careScope },
     { label: "Aseguradora", value: insurer },
   ]

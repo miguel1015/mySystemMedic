@@ -7,6 +7,7 @@ import {
   formatDateTime,
   type PrintPatient,
 } from "./printDocument.utils";
+import { formatDate, formatTime } from "@/core/utils/date";
 
 interface Props {
   provider?: TProvider;
@@ -115,7 +116,7 @@ export const ClinicalDocumentHeader = ({
     {/* <div className="hci-print-row"> */}
     {/* <span className="hci-print-label">{attentionLabel}</span> */}
     {/* <span className="hci-print-value">
-        {attentionDate || emptyDash} {attentionTime || emptyDash}
+        {formatDate(attentionDate, emptyDash)} {formatTime(attentionTime, emptyDash)}
       </span>
     </div> */}
   </div>

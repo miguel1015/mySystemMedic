@@ -37,6 +37,7 @@ import {
   PatientMiniResponse,
 } from "@/core/interfaces/care/types"
 import AdmissionsFormSkeleton from "./admissionsFormSkeleton"
+import { formatDate } from "@/core/utils/date"
 
 const sectionCardStyle: React.CSSProperties = {
   background: "var(--dash-surface, #ffffff)",
@@ -548,7 +549,7 @@ function PatientCard({ patient }: { patient: PatientMiniResponse }) {
             )}
             {patient.fechaNacimiento && (
               <Tag icon={<CalendarOutlined />} style={{ margin: 0 }}>
-                {new Date(patient.fechaNacimiento).toLocaleDateString()}
+                {formatDate(patient.fechaNacimiento)}
               </Tag>
             )}
           </div>

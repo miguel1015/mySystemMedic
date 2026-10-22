@@ -5,6 +5,7 @@ import type { ColumnsType } from "antd/es/table"
 import { useMemo, useState } from "react"
 import { SearchOutlined, SettingOutlined } from "@ant-design/icons"
 import { ActiveAdmission } from "@/core/interfaces/care/types"
+import { formatDate, formatTime } from "@/core/utils/date"
 
 interface AdmissionsTableProps {
   data: ActiveAdmission[];
@@ -41,26 +42,12 @@ const AdmissionsTable = ({ data, loading, onAction }: AdmissionsTableProps) => {
       width: 200,
       sorter: (a, b) =>
         new Date(a.admissionDate).getTime() - new Date(b.admissionDate).getTime(),
-      render: (value: string) => {
-        const date = new Date(value)
-        return (
-          <div>
-            <div style={{ fontWeight: 500 }}>
-              {date.toLocaleDateString("es-CO", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-              })}
-            </div>
-            <div style={{ fontSize: 12, color: "var(--dash-text-secondary, #6b7280)" }}>
-              {date.toLocaleTimeString("es-CO", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </div>
-          </div>
-        )
-      },
+      render: (value: string) => (
+        <div>
+          <div style={{ fontWeight: 500 }}>{formatDate(value)}</div>
+          <div style={{ fontSize: 12, color: "var(--dash-text-secondary, #6b7280)" }}>{formatTime(value)}</div>
+        </div>
+      ),
     },
     {
       title: "Nombre completo",

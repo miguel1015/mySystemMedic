@@ -11,25 +11,11 @@ import {
 } from "@ant-design/icons"
 import { Button, Descriptions, Empty } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
+import { formatDateTime } from "@/core/utils/date"
 
 interface ClinicalActionModuleProps {
   title: string;
   description: string;
-}
-
-const formatAdmissionDate = (value: string | null) => {
-  if (!value) return "Sin fecha"
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-
-  return date.toLocaleString("es-CO", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 }
 
 const ClinicalActionModule = ({
@@ -107,7 +93,7 @@ const ClinicalActionModule = ({
                     <CalendarOutlined /> Admision
                   </span>
                 ),
-                children: formatAdmissionDate(admissionDate),
+                children: formatDateTime(admissionDate, "Sin fecha"),
               },
               {
                 key: "careScope",

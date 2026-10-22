@@ -4,22 +4,10 @@ import { Descriptions, Skeleton, Typography } from "antd"
 import { useEffect, useState } from "react"
 import type { DescripcionQuirurgicaResponse } from "@/core/interfaces/care/hciInicial"
 import { resolveDiagnosisDescription, resolveProcedureDescription } from "./qxCodeResolvers"
+import { formatDateTime } from "@/core/utils/date"
 
 interface Props {
   data: DescripcionQuirurgicaResponse
-}
-
-const formatDateTime = (value: string) => {
-  if (!value) return "—"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 }
 
 export const SurgicalDescriptionDetailView = ({ data }: Props) => {

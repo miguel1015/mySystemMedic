@@ -13,6 +13,7 @@ import { useGetDatosClinicosEgresoById } from "@/core/hooks/care/dischargeNote/u
 import { useGetDiagnosticoEgresoById } from "@/core/hooks/care/dischargeNote/useGetDiagnosticoEgresoById"
 import type { DatosClinicosEgresoResponse, DiagnosticoEgresoResponse } from "@/core/interfaces/care/hciInicial"
 import { NotaEgresoDetailView, type NotaEgresoViewData } from "./NotaEgresoDetailView"
+import { formatDateTime } from "@/core/utils/date"
 
 interface Props {
   open: boolean
@@ -20,19 +21,6 @@ interface Props {
   admissionId?: string | number
   onEdit: (datosClinicos: DatosClinicosEgresoResponse, diagnostico: DiagnosticoEgresoResponse | null) => void
   messageApi: MessageInstance
-}
-
-const formatDateTime = (value: string) => {
-  if (!value) return "—"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 }
 
 const excerpt = (texto: string, max = 150) =>

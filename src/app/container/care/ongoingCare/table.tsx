@@ -7,6 +7,7 @@ import { DollarOutlined, SearchOutlined } from "@ant-design/icons";
 import { OngoingAttention } from "@/core/interfaces/care/types";
 import { useRouter } from "next/navigation";
 import dayjs, { Dayjs } from "dayjs";
+import { formatDate, formatTime } from "@/core/utils/date";
 
 const { RangePicker } = DatePicker;
 
@@ -111,26 +112,12 @@ const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
       sorter: (a, b) =>
         new Date(a.admissionDate).getTime() -
         new Date(b.admissionDate).getTime(),
-      render: (value: string) => {
-        const date = new Date(value);
-        return (
-          <div>
-            <div style={{ fontWeight: 500 }}>
-              {date.toLocaleDateString("es-CO", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-              })}
-            </div>
-            <div style={{ fontSize: 12 }}>
-              {date.toLocaleTimeString("es-CO", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </div>
-          </div>
-        );
-      },
+      render: (value: string) => (
+        <div>
+          <div style={{ fontWeight: 500 }}>{formatDate(value)}</div>
+          <div style={{ fontSize: 12 }}>{formatTime(value)}</div>
+        </div>
+      ),
     },
     {
       title: "Nombre del paciente",
