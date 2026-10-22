@@ -41,6 +41,8 @@ interface CupsPickerProps {
   disabled?: boolean
   // Si se pasa, se ofrece agregar un CUPS que no está en el catálogo.
   onRequestNew?: () => void
+  // Busca también los CUPS deshabilitados en SISPRO (se marcan en la lista).
+  includeDisabled?: boolean
 }
 
 function useDebounced(value: string, delay = 300) {
@@ -87,6 +89,7 @@ export default function CupsPicker({
   suggestions: givenSuggestions,
   disabled,
   onRequestNew,
+  includeDisabled,
 }: CupsPickerProps) {
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounced(search)
@@ -99,7 +102,11 @@ export default function CupsPicker({
   const suggestions = givenSuggestions ?? fetchedSuggestions
   // Las del manual se muestran todas; las de similitud, solo las 3 mejores.
   const fromManual = suggestions.some((s) => s.source)
-  const { data: results = [], isFetching: searching } = useCupsSearch(debouncedSearch)
+  const { data: results = [], isFetching: searching } = useCupsSearch(
+    debouncedSearch,
+    undefined,
+    includeDisabled,
+  )
 
   const options = useMemo(() => {
     const base = debouncedSearch.trim().length >= 2
@@ -107,7 +114,11 @@ export default function CupsPicker({
           code: r.code,
           name: r.name,
           // Un CUPS manual puede tener un tipo distinto de AC/AP/AT: se muestra tal cual.
-          hint: [r.ripsType ? TYPE_LABELS[r.ripsType] ?? r.ripsType : "", r.isManual ? "Manual" : ""]
+          hint: [
+            r.ripsType ? TYPE_LABELS[r.ripsType] ?? r.ripsType : "",
+            r.isManual ? "Manual" : "",
+            r.isEnabled ? "" : "Deshabilitado",
+          ]
             .filter(Boolean)
             .join(" · "),
         }))

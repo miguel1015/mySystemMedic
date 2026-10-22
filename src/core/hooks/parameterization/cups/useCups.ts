@@ -25,12 +25,14 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return data as T
 }
 
-// Búsqueda en la tabla CUPS por código o palabras del nombre (mínimo 2 caracteres).
-export function useCupsSearch(search: string, type?: CupsRipsType) {
+// Búsqueda en la tabla CUPS por código o palabras del nombre (mínimo 2 caracteres). Con
+// `includeDisabled` también trae los deshabilitados en SISPRO.
+export function useCupsSearch(search: string, type?: CupsRipsType, includeDisabled = false) {
   const term = search.trim()
   return useQuery({
-    queryKey: ["cups", "search", term, type ?? null],
-    queryFn: () => request<CupsProcedure[]>(ENDPOINTS.CUPS.SEARCH(term, type)),
+    queryKey: ["cups", "search", term, type ?? null, includeDisabled],
+    queryFn: () =>
+      request<CupsProcedure[]>(ENDPOINTS.CUPS.SEARCH(term, type, includeDisabled)),
     enabled: term.length >= 2,
     staleTime: Infinity,
     placeholderData: keepPreviousData,

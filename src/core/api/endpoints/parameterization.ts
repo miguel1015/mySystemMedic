@@ -78,10 +78,10 @@ export const PARAMETERIZATION_ENDPOINTS = {
   },
   // Tabla CUPS (SISPRO) y homologación del manual tarifario a CUPS.
   CUPS: {
-    SEARCH: (search: string, type?: string) =>
+    SEARCH: (search: string, type?: string, includeDisabled?: boolean) =>
       `/api/auth/parameterization/cups?search=${encodeURIComponent(search)}${
         type ? `&type=${type}` : ""
-      }&take=20`,
+      }${includeDisabled ? "&includeDisabled=true" : ""}&take=20`,
     SUGGESTIONS: (description: string, type?: string, referenceCode?: number) =>
       `/api/auth/parameterization/cups/suggestions?description=${encodeURIComponent(description)}${
         type ? `&type=${type}` : ""

@@ -41,7 +41,11 @@ const TariffDetailForm: React.FC<TariffDetailFormProps> = ({
   const { data: surgicalGroups, isLoading: loadingSurgicalGroups } =
     useSurgicalGroups();
   // Nombre del CUPS que ya tiene el detalle, para mostrarlo junto al código.
-  const { data: currentCups = [] } = useCupsSearch(record?.cupsCode ?? "");
+  const { data: currentCups = [] } = useCupsSearch(
+    record?.cupsCode ?? "",
+    undefined,
+    true,
+  );
   const currentCupsName =
     currentCups.find((c) => c.code === record?.cupsCode)?.name ?? "";
 
@@ -151,7 +155,20 @@ const TariffDetailForm: React.FC<TariffDetailFormProps> = ({
                 label="Código"
                 placeholder="Ej. 890201"
                 maxLength={10}
-                helperText="Se guarda con la descripción del detalle como nombre"
+                control={control}
+              />
+              <Input
+                name="newCups.name"
+                label="Nombre"
+                placeholder="Nombre del procedimiento"
+                control={control}
+              />
+              <Input
+                name="newCups.ripsType"
+                label="Tipo RIPS"
+                placeholder="Ej. AP"
+                maxLength={5}
+                helperText="AC consulta, AP procedimiento, AT estancia u otro"
                 control={control}
               />
             </GridContainer>
@@ -180,6 +197,7 @@ const TariffDetailForm: React.FC<TariffDetailFormProps> = ({
                 }
                 onChange={field.onChange}
                 onRequestNew={startNewCups}
+                includeDisabled
               />
             )}
           />
