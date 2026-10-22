@@ -6,6 +6,16 @@ export interface CupsProcedure {
   name: string
   ripsType: CupsRipsType | null
   isEnabled: boolean
+  // Agregado por un usuario: no viene de la tabla de SISPRO.
+  isManual: boolean
+}
+
+// CUPS que no está en el catálogo: se agrega al guardar el detalle de tarifa.
+export interface NewCups {
+  code: string
+  name: string
+  // Libre: AC, AP o AT ubican el cargo en el RIPS; otro valor se clasifica por la categoría.
+  ripsType: string
 }
 
 export interface CupsSuggestion {

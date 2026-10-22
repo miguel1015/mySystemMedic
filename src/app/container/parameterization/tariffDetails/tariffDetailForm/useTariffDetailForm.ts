@@ -3,7 +3,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast from "react-hot-toast";
-import { useUpdateTariffDetail } from "@/core/hooks/parameterization/tariffDetails/useUpdateTariffDetail";
+import {
+  TTariffDetailUpdate,
+  useUpdateTariffDetail,
+} from "@/core/hooks/parameterization/tariffDetails/useUpdateTariffDetail";
 import { TTariffDetail } from "@/core/interfaces/parameterization/types";
 
 const requiredNumber = (label: string) =>
@@ -26,6 +29,22 @@ const schema = z.object({
   ),
   description: z.string().min(1, "La descripción es obligatoria"),
   cups: z.object({ code: z.string(), name: z.string() }).nullable(),
+  // CUPS que no está en el catálogo; si viene, reemplaza a `cups`.
+  newCups: z
+    .object({
+      code: z
+        .string()
+        .trim()
+        .min(1, "El código CUPS es obligatorio")
+        .max(10, "El código CUPS tiene máximo 10 caracteres"),
+      name: z.string().trim().min(1, "El nombre del CUPS es obligatorio"),
+      ripsType: z
+        .string()
+        .trim()
+        .min(1, "El tipo RIPS es obligatorio")
+        .max(5, "El tipo RIPS tiene máximo 5 caracteres"),
+    })
+    .nullable(),
   value: requiredNumber("El valor").nonnegative("El valor no puede ser negativo"),
   factors: requiredNumber("El factor").nonnegative("El factor no puede ser negativo"),
   tariffId: requiredSelect("un tarifario"),
@@ -42,6 +61,7 @@ const defaultValues: Partial<TTariffDetailForm> = {
   referenceCode: undefined,
   description: "",
   cups: null,
+  newCups: null,
   value: undefined,
   factors: undefined,
   tariffId: undefined,
@@ -57,7 +77,7 @@ interface UseTariffDetailFormProps {
 export function useTariffDetailForm({ record, onClose }: UseTariffDetailFormProps) {
   const updateTariffDetail = useUpdateTariffDetail();
 
-  const { control, handleSubmit, reset } = useForm<TTariffDetailForm>({
+  const { control, handleSubmit, reset, setValue, watch } = useForm<TTariffDetailForm>({
     resolver: zodResolver(schema),
     defaultValues,
   });
@@ -69,6 +89,7 @@ export function useTariffDetailForm({ record, onClose }: UseTariffDetailFormProp
         description: record.description,
         // El nombre del CUPS no viene en el detalle: el formulario lo resuelve del catálogo.
         cups: record.cupsCode ? { code: record.cupsCode, name: "" } : null,
+        newCups: null,
         value: record.value,
         factors: record.factors,
         tariffId: record.tariffId,
@@ -83,11 +104,20 @@ export function useTariffDetailForm({ record, onClose }: UseTariffDetailFormProp
   const onSubmit = (data: TTariffDetailForm) => {
     if (!record) return;
 
-    const payload: Partial<TTariffDetail> = {
+    const newCups = data.newCups
+      ? {
+          ...data.newCups,
+          code: data.newCups.code.toUpperCase(),
+          ripsType: data.newCups.ripsType.toUpperCase(),
+        }
+      : null;
+
+    const payload: TTariffDetailUpdate = {
       referenceCode: data.referenceCode,
       description: data.description,
-      // Cadena vacía: el backend lo interpreta como quitar el CUPS.
-      cupsCode: data.cups?.code ?? "",
+      // Con un CUPS nuevo, el backend lo agrega al catálogo y lo asigna en la misma operación.
+      // Sin él, cadena vacía en cupsCode quita el CUPS.
+      ...(newCups ? { newCups } : { cupsCode: data.cups?.code ?? "" }),
       value: data.value,
       factors: data.factors,
       tariffId: data.tariffId,
@@ -99,7 +129,11 @@ export function useTariffDetailForm({ record, onClose }: UseTariffDetailFormProp
       { id: record.id, data: payload },
       {
         onSuccess: () => {
-          toast.success("Tarifa de detalle actualizada correctamente");
+          toast.success(
+            newCups
+              ? `CUPS ${newCups.code} agregado al catálogo y asignado al detalle`
+              : "Tarifa de detalle actualizada correctamente",
+          );
           onClose();
         },
         onError: (err: Error) => {
@@ -109,10 +143,16 @@ export function useTariffDetailForm({ record, onClose }: UseTariffDetailFormProp
     );
   };
 
+  const startNewCups = () => setValue("newCups", { code: "", name: "", ripsType: "" });
+  const cancelNewCups = () => setValue("newCups", null);
+
   return {
     control,
     handleSubmit,
     onSubmit,
+    isAddingCups: watch("newCups") !== null,
+    startNewCups,
+    cancelNewCups,
     isSubmitting: updateTariffDetail.isPending,
   };
 }

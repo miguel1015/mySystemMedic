@@ -9,7 +9,8 @@ import { useCupsSearch } from "@/core/hooks/parameterization/cups/useCups";
 import { useTariffs } from "@/core/hooks/parameterization/tariffs/useGetAllTariffs";
 import { useSurgicalGroups } from "@/core/hooks/parameterization/surgicalGroups/useGetAllSurgicalGroups";
 import { TTariffDetail } from "@/core/interfaces/parameterization/types";
-import { Button, Spin } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Alert, Button, Spin } from "antd";
 import { Controller } from "react-hook-form";
 import { useTariffDetailForm } from "./useTariffDetailForm";
 
@@ -17,7 +18,6 @@ const yesNoOptions = [
   { value: "true", label: "Sí" },
   { value: "false", label: "No" },
 ];
-
 interface TariffDetailFormProps {
   record: TTariffDetail | null;
   onClose: () => void;
@@ -27,8 +27,15 @@ const TariffDetailForm: React.FC<TariffDetailFormProps> = ({
   record,
   onClose,
 }) => {
-  const { control, handleSubmit, onSubmit, isSubmitting } =
-    useTariffDetailForm({ record, onClose });
+  const {
+    control,
+    handleSubmit,
+    onSubmit,
+    isSubmitting,
+    isAddingCups,
+    startNewCups,
+    cancelNewCups,
+  } = useTariffDetailForm({ record, onClose });
 
   const { data: tariffs, isLoading: loadingTariffs } = useTariffs();
   const { data: surgicalGroups, isLoading: loadingSurgicalGroups } =
@@ -129,22 +136,67 @@ const TariffDetailForm: React.FC<TariffDetailFormProps> = ({
         <label style={{ display: "block", marginBottom: 4, fontWeight: 500 }}>
           Código CUPS
         </label>
-        <Controller
-          name="cups"
-          control={control}
-          render={({ field }) => (
-            <CupsPicker
-              description={record?.description ?? ""}
-              referenceCode={record?.referenceCode}
-              value={
-                field.value && !field.value.name && field.value.code === record?.cupsCode
-                  ? { ...field.value, name: currentCupsName }
-                  : field.value
-              }
-              onChange={field.onChange}
+        {isAddingCups ? (
+          <>
+            <Alert
+              type="warning"
+              showIcon
+              style={{ marginBottom: 12 }}
+              message="El CUPS se agregará al catálogo y reemplazará el actual de este detalle."
+              description="El validador del Ministerio (MUV) solo acepta códigos de la tabla de SISPRO: si el código está mal escrito o no es oficial, el RIPS será rechazado."
             />
-          )}
-        />
+            <GridContainer columns="col-4" gap="g-3">
+              <Input
+                name="newCups.code"
+                label="Código"
+                placeholder="Ej. 890201"
+                maxLength={10}
+                control={control}
+              />
+              <Input
+                name="newCups.name"
+                label="Nombre"
+                placeholder="Nombre del procedimiento"
+                control={control}
+              />
+              <Input
+                name="newCups.ripsType"
+                label="Tipo RIPS"
+                placeholder="Ej. AP"
+                maxLength={5}
+                helperText="AC consulta, AP procedimiento, AT estancia u otro"
+                control={control}
+              />
+            </GridContainer>
+            <Button
+              type="link"
+              size="small"
+              icon={<ArrowLeftOutlined />}
+              onClick={cancelNewCups}
+              style={{ paddingInline: 0 }}
+            >
+              Volver a buscar en el catálogo
+            </Button>
+          </>
+        ) : (
+          <Controller
+            name="cups"
+            control={control}
+            render={({ field }) => (
+              <CupsPicker
+                description={record?.description ?? ""}
+                referenceCode={record?.referenceCode}
+                value={
+                  field.value && !field.value.name && field.value.code === record?.cupsCode
+                    ? { ...field.value, name: currentCupsName }
+                    : field.value
+                }
+                onChange={field.onChange}
+                onRequestNew={startNewCups}
+              />
+            )}
+          />
+        )}
       </div>
 
       <div className="d-flex justify-content-end gap-2 mt-3">

@@ -6,8 +6,8 @@ import type {
   CupsSuggestion,
   CupsSuggestionSource,
 } from "@/core/interfaces/parameterization/cups"
-import { BookOutlined, BulbOutlined } from "@ant-design/icons"
-import { Select, Space, Tag, Tooltip } from "antd"
+import { BookOutlined, BulbOutlined, PlusOutlined } from "@ant-design/icons"
+import { Button, Select, Space, Tag, Tooltip } from "antd"
 import { useEffect, useMemo, useState } from "react"
 
 const TYPE_LABELS: Record<CupsRipsType, string> = {
@@ -39,6 +39,8 @@ interface CupsPickerProps {
   // Sugerencias ya calculadas (la pantalla de homologación las trae con cada fila).
   suggestions?: CupsSuggestion[]
   disabled?: boolean
+  // Si se pasa, se ofrece agregar un CUPS que no está en el catálogo.
+  onRequestNew?: () => void
 }
 
 function useDebounced(value: string, delay = 300) {
@@ -84,6 +86,7 @@ export default function CupsPicker({
   onChange,
   suggestions: givenSuggestions,
   disabled,
+  onRequestNew,
 }: CupsPickerProps) {
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounced(search)
@@ -100,7 +103,14 @@ export default function CupsPicker({
 
   const options = useMemo(() => {
     const base = debouncedSearch.trim().length >= 2
-      ? results.map((r) => ({ code: r.code, name: r.name, hint: r.ripsType ? TYPE_LABELS[r.ripsType] : "" }))
+      ? results.map((r) => ({
+          code: r.code,
+          name: r.name,
+          // Un CUPS manual puede tener un tipo distinto de AC/AP/AT: se muestra tal cual.
+          hint: [r.ripsType ? TYPE_LABELS[r.ripsType] ?? r.ripsType : "", r.isManual ? "Manual" : ""]
+            .filter(Boolean)
+            .join(" · "),
+        }))
       : suggestions.map((s) => ({
           code: s.code,
           name: s.name,
@@ -180,6 +190,19 @@ export default function CupsPicker({
             />
           ))}
         </div>
+      )}
+
+      {onRequestNew && (
+        <Button
+          type="link"
+          size="small"
+          icon={<PlusOutlined />}
+          disabled={disabled}
+          onClick={onRequestNew}
+          style={{ alignSelf: "flex-start", paddingInline: 0 }}
+        >
+          Agregar un CUPS que no está en el catálogo
+        </Button>
       )}
     </div>
   )
