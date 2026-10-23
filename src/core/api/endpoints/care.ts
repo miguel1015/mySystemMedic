@@ -129,6 +129,14 @@ export const CARE_ENDPOINTS = {
     UPDATE: (id: IdParam) => `/api/auth/care/estudios-rayos-x/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/estudios-rayos-x/${id}`,
   },
+  RECORDS_ANESTESIA: {
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/records-anestesia/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/records-anestesia",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/records-anestesia/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/records-anestesia/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/records-anestesia/${id}`,
+  },
   HOJAS_GASTOS: {
     ASISTENCIALES: "/api/auth/care/hojas-gastos/asistenciales",
     CONCEPTOS: "/api/auth/care/hojas-gastos/conceptos",

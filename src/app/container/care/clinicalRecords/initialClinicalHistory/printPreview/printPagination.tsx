@@ -162,15 +162,22 @@ export const usePaginatedUnits = (units: Unit[], headerBlock: ReactNode) => {
 export const PaginatedPages = ({
   pages,
   headerBlock,
+  showPageNumbers = false,
 }: {
   pages: Unit[][] | null;
   headerBlock: ReactNode;
+  showPageNumbers?: boolean;
 }) => (
   <>
     {pages?.map((pageUnits, index) => (
       <div className="hci-print-page" key={index}>
         {headerBlock}
         <div className="hci-print-body">{renderPageUnits(pageUnits)}</div>
+        {showPageNumbers && (
+          <div className="hci-print-page-number">
+            Página {index + 1} de {pages.length}
+          </div>
+        )}
       </div>
     ))}
   </>
