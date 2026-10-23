@@ -1,0 +1,100 @@
+/* ── Resultado de laboratorio (impresión) ── */
+.lab-print-results {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5px;
+}
+
+.lab-print-results th,
+.lab-print-results td {
+  border: 1px solid #000;
+  padding: 3px 6px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.lab-print-results th {
+  background: #f0f0f0;
+  font-weight: bold;
+}
+
+.lab-print-results td.lab-print-multiline {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.lab-print-signature {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.lab-print-signature .hci-print-signature-box {
+  width: 60%;
+}
+
+/* ── Vista en pantalla ── */
+.lab-card {
+  border: 1px solid var(--dash-border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--dash-surface, #ffffff);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.lab-card-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 14px;
+  color: var(--dash-text-primary, #111827);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lab-patient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px 20px;
+}
+
+.lab-patient-label {
+  display: block;
+  font-size: 12px;
+  color: var(--dash-text-secondary, #6b7280);
+  margin-bottom: 2px;
+}
+
+.lab-patient-value {
+  font-weight: 600;
+  color: var(--dash-text-primary, #111827);
+  overflow-wrap: anywhere;
+}
+
+.lab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0 16px;
+}
+
+.lab-fields-title {
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #08979c;
+  border-bottom: 1px solid var(--dash-border, #e5e7eb);
+  padding-bottom: 4px;
+  margin: 8px 0 14px;
+}
+
+.lab-field-full {
+  grid-column: 1 / -1;
+}
+
+.lab-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}

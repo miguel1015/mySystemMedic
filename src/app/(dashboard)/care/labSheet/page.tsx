@@ -1,10 +1,14 @@
-import ClinicalActionModule from "../../../container/care/clinicalActionModule"
+import { Suspense } from "react"
+import LabSheetContainer from "../../../container/care/labSheet"
 
-export default function LabSheetPage() {
+interface PageProps {
+  searchParams: { admissionId?: string }
+}
+
+export default function LabSheetPage({ searchParams }: PageProps) {
   return (
-    <ClinicalActionModule
-      title="Laboratorios"
-      description="Gestion de ordenes y resultados de laboratorio del paciente seleccionado."
-    />
+    <Suspense fallback={null}>
+      <LabSheetContainer key={searchParams.admissionId} />
+    </Suspense>
   )
 }
