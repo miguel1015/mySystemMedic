@@ -7,8 +7,7 @@ import { useGetProvider } from "@/core/hooks/parameterization/providers/useGetPr
 import { useUpdateProvider } from "@/core/hooks/parameterization/providers/useUpdateProvider";
 import { providerSchema, providerDefaultValues, TProviderForm } from "./schema";
 import { useUserDocumentType } from "../../../../../core/hooks/users/useDocumentTypes";
-
-const PROVIDER_ID = 32;
+import { INSTITUTION_PROVIDER_ID as PROVIDER_ID } from "@/core/constants/institution";
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

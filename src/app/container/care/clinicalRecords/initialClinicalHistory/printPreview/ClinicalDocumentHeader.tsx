@@ -1,6 +1,7 @@
 "use client";
 
 import type { TProvider } from "@/core/interfaces/parameterization/types";
+import { InstitutionLogo } from "@/components/print/InstitutionLogo";
 import {
   calculateAge,
   emptyDash,
@@ -36,9 +37,7 @@ export const ClinicalDocumentHeader = ({
 }: Props) => (
   <div className="hci-print-header-block">
     <div className="hci-print-header">
-      <div className="hci-print-logo">
-        <img src="/assets/img/avatars/logoPdf.png" alt="Logo" />
-      </div>
+      <InstitutionLogo provider={provider} className="hci-print-logo" />
       <div className="hci-print-entity">
         <div className="hci-print-entity-name">
           {provider?.name || "Institución Prestadora de Salud"}

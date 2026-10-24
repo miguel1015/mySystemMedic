@@ -10,11 +10,8 @@ import { PrinterOutlined } from "@ant-design/icons"
 import { Button, Spin } from "antd"
 import { createPortal } from "react-dom"
 import { InvoicePrintDocument } from "./InvoicePrintDocument"
+import { INSTITUTION_PROVIDER_ID } from "@/core/constants/institution"
 import "./invoicePrintPreview.css"
-
-// Único proveedor/institución registrado en el sistema (mismo id usado en
-// los documentos clínicos imprimibles).
-const INSTITUTION_PROVIDER_ID = 32
 
 interface InvoicePrintPreviewModalProps {
   open: boolean

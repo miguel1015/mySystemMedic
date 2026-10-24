@@ -73,7 +73,7 @@ export const FieldRow = ({
   </>
 );
 
-export const INSTITUTION_PROVIDER_ID = 32;
+export { INSTITUTION_PROVIDER_ID } from "@/core/constants/institution";
 
 // Datos del paciente para el encabezado a partir de la admisión y del registro
 // del paciente (lo que falte en uno se toma del otro).

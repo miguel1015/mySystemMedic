@@ -21,47 +21,32 @@
   margin-top: 24px;
 }
 
+/* Tres columnas (logo | datos de la IPS | N° de historia) para que el logo no tape el texto.
+   Las laterales miden lo mismo, así los datos de la IPS quedan centrados en la hoja. */
 .hci-print-header {
-  position: relative;
-  min-height: 90px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
+  column-gap: 12px;
+  min-height: 115px;
   border-bottom: 2px solid #000;
   padding-bottom: 10px;
   margin-bottom: 14px;
 }
 
-/*
- * logoPdf.png is a 1024x1024 canvas with the actual artwork occupying only
- * a thin horizontal band (bbox ~161,439 to 868,586). object-fit:contain
- * scales to the full square canvas, so the visible logo looks tiny.
- * Instead we render the image oversized and clip it, zoomed into that band.
- */
+/* Caja del logo de "Datos IPS"; la imagen se ajusta dentro sin deformarse. */
 .hci-print-logo {
-  /* Bump this one number up/down to resize the logo; everything else follows. */
-  --logo-scale: 0.65;
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: calc(348px * var(--logo-scale));
-  height: calc(80px * var(--logo-scale));
-  overflow: hidden;
-}
-
-.hci-print-logo img {
-  position: absolute;
-  left: calc(-72px * var(--logo-scale));
-  top: calc(-206px * var(--logo-scale));
-  width: calc(491px * var(--logo-scale));
-  height: calc(491px * var(--logo-scale));
-  max-width: none;
-  max-height: none;
+  grid-column: 1;
+  justify-self: start;
+  /* margin-left lo separa del borde de la hoja; si no cabe, la caja se angosta. */
+  margin-left: 15px;
+  width: calc(100% - 15px);
+  max-width: 260px;
+  height: 110px;
 }
 
 .hci-print-entity {
-  width: 100%;
+  grid-column: 2;
   text-align: center;
 }
 
@@ -72,10 +57,8 @@
 }
 
 .hci-print-hc-number {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  grid-column: 3;
+  justify-self: end;
   text-align: center;
   white-space: nowrap;
 }

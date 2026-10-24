@@ -67,8 +67,6 @@ export const AnesthesiaRecordPrintDocument = ({
   const units = useMemo<Unit[]>(() => {
     const list: Unit[] = [
       ...sectionUnits("fecha", "Fecha y hora", [
-        { label: "Fecha", value: formatDate(record.fechaInicio, "") },
-        { label: "Hora", value: formatTime(record.fechaInicio, "") },
         { label: "Fecha de terminación", value: formatDateTime(record.fechaTerminacion, "") },
         { label: "Fecha de realización", value: formatDateTime(record.fechaRealizacion, "") },
       ]),

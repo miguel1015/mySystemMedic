@@ -143,7 +143,7 @@ export function DischargeNoteContent({
 
   // Tab 2: Diagnósticos
   const [ambitoEgreso, setAmbitoEgreso] = useState<number | undefined>()
-  const [fechaEgreso, setFechaEgreso] = useState<Dayjs | null>(null)
+  const [fechaEgreso, setFechaEgreso] = useState<Dayjs | null>(() => dayjs())
   const [diag1Id, setDiag1Id] = useState<number | undefined>()
   const [diag1Label, setDiag1Label] = useState("")
   const [diag2Id, setDiag2Id] = useState<number | undefined>()
@@ -183,7 +183,7 @@ export function DischargeNoteContent({
     setJustificacion("")
     setOrdenes("")
     setAmbitoEgreso(undefined)
-    setFechaEgreso(null)
+    setFechaEgreso(dayjs())
     setDiag1Id(undefined)
     setDiag1Label("")
     setDiag2Id(undefined)
@@ -295,8 +295,7 @@ export function DischargeNoteContent({
       return
     }
     if (!fechaEgreso) {
-      messageApi.error("La fecha de egreso es obligatoria.")
-      setActiveTab("diagnoses")
+      messageApi.error("La fecha y hora de egreso son obligatorias.")
       return
     }
     if (!diag1Id) {
@@ -462,7 +461,7 @@ export function DischargeNoteContent({
       setCondicionSalida(diagnostico.condicionSalidaId)
     } else {
       setAmbitoEgreso(undefined)
-      setFechaEgreso(null)
+      setFechaEgreso(dayjs())
       setDiag1Id(undefined)
       setDiag1Label("")
       setDiag2Id(undefined)
@@ -582,6 +581,27 @@ export function DischargeNoteContent({
         </div>
       </div>
 
+      <div className="qx-section">
+        <div className="qx-section-header">
+          <span className="section-number">1</span>
+          <span className="section-title">Fecha y hora de egreso</span>
+        </div>
+        <div style={{ maxWidth: 280 }}>
+          <label style={labelStyle}>
+            Fecha y hora <span className="field-required">*</span>
+          </label>
+          <DatePicker
+            showTime
+            format="DD/MM/YYYY HH:mm"
+            value={fechaEgreso}
+            onChange={setFechaEgreso}
+            style={{ width: "100%" }}
+            placeholder="Seleccione fecha y hora"
+            disabledDate={(current) => current && current.isAfter(dayjs())}
+          />
+        </div>
+      </div>
+
       <nav className="clinical-section-tabs" aria-label="Secciones nota de egreso">
         {dischargeTabs.map((tab) => (
           <button
@@ -604,7 +624,7 @@ export function DischargeNoteContent({
             {/* Signos vitales */}
             <div className="qx-section" style={{ padding: "0 0 20px", marginBottom: 20, borderBottom: "1px solid var(--dash-border-subtle, #eef2f1)" }}>
               <div className="qx-section-header">
-                <span className="section-number">1</span>
+                <span className="section-number">2</span>
                 <span className="section-title">Signos vitales</span>
               </div>
               <div className="evo-vitals-grid">
@@ -677,18 +697,6 @@ export function DischargeNoteContent({
                     onChange={setAmbitoEgreso}
                     style={{ width: "100%" }}
                     loading={catalogsLoading}
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>Fecha de egreso <span className="field-required">*</span></label>
-                  <DatePicker
-                    showTime
-                    format="DD/MM/YYYY HH:mm"
-                    value={fechaEgreso}
-                    onChange={setFechaEgreso}
-                    style={{ width: "100%" }}
-                    placeholder="Seleccione fecha y hora"
-                    disabledDate={(current) => current && current.isAfter(dayjs())}
                   />
                 </div>
               </div>

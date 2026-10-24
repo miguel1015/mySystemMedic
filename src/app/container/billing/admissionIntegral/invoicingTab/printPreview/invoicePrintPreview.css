@@ -38,39 +38,31 @@
   padding: 0 0 10px;
 }
 
+/* Tres columnas (logo | datos de la IPS | N° de factura) para que el logo no tape el texto.
+   Las laterales miden lo mismo, así los datos de la IPS quedan centrados en la hoja. */
 .invoice-print-header {
-  position: relative;
-  min-height: 84px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
+  column-gap: 12px;
+  min-height: 105px;
   padding-bottom: 10px;
   margin-bottom: 10px;
 }
 
+/* Caja del logo de "Datos IPS"; la imagen se ajusta dentro sin deformarse. */
 .invoice-print-logo {
-  --logo-scale: 0.6;
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: calc(348px * var(--logo-scale));
-  height: calc(80px * var(--logo-scale));
-  overflow: hidden;
-}
-
-.invoice-print-logo img {
-  position: absolute;
-  left: calc(-72px * var(--logo-scale));
-  top: calc(-206px * var(--logo-scale));
-  width: calc(491px * var(--logo-scale));
-  height: calc(491px * var(--logo-scale));
-  max-width: none;
-  max-height: none;
+  grid-column: 1;
+  justify-self: start;
+  /* margin-left lo separa del borde de la hoja; si no cabe, la caja se angosta. */
+  margin-left: 15px;
+  width: calc(100% - 15px);
+  max-width: 240px;
+  height: 100px;
 }
 
 .invoice-print-entity {
-  width: 100%;
+  grid-column: 2;
   text-align: center;
 }
 
@@ -85,10 +77,8 @@
 }
 
 .invoice-print-badge {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  grid-column: 3;
+  justify-self: end;
   text-align: center;
   white-space: nowrap;
 }

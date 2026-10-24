@@ -4,6 +4,7 @@ import { BillingMovementResponse } from "@/core/interfaces/care/billing"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import type { GetPatient } from "@/core/interfaces/care/types"
 import type { Insurance, TProvider } from "@/core/interfaces/parameterization/types"
+import { InstitutionLogo } from "@/components/print/InstitutionLogo"
 import { Fragment, useMemo } from "react"
 import { calculateAge, currencyToWordsEs, formatCurrency, formatDate, formatDateTime } from "../../utils"
 import { InvoiceGroup, buildInvoiceGroups } from "../invoicePreviewGroups"
@@ -49,9 +50,7 @@ export const InvoicePrintDocument = ({
           <tr>
             <td className="invoice-print-header-cell" colSpan={6}>
               <div className="invoice-print-header">
-                <div className="invoice-print-logo">
-                  <img src="/assets/img/avatars/logoPdf.png" alt="Logo" />
-                </div>
+                <InstitutionLogo provider={provider} className="invoice-print-logo" />
                 <div className="invoice-print-entity">
                   <div className="invoice-print-entity-name">
                     {provider?.name || provider?.invoiceIssuerName || "Institución Prestadora de Salud"}
