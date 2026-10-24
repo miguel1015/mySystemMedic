@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { create } from "@/core/api/baseService"
 import { ENDPOINTS } from "@/core/api/endpoints"
+import { ADMISSION_NOTIFICATIONS_QUERY_KEY } from "@/core/hooks/notifications/useAdmissionNotifications"
 import {
   TriageCreateRequest,
   TriageResponse,
@@ -21,6 +22,7 @@ export function useCreateTriage() {
     mutationFn: triageCreateService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["triages"] })
+      queryClient.invalidateQueries({ queryKey: ADMISSION_NOTIFICATIONS_QUERY_KEY })
     },
   })
 }

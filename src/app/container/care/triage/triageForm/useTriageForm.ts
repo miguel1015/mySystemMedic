@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -18,6 +19,11 @@ import {
   PatientNotFoundError,
   patientByDocumentService,
 } from "@/core/hooks/care/triage/useSearchPatientByDocument";
+import {
+  ADMISSION_NOTIFICATIONS_QUERY_KEY,
+  notifyAdmission,
+  notifyAdmissionOnExit,
+} from "@/core/hooks/notifications/useAdmissionNotifications";
 
 export type SearchErrorType = "not-found" | "other";
 
@@ -139,6 +145,7 @@ interface UseTriageFormArgs {
 
 export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const createMutation = useCreateTriage();
   const updateMutation = useUpdateTriage();
 
@@ -150,6 +157,45 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
     document: string;
     triageId: number;
   } | null>(null);
+  const [notifyingAdmission, setNotifyingAdmission] = useState(false);
+
+  // Triage I a III con el modal "¿Admisionar?" sin responder. Si la persona se va sin elegir
+  // (cierra o recarga la pestaña, vuelve atrás) se avisa igual al admisionista, como si
+  // hubiera dicho que no: el paciente no puede quedar sin admisionar y sin aviso.
+  const unansweredTriageIdRef = useRef<number | null>(null);
+  unansweredTriageIdRef.current = admitPrompt?.triageId ?? null;
+
+  useEffect(() => {
+    if (!admitPrompt) return;
+
+    const warnBeforeLeaving = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const notifyOnExit = () => {
+      if (unansweredTriageIdRef.current !== null) {
+        notifyAdmissionOnExit(unansweredTriageIdRef.current);
+        unansweredTriageIdRef.current = null;
+      }
+    };
+
+    window.addEventListener("beforeunload", warnBeforeLeaving);
+    window.addEventListener("pagehide", notifyOnExit);
+    return () => {
+      window.removeEventListener("beforeunload", warnBeforeLeaving);
+      window.removeEventListener("pagehide", notifyOnExit);
+    };
+  }, [admitPrompt]);
+
+  // Salida dentro de la aplicación (botón atrás del navegador) con el modal abierto.
+  useEffect(
+    () => () => {
+      if (unansweredTriageIdRef.current !== null) {
+        notifyAdmissionOnExit(unansweredTriageIdRef.current);
+      }
+    },
+    [],
+  );
 
   const { control, handleSubmit, reset, watch } = useForm<TriageFormValues>({
     resolver: zodResolver(triageSchema),
@@ -315,18 +361,38 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
   const submitSave = handleSubmit(onSubmit, onInvalid);
 
   const confirmAdmit = () => {
-    if (!admitPrompt) return;
+    if (!admitPrompt || notifyingAdmission) return;
     const params = new URLSearchParams({
       document: admitPrompt.document,
       triageId: String(admitPrompt.triageId),
     });
+    unansweredTriageIdRef.current = null;
     setAdmitPrompt(null);
     router.push(`/care/admissions/new?${params.toString()}`);
   };
 
-  const cancelAdmit = () => {
-    setAdmitPrompt(null);
-    router.push("/care/triage");
+  // "No", la X o Esc: se avisa al admisionista con el modal urgente.
+  const cancelAdmit = async () => {
+    if (!admitPrompt || notifyingAdmission) return;
+
+    setNotifyingAdmission(true);
+    try {
+      await notifyAdmission(admitPrompt.triageId);
+      queryClient.invalidateQueries({ queryKey: ADMISSION_NOTIFICATIONS_QUERY_KEY });
+      toast.success("Se notificó al admisionista");
+      unansweredTriageIdRef.current = null;
+      setAdmitPrompt(null);
+      router.push("/care/triage");
+    } catch (err) {
+      // El modal sigue abierto para reintentar o admisionar directamente.
+      toast.error(
+        err instanceof Error && err.message
+          ? `No se pudo notificar al admisionista: ${err.message}`
+          : "No se pudo notificar al admisionista. Intenta nuevamente.",
+      );
+    } finally {
+      setNotifyingAdmission(false);
+    }
   };
 
   return {
@@ -344,6 +410,7 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
     isSubmitting: createMutation.isPending || updateMutation.isPending,
     editingTriage: mode === "edit" ? (initialTriage ?? null) : null,
     admitPromptOpen: admitPrompt !== null,
+    notifyingAdmission,
     confirmAdmit,
     cancelAdmit,
   };

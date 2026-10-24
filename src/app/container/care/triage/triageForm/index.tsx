@@ -100,6 +100,7 @@ export default function TriageForm({
     isSubmitting,
     editingTriage,
     admitPromptOpen,
+    notifyingAdmission,
     confirmAdmit,
     cancelAdmit,
   } = useTriageForm({ mode, initialTriage });
@@ -361,11 +362,18 @@ export default function TriageForm({
       onOk={confirmAdmit}
       onCancel={cancelAdmit}
       okText="Sí, admisionar"
-      cancelText="No, ir al listado"
+      cancelText="No, notificar al admisionista"
+      maskClosable={false}
+      okButtonProps={{ disabled: notifyingAdmission }}
+      cancelButtonProps={{ loading: notifyingAdmission }}
     >
       <p>
         El triage se guardó correctamente. Debido a la prioridad asignada,
         ¿desea continuar con el registro de admisión de este paciente?
+      </p>
+      <p style={{ marginBottom: 0, color: "var(--dash-text-tertiary, #8c8c8c)" }}>
+        Si elige no hacerlo ahora, se le avisará al admisionista para que lo
+        admisione.
       </p>
     </Modal>
     </>

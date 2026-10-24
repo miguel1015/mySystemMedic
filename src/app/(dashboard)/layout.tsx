@@ -5,6 +5,7 @@ import SidebarNav from "@/components/Layout/Dashboard/Sidebar/SidebarNav";
 import SidebarOverlay from "@/components/Layout/Dashboard/Sidebar/SidebarOverlay";
 import SidebarProvider from "@/components/Layout/Dashboard/SidebarProvider";
 import RouteGuard from "@/components/Layout/Dashboard/RouteGuard";
+import AdmissionNotificationsProvider from "@/components/notifications/AdmissionNotificationsProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/option";
 import LayoutLoading from "./layoutLoading";
@@ -21,27 +22,29 @@ export default async function Layout({
 
   return (
     <LayoutLoading userId={userId}>
-      <SidebarProvider>
-        <SidebarOverlay />
-        <Sidebar>
-          <div className="sidebar-nav flex-fill">
-            <SidebarNav id={userId} />
-          </div>
-          <SidebarAccount
-            initialTheme={currentTheme}
-            user={session?.user ?? {}}
-          />
-        </Sidebar>
-        <div className="wrapper dash-layout-wrapper">
-          <div className="dash-content-area">
-            <div className="dash-content-inner">
-              <RouteGuard>{children}</RouteGuard>
+      <AdmissionNotificationsProvider>
+        <SidebarProvider>
+          <SidebarOverlay />
+          <Sidebar>
+            <div className="sidebar-nav flex-fill">
+              <SidebarNav id={userId} />
+            </div>
+            <SidebarAccount
+              initialTheme={currentTheme}
+              user={session?.user ?? {}}
+            />
+          </Sidebar>
+          <div className="wrapper dash-layout-wrapper">
+            <div className="dash-content-area">
+              <div className="dash-content-inner">
+                <RouteGuard>{children}</RouteGuard>
+              </div>
             </div>
           </div>
-        </div>
-        <SidebarEdgeTab />
-        <SidebarOverlay />
-      </SidebarProvider>
+          <SidebarEdgeTab />
+          <SidebarOverlay />
+        </SidebarProvider>
+      </AdmissionNotificationsProvider>
     </LayoutLoading>
   );
 }

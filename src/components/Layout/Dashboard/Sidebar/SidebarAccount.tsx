@@ -1,6 +1,7 @@
 "use client";
 
 import { useSidebar } from "@/components/Layout/Dashboard/SidebarProvider";
+import NotificationBell from "@/components/notifications/NotificationBell";
 import { COLOR_PALETTES } from "@/themes/colorPalettes";
 import { Theme } from "@/themes/enum";
 import { useAppTheme } from "@/themes/antdTheme";
@@ -69,6 +70,7 @@ export default function SidebarAccount({
           <strong>{userName}</strong>
           <small>{profileName}</small>
         </span>
+        <NotificationBell />
       </div>
 
       <button
