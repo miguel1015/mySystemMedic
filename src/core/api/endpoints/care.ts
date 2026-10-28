@@ -129,6 +129,22 @@ export const CARE_ENDPOINTS = {
     UPDATE: (id: IdParam) => `/api/auth/care/estudios-rayos-x/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/estudios-rayos-x/${id}`,
   },
+  RESULTADOS_LABORATORIO: {
+    CATALOGO: (admissionId: IdParam) =>
+      `/api/auth/care/resultados-laboratorio/catalogo?admissionId=${admissionId}`,
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/resultados-laboratorio/by-admission/${admissionId}`,
+    CREATE: "/api/auth/care/resultados-laboratorio",
+    GET_BY_ID: (id: IdParam) => `/api/auth/care/resultados-laboratorio/${id}`,
+    UPDATE: (id: IdParam) => `/api/auth/care/resultados-laboratorio/${id}`,
+    DELETE: (id: IdParam) => `/api/auth/care/resultados-laboratorio/${id}`,
+    EXCEL: (id: IdParam, providerId: IdParam) =>
+      `/api/auth/care/resultados-laboratorio/${id}/excel?providerId=${providerId}`,
+    PLANTILLA: (admissionId: IdParam, codigo: string, providerId: IdParam) =>
+      `/api/auth/care/resultados-laboratorio/plantilla?admissionId=${admissionId}&codigo=${encodeURIComponent(codigo)}&providerId=${providerId}`,
+    IMPORTAR: (admissionId: IdParam) =>
+      `/api/auth/care/resultados-laboratorio/importar?admissionId=${admissionId}`,
+  },
   RECORDS_ANESTESIA: {
     GET_BY_ADMISSION: (admissionId: IdParam) =>
       `/api/auth/care/records-anestesia/by-admission/${admissionId}`,

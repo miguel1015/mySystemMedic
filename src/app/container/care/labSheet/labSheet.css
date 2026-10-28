@@ -98,3 +98,90 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+
+.lab-print-results .lab-print-section-row td {
+  background: #f7f7f7;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.lab-print-results td.lab-print-flagged {
+  font-weight: bold;
+}
+
+.lab-print-multiline {
+  font-size: 9.5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ── Tabla de resultados (pantalla) ── */
+.lab-results-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 1px solid var(--dash-border, #e5e7eb);
+  padding-bottom: 8px;
+  margin: 8px 0 14px;
+}
+
+.lab-results-scroll {
+  overflow-x: auto;
+}
+
+.lab-results-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.lab-results-table th,
+.lab-results-table td {
+  border-bottom: 1px solid var(--dash-border, #e5e7eb);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.lab-results-table th {
+  background: var(--theme-primary, #0F6F5C);
+  color: #fff;
+  font-weight: 600;
+}
+
+.lab-results-table .lab-results-section td {
+  background: rgba(8, 151, 156, 0.08);
+  color: #08979c;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 12px;
+}
+
+.lab-results-name {
+  font-weight: 500;
+  color: var(--dash-text-primary, #111827);
+}
+
+.lab-results-calc {
+  margin-left: 6px;
+  font-size: 11px;
+}
+
+.lab-results-input {
+  min-width: 130px;
+}
+
+.lab-results-absolute {
+  font-size: 12px;
+  color: var(--dash-text-secondary, #6b7280);
+  white-space: nowrap;
+}
+
+.lab-warning-list {
+  margin: 0;
+  padding-left: 18px;
+}

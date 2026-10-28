@@ -1,6 +1,11 @@
 "use client"
 
-import { useMemo } from "react"
+import { Fragment, useMemo } from "react"
+import type {
+  EstudioCatalogo,
+  ResultadoAnalitoResponse,
+  ResultadoLaboratorioResponse,
+} from "@/core/interfaces/care/laboratorio"
 import type { TProvider } from "@/core/interfaces/parameterization/types"
 import { formatDate, formatDateTime, formatTime } from "@/core/utils/date"
 import { ClinicalDocumentHeader } from "../clinicalRecords/initialClinicalHistory/printPreview/ClinicalDocumentHeader"
@@ -15,8 +20,7 @@ import {
 } from "../clinicalRecords/initialClinicalHistory/printPreview/printPagination"
 import "../clinicalRecords/initialClinicalHistory/printPreview/hciPrintPreview.css"
 import "./labSheet.css"
-import { findLabStudy, formatReference, formatResultValue } from "./labStudies"
-import type { LabRecord } from "./types"
+import { STATUS_LABEL, absoluteCount, formatNumber, fromResultRequests, labStatus } from "./labResults.utils"
 
 interface Props {
   provider?: TProvider
@@ -24,7 +28,9 @@ interface Props {
   admissionId?: string | number
   admissionDate: string
   contractName: string
-  record: LabRecord
+  record: ResultadoLaboratorioResponse
+  // Catálogo del estudio: da las secciones, los decimales y los valores críticos.
+  study?: EstudioCatalogo
 }
 
 export const LabResultPrintDocument = ({
@@ -34,6 +40,7 @@ export const LabResultPrintDocument = ({
   admissionDate,
   contractName,
   record,
+  study,
 }: Props) => {
   const headerBlock = (
     <ClinicalDocumentHeader
@@ -50,13 +57,13 @@ export const LabResultPrintDocument = ({
   )
 
   const units = useMemo<Unit[]>(() => {
-    const study = findLabStudy(record.studyId)
+    const values = fromResultRequests(record.resultados)
 
     const list: Unit[] = [
-      { label: "Estudio realizado", value: `${record.studyCode} - ${record.studyName}` },
+      { label: "Estudio realizado", value: `${record.codigoEstudio} - ${record.nombreEstudio}` },
       { label: "Fecha y hora de toma", value: formatDateTime(record.fechaToma, "") },
       { label: "Fecha del registro", value: formatDateTime(record.updatedAt, "") },
-      { label: "Personal de salud", value: record.professionalName },
+      { label: "Profesional responsable", value: record.nombreProfesional },
     ].map((row, index) => ({
       kind: "field" as const,
       id: `estudio-${index}`,
@@ -67,10 +74,37 @@ export const LabResultPrintDocument = ({
       value: row.value,
     }))
 
-    const rows = (study?.fields ?? []).map((field) => ({
-      field,
-      value: formatResultValue(field, record.resultados[field.key]),
-    }))
+    // Las filas se agrupan por las secciones del catálogo; lo que no esté en él va al final.
+    const sections = study?.secciones ?? []
+    const sectionOf = (r: ResultadoAnalitoResponse) =>
+      study?.analitos.find((a) => a.clave === r.clave)?.seccion ?? ""
+    const groups = [...sections, ""]
+      .map((title) => ({ title, rows: record.resultados.filter((r) => sectionOf(r) === title) }))
+      .filter((g) => g.rows.length > 0)
+
+    const renderValue = (r: ResultadoAnalitoResponse) => {
+      if (r.texto) return { text: r.texto, flag: "" }
+      if (r.valor === null) return { text: "", flag: "" }
+
+      const analito = study?.analitos.find((a) => a.clave === r.clave)
+      // El rango es el que se guardó con el resultado; los críticos vienen del catálogo.
+      const status = labStatus(
+        {
+          referenciaMin: r.referenciaMin,
+          referenciaMax: r.referenciaMax,
+          criticoBajo: analito?.criticoBajo ?? null,
+          criticoAlto: analito?.criticoAlto ?? null,
+        },
+        r.valor,
+      )
+      const absolute = absoluteCount(values, r.clave)
+      return {
+        text:
+          formatNumber(r.valor, analito?.decimales) +
+          (absolute !== null ? ` (≈ ${formatNumber(absolute, 0)} /mm³)` : ""),
+        flag: status && status !== "normal" ? STATUS_LABEL[status] : "",
+      }
+    }
 
     list.push({
       kind: "block",
@@ -81,26 +115,54 @@ export const LabResultPrintDocument = ({
           <table className="lab-print-results">
             <thead>
               <tr>
-                <th style={{ width: "32%" }}>Parámetro</th>
+                <th style={{ width: "30%" }}>Analito</th>
                 <th>Resultado</th>
-                <th style={{ width: "24%" }}>Valor de referencia</th>
+                <th style={{ width: "13%" }}>Unidad</th>
+                <th style={{ width: "26%" }}>Valores de referencia</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ field, value }) => (
-                <tr key={field.key}>
-                  <td>{field.label}</td>
-                  <td className={field.type === "textarea" ? "lab-print-multiline" : undefined}>
-                    {value || emptyDash}
-                  </td>
-                  <td>{formatReference(field) || emptyDash}</td>
-                </tr>
+              {groups.map((group) => (
+                <Fragment key={group.title || "otros"}>
+                  {group.title && (
+                    <tr className="lab-print-section-row">
+                      <td colSpan={4}>{group.title}</td>
+                    </tr>
+                  )}
+                  {group.rows.map((r) => {
+                    const { text, flag } = renderValue(r)
+                    return (
+                      <tr key={r.clave}>
+                        <td>{r.nombre}</td>
+                        <td className={flag ? "lab-print-flagged" : undefined}>
+                          {text || emptyDash}
+                          {flag && ` · ${flag}`}
+                        </td>
+                        <td>{r.texto ? emptyDash : r.unidad || emptyDash}</td>
+                        <td>{r.referencia || emptyDash}</td>
+                      </tr>
+                    )
+                  })}
+                </Fragment>
               ))}
             </tbody>
           </table>
         </div>
       ),
     })
+
+    if (record.observaciones) {
+      list.push({
+        kind: "block",
+        id: "observaciones",
+        node: (
+          <div className="hci-print-section">
+            <div className="hci-print-section-title">Observaciones</div>
+            <div className="lab-print-multiline">{record.observaciones}</div>
+          </div>
+        ),
+      })
+    }
 
     list.push({
       kind: "block",
@@ -109,18 +171,18 @@ export const LabResultPrintDocument = ({
         <div className="lab-print-signature">
           <div className="hci-print-signature-box">
             <div className="hci-print-signature-img">
-              {record.professionalSignature && (
-                <img src={record.professionalSignature} alt="Firma del profesional" />
+              {record.firmaProfesional && (
+                <img src={record.firmaProfesional} alt="Firma del profesional" />
               )}
             </div>
             <div className="hci-print-signature-line">
-              {record.professionalName?.toUpperCase() || emptyDash}
+              {record.nombreProfesional?.toUpperCase() || emptyDash}
             </div>
             <div className="hci-print-signature-meta">
-              {record.professionalProfile || "Personal de salud"}
+              {record.perfilProfesional || "Personal de salud"}
             </div>
             <div className="hci-print-signature-meta">
-              Tarjeta profesional N° {record.professionalLicense || emptyDash}
+              Tarjeta profesional N° {record.tarjetaProfesional || emptyDash}
             </div>
           </div>
         </div>
@@ -128,7 +190,7 @@ export const LabResultPrintDocument = ({
     })
 
     return list
-  }, [record])
+  }, [record, study])
 
   const { pages, measuringPass } = usePaginatedUnits(units, headerBlock)
 
