@@ -11,6 +11,7 @@ import toast from "react-hot-toast"
 import AdmissionsForm from "./admissionsForm"
 import AdmissionsTable from "./table"
 import AdmissionHistoryModal from "./admissionHistoryModal"
+import FuripsForm from "@/app/container/billing/furips/FuripsForm"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import {
   AdmissionSearchCriteria,
@@ -30,6 +31,8 @@ export default function AdmissionsContainer() {
   const [editingAdmission, setEditingAdmission] =
     useState<AdmissionResponse | null>(null)
   const [historyAdmission, setHistoryAdmission] =
+    useState<AdmissionResponse | null>(null)
+  const [furipsAdmission, setFuripsAdmission] =
     useState<AdmissionResponse | null>(null)
   const [searchField, setSearchField] = useState<SearchField>("documento")
   const [searchTerm, setSearchTerm] = useState("")
@@ -121,6 +124,7 @@ export default function AdmissionsContainer() {
           isLoading={isFetching}
           onEdit={handleEdit}
           onHistory={setHistoryAdmission}
+          onFurips={setFuripsAdmission}
         />
       ) : (
         <Empty
@@ -137,6 +141,26 @@ export default function AdmissionsContainer() {
         size="xl"
       >
         <AdmissionsForm initialAdmission={editingAdmission} onDone={handleClose} />
+      </Modal>
+
+      <Modal
+        open={!!furipsAdmission}
+        onClose={() => setFuripsAdmission(null)}
+        title={
+          furipsAdmission
+            ? `Información del accidente (FURIPS) · Admisión ${furipsAdmission.id} · ${furipsAdmission.nombrePaciente}`
+            : "Información del accidente (FURIPS)"
+        }
+        size="xl"
+      >
+        {furipsAdmission && (
+          <FuripsForm
+            key={furipsAdmission.id}
+            admissionId={furipsAdmission.id}
+            mode="admission"
+            onClose={() => setFuripsAdmission(null)}
+          />
+        )}
       </Modal>
 
       <AdmissionHistoryModal

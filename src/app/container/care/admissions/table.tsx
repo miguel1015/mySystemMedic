@@ -32,6 +32,7 @@ interface AdmissionsTableProps {
   isLoading: boolean;
   onEdit?: (admission: AdmissionResponse) => void;
   onHistory?: (admission: AdmissionResponse) => void;
+  onFurips?: (admission: AdmissionResponse) => void;
   // Si se omite, la tabla es de solo consulta (sin columna de acciones).
   withActions?: boolean;
   emptyText?: string;
@@ -39,7 +40,6 @@ interface AdmissionsTableProps {
 
 // Opciones que aún no tienen módulo propio.
 const PENDING_ACTIONS: Partial<Record<AdmissionAction, string>> = {
-  furips: "Información del accidente (FURIPS)",
   companion: "Ingresar acompañante",
   referral: "Remisión",
 };
@@ -49,6 +49,7 @@ export default function AdmissionsTable({
   isLoading,
   onEdit,
   onHistory,
+  onFurips,
   withActions = true,
   emptyText = "No existen registros para los criterios de búsqueda",
 }: AdmissionsTableProps) {
@@ -78,6 +79,9 @@ export default function AdmissionsTable({
       case "history":
         onHistory?.(record);
         break;
+      case "furips":
+        onFurips?.(record);
+        break;
       case "delete":
         setAdmissionToDelete(record);
         break;
@@ -98,7 +102,7 @@ export default function AdmissionsTable({
       disabled: !record.isActive,
     },
     { key: "history", icon: <HistoryOutlined />, label: "Historial de admisiones" },
-    { key: "furips", icon: <CarOutlined />, label: PENDING_ACTIONS.furips },
+    { key: "furips", icon: <CarOutlined />, label: "Información del accidente (FURIPS)" },
     { key: "companion", icon: <UserAddOutlined />, label: PENDING_ACTIONS.companion },
     { key: "referral", icon: <SendOutlined />, label: PENDING_ACTIONS.referral },
     { type: "divider" },

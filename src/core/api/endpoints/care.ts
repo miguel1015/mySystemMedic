@@ -146,6 +146,15 @@ export const CARE_ENDPOINTS = {
     IMPORTAR: (admissionId: IdParam) =>
       `/api/auth/care/resultados-laboratorio/importar?admissionId=${admissionId}`,
   },
+  FURIPS: {
+    CREATE: "/api/auth/care/furips",
+    UPDATE: (id: IdParam) => `/api/auth/care/furips/${id}`,
+    GET_BY_ADMISSION: (admissionId: IdParam) =>
+      `/api/auth/care/furips/by-admission/${admissionId}`,
+    SEARCH: (params: string) => `/api/auth/care/furips/search?${params}`,
+    DATOS_SISTEMA: (admissionId: IdParam, providerId: IdParam) =>
+      `/api/auth/care/furips/datos-sistema/${admissionId}?providerId=${providerId}`,
+  },
   RECORDS_ANESTESIA: {
     GET_BY_ADMISSION: (admissionId: IdParam) =>
       `/api/auth/care/records-anestesia/by-admission/${admissionId}`,
