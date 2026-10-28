@@ -3,35 +3,23 @@
 import { formatCurrency, formatDate } from "@/app/container/billing/admissionIntegral/utils"
 import { Container } from "@/components/container"
 import Title from "@/components/title"
-import { INSTITUTION_PROVIDER_ID } from "@/app/container/care/clinicalRecords/initialClinicalHistory/printPreview/printDocument.utils"
-import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import {
   useDownloadAttachedDocument,
   useGetElectronicInvoiceAttachedDocument,
   useGetElectronicInvoiceById,
 } from "@/core/hooks/care/billing/useElectronicInvoiceDocuments"
-import { useGetBillingMovementsByAdmission } from "@/core/hooks/care/billing/useGetBillingMovementsByAdmission"
-import { useGetDatosClinicosEgresoByAdmission } from "@/core/hooks/care/dischargeNote/useGetDatosClinicosEgresoByAdmission"
-import { useGetDiagnosticosEgresoByIds } from "@/core/hooks/care/dischargeNote/useGetDiagnosticosEgresoByIds"
-import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission"
-import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
-import { useGetProvider } from "@/core/hooks/parameterization/providers/useGetProvider"
-import { useGetUserById } from "@/core/hooks/users/useGetByIdUser"
-import { useGetProfessionals } from "@/core/hooks/users/useGetProfessionals"
 import type { BillingMovementResponse } from "@/core/interfaces/care/billing"
 import {
   ArrowLeftOutlined,
   CloudUploadOutlined,
   CopyOutlined,
   DownloadOutlined,
-  ExclamationCircleOutlined,
   SolutionOutlined,
 } from "@ant-design/icons"
 import {
   Alert,
   Badge,
   Button,
-  Collapse,
   Col,
   Descriptions,
   Empty,
@@ -48,9 +36,10 @@ import type { ColumnsType } from "antd/es/table"
 import { useRouter } from "next/navigation"
 import { useMemo } from "react"
 import { parseFevXml } from "./parseFevXml"
+import { RipsIssuesPanel } from "./RipsIssuesPanel"
 import { RipsStatusTag } from "./RipsStatusTag"
+import { useRipsSources } from "./useRipsSources"
 import {
-  RipsMissingField,
   RipsServiceGroupKey,
   RipsServicios,
   buildRips,
@@ -319,49 +308,16 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
   } = useGetElectronicInvoiceAttachedDocument(invoice?.id ?? null)
   const downloadXml = useDownloadAttachedDocument()
 
-  const { data: admission, isLoading: isLoadingAdmission } = useGetAdmissionById(admissionId)
-  const { data: patient, isLoading: isLoadingPatient } = useGetPatientById(
-    admission?.patientId ?? null,
-  )
-  const { data: provider, isLoading: isLoadingProvider } = useGetProvider(INSTITUTION_PROVIDER_ID)
-  const { data: movements = [], isLoading: isLoadingMovements } =
-    useGetBillingMovementsByAdmission(admissionId)
-  const { data: hcInicial, isLoading: isLoadingHc } = useGetHCInicialByAdmission(
-    admissionId ?? undefined,
-  )
-  const { data: dischargeRecords = [], isLoading: isLoadingDischarge } =
-    useGetDatosClinicosEgresoByAdmission(admissionId ?? undefined)
-
-  const activeDischarge = useMemo(
-    () => dischargeRecords.find((record) => record.isActive) ?? dischargeRecords[0] ?? null,
-    [dischargeRecords],
-  )
-  const { data: diagnosticosEgresoData, isLoading: isLoadingDiagnosticosEgreso } =
-    useGetDiagnosticosEgresoByIds([activeDischarge?.diagnosticoEgresoId])
-  const diagnosticoEgreso = diagnosticosEgresoData[0] ?? null
-
-  // Médico de la HC inicial: respaldo para los cargos sin profesional. La lista de
-  // profesionales la ve cualquier rol; el detalle por id solo los administradores.
-  const { data: professionals = [] } = useGetProfessionals()
-  const { data: professionalUser } = useGetUserById(hcInicial?.userId ?? 0)
-  const hcProfessional = useMemo(() => {
-    const listed = professionals.find((item) => item.id === hcInicial?.userId)
-    if (listed) {
-      return {
-        documentTypeCode: listed.documentTypeCode,
-        documentNumber: listed.documentNumber,
-        name: hcInicial?.nombreProfesional ?? listed.fullName,
-      }
-    }
-    if (professionalUser) {
-      return {
-        documentTypeCode: professionalUser.documentTypeCode ?? null,
-        documentNumber: professionalUser.documentNumber ?? null,
-        name: hcInicial?.nombreProfesional ?? null,
-      }
-    }
-    return null
-  }, [professionals, professionalUser, hcInicial])
+  const {
+    admission,
+    patient,
+    provider,
+    movements,
+    diagnosticosIngreso,
+    diagnosticoEgreso,
+    hcProfessional,
+    isLoading: isLoadingSources,
+  } = useRipsSources(admissionId)
 
   // Factura leída del XML para cruzarla con el RIPS. Mientras carga queda undefined (no se
   // valida); si no hay XML o no se puede leer, null.
@@ -370,15 +326,7 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
     return parseFevXml(attachedDocument?.base64)
   }, [isLoadingAttached, attachedDocument])
 
-  const isLoading =
-    isLoadingInvoices ||
-    isLoadingAdmission ||
-    isLoadingPatient ||
-    isLoadingProvider ||
-    isLoadingMovements ||
-    isLoadingHc ||
-    isLoadingDischarge ||
-    isLoadingDiagnosticosEgreso
+  const isLoading = isLoadingInvoices || isLoadingSources
 
   const result = useMemo(() => {
     if (!invoice || !admission) return null
@@ -388,12 +336,12 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
       patient,
       provider,
       movements,
-      diagnosticosIngreso: hcInicial?.analisisDiagnosticosPlan?.diagnosticos ?? [],
+      diagnosticosIngreso,
       diagnosticoEgreso,
       professional: hcProfessional,
       fev,
     })
-  }, [invoice, admission, patient, provider, movements, hcInicial, diagnosticoEgreso, hcProfessional, fev])
+  }, [invoice, admission, patient, provider, movements, diagnosticosIngreso, diagnosticoEgreso, hcProfessional, fev])
 
   const serviceRows = useMemo(
     () => (result ? buildServiceRows(result.rips.usuarios[0].servicios, movements) : null),
@@ -436,19 +384,6 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
   }
 
   const usuario = result?.rips.usuarios[0]
-
-  const missingByGroup = useMemo(() => {
-    const groups = new Map<string, RipsMissingField[]>()
-    for (const item of result?.missing ?? []) {
-      const list = groups.get(item.group) ?? []
-      list.push(item)
-      groups.set(item.group, list)
-    }
-    return Array.from(groups.entries())
-  }, [result])
-
-  const errorCount = result?.missing.filter((item) => item.severity === "error").length ?? 0
-  const warningCount = (result?.missing.length ?? 0) - errorCount
 
   const serviceTabs = serviceRows
     ? GROUP_ORDER.filter((group) => serviceRows[group].length > 0).map((group) => ({
@@ -748,51 +683,7 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
             </Col>
           </Row>
 
-          {result.missing.length > 0 && (
-            <Collapse
-              style={{ marginBottom: 16 }}
-              items={[
-                {
-                  key: "missing",
-                  label: (
-                    <Space wrap>
-                      <ExclamationCircleOutlined
-                        style={{ color: errorCount > 0 ? "#dc2626" : "#d97706" }}
-                      />
-                      <span>
-                        {errorCount > 0
-                          ? `${errorCount} errores que el MUV rechazaría`
-                          : "Sin errores de rechazo detectados"}
-                        {warningCount > 0 && ` · ${warningCount} avisos`}
-                      </span>
-                    </Space>
-                  ),
-                  children: (
-                    <Row gutter={[24, 16]}>
-                      {missingByGroup.map(([group, items]) => (
-                        <Col key={group} xs={24} md={12} xl={8}>
-                          <strong>{group}</strong>
-                          <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
-                            {items.map((item) => (
-                              <li key={`${item.field}-${item.reason}`}>
-                                <Tag
-                                  color={item.severity === "error" ? "error" : "warning"}
-                                  style={{ marginInlineEnd: 6 }}
-                                >
-                                  {item.severity === "error" ? "Error" : "Aviso"}
-                                </Tag>
-                                <span style={monoStyle}>{item.field}</span>: {item.reason}
-                              </li>
-                            ))}
-                          </ul>
-                        </Col>
-                      ))}
-                    </Row>
-                  ),
-                },
-              ]}
-            />
-          )}
+          <RipsIssuesPanel missing={result.missing} style={{ marginBottom: 16 }} />
 
           <div style={sectionCardStyle}>
             <Tabs items={mainTabs} />

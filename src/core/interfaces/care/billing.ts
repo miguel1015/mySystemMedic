@@ -107,6 +107,10 @@ export type BillingMovementUpdateRequest = Omit<
   "admissionId"
 >
 
+export interface BillingMovementBatchUpdateRequest {
+  items: (BillingMovementUpdateRequest & { id: number })[]
+}
+
 export interface ElectronicInvoiceResponse {
   id: number
   admissionId: number

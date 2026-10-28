@@ -7,7 +7,13 @@ import type {
   CupsRipsType,
   CupsSuggestion,
 } from "@/core/interfaces/parameterization/cups"
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  QueryClient,
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { credentials: "include", ...init })
@@ -37,6 +43,22 @@ export function useCupsSearch(search: string, type?: CupsRipsType, includeDisabl
     staleTime: Infinity,
     placeholderData: keepPreviousData,
   })
+}
+
+// CUPS con ese código exacto (incluye deshabilitados), o null si no está en la tabla. Comparte
+// la caché de useCupsSearch.
+export function fetchCupsByCode(
+  queryClient: QueryClient,
+  code: string,
+): Promise<CupsProcedure | null> {
+  const term = code.trim()
+  return queryClient
+    .fetchQuery({
+      queryKey: ["cups", "search", term, null, true],
+      queryFn: () => request<CupsProcedure[]>(ENDPOINTS.CUPS.SEARCH(term, undefined, true)),
+      staleTime: Infinity,
+    })
+    .then((items) => items.find((item) => item.code === term) ?? null)
 }
 
 // Con `referenceCode` el backend devuelve primero los CUPS que homologa el manual tarifario.

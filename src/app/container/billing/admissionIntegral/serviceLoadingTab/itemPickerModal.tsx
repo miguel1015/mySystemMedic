@@ -21,6 +21,7 @@ interface ItemPickerModalProps {
   items: PickerRow[]
   onClose: () => void
   onSelect: (item: PickerRow) => void
+  actionLabel?: string
 }
 
 const ItemPickerModal = ({
@@ -30,6 +31,7 @@ const ItemPickerModal = ({
   items,
   onClose,
   onSelect,
+  actionLabel = "Agregar",
 }: ItemPickerModalProps) => {
   const [search, setSearch] = useState("")
 
@@ -63,7 +65,7 @@ const ItemPickerModal = ({
           icon={<PlusOutlined />}
           onClick={() => onSelect(record)}
         >
-          Agregar
+          {actionLabel}
         </Button>
       ),
     },

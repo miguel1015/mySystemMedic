@@ -80,9 +80,8 @@ const AdmissionIntegralContainer = () => {
       ),
       children: (
         <RipsTab
-          admission={admission}
           admissionId={admissionId}
-          movements={movements}
+          readOnly={isInvoiced}
           onValidationChange={setRipsValidation}
         />
       ),

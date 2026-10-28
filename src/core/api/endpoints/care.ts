@@ -229,6 +229,7 @@ export const CARE_ENDPOINTS = {
       `/api/auth/care/billing-movements/by-admission/${admissionId}`,
     CREATE: "/api/auth/care/billing-movements",
     UPDATE: (id: IdParam) => `/api/auth/care/billing-movements/${id}`,
+    UPDATE_BATCH: "/api/auth/care/billing-movements/batch",
     DELETE: (id: IdParam) => `/api/auth/care/billing-movements/${id}`,
   },
   ELECTRONIC_INVOICE: {
