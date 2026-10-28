@@ -1,75 +1,125 @@
 "use client";
 
-import { Button, Input, Space, Spin, Table, Tag } from "antd";
+import { Button, Dropdown, Table, Tag } from "antd";
+import type { MenuProps } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useMemo, useState } from "react";
-import { SearchOutlined } from "@ant-design/icons";
+import { useState } from "react";
+import {
+  CarOutlined,
+  DeleteOutlined,
+  DownOutlined,
+  EditOutlined,
+  HistoryOutlined,
+  SendOutlined,
+  UserAddOutlined,
+} from "@ant-design/icons";
 import ModalConfirm from "@/components/modalConfirmation.tsx";
 import toast from "react-hot-toast";
 import { AdmissionResponse } from "@/core/interfaces/care/types";
 import { useDeleteAdmission } from "@/core/hooks/care/admissions/useDeleteAdmission";
 import { formatDateTime } from "@/core/utils/date";
 
+export type AdmissionAction =
+  | "edit"
+  | "history"
+  | "furips"
+  | "companion"
+  | "referral"
+  | "delete";
+
 interface AdmissionsTableProps {
   data: AdmissionResponse[];
   isLoading: boolean;
-  onEdit: (admission: AdmissionResponse) => void;
+  onEdit?: (admission: AdmissionResponse) => void;
+  onHistory?: (admission: AdmissionResponse) => void;
+  // Si se omite, la tabla es de solo consulta (sin columna de acciones).
+  withActions?: boolean;
+  emptyText?: string;
 }
+
+// Opciones que aún no tienen módulo propio.
+const PENDING_ACTIONS: Partial<Record<AdmissionAction, string>> = {
+  furips: "Información del accidente (FURIPS)",
+  companion: "Ingresar acompañante",
+  referral: "Remisión",
+};
 
 export default function AdmissionsTable({
   data,
   isLoading,
   onEdit,
+  onHistory,
+  withActions = true,
+  emptyText = "No existen registros para los criterios de búsqueda",
 }: AdmissionsTableProps) {
-  const [search, setSearch] = useState("");
-  const [openConfirm, setOpenConfirm] = useState(false);
-  const [admissionToDelete, setAdmissionToDelete] = useState<number | null>(
-    null,
-  );
+  const [admissionToDelete, setAdmissionToDelete] =
+    useState<AdmissionResponse | null>(null);
   const deleteAdmission = useDeleteAdmission();
-
-  const filtered = useMemo(() => {
-    const term = search.toLowerCase().trim();
-    return (data ?? []).filter((admission) => {
-      if (!term) return true;
-      return (
-        admission.nombrePaciente?.toLowerCase().includes(term) ||
-        admission.documentoPatiente?.toLowerCase().includes(term) ||
-        admission.epsNombre?.toLowerCase().includes(term) ||
-        admission.convenioNombre?.toLowerCase().includes(term)
-      );
-    });
-  }, [data, search]);
 
   const handleDelete = () => {
     if (!admissionToDelete) return;
-    deleteAdmission.mutate(admissionToDelete, {
+    deleteAdmission.mutate(admissionToDelete.id, {
       onSuccess: () => {
         toast.success("Admision eliminada correctamente");
-        setOpenConfirm(false);
         setAdmissionToDelete(null);
       },
       onError: (err: Error) => {
         toast.error(err.message);
-        setOpenConfirm(false);
         setAdmissionToDelete(null);
       },
     });
   };
 
+  const handleAction = (action: AdmissionAction, record: AdmissionResponse) => {
+    switch (action) {
+      case "edit":
+        onEdit?.(record);
+        break;
+      case "history":
+        onHistory?.(record);
+        break;
+      case "delete":
+        setAdmissionToDelete(record);
+        break;
+      default:
+        toast(`${PENDING_ACTIONS[action]}: funcionalidad en desarrollo`, {
+          icon: "🛠️",
+        });
+    }
+  };
+
+  // Editar y eliminar solo aplican a admisiones activas; las cerradas quedan
+  // para consulta del historial.
+  const buildMenu = (record: AdmissionResponse): MenuProps["items"] => [
+    {
+      key: "edit",
+      icon: <EditOutlined />,
+      label: "Editar admisión",
+      disabled: !record.isActive,
+    },
+    { key: "history", icon: <HistoryOutlined />, label: "Historial de admisiones" },
+    { key: "furips", icon: <CarOutlined />, label: PENDING_ACTIONS.furips },
+    { key: "companion", icon: <UserAddOutlined />, label: PENDING_ACTIONS.companion },
+    { key: "referral", icon: <SendOutlined />, label: PENDING_ACTIONS.referral },
+    { type: "divider" },
+    {
+      key: "delete",
+      icon: <DeleteOutlined />,
+      label: "Eliminar admisión",
+      danger: true,
+      disabled: !record.isActive,
+    },
+  ];
+
   const columns: ColumnsType<AdmissionResponse> = [
     {
-      title: "#",
-      width: 60,
+      title: "N° admisión",
+      dataIndex: "id",
+      width: 120,
       align: "center",
-      render: (_value, _record, index) => (
-        <span
-          style={{
-            fontWeight: 600,
-            color: "var(--dash-text-secondary, #6b7280)",
-          }}
-        >
-          {index + 1}
+      render: (value: number) => (
+        <span style={{ fontFamily: "monospace", fontWeight: 600 }}>
+          {value}
         </span>
       ),
     },
@@ -77,8 +127,6 @@ export default function AdmissionsTable({
       title: "Fecha de admision",
       dataIndex: "admissionDate",
       width: 200,
-      sorter: (a, b) =>
-        (a.admissionDate ?? "").localeCompare(b.admissionDate ?? ""),
       render: (value: string) => (
         <span style={{ fontFamily: "monospace" }}>
           {formatDateTime(value)}
@@ -88,10 +136,10 @@ export default function AdmissionsTable({
     {
       title: "Documento",
       dataIndex: "documentoPatiente",
-      width: 140,
-      render: (value: string) => (
+      width: 160,
+      render: (value: string, record) => (
         <span style={{ fontFamily: "monospace", fontWeight: 500 }}>
-          {value}
+          {record.documentTypeCode} {value}
         </span>
       ),
     },
@@ -99,8 +147,6 @@ export default function AdmissionsTable({
       title: "Paciente",
       dataIndex: "nombrePaciente",
       width: 240,
-      sorter: (a, b) =>
-        (a.nombrePaciente ?? "").localeCompare(b.nombrePaciente ?? ""),
       render: (value: string) => (
         <span style={{ fontWeight: 500 }}>{value}</span>
       ),
@@ -125,74 +171,53 @@ export default function AdmissionsTable({
       ellipsis: true,
     },
     {
-      title: "Acciones",
-      width: 180,
+      title: "Estado",
+      dataIndex: "isActive",
+      width: 110,
       align: "center",
-      fixed: "right",
-      render: (_, record) => (
-        <Space>
-          <Button type="primary" onClick={() => onEdit(record)}>
-            Editar
-          </Button>
-          <Button
-            danger
-            onClick={() => {
-              setAdmissionToDelete(record.id);
-              setOpenConfirm(true);
-            }}
-          >
-            Eliminar
-          </Button>
-        </Space>
-      ),
+      render: (value: boolean) =>
+        value ? <Tag color="green">Activa</Tag> : <Tag>Cerrada</Tag>,
     },
   ];
 
-  if (isLoading) {
-    return (
-      <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
-        <Spin size="large" />
-      </div>
-    );
+  if (withActions) {
+    columns.push({
+      title: "Acciones",
+      width: 140,
+      align: "center",
+      fixed: "right",
+      render: (_, record) => (
+        <Dropdown
+          trigger={["click"]}
+          menu={{
+            items: buildMenu(record),
+            onClick: ({ key }) => handleAction(key as AdmissionAction, record),
+          }}
+        >
+          <Button type="primary">
+            Acciones <DownOutlined />
+          </Button>
+        </Dropdown>
+      ),
+    });
   }
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-        <Input
-          placeholder="Buscar por documento, paciente, EPS o convenio..."
-          prefix={
-            <SearchOutlined
-              style={{ color: "var(--theme-primary, #0F6F5C)" }}
-            />
-          }
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          allowClear
-          size="large"
-          style={{ maxWidth: 440, borderRadius: 8 }}
-        />
-      </div>
-
       <Table<AdmissionResponse>
         size="middle"
         columns={columns}
-        dataSource={filtered}
+        dataSource={data}
+        loading={isLoading}
         rowKey="id"
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          pageSizeOptions: ["10", "20", "50"],
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} de ${total} admisiones`,
-        }}
+        pagination={data.length > 10 ? { pageSize: 10 } : false}
         scroll={{ x: "max-content" }}
-        locale={{ emptyText: "No hay admisiones registradas" }}
+        locale={{ emptyText }}
       />
 
       <ModalConfirm
-        open={openConfirm}
-        onClose={() => setOpenConfirm(false)}
+        open={!!admissionToDelete}
+        onClose={() => setAdmissionToDelete(null)}
         title="Eliminar admision"
         subtitle="Esta accion cerrara la admision seleccionada. No se puede deshacer."
         loading={deleteAdmission.isPending}

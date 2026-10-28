@@ -3,21 +3,55 @@
 import { Container } from "@/components/container"
 import Modal from "@/components/modal"
 import Title from "@/components/title"
-import { Button } from "antd"
-import { SolutionOutlined } from "@ant-design/icons"
+import { Button, Empty, Input, Select, Space } from "antd"
+import { SearchOutlined, SolutionOutlined } from "@ant-design/icons"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
 import AdmissionsForm from "./admissionsForm"
 import AdmissionsTable from "./table"
+import AdmissionHistoryModal from "./admissionHistoryModal"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
-import { useGetAllAdmissions } from "@/core/hooks/care/admissions/useGetAllAdmissions"
+import {
+  AdmissionSearchCriteria,
+  useSearchAdmissions,
+} from "@/core/hooks/care/admissions/useSearchAdmissions"
+
+type SearchField = "documento" | "numero"
+
+const SEARCH_FIELD_OPTIONS = [
+  { value: "documento", label: "Documento del paciente" },
+  { value: "numero", label: "N° de admisión" },
+]
 
 export default function AdmissionsContainer() {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [editingAdmission, setEditingAdmission] =
     useState<AdmissionResponse | null>(null)
-  const { data: admissions, isLoading } = useGetAllAdmissions()
+  const [historyAdmission, setHistoryAdmission] =
+    useState<AdmissionResponse | null>(null)
+  const [searchField, setSearchField] = useState<SearchField>("documento")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [criteria, setCriteria] = useState<AdmissionSearchCriteria | null>(null)
+  const { data: admissions, isFetching } = useSearchAdmissions(criteria)
+
+  const handleSearch = () => {
+    const term = searchTerm.trim()
+    if (!term) {
+      toast.error("Ingrese el documento o el número de admisión")
+      return
+    }
+    if (searchField === "numero") {
+      if (!/^\d+$/.test(term)) {
+        toast.error("El número de admisión debe ser numérico")
+        return
+      }
+      setCriteria({ numero: Number(term) })
+    } else {
+      setCriteria({ documento: term })
+    }
+  }
 
   const handleEdit = (admission: AdmissionResponse) => {
     setEditingAdmission(admission)
@@ -50,11 +84,51 @@ export default function AdmissionsContainer() {
         </Button>
       </div>
 
-      <AdmissionsTable
-        data={admissions ?? []}
-        isLoading={isLoading}
-        onEdit={handleEdit}
-      />
+      <Space.Compact style={{ width: "100%", maxWidth: 640, marginBottom: 16 }}>
+        <Select
+          size="large"
+          value={searchField}
+          options={SEARCH_FIELD_OPTIONS}
+          onChange={(value: SearchField) => setSearchField(value)}
+          style={{ width: 220 }}
+        />
+        <Input
+          size="large"
+          placeholder={
+            searchField === "numero"
+              ? "Ingrese el número de admisión"
+              : "Ingrese el número de documento"
+          }
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          onPressEnter={handleSearch}
+          allowClear
+        />
+        <Button
+          size="large"
+          type="primary"
+          icon={<SearchOutlined />}
+          loading={isFetching}
+          onClick={handleSearch}
+        >
+          Buscar
+        </Button>
+      </Space.Compact>
+
+      {criteria ? (
+        <AdmissionsTable
+          data={admissions ?? []}
+          isLoading={isFetching}
+          onEdit={handleEdit}
+          onHistory={setHistoryAdmission}
+        />
+      ) : (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="Busque una admisión por documento del paciente o número de admisión"
+          style={{ padding: 40 }}
+        />
+      )}
 
       <Modal
         open={open}
@@ -64,6 +138,11 @@ export default function AdmissionsContainer() {
       >
         <AdmissionsForm initialAdmission={editingAdmission} onDone={handleClose} />
       </Modal>
+
+      <AdmissionHistoryModal
+        admission={historyAdmission}
+        onClose={() => setHistoryAdmission(null)}
+      />
     </Container>
   )
 }

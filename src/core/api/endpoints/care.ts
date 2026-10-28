@@ -13,6 +13,7 @@ export const CARE_ENDPOINTS = {
     GET_BY_ID: (id: IdParam) => `/api/auth/care/admissions/${id}`,
     UPDATE: (id: IdParam) => `/api/auth/care/admissions/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/admissions/${id}`,
+    SEARCH: (params: string) => `/api/auth/care/admissions/search?${params}`,
   },
   TRIAGE: {
     GET_ALL: "/api/auth/care/triage",
