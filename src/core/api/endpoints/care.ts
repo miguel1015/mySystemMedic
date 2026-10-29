@@ -14,6 +14,11 @@ export const CARE_ENDPOINTS = {
     UPDATE: (id: IdParam) => `/api/auth/care/admissions/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/admissions/${id}`,
     SEARCH: (params: string) => `/api/auth/care/admissions/search?${params}`,
+    HISTORY_PATIENTS: (params: string) =>
+      `/api/auth/care/admissions/history/patients?${params}`,
+    HISTORY_BY_PATIENT: (patientId: IdParam) =>
+      `/api/auth/care/admissions/history/patients/${patientId}`,
+    SUMMARY: (id: IdParam) => `/api/auth/care/admissions/${id}/summary`,
   },
   TRIAGE: {
     GET_ALL: "/api/auth/care/triage",
@@ -81,6 +86,14 @@ export const CARE_ENDPOINTS = {
     GET_BY_ID: (id: IdParam) => `/api/auth/care/evolucion-especialistas/${id}`,
     UPDATE: (id: IdParam) => `/api/auth/care/evolucion-especialistas/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/evolucion-especialistas/${id}`,
+  },
+  ESPECIALIDADES: {
+    GET_ALL: "/api/auth/care/especialidades",
+  },
+  CLINICAL_HISTORY: {
+    SEARCH: (params: string) => `/api/auth/care/clinical-history/search?${params}`,
+    AUDITS: (admissionId: IdParam) =>
+      `/api/auth/care/clinical-history/admissions/${admissionId}/audits`,
   },
   NOTAS_MEDICAS: {
     GET_BY_ADMISSION: (admissionId: IdParam) =>

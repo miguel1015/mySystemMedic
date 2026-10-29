@@ -9,6 +9,7 @@ import {
   faChartBar,
   faChartPie,
   faClipboardList,
+  faClockRotateLeft,
   faDoorClosed,
   faDoorOpen,
   faFileContract,
@@ -83,6 +84,7 @@ const NAV_ICONS: Record<string, IconDefinition> = {
   faMoneyBillWave: faMoneyBillWave,
   faFlag: faFlag,
   faCalculator: faCalculator,
+  faClockRotateLeft: faClockRotateLeft,
 };
 
 export const getNavIcon = (icon?: string | null): IconDefinition | undefined =>

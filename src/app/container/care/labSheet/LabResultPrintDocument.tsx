@@ -1,6 +1,6 @@
 "use client"
 
-import { Fragment, useMemo } from "react"
+import { useMemo } from "react"
 import type {
   EstudioCatalogo,
   ResultadoAnalitoResponse,
@@ -106,49 +106,50 @@ export const LabResultPrintDocument = ({
       }
     }
 
+    // Cada fila es una unidad propia: así la tabla llena la página y solo pasa a la
+    // siguiente lo que no cabe, en lugar de saltar completa.
     list.push({
       kind: "block",
-      id: "resultados",
+      id: "resultados-encabezado",
       node: (
-        <div className="hci-print-section">
+        <div className="hci-print-section lab-print-results-start">
           <div className="hci-print-section-title">Resultados</div>
-          <table className="lab-print-results">
-            <thead>
-              <tr>
-                <th style={{ width: "30%" }}>Analito</th>
-                <th>Resultado</th>
-                <th style={{ width: "13%" }}>Unidad</th>
-                <th style={{ width: "26%" }}>Valores de referencia</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map((group) => (
-                <Fragment key={group.title || "otros"}>
-                  {group.title && (
-                    <tr className="lab-print-section-row">
-                      <td colSpan={4}>{group.title}</td>
-                    </tr>
-                  )}
-                  {group.rows.map((r) => {
-                    const { text, flag } = renderValue(r)
-                    return (
-                      <tr key={r.clave}>
-                        <td>{r.nombre}</td>
-                        <td className={flag ? "lab-print-flagged" : undefined}>
-                          {text || emptyDash}
-                          {flag && ` · ${flag}`}
-                        </td>
-                        <td>{r.texto ? emptyDash : r.unidad || emptyDash}</td>
-                        <td>{r.referencia || emptyDash}</td>
-                      </tr>
-                    )
-                  })}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
+          <div className="lab-print-row lab-print-row--head">
+            <span>Analito</span>
+            <span>Resultado</span>
+            <span>Unidad</span>
+            <span>Valores de referencia</span>
+          </div>
         </div>
       ),
+    })
+
+    groups.forEach((group) => {
+      if (group.title) {
+        list.push({
+          kind: "block",
+          id: `seccion-${group.title}`,
+          node: <div className="lab-print-row lab-print-row--section">{group.title}</div>,
+        })
+      }
+      group.rows.forEach((r) => {
+        const { text, flag } = renderValue(r)
+        list.push({
+          kind: "block",
+          id: `analito-${r.clave}`,
+          node: (
+            <div className="lab-print-row">
+              <span>{r.nombre}</span>
+              <span className={flag ? "lab-print-flagged" : undefined}>
+                {text || emptyDash}
+                {flag && ` · ${flag}`}
+              </span>
+              <span>{r.texto ? emptyDash : r.unidad || emptyDash}</span>
+              <span>{r.referencia || emptyDash}</span>
+            </div>
+          ),
+        })
+      })
     })
 
     if (record.observaciones) {

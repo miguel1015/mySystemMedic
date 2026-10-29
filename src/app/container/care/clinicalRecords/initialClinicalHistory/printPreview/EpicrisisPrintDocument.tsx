@@ -181,7 +181,7 @@ export const EpicrisisPrintDocument = ({
                 admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
-                documentTitle="Evolución"
+                documentTitle={evo.especialidadNombre ? `Evolución - ${evo.especialidadNombre}` : "Evolución"}
                 attentionLabel="Fecha y hora de evolución:"
                 attentionDate={evo.fechaEvolucion}
                 attentionTime={evo.horaEvolucion?.slice(0, 5)}
@@ -224,7 +224,11 @@ export const EpicrisisPrintDocument = ({
                 admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
-                documentTitle="Evolución de Especialista"
+                documentTitle={
+                  evo.especialidadNombre
+                    ? `Evolución de Especialista - ${evo.especialidadNombre}`
+                    : "Evolución de Especialista"
+                }
                 attentionLabel="Fecha y hora de evolución:"
                 attentionDate={evo.fechaEvolucion}
                 attentionTime={evo.horaEvolucion?.slice(0, 5)}

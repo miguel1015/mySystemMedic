@@ -2,6 +2,7 @@ import dayjs, { type Dayjs } from "dayjs"
 import type { NamePath } from "antd/es/form/interface"
 import type { FormInstance, FormRule } from "antd"
 import type {
+  FuripsAtencionMedica,
   FuripsDatosSistema,
   FuripsDiagnostico,
   FuripsMedico,
@@ -42,6 +43,7 @@ export interface FuripsFormValues {
   marca?: string | null
   placa?: string | null
   tipoServicio?: string | null
+  tipoVehiculo?: string | null
   codigoAseguradora?: string | null
   nombreAseguradora?: string | null
   numeroPoliza?: string | null
@@ -149,6 +151,7 @@ export const toFormValues = (
       marca: furips.marca,
       placa: furips.placa,
       tipoServicio: furips.tipoServicio,
+      tipoVehiculo: furips.tipoVehiculo,
       codigoAseguradora: furips.codigoAseguradora,
       nombreAseguradora: furips.nombreAseguradora,
       numeroPoliza: furips.numeroPoliza,
@@ -258,6 +261,7 @@ export const toRequest = (
     marca: clean(merged.marca),
     placa: clean(merged.placa),
     tipoServicio: merged.tipoServicio ?? null,
+    tipoVehiculo: merged.tipoVehiculo ?? null,
     codigoAseguradora: clean(merged.codigoAseguradora),
     nombreAseguradora: clean(merged.nombreAseguradora),
     numeroPoliza: clean(merged.numeroPoliza),
@@ -302,6 +306,21 @@ const toFormValuesFromBase = (base: FuripsResponse | null | undefined): Partial<
         valorReclamadoTransporte: base.valorReclamadoTransporte,
       }
     : {}
+
+// Atención médica (sección IX) dato por dato: lo de `primary` y, lo que falte, de `fallback`.
+export const mergeAtencion = (
+  primary: FuripsAtencionMedica | null | undefined,
+  fallback: FuripsAtencionMedica | null | undefined,
+): FuripsAtencionMedica => ({
+  fechaIngreso: primary?.fechaIngreso || fallback?.fechaIngreso || null,
+  fechaEgreso: primary?.fechaEgreso || fallback?.fechaEgreso || null,
+  diagnosticosIngreso: primary?.diagnosticosIngreso?.length
+    ? primary.diagnosticosIngreso
+    : fallback?.diagnosticosIngreso ?? [],
+  diagnosticosEgreso: primary?.diagnosticosEgreso?.length
+    ? primary.diagnosticosEgreso
+    : fallback?.diagnosticosEgreso ?? [],
+})
 
 /* ─────────────── Reglas de grupo ─────────────── */
 

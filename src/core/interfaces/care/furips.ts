@@ -92,6 +92,7 @@ export interface FuripsRequest {
   marca?: string | null
   placa?: string | null
   tipoServicio?: string | null
+  tipoVehiculo?: string | null
   codigoAseguradora?: string | null
   nombreAseguradora?: string | null
   numeroPoliza?: string | null

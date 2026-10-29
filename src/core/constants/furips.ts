@@ -1,10 +1,11 @@
 // Catálogos del FURIPS. Los códigos son los que valida el backend (FuripsCodigos).
 
+// El formato oficial llama "Ocupante" al 3; en la institución se usa "Pasajero".
 export const FURIPS_CONDICIONES_ACCIDENTADO = [
-  { value: "1", label: "Conductor" },
   { value: "2", label: "Peatón" },
-  { value: "3", label: "Ocupante" },
   { value: "4", label: "Ciclista" },
+  { value: "1", label: "Conductor" },
+  { value: "3", label: "Pasajero" },
 ]
 
 export const FURIPS_ESTADO = {
@@ -19,17 +20,14 @@ export const FURIPS_ESTADO = {
 } as const
 
 export const FURIPS_ESTADOS_ASEGURAMIENTO = [
-  { value: FURIPS_ESTADO.ASEGURADO, label: "Asegurado" },
-  { value: FURIPS_ESTADO.NO_ASEGURADO, label: "No asegurado" },
   { value: FURIPS_ESTADO.FANTASMA, label: "Vehículo fantasma" },
+  { value: FURIPS_ESTADO.ASEGURADO, label: "Vehículo asegurado" },
+  { value: FURIPS_ESTADO.NO_ASEGURADO, label: "Vehículo no asegurado" },
   { value: FURIPS_ESTADO.POLIZA_FALSA, label: "Póliza falsa" },
   { value: FURIPS_ESTADO.EN_FUGA, label: "Vehículo en fuga" },
-  { value: FURIPS_ESTADO.ASEGURADO_D2497, label: "Asegurado D.2497" },
-  {
-    value: FURIPS_ESTADO.PROPIETARIO_INDETERMINADO,
-    label: "No asegurado - propietario indeterminado",
-  },
-  { value: FURIPS_ESTADO.SIN_PLACA, label: "No asegurado - sin placa" },
+  { value: FURIPS_ESTADO.ASEGURADO_D2497, label: "Asegurado D. 2497" },
+  { value: FURIPS_ESTADO.PROPIETARIO_INDETERMINADO, label: "No asegurado indeterminado" },
+  { value: FURIPS_ESTADO.SIN_PLACA, label: "No asegurado sin placa" },
 ]
 
 // Estados en los que el vehículo debe tener placa.
@@ -43,6 +41,10 @@ export const furipsRequierePlaca = (estado?: string | null) =>
 // Estados con SOAT vigente: se exigen aseguradora, póliza y vigencia.
 export const furipsRequierePoliza = (estado?: string | null) =>
   estado === FURIPS_ESTADO.ASEGURADO || estado === FURIPS_ESTADO.ASEGURADO_D2497
+
+// Solo se desconoce el vehículo cuando es fantasma o se dio a la fuga.
+export const furipsRequiereTipoVehiculo = (estado?: string | null) =>
+  !!estado && estado !== FURIPS_ESTADO.FANTASMA && estado !== FURIPS_ESTADO.EN_FUGA
 
 // Sin SOAT vigente la reclamación se presenta a la ADRES.
 export const FURIPS_ADRES = {
@@ -58,6 +60,35 @@ export const FURIPS_TIPOS_SERVICIO = [
   { value: "5", label: "Diplomático o consular" },
   { value: "6", label: "Transporte masivo" },
   { value: "7", label: "Escolar" },
+]
+
+// Clases de vehículo del RUNT. Los códigos son propios: no se cuenta con la tabla oficial del
+// FURIPS; si llega, se ajustan aquí y en el backend (FuripsCodigos.TiposVehiculo).
+export const FURIPS_TIPOS_VEHICULO = [
+  { value: "01", label: "Automóvil" },
+  { value: "02", label: "Bus" },
+  { value: "03", label: "Buseta" },
+  { value: "04", label: "Camión" },
+  { value: "05", label: "Camioneta" },
+  { value: "06", label: "Campero" },
+  { value: "07", label: "Microbús" },
+  { value: "08", label: "Tractocamión" },
+  { value: "09", label: "Volqueta" },
+  { value: "10", label: "Motocicleta" },
+  { value: "11", label: "Motocarro" },
+  { value: "12", label: "Mototriciclo" },
+  { value: "13", label: "Cuatrimoto" },
+  { value: "14", label: "Ciclomotor" },
+  { value: "15", label: "Tricimoto" },
+  { value: "16", label: "Cuadriciclo" },
+  { value: "17", label: "Maquinaria agrícola" },
+  { value: "18", label: "Maquinaria industrial" },
+  { value: "19", label: "Maquinaria de construcción o minera" },
+  { value: "20", label: "Remolque" },
+  { value: "21", label: "Semirremolque" },
+  { value: "22", label: "Vehículo de tracción animal" },
+  { value: "23", label: "Bicicleta" },
+  { value: "24", label: "Otro" },
 ]
 
 export const FURIPS_ZONAS = [
@@ -81,8 +112,13 @@ export const FURIPS_TIPOS_DOCUMENTO = [
 ]
 
 export const FURIPS_TIPOS_ATENCION_INICIAL = [
-  { value: "1", label: "1 — Atención médica inicial del evento" },
-  { value: "2", label: "2 — Atención posterior a la inicial (paciente remitido)" },
+  { value: "1", label: "Atención médica inicial del evento" },
+  { value: "2", label: "Transporte primario" },
+  { value: "3", label: "Transporte secundario" },
+  { value: "4", label: "Continuidad hospitalaria" },
+  { value: "5", label: "Atención ambulatoria" },
+  { value: "6", label: "Atención médica + transporte primario" },
+  { value: "7", label: "Atención médica + transporte secundario" },
 ]
 
 export const FURIPS_SI_NO = [

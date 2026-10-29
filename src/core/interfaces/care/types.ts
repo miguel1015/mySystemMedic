@@ -173,6 +173,61 @@ export interface AdmissionResponse {
   createdAt: string;
 }
 
+// Historial de admisiones: el estado se deriva del proceso (egreso / factura).
+export type AdmissionHistoryStatus = "En atención" | "Egresada" | "Facturada";
+
+export interface AdmissionHistoryPatient {
+  patientId: number;
+  documentTypeCode: string;
+  documentoPatiente: string;
+  nombrePaciente: string;
+  epsNombre: string;
+  // Solo cuenta admisiones cerradas (con factura electrónica exitosa).
+  totalAdmisiones: number;
+  ultimaAdmision: string;
+}
+
+export interface AdmissionHistoryItem {
+  id: number;
+  patientId: number;
+  admissionDate: string;
+  triagePrioridad: string;
+  careScopeName: string;
+  admissionTypeName: string;
+  careModalityName: string;
+  epsNombre: string;
+  convenioNombre: string;
+  tieneEgreso: boolean;
+  numeroFactura?: string | null;
+  estado: AdmissionHistoryStatus;
+}
+
+// Cantidad de registros activos por módulo de una admisión.
+export interface AdmissionRecordSummary {
+  admissionId: number;
+  estado: AdmissionHistoryStatus;
+  numeroFactura?: string | null;
+  hcInicial: number;
+  evoluciones: number;
+  evolucionesEspecialista: number;
+  procedimientosMenores: number;
+  procedimientosDiagnosticos: number;
+  procedimientosNoQx: number;
+  notasEnfermeria: number;
+  datosClinicosEgreso: number;
+  notasMedicas: number;
+  descripcionesQuirurgicas: number;
+  recordsAnestesia: number;
+  ordenesMedicas: number;
+  medicamentosPos: number;
+  aplicacionesMedicamentos: number;
+  resultadosLaboratorio: number;
+  estudiosRayosX: number;
+  registrosHojaGastos: number;
+  movimientosFacturacion: number;
+  furips: number;
+}
+
 export interface TriagePatient {
   id: number;
   firstName: string;

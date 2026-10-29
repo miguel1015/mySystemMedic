@@ -5,6 +5,7 @@ import FileInput from "@/components/fileInput";
 import Input from "@/components/input";
 import Select from "@/components/select";
 import useDictionary from "@/locales/dictionary-hook";
+import { useGetEspecialidades } from "@/core/hooks/care/clinicalHistory/useClinicalHistory";
 import { Button } from "antd";
 import { TCreateUser } from "../types";
 import UserFormSkeleton from "./useFormSkeleton";
@@ -28,6 +29,8 @@ const UserForm: React.FC<TCreateUser> = ({
     loadingUser,
     isSubmitting,
   } = useUserForm({ setOpen, editUserId, setEditUserId });
+  const { data: especialidades = [] } = useGetEspecialidades();
+  const especialidadesOptions = especialidades.map((e) => ({ value: e.id, label: e.nombre }));
 
   if (loadingUser) {
     return <UserFormSkeleton />;
@@ -107,6 +110,13 @@ const UserForm: React.FC<TCreateUser> = ({
             label={dict.users.licenseCard}
             placeholder={dict.users.licenseCard}
             control={control}
+          />
+          <Select
+            name="especialidadId"
+            label="Especialidad médica"
+            placeholder="Especialidad médica"
+            control={control}
+            options={especialidadesOptions}
           />
           <Input
             name="email"

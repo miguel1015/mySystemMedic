@@ -1,329 +1,169 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Container } from "../../../../components/container";
-import { Button, Input, DatePicker, Select } from "antd";
+import { SearchOutlined } from "@ant-design/icons"
+import { Alert, Button, Empty, Input, Segmented, Spin, Table, Tag, message } from "antd"
+import type { ColumnsType } from "antd/es/table"
+import Title from "antd/es/typography/Title"
+import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import { Container } from "@/components/container"
 import {
-  SearchOutlined,
-  EditOutlined,
-  PrinterOutlined,
-  FileTextOutlined,
-} from "@ant-design/icons";
-import Modal from "../../../../components/modal";
-import Epicrisis from "./epicrisis";
-import Acto from "./acto";
-import Title from "antd/es/typography/Title";
-import { useSearchParams } from "next/navigation";
+  useSearchClinicalHistory,
+  type ClinicalHistorySearchCriteria,
+} from "@/core/hooks/care/clinicalHistory/useClinicalHistory"
+import type {
+  ClinicalHistoryAdmission,
+  ClinicalHistorySearchBy,
+} from "@/core/interfaces/care/clinicalHistory"
+import { formatDateTime } from "@/core/utils/date"
+import AdmissionClinicalRecord from "./AdmissionClinicalRecord"
 
-interface Especialidad {
-  id: number;
-  nombre: string;
-  tieneHC: boolean;
-}
+const SEARCH_OPTIONS: { value: ClinicalHistorySearchBy; label: string; placeholder: string }[] = [
+  { value: "documento", label: "Documento", placeholder: "Número de documento del paciente" },
+  { value: "numero", label: "N° de admisión", placeholder: "Número de admisión" },
+]
 
-const especialidades: Especialidad[] = [
-  { id: 1, nombre: "MEDICINA GENERAL", tieneHC: false },
-  { id: 2, nombre: "ANESTESIOLOGIA", tieneHC: false },
-  { id: 3, nombre: "ORTOPEDIA Y TRAUMOTOLOGIA", tieneHC: false },
-];
-
+// Consultar HC: ubica al paciente por documento o número de admisión, lista sus
+// admisiones y muestra la historia clínica de la que se seleccione.
 const CareManagementContainer = () => {
-  const searchParams = useSearchParams();
-  const [open, setOpen] = useState(false);
-  const [openActo, setOpenActo] = useState(false);
-  const [especialidadBusqueda, setEspecialidadBusqueda] = useState("");
-  const paciente = {
-    nombre: searchParams.get("patientName") || "JONATHAN RODRIGUEZ QUINTERO",
-    documento: searchParams.get("documentNumber"),
-    ambito: searchParams.get("careScope"),
-    admissionId: searchParams.get("admissionId"),
-    recordType: searchParams.get("recordType"),
-    recordLabel: searchParams.get("recordLabel"),
-  };
+  const searchParams = useSearchParams()
+  const [messageApi, contextHolder] = message.useMessage()
+
+  // Desde otras vistas se puede abrir directamente una admisión (?admissionId=).
+  const initialAdmissionId = searchParams.get("admissionId")
+  const [searchBy, setSearchBy] = useState<ClinicalHistorySearchBy>(initialAdmissionId ? "numero" : "documento")
+  const [term, setTerm] = useState(initialAdmissionId ?? "")
+  const [criteria, setCriteria] = useState<ClinicalHistorySearchCriteria | null>(
+    initialAdmissionId ? { by: "numero", value: initialAdmissionId } : null,
+  )
+  const [selectedAdmissionId, setSelectedAdmissionId] = useState<number | null>(null)
+
+  const { data: result, isFetching, isError } = useSearchClinicalHistory(criteria)
+
+  // Con una sola admisión (o al buscar por número) se abre directamente.
+  useEffect(() => {
+    setSelectedAdmissionId(result?.admisiones.length === 1 ? result.admisiones[0].id : null)
+  }, [result])
+
+  const handleSearch = () => {
+    const value = term.trim()
+    if (!value) {
+      messageApi.warning("Ingrese el documento del paciente o el número de admisión.")
+      return
+    }
+    if (searchBy === "numero" && !/^\d+$/.test(value)) {
+      messageApi.warning("El número de admisión debe ser numérico.")
+      return
+    }
+    setCriteria({ by: searchBy, value })
+  }
+
+  const selectedAdmission = result?.admisiones.find((a) => a.id === selectedAdmissionId)
+
+  const columns: ColumnsType<ClinicalHistoryAdmission> = [
+    { title: "N° admisión", dataIndex: "id", key: "id", width: 120 },
+    {
+      title: "Fecha de ingreso",
+      dataIndex: "admissionDate",
+      key: "admissionDate",
+      render: (value: string) => formatDateTime(value),
+    },
+    { title: "Ámbito", dataIndex: "careScopeName", key: "careScopeName", render: (v: string) => v || "—" },
+    { title: "Tipo de admisión", dataIndex: "admissionTypeName", key: "admissionTypeName" },
+    { title: "EPS", dataIndex: "epsNombre", key: "epsNombre" },
+    {
+      title: "Estado",
+      key: "estado",
+      align: "center",
+      render: (_, r) =>
+        r.cerrada ? <Tag color="red">Cerrada</Tag> : <Tag color="green">Abierta</Tag>,
+    },
+  ]
+
+  const placeholder = SEARCH_OPTIONS.find((o) => o.value === searchBy)?.placeholder
 
   return (
     <Container>
-      {/* Título principal */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          marginBottom: "20px",
-        }}
-      >
-        <SearchOutlined
-          style={{ color: "var(--theme-primary, #0F6F5C)", fontSize: "18px", marginBottom: "20px" }}
-        />
-        <Title level={4}>Buscar Historial Clínico</Title>
+      {contextHolder}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        <SearchOutlined style={{ color: "var(--theme-primary, #0F6F5C)", fontSize: 18 }} />
+        <Title level={4} style={{ margin: 0 }}>
+          Consultar Historia Clínica
+        </Title>
       </div>
 
-      {/* Buscador de especialidad */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          marginBottom: "20px",
-          padding: "16px",
-          borderRadius: "8px",
-        }}
-      >
-        <label style={{ fontWeight: 500, minWidth: "140px" }}>
-          Especialidad Medica
-        </label>
-        <Input
-          placeholder="Especialidad"
-          value={especialidadBusqueda}
-          onChange={(e) => setEspecialidadBusqueda(e.target.value)}
-          style={{ maxWidth: "400px" }}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
+        <Segmented
+          value={searchBy}
+          onChange={(value) => setSearchBy(value as ClinicalHistorySearchBy)}
+          options={SEARCH_OPTIONS.map(({ value, label }) => ({ value, label }))}
         />
-        <Button type="primary" icon={<SearchOutlined />}>
+        <Input
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          onPressEnter={handleSearch}
+          placeholder={placeholder}
+          allowClear
+          maxLength={30}
+          style={{ maxWidth: 360 }}
+        />
+        <Button type="primary" icon={<SearchOutlined />} loading={isFetching} onClick={handleSearch}>
           Buscar
         </Button>
       </div>
 
-      {/* Información del paciente */}
-      <div
-        style={{
-          backgroundColor: "var(--theme-primary, #0F6F5C)",
-          opacity: 0.85,
-          padding: "12px 16px",
-          borderRadius: "4px",
-          marginBottom: "16px",
-        }}
-      >
-        <Title level={5}>PACIENTE: {paciente.nombre}</Title>
-        {(paciente.documento || paciente.ambito || paciente.admissionId) && (
-          <div style={{ color: "#ffffff", fontSize: 13, marginTop: 4 }}>
-            {paciente.documento && <span>Documento: {paciente.documento}</span>}
-            {paciente.ambito && <span style={{ marginLeft: 12 }}>Ambito: {paciente.ambito}</span>}
-            {paciente.admissionId && <span style={{ marginLeft: 12 }}>Admision: {paciente.admissionId}</span>}
-          </div>
-        )}
-      </div>
+      {isError && (
+        <Alert type="error" showIcon style={{ marginBottom: 16 }} message="No se pudo consultar la historia clínica. Intente de nuevo." />
+      )}
 
-      {paciente.recordLabel && (
-        <div
-          style={{
-            border: "1px solid var(--dash-border, #e5e7eb)",
-            borderLeft: "4px solid var(--theme-primary, #0F6F5C)",
-            borderRadius: 8,
-            padding: "14px 16px",
-            marginBottom: 18,
-            backgroundColor: "var(--dash-surface, #ffffff)",
-          }}
-        >
-          <div style={{ color: "var(--dash-text-secondary, #6b7280)", fontSize: 12, fontWeight: 600 }}>
-            Vista seleccionada
-          </div>
-          <div style={{ color: "var(--dash-text-primary, #111827)", fontSize: 16, fontWeight: 700 }}>
-            {paciente.recordLabel}
-          </div>
-          {paciente.recordType && (
-            <div style={{ color: "var(--dash-text-secondary, #6b7280)", fontSize: 12, marginTop: 2 }}>
-              Tipo: {paciente.recordType}
-            </div>
-          )}
+      {criteria && !isFetching && result === null && (
+        <Empty description="No existen registros para los datos ingresados." style={{ padding: 40 }} />
+      )}
+
+      {isFetching && !result && (
+        <div className="d-flex justify-content-center py-5">
+          <Spin size="large" />
         </div>
       )}
 
-      {/* Tabla de especialidades */}
-      <div className="table-responsive" style={{ marginBottom: "24px" }}>
-        <table
-          className="table table-bordered"
-          style={{ backgroundColor: "var(--dash-surface, #ffffff)" }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)" }}>
-              <th style={{ width: "30%" }}>Especialidad de atención</th>
-              <th style={{ width: "40%" }}>Historia Clínica</th>
-              <th style={{ width: "30%" }}>Epicrisis</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* Fila con botones principales */}
-            <tr>
-              <td>
-                <Button
-                  icon={<PrinterOutlined />}
-                  onClick={() => setOpenActo(true)}
-                >
-                  EPICRISIS PCTE
-                </Button>
-              </td>
-              <td></td>
-              <td>
-                <Button
-                  type="primary"
-                  icon={<PrinterOutlined />}
-                  onClick={() => setOpen(true)}
-                  style={{
-                    borderRadius: 8,
-                  }}
-                >
-                  EPICRISIS IPS
-                </Button>
-              </td>
-            </tr>
+      {result && (
+        <>
+          <div style={{ marginBottom: 8, fontWeight: 600 }}>
+            {result.nombrePaciente} · {result.documentTypeCode} {result.documentoPaciente}
+          </div>
+          <Table<ClinicalHistoryAdmission>
+            size="small"
+            columns={columns}
+            dataSource={result.admisiones}
+            rowKey="id"
+            pagination={result.admisiones.length > 5 ? { pageSize: 5, showSizeChanger: false } : false}
+            scroll={{ x: "max-content" }}
+            rowSelection={{
+              type: "radio",
+              selectedRowKeys: selectedAdmissionId ? [selectedAdmissionId] : [],
+              onChange: (keys) => setSelectedAdmissionId(Number(keys[0])),
+            }}
+            onRow={(r) => ({ onClick: () => setSelectedAdmissionId(r.id), style: { cursor: "pointer" } })}
+            style={{ marginBottom: 20 }}
+          />
 
-            {/* Filas de especialidades */}
-            {especialidades.map((esp) => (
-              <tr key={esp.id}>
-                <td>{esp.nombre}</td>
-                <td>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <Button icon={<EditOutlined />} size="small" />
-                    <Button
-                      size="small"
-                      icon={<FileTextOutlined />}
-                      disabled={!esp.tieneHC}
-                    >
-                      HC desactivadas
-                    </Button>
-                  </div>
-                </td>
-                <td></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Sección inferior */}
-      <div className="table-responsive">
-        <table
-          className="table table-bordered"
-          style={{ backgroundColor: "var(--dash-surface, #ffffff)" }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)" }}>
-              <th>Ordenes</th>
-              <th>Aplicación de medicamento</th>
-              <th>Hoja de Laboratorio</th>
-              <th colSpan={3}>Hoja de gastos</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style={{ textAlign: "center" }}>
-                <Button icon={<EditOutlined />} size="small" />
-              </td>
-              <td style={{ textAlign: "center" }}>
-                <Button icon={<PrinterOutlined />} size="small" />
-              </td>
-              <td>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                  }}
-                >
-                  <Button icon={<FileTextOutlined />} size="small">
-                    Laboratorio
-                  </Button>
-                </div>
-              </td>
-              <td style={{ textAlign: "center" }}>
-                <Button icon={<FileTextOutlined />} size="small">
-                  Hospitalización
-                </Button>
-              </td>
-              <td style={{ textAlign: "center" }}>
-                <Button icon={<FileTextOutlined />} size="small">
-                  Cirugía
-                </Button>
-              </td>
-              <td style={{ textAlign: "center" }}>
-                <Button icon={<FileTextOutlined />} size="small">
-                  Urgencia
-                </Button>
-              </td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td>
-                <div>
-                  <label style={{ fontSize: "12px", display: "block" }}>
-                    Fecha lab.
-                  </label>
-                  <DatePicker
-                    placeholder="dd/mm"
-                    format="DD/MM"
-                    size="small"
-                    style={{ width: "100%" }}
-                  />
-                </div>
-              </td>
-              <td>
-                <div>
-                  <label style={{ fontSize: "12px", display: "block" }}>
-                    Fecha hoja Hosp.
-                  </label>
-                  <DatePicker
-                    placeholder="dd/mm"
-                    format="DD/MM"
-                    size="small"
-                    style={{ width: "100%" }}
-                  />
-                </div>
-              </td>
-              <td>
-                <div>
-                  <label style={{ fontSize: "12px", display: "block" }}>
-                    Fecha hoja Cirugía
-                  </label>
-                  <DatePicker
-                    placeholder="dd/mm"
-                    format="DD/MM"
-                    size="small"
-                    style={{ width: "100%" }}
-                  />
-                </div>
-              </td>
-              <td>
-                <div>
-                  <label style={{ fontSize: "12px", display: "block" }}>
-                    Fecha hoja Urgencia
-                  </label>
-                  <DatePicker
-                    placeholder="dd/mm"
-                    format="DD/MM"
-                    size="small"
-                    style={{ width: "100%" }}
-                  />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modales */}
-      <Modal
-        open={open}
-        onClose={() => {
-          setOpen(false);
-        }}
-        title="Ver epicrisis"
-        size="xl"
-      >
-        <Epicrisis setOpen={setOpen} />
-      </Modal>
-      <Modal
-        open={openActo}
-        onClose={() => {
-          setOpenActo(false);
-        }}
-        title="Ver acto"
-        size="xl"
-      >
-        <Acto setOpen={setOpenActo} />
-      </Modal>
+          {selectedAdmission ? (
+            <AdmissionClinicalRecord
+              key={selectedAdmission.id}
+              admission={selectedAdmission}
+              patient={result}
+              messageApi={messageApi}
+            />
+          ) : (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="Seleccione una admisión para consultar su historia clínica."
+            />
+          )}
+        </>
+      )}
     </Container>
-  );
-};
+  )
+}
 
-export default CareManagementContainer;
+export default CareManagementContainer

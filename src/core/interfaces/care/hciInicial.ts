@@ -150,6 +150,8 @@ export interface EvolucionResponse {
   talla: number | null;
   imc: number | null;
   plan: string;
+  especialidadId: number | null;
+  especialidadNombre: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -174,6 +176,7 @@ export interface EvolucionCreateRequest {
 
 export interface EvolucionUpdateRequest {
   userId?: number;
+  especialidadId?: number;
   fechaEvolucion: string;
   horaEvolucion: string;
   motivoConsulta: string;
@@ -198,6 +201,8 @@ export interface EvolucionEspecialistaResponse {
   nombreProfesional: string;
   motivoConsulta: string;
   plan: string;
+  especialidadId: number | null;
+  especialidadNombre: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -214,6 +219,7 @@ export interface EvolucionEspecialistaCreateRequest {
 
 export interface EvolucionEspecialistaUpdateRequest {
   userId?: number;
+  especialidadId?: number;
   fechaEvolucion: string;
   horaEvolucion: string;
   motivoConsulta: string;

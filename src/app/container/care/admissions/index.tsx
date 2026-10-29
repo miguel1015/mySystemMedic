@@ -50,9 +50,9 @@ export default function AdmissionsContainer() {
         toast.error("El número de admisión debe ser numérico")
         return
       }
-      setCriteria({ numero: Number(term) })
+      setCriteria({ numero: Number(term), soloActivas: true })
     } else {
-      setCriteria({ documento: term })
+      setCriteria({ documento: term, soloActivas: true })
     }
   }
 

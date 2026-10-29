@@ -713,7 +713,7 @@ const LabSheetContainer = () => {
                   Resultados — {estudio.nombre}
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <Dropdown menu={excelMenu} disabled={downloading}>
+                  <Dropdown menu={excelMenu} trigger={["click"]} disabled={downloading}>
                     <Button icon={<DownloadOutlined />} loading={downloading}>
                       Descargar Excel <DownOutlined />
                     </Button>

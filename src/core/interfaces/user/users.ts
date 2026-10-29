@@ -45,6 +45,8 @@ export interface DataUser {
   userProfileName?: string;
   // Código del tipo de documento (CC, CE, PA...) que se reporta en el RIPS.
   documentTypeCode?: string | null;
+  especialidadId?: number | null;
+  especialidadNombre?: string | null;
 }
 
 export interface GetUser {
@@ -68,6 +70,8 @@ export interface GetUser {
   signature?: string;
   licenseCard?: string;
   userProfileName?: string;
+  especialidadId?: number | null;
+  especialidadNombre?: string | null;
 }
 
 export interface UserByProfile {

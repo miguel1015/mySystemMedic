@@ -1,26 +1,43 @@
 /* ── Resultado de laboratorio (impresión) ── */
-.lab-print-results {
-  width: 100%;
-  border-collapse: collapse;
+/* Cada fila es un bloque independiente para el paginador; la grilla mantiene las
+   columnas alineadas entre filas, así se ven como una sola tabla. */
+.lab-print-results-start {
+  margin-bottom: 0;
+}
+
+.lab-print-row {
+  display: grid;
+  grid-template-columns: 30% 1fr 13% 26%;
   font-size: 9.5px;
-}
-
-.lab-print-results th,
-.lab-print-results td {
   border: 1px solid #000;
-  padding: 3px 6px;
-  text-align: left;
-  vertical-align: top;
+  border-top: none;
 }
 
-.lab-print-results th {
+.lab-print-row > span {
+  padding: 3px 6px;
+  overflow-wrap: anywhere;
+}
+
+.lab-print-row > span + span {
+  border-left: 1px solid #000;
+}
+
+.lab-print-row--head {
+  border-top: 1px solid #000;
   background: #f0f0f0;
   font-weight: bold;
 }
 
-.lab-print-results td.lab-print-multiline {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+.lab-print-row--section {
+  display: block;
+  padding: 3px 6px;
+  background: #f7f7f7;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.lab-print-row .lab-print-flagged {
+  font-weight: bold;
 }
 
 .lab-print-signature {
@@ -97,16 +114,6 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-.lab-print-results .lab-print-section-row td {
-  background: #f7f7f7;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.lab-print-results td.lab-print-flagged {
-  font-weight: bold;
 }
 
 .lab-print-multiline {

@@ -184,7 +184,11 @@ export async function remove<T>(
   });
 
   if (!res.ok) {
-    throw new Error(`DELETE error: ${res.statusText}`);
+    const contentType = res.headers.get("content-type") ?? "";
+    const parsed = contentType.includes("application/json")
+      ? await res.json().catch(() => null)
+      : await res.text().catch(() => null);
+    throw new Error(extractProblemDetailsMessage(parsed, `DELETE error: ${res.statusText}`));
   }
 
   return (await res.json()) as T;

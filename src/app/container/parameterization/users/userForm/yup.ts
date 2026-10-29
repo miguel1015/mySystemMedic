@@ -33,6 +33,8 @@ export const createUserSchema = z
     phone: z.string().min(1, "Celular es obligatorio"),
     telephone: z.string().min(1, "Teléfono es obligatorio"),
     licenseCard: z.string().optional(),
+    // Las evoluciones del profesional se agrupan por esta especialidad.
+    especialidadId: z.number().nullable().optional(),
     signature: z.any().optional(),
     email: z.string().email("Email inválido"),
 

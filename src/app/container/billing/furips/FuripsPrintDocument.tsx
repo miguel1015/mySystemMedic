@@ -6,6 +6,7 @@ import {
   FURIPS_DECLARACION,
   FURIPS_ESTADOS_ASEGURAMIENTO,
   FURIPS_TIPOS_SERVICIO,
+  FURIPS_TIPOS_VEHICULO,
   furipsLabel,
 } from "@/core/constants/furips"
 import type {
@@ -18,7 +19,7 @@ import type {
 import type { TProvider } from "@/core/interfaces/parameterization/types"
 import type { TCities, TStates } from "@/core/interfaces/user/users"
 import { formatDate, formatDateTime } from "@/core/utils/date"
-import { ubicacion } from "./furips.utils"
+import { mergeAtencion, ubicacion } from "./furips.utils"
 import "../../care/clinicalRecords/initialClinicalHistory/printPreview/hciPrintPreview.css"
 import "./furips.css"
 
@@ -123,7 +124,8 @@ const dx = (list: FuripsDiagnostico[], i: number) =>
 export const FuripsPrintDocument = ({ provider, furips, datos, cities, states }: Props) => {
   const { ips, victima } = datos
   const lugar = (cityId?: number | null) => ubicacion(cities, states, cityId)
-  const atencion = furips.atencionMedica
+  // Lo que falte en lo guardado se completa con lo que hoy tiene la historia clínica.
+  const atencion = mergeAtencion(furips.atencionMedica, datos.atencionMedica)
   const remision = furips.remision
   const transporte = furips.transporte
   const medico = furips.medico
@@ -204,7 +206,8 @@ export const FuripsPrintDocument = ({ provider, furips, datos, cities, states }:
             </Cell>
             <Cell label="MARCA" span={6}>{value(furips.marca)}</Cell>
             <Cell label="PLACA" span={6}>{value(furips.placa)}</Cell>
-            <Cell label="TIPO DE SERVICIO" span={12}>{furipsLabel(FURIPS_TIPOS_SERVICIO, furips.tipoServicio)}</Cell>
+            <Cell label="TIPO DE VEHÍCULO" span={6}>{furipsLabel(FURIPS_TIPOS_VEHICULO, furips.tipoVehiculo)}</Cell>
+            <Cell label="TIPO DE SERVICIO" span={6}>{furipsLabel(FURIPS_TIPOS_SERVICIO, furips.tipoServicio)}</Cell>
             <Cell label="CODIGO ASEGURADORA" span={6}>{value(furips.codigoAseguradora)}</Cell>
             <Cell label="NOMBRE DE LA ASEGURADORA" span={6}>{value(furips.nombreAseguradora)}</Cell>
             <Cell label="NO. DE LA PÓLIZA" span={6}>{value(furips.numeroPoliza)}</Cell>
