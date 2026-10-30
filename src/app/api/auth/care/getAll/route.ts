@@ -5,6 +5,7 @@ import { authOptions } from "../../option"
 const TYPE_TO_ENDPOINT: Record<string, string> = {
   "active-admissions": "/api/admissions/active",
   "admission-catalogs": "/api/admissions/catalogs",
+  "kinship-types": "/api/admissions/catalogs/kinship-types",
   "sexes": "/api/patients/catalogs/sexes",
   "disabilities": "/api/patients/catalogs/disabilities",
   "zones": "/api/patients/catalogs/zones",

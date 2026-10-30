@@ -25,6 +25,7 @@ import { XrayPrintDocument } from "@/app/container/care/xray/XrayPrintDocument"
 import { ExpenseSheetPrintDocument } from "@/app/container/care/expenseSheet/ExpenseSheetPrintDocument"
 import { InvoicePrintDocument } from "@/app/container/billing/admissionIntegral/invoicingTab/printPreview/InvoicePrintDocument"
 import { FuripsPrintDocument } from "@/app/container/billing/furips/FuripsPrintDocument"
+import { ReferralPrintDocument } from "@/app/container/care/admissions/ReferralPrintDocument"
 import type { AdmissionRecord } from "./useAdmissionRecord"
 import type { RecordStageKey } from "./admissionRecord.stages"
 
@@ -47,6 +48,7 @@ export const recordSignerIds = (record: AdmissionRecord) => {
     ...record.descripcionesQuirurgicas.map((d) => d.cirujanoId),
     ...record.aplicaciones.flatMap((o) => o.aplicaciones?.map((a) => a.profesionalId) ?? []),
     ...record.hojaGastos.map((r) => r.asistencialId),
+    record.referral?.medicoRecibeUserId,
   ]
   return [...new Set(ids.filter((id): id is number => !!id))]
 }
@@ -93,55 +95,81 @@ export function AdmissionRecordDocuments({
 
   const sections: Record<RecordStageKey, () => ReactNode> = {
     ingreso: () => {
-      const triage = record.triage
+      const { triage, companion, referral } = record
       return (
-        <GenericClinicalPrintDocument
-          {...common}
-          documentTitle="Ingreso: Triage y Admisión"
-          attentionLabel="Fecha y hora de admisión:"
-          attentionDate={admission.admissionDate.slice(0, 10)}
-          attentionTime={formatTime(admission.admissionDate, "")}
-          doctorName=""
-          sections={[
-            {
-              title: "Triage",
-              rows: [
-                { label: "Fecha y hora", value: formatDateTime(triage?.fechaHora ?? admission.triageFechaHora, "") },
-                { label: "Prioridad", value: triage?.prioridad ?? admission.triagePrioridad },
-                { label: "Motivo de consulta", value: triage?.motivoConsulta },
-                { label: "TA", value: triage?.signosVitales?.tensionArterial },
-                { label: "FC (lpm)", value: triage?.signosVitales?.frecuenciaCardiaca },
-                { label: "FR (rpm)", value: triage?.signosVitales?.frecuenciaRespiratoria },
-                { label: "Temperatura (°C)", value: triage?.signosVitales?.temperatura },
-                { label: "Glasgow", value: triage?.signosVitales?.glasgow },
-                { label: "Peso (kg)", value: triage?.signosVitales?.peso },
-                { label: "Talla", value: triage?.signosVitales?.talla },
-              ],
-            },
-            {
-              title: "Admisión",
-              rows: [
-                { label: "N° de admisión", value: admission.id },
-                { label: "Fecha y hora", value: formatDateTime(admission.admissionDate, "") },
-                { label: "EPS", value: admission.epsNombre },
-                { label: "Convenio", value: admission.convenioNombre },
-                { label: "Modalidad de atención", value: admission.careModalityName },
-                { label: "Causa de atención", value: admission.careReasonName },
-                { label: "Clasificación del servicio", value: admission.serviceClassificationName },
-                { label: "Grupo de servicio", value: admission.serviceGroupName },
-                { label: "Tipo de admisión", value: admission.admissionTypeName },
-                { label: "Ámbito", value: admission.careScopeName },
-                { label: "Finalidad", value: admission.carePurposeName },
-                { label: "Tipo de factura", value: admission.invoiceOperationType },
-                { label: "N° de póliza", value: admission.policyNumber },
-                { label: "Copago", value: admission.copayValue },
-                { label: "Cuota moderadora", value: admission.moderatorFeeValue },
-                { label: "Pagos compartidos", value: admission.sharedPaymentsValue },
-                { label: "Anticipo", value: admission.advancePaymentValue },
-              ],
-            },
-          ]}
-        />
+        <>
+          <GenericClinicalPrintDocument
+            {...common}
+            documentTitle="Ingreso: Triage y Admisión"
+            attentionLabel="Fecha y hora de admisión:"
+            attentionDate={admission.admissionDate.slice(0, 10)}
+            attentionTime={formatTime(admission.admissionDate, "")}
+            doctorName=""
+            sections={[
+              {
+                title: "Triage",
+                rows: [
+                  { label: "Fecha y hora", value: formatDateTime(triage?.fechaHora ?? admission.triageFechaHora, "") },
+                  { label: "Prioridad", value: triage?.prioridad ?? admission.triagePrioridad },
+                  { label: "Motivo de consulta", value: triage?.motivoConsulta },
+                  { label: "TA", value: triage?.signosVitales?.tensionArterial },
+                  { label: "FC (lpm)", value: triage?.signosVitales?.frecuenciaCardiaca },
+                  { label: "FR (rpm)", value: triage?.signosVitales?.frecuenciaRespiratoria },
+                  { label: "Temperatura (°C)", value: triage?.signosVitales?.temperatura },
+                  { label: "Glasgow", value: triage?.signosVitales?.glasgow },
+                  { label: "Peso (kg)", value: triage?.signosVitales?.peso },
+                  { label: "Talla", value: triage?.signosVitales?.talla },
+                ],
+              },
+              {
+                title: "Admisión",
+                rows: [
+                  { label: "N° de admisión", value: admission.id },
+                  { label: "Fecha y hora", value: formatDateTime(admission.admissionDate, "") },
+                  { label: "EPS", value: admission.epsNombre },
+                  { label: "Convenio", value: admission.convenioNombre },
+                  { label: "Modalidad de atención", value: admission.careModalityName },
+                  { label: "Causa de atención", value: admission.careReasonName },
+                  { label: "Clasificación del servicio", value: admission.serviceClassificationName },
+                  { label: "Grupo de servicio", value: admission.serviceGroupName },
+                  { label: "Tipo de admisión", value: admission.admissionTypeName },
+                  { label: "Ámbito", value: admission.careScopeName },
+                  { label: "Finalidad", value: admission.carePurposeName },
+                  { label: "Tipo de factura", value: admission.invoiceOperationType },
+                  { label: "N° de póliza", value: admission.policyNumber },
+                  { label: "Copago", value: admission.copayValue },
+                  { label: "Cuota moderadora", value: admission.moderatorFeeValue },
+                  { label: "Pagos compartidos", value: admission.sharedPaymentsValue },
+                  { label: "Anticipo", value: admission.advancePaymentValue },
+                ],
+              },
+              ...(companion
+                ? [
+                    {
+                      title: "Acompañante",
+                      rows: [
+                        { label: "Documento", value: `${companion.documentTypeCode} ${companion.documentNumber}` },
+                        { label: "Nombre", value: companion.fullName },
+                        { label: "Parentesco", value: companion.kinshipTypeName },
+                        { label: "Teléfono", value: companion.phone },
+                        { label: "Email", value: companion.email },
+                        { label: "Dirección", value: companion.address },
+                      ],
+                    },
+                  ]
+                : []),
+            ]}
+          />
+          {referral && (
+            <ReferralPrintDocument
+              provider={provider}
+              patient={printPatient}
+              admission={admission}
+              referral={referral}
+              doctorUser={findUser(referral.medicoRecibeUserId)}
+            />
+          )}
+        </>
       )
     },
 

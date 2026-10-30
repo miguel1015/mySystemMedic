@@ -28,6 +28,8 @@ import {
   useGetFuripsByAdmission,
   useGetFuripsDatosSistema,
 } from "@/core/hooks/care/furips/useFurips"
+import { useGetAdmissionCompanion } from "@/core/hooks/care/admissions/useAdmissionCompanion"
+import { useGetAdmissionReferral } from "@/core/hooks/care/admissions/useAdmissionReferral"
 import { INSTITUTION_PROVIDER_ID } from "@/core/constants/institution"
 import type { RecordStageKey } from "./admissionRecord.stages"
 
@@ -57,6 +59,8 @@ export function useAdmissionRecord(admissionId: number, enabledStages: RecordSta
   const admission = useGetAdmissionById(admissionId)
   const patient = useGetPatientById(admission.data?.patientId ?? null)
   const triage = useGetTriageById(idFor("ingreso") ? admission.data?.triageId ?? null : null)
+  const companion = useGetAdmissionCompanion(idFor("ingreso"))
+  const referral = useGetAdmissionReferral(idFor("ingreso"))
 
   const historiaId = idFor("historia")
   const hcInicial = useGetHCInicialByAdmission(historiaId)
@@ -95,7 +99,7 @@ export function useAdmissionRecord(admissionId: number, enabledStages: RecordSta
   )
 
   const stageStatus: Record<RecordStageKey, StageStatus> = {
-    ingreso: statusOf([admission, patient, triage]),
+    ingreso: statusOf([admission, patient, triage, companion, referral]),
     historia: statusOf([
       hcInicial, evoluciones, evolucionEspecialistas, procedimientosMenores,
       procedimientosDiagnosticos, procedimientosNoQx, notasEnfermeria, datosClinicosEgreso,
@@ -116,6 +120,8 @@ export function useAdmissionRecord(admissionId: number, enabledStages: RecordSta
     admission: admission.data,
     patient: patient.data,
     triage: triage.data,
+    companion: companion.data ?? null,
+    referral: referral.data ?? null,
     hcInicial: hcInicial.data ?? null,
     notasMedicas: notasMedicas.data ?? [],
     evoluciones: evoluciones.data ?? [],

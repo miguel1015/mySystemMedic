@@ -169,6 +169,11 @@ export interface AdmissionResponse {
   advancePaymentValue?: number;
   invoiceOperationType?: InvoiceOperationType | null;
   collectionCufe?: string | null;
+  // Acompañante del paciente (null si no se ha registrado).
+  acompananteNombre?: string | null;
+  acompananteParentesco?: string | null;
+  // Remisión registrada en Admisiones (independiente de la del FURIPS).
+  tieneRemision?: boolean;
   isActive: boolean;
   createdAt: string;
 }

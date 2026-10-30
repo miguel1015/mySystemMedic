@@ -6,6 +6,15 @@ export const CARE_ENDPOINTS = {
   },
   ADMISSION_CATALOGS: {
     GET_ALL: "/api/auth/care/getAll?type=admission-catalogs",
+    KINSHIP_TYPES: "/api/auth/care/getAll?type=kinship-types",
+  },
+  ADMISSION_COMPANION: {
+    GET: (admissionId: IdParam) => `/api/auth/care/admissions/${admissionId}/companion`,
+    SAVE: (admissionId: IdParam) => `/api/auth/care/admissions/${admissionId}/companion`,
+  },
+  ADMISSION_REFERRAL: {
+    GET: (admissionId: IdParam) => `/api/auth/care/admissions/${admissionId}/referral`,
+    SAVE: (admissionId: IdParam) => `/api/auth/care/admissions/${admissionId}/referral`,
   },
   ADMISSIONS: {
     GET_ALL: "/api/auth/care/admissions",

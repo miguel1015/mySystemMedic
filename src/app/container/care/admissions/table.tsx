@@ -33,16 +33,12 @@ interface AdmissionsTableProps {
   onEdit?: (admission: AdmissionResponse) => void;
   onHistory?: (admission: AdmissionResponse) => void;
   onFurips?: (admission: AdmissionResponse) => void;
+  onCompanion?: (admission: AdmissionResponse) => void;
+  onReferral?: (admission: AdmissionResponse) => void;
   // Si se omite, la tabla es de solo consulta (sin columna de acciones).
   withActions?: boolean;
   emptyText?: string;
 }
-
-// Opciones que aún no tienen módulo propio.
-const PENDING_ACTIONS: Partial<Record<AdmissionAction, string>> = {
-  companion: "Ingresar acompañante",
-  referral: "Remisión",
-};
 
 export default function AdmissionsTable({
   data,
@@ -50,6 +46,8 @@ export default function AdmissionsTable({
   onEdit,
   onHistory,
   onFurips,
+  onCompanion,
+  onReferral,
   withActions = true,
   emptyText = "No existen registros para los criterios de búsqueda",
 }: AdmissionsTableProps) {
@@ -82,13 +80,15 @@ export default function AdmissionsTable({
       case "furips":
         onFurips?.(record);
         break;
+      case "companion":
+        onCompanion?.(record);
+        break;
+      case "referral":
+        onReferral?.(record);
+        break;
       case "delete":
         setAdmissionToDelete(record);
         break;
-      default:
-        toast(`${PENDING_ACTIONS[action]}: funcionalidad en desarrollo`, {
-          icon: "🛠️",
-        });
     }
   };
 
@@ -103,8 +103,18 @@ export default function AdmissionsTable({
     },
     { key: "history", icon: <HistoryOutlined />, label: "Historial de admisiones" },
     { key: "furips", icon: <CarOutlined />, label: "Información del accidente (FURIPS)" },
-    { key: "companion", icon: <UserAddOutlined />, label: PENDING_ACTIONS.companion },
-    { key: "referral", icon: <SendOutlined />, label: PENDING_ACTIONS.referral },
+    {
+      key: "companion",
+      icon: <UserAddOutlined />,
+      label: record.acompananteNombre ? "Editar acompañante" : "Ingresar acompañante",
+      disabled: !record.isActive,
+    },
+    {
+      key: "referral",
+      icon: <SendOutlined />,
+      label: record.tieneRemision ? "Editar remisión" : "Remisión",
+      disabled: !record.isActive,
+    },
     { type: "divider" },
     {
       key: "delete",
@@ -154,6 +164,22 @@ export default function AdmissionsTable({
       render: (value: string) => (
         <span style={{ fontWeight: 500 }}>{value}</span>
       ),
+    },
+    {
+      title: "Acompañante",
+      dataIndex: "acompananteNombre",
+      width: 220,
+      render: (value: string | null | undefined, record) =>
+        value ? (
+          <div style={{ lineHeight: 1.3 }}>
+            <div>{value}</div>
+            <div style={{ fontSize: 12, color: "#8c8c8c" }}>
+              {record.acompananteParentesco}
+            </div>
+          </div>
+        ) : (
+          <span style={{ color: "#bfbfbf" }}>—</span>
+        ),
     },
     {
       title: "Triage",

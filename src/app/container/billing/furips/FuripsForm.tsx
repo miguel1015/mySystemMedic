@@ -39,6 +39,7 @@ import { INSTITUTION_PROVIDER_ID } from "@/core/constants/institution"
 import {
   FURIPS_ADRES,
   FURIPS_CONDICIONES_ACCIDENTADO,
+  FURIPS_ESTADO,
   FURIPS_ESTADOS_ASEGURAMIENTO,
   FURIPS_SI_NO,
   FURIPS_TIPOS_ATENCION_INICIAL,
@@ -176,9 +177,16 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
   const codigoAseguradora = Form.useWatch("codigoAseguradora", form)
   const nombreAseguradora = Form.useWatch("nombreAseguradora", form)
   const isBilling = mode === "billing"
+  // Del vehículo fantasma no se conoce nada: la sección IV queda vacía y bloqueada.
+  const esFantasma = estado === FURIPS_ESTADO.FANTASMA
 
   // Sin SOAT vigente la reclamación va a la ADRES.
   const handleEstadoChange = (value: string) => {
+    if (value === FURIPS_ESTADO.FANTASMA) {
+      form.setFieldsValue(VEHICULO_VACIO)
+      form.validateFields(Object.keys(VEHICULO_VACIO) as (keyof typeof VEHICULO_VACIO)[])
+      return
+    }
     if (!furipsRequierePoliza(value) && !isFilled(form.getFieldValue("codigoAseguradora"))) {
       form.setFieldsValue({
         codigoAseguradora: FURIPS_ADRES.codigo,
@@ -545,12 +553,12 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
                     },
                   ]}
                 >
-                  <Input maxLength={7} placeholder="Ej: ABC123" />
+                  <Input maxLength={7} placeholder="Ej: ABC123" disabled={esFantasma} />
                 </Form.Item>
               </Col>
               <Col xs={24} md={6}>
                 <Form.Item name="marca" label="Marca">
-                  <Input maxLength={50} />
+                  <Input maxLength={50} disabled={esFantasma} />
                 </Form.Item>
               </Col>
               <Col xs={24} md={8}>
@@ -571,12 +579,18 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
                     optionFilterProp="label"
                     options={FURIPS_TIPOS_VEHICULO}
                     placeholder="— Seleccione —"
+                    disabled={esFantasma}
                   />
                 </Form.Item>
               </Col>
               <Col xs={24} md={8}>
                 <Form.Item name="tipoServicio" label="Tipo de servicio">
-                  <Select allowClear options={FURIPS_TIPOS_SERVICIO} placeholder="— Seleccione —" />
+                  <Select
+                    allowClear
+                    options={FURIPS_TIPOS_SERVICIO}
+                    placeholder="— Seleccione —"
+                    disabled={esFantasma}
+                  />
                 </Form.Item>
               </Col>
               <Col xs={24} md={8}>
@@ -597,6 +611,7 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
                     optionFilterProp="label"
                     placeholder="— Seleccione —"
                     options={withCurrentInsurer(insurerOptions, codigoAseguradora, nombreAseguradora)}
+                    disabled={esFantasma}
                     onChange={(code?: string) => {
                       const insurer = insurerOptions.find((o) => o.value === code)
                       form.setFieldValue("nombreAseguradora", insurer?.name ?? null)
@@ -620,7 +635,7 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
                     },
                   ]}
                 >
-                  <Input maxLength={30} />
+                  <Input maxLength={30} disabled={esFantasma} />
                 </Form.Item>
               </Col>
               <Col xs={24} md={8}>
@@ -634,7 +649,7 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
                     },
                   ]}
                 >
-                  <Input maxLength={30} />
+                  <Input maxLength={30} disabled={esFantasma} />
                 </Form.Item>
               </Col>
               <Col xs={12} md={4}>
@@ -649,7 +664,7 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
                     },
                   ]}
                 >
-                  <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
+                  <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} disabled={esFantasma} />
                 </Form.Item>
               </Col>
               <Col xs={12} md={4}>
@@ -676,12 +691,12 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
                     },
                   ]}
                 >
-                  <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
+                  <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} disabled={esFantasma} />
                 </Form.Item>
               </Col>
               <Col xs={24} md={8}>
                 <Form.Item name="cobroExcedentePoliza" label="Cobro excedente póliza">
-                  <Radio.Group options={FURIPS_SI_NO} optionType="button" />
+                  <Radio.Group options={FURIPS_SI_NO} optionType="button" disabled={esFantasma} />
                 </Form.Item>
               </Col>
             </Row>
@@ -872,6 +887,20 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
 }
 
 const POPUP_Z_INDEX_BASE = 1100
+
+const VEHICULO_VACIO = {
+  placa: null,
+  marca: null,
+  tipoVehiculo: null,
+  tipoServicio: null,
+  codigoAseguradora: null,
+  nombreAseguradora: null,
+  numeroPoliza: null,
+  siras: null,
+  vigenciaDesde: null,
+  vigenciaHasta: null,
+  cobroExcedentePoliza: false,
+} satisfies Partial<FuripsFormValues>
 
 /* ─────────────── Piezas del formulario ─────────────── */
 

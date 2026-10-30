@@ -23,7 +23,7 @@ export const RECORD_STAGES: RecordStage[] = [
   {
     key: "ingreso",
     title: "Ingreso",
-    description: "Triage y admisión",
+    description: "Triage, admisión, acompañante y remisión",
     count: () => 1,
   },
   {

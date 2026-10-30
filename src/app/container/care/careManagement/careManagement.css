@@ -1,0 +1,37 @@
+/* Consultar HC: el detalle muestra documentos completos, así que usa más alto que
+   los históricos de Evolucionar HC y permite desplazarse a lo ancho. */
+.chb-body .chrm-list,
+.chb-body .chrm-detail {
+  max-height: 65vh;
+}
+
+.chb-body .chrm-detail {
+  overflow-x: auto;
+}
+
+.chb-body .chrm-detail .hci-print-screen-wrap {
+  max-height: none;
+  overflow-y: visible;
+}
+
+.chb-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.chb-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+  .chb-body .chrm-list,
+  .chb-body .chrm-detail {
+    max-height: none;
+  }
+}

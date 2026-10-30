@@ -11,6 +11,8 @@ import toast from "react-hot-toast"
 import AdmissionsForm from "./admissionsForm"
 import AdmissionsTable from "./table"
 import AdmissionHistoryModal from "./admissionHistoryModal"
+import CompanionForm from "./companionForm"
+import ReferralForm from "./referralForm"
 import FuripsForm from "@/app/container/billing/furips/FuripsForm"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 import {
@@ -33,6 +35,10 @@ export default function AdmissionsContainer() {
   const [historyAdmission, setHistoryAdmission] =
     useState<AdmissionResponse | null>(null)
   const [furipsAdmission, setFuripsAdmission] =
+    useState<AdmissionResponse | null>(null)
+  const [companionAdmission, setCompanionAdmission] =
+    useState<AdmissionResponse | null>(null)
+  const [referralAdmission, setReferralAdmission] =
     useState<AdmissionResponse | null>(null)
   const [searchField, setSearchField] = useState<SearchField>("documento")
   const [searchTerm, setSearchTerm] = useState("")
@@ -125,6 +131,8 @@ export default function AdmissionsContainer() {
           onEdit={handleEdit}
           onHistory={setHistoryAdmission}
           onFurips={setFuripsAdmission}
+          onCompanion={setCompanionAdmission}
+          onReferral={setReferralAdmission}
         />
       ) : (
         <Empty
@@ -159,6 +167,45 @@ export default function AdmissionsContainer() {
             admissionId={furipsAdmission.id}
             mode="admission"
             onClose={() => setFuripsAdmission(null)}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        open={!!companionAdmission}
+        onClose={() => setCompanionAdmission(null)}
+        title={
+          companionAdmission
+            ? `Acompañante del paciente · Admisión ${companionAdmission.id} · ${companionAdmission.nombrePaciente}`
+            : "Acompañante del paciente"
+        }
+        size="md"
+      >
+        {companionAdmission && (
+          <CompanionForm
+            key={companionAdmission.id}
+            admissionId={companionAdmission.id}
+            patientId={companionAdmission.patientId}
+            onClose={() => setCompanionAdmission(null)}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        open={!!referralAdmission}
+        onClose={() => setReferralAdmission(null)}
+        title={
+          referralAdmission
+            ? `Remisión · Admisión ${referralAdmission.id} · ${referralAdmission.nombrePaciente}`
+            : "Remisión"
+        }
+        size="lg"
+      >
+        {referralAdmission && (
+          <ReferralForm
+            key={referralAdmission.id}
+            admission={referralAdmission}
+            onClose={() => setReferralAdmission(null)}
           />
         )}
       </Modal>

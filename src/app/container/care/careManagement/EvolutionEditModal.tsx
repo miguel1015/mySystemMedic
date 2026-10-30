@@ -139,6 +139,7 @@ export default function EvolutionEditModal({ entry, onClose, onSaved, messageApi
                 showSearch
                 optionFilterProp="label"
                 placeholder="Especialidad"
+                dropdownStyle={{ zIndex: 1060 }}
                 options={especialidades.map((e) => ({ value: e.id, label: e.nombre }))}
               />
             </Form.Item>

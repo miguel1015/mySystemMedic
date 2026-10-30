@@ -4,6 +4,7 @@ import { SearchOutlined } from "@ant-design/icons"
 import { Alert, Button, Empty, Input, Segmented, Spin, Table, Tag, message } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import Title from "antd/es/typography/Title"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Container } from "@/components/container"
@@ -23,9 +24,28 @@ const SEARCH_OPTIONS: { value: ClinicalHistorySearchBy; label: string; placehold
   { value: "numero", label: "N° de admisión", placeholder: "Número de admisión" },
 ]
 
+// La HC consulta muchos módulos: caché propia con un solo reintento (una consulta que
+// falla no deja la vista cargando varios segundos) y sin recargar al volver a la ventana.
+const CareManagementContainer = () => {
+  const [client] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: { retry: 1, staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false },
+        },
+      }),
+  )
+
+  return (
+    <QueryClientProvider client={client}>
+      <ClinicalHistoryView />
+    </QueryClientProvider>
+  )
+}
+
 // Consultar HC: ubica al paciente por documento o número de admisión, lista sus
 // admisiones y muestra la historia clínica de la que se seleccione.
-const CareManagementContainer = () => {
+const ClinicalHistoryView = () => {
   const searchParams = useSearchParams()
   const [messageApi, contextHolder] = message.useMessage()
 
