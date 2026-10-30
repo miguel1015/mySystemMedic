@@ -12,7 +12,7 @@ import {
 import { Alert, Modal as AntModal, Button, Progress, Spin, Tag, Tooltip, Typography } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useGetProvider } from "@/core/hooks/parameterization/providers/useGetProvider"
 import { useGetUsersByIds } from "@/core/hooks/users/useGetByIdUser"
 import { useGetAdmissionRecordSummary } from "@/core/hooks/care/admissions/useAdmissionHistory"
@@ -140,6 +140,10 @@ export default function AdmissionClinicalRecord({ admission, patient, messageApi
 
   const [editing, setEditing] = useState<EvolutionEntry | null>(null)
   const [openDocument, setOpenDocument] = useState<OpenDocument | null>(null)
+  // El documento sigue montado mientras el modal anima su cierre, en vez de desaparecer de golpe.
+  const lastDocument = useRef<OpenDocument | null>(null)
+  if (openDocument) lastDocument.current = openDocument
+  const shownDocument = openDocument ?? lastDocument.current
   const [browser, setBrowser] = useState<OpenBrowser | null>(null)
   const [printOpen, setPrintOpen] = useState(false)
   const deleteEvolucion = useDeleteEvolucion()
@@ -518,17 +522,17 @@ export default function AdmissionClinicalRecord({ admission, patient, messageApi
         messageApi={messageApi}
       />
 
-      {openDocument && (
+      {shownDocument && (
         <ClinicalPrintPreviewModal
-          open
+          open={!!openDocument}
           onClose={() => setOpenDocument(null)}
-          title={openDocument.title}
+          title={shownDocument.title}
           renderDocument={(p) =>
             openDocumentLoading ? (
               centeredSpin
             ) : (
               <ClinicalHistoryDocument
-                kind={openDocument.kind}
+                kind={shownDocument.kind}
                 record={record}
                 provider={p}
                 usersById={usersById}

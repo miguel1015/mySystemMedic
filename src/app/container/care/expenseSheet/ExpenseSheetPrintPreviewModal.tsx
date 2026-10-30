@@ -63,6 +63,7 @@ const ExpenseSheetPrintPreviewModal = ({
         onClose={onClose}
         title={HOJA_TEXTOS[tipoHoja].titulo}
         size="xl"
+        instant
         footer={
           <>
             <Button onClick={onClose}>Cerrar</Button>

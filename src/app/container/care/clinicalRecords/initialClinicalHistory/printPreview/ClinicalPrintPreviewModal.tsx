@@ -28,6 +28,7 @@ const ClinicalPrintPreviewModal = ({ open, onClose, title, renderDocument }: Pro
         onClose={onClose}
         title={title}
         size="xl"
+        instant
         footer={
           <>
             <Button onClick={onClose}>Cerrar</Button>

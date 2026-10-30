@@ -18,6 +18,8 @@ export const InstitutionLogo = ({ provider, className }: Props) => {
       <img
         src={provider.logo}
         alt={provider.name ? `Logo ${provider.name}` : "Logo"}
+        // Se decodifica junto con la hoja para que el logo no aparezca un instante después.
+        decoding="sync"
         style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "left center" }}
       />
     </div>

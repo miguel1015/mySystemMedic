@@ -12,6 +12,7 @@
 .chb-body .chrm-detail .hci-print-screen-wrap {
   max-height: none;
   overflow-y: visible;
+  border-radius: 6px;
 }
 
 .chb-item-tags {

@@ -64,6 +64,7 @@ const NotaMedicaPrintPreviewModal = ({
         onClose={onClose}
         title={title}
         size="xl"
+        instant
         footer={
           <>
             <Button onClick={onClose}>Cerrar</Button>

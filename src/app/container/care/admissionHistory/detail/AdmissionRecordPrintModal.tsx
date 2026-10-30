@@ -49,6 +49,7 @@ export default function AdmissionRecordPrintModal({
         onClose={onClose}
         title="Vista previa - Expediente de la admisión"
         size="xl"
+        instant
         footer={
           <>
             <Button onClick={onClose}>Cerrar</Button>

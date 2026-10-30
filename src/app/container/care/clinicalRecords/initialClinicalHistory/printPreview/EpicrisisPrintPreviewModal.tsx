@@ -102,6 +102,7 @@ const EpicrisisPrintPreviewModal = ({
         onClose={onClose}
         title="Vista previa - Epicrisis"
         size="xl"
+        instant
         footer={
           <>
             <Button onClick={onClose}>Cerrar</Button>

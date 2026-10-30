@@ -2,7 +2,7 @@
 
 import { ClockCircleOutlined, PrinterOutlined, UserOutlined } from "@ant-design/icons"
 import { Button, Empty, Skeleton } from "antd"
-import { useEffect, useState, type ReactNode } from "react"
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react"
 import { createPortal } from "react-dom"
 import Modal from "@/components/modal"
 import "@/components/clinicalRecordHistoryModal/clinicalRecordHistoryModal.css"
@@ -32,11 +32,19 @@ interface Props {
 
 // Listado de registros a la izquierda y el detalle del seleccionado a la derecha,
 // como los históricos de Evolucionar HC. En pantallas angostas es lista y luego detalle.
-export default function RecordBrowserModal({ open, onClose, title, items, loading, emptyText }: Props) {
+export default function RecordBrowserModal({ open, onClose, ...props }: Props) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!open) setSelectedKey(null)
+  // Mientras se anima el cierre se sigue mostrando lo último que tenía abierto: el padre
+  // vacía título y registros al cerrar, y si el contenido cambia el modal se encoge y
+  // parece que volviera a abrirse antes de irse.
+  const lastShown = useRef(props)
+  if (open) lastShown.current = props
+  const { title, items, loading, emptyText } = open ? props : lastShown.current
+
+  // La selección se limpia al volver a abrir, no al cerrar, por la misma razón.
+  useLayoutEffect(() => {
+    if (open) setSelectedKey(null)
   }, [open])
 
   // Si el registro deja de existir (se eliminó), se vuelve al listado.
@@ -45,7 +53,7 @@ export default function RecordBrowserModal({ open, onClose, title, items, loadin
 
   return (
     <>
-      <Modal open={open} onClose={onClose} size="xl" title={title}>
+      <Modal open={open} onClose={onClose} size="xl" title={title} instant>
         {loading ? (
           <div className="chrm-skeleton-wrap">
             {[1, 2, 3].map((key) => (
@@ -99,7 +107,8 @@ export default function RecordBrowserModal({ open, onClose, title, items, loadin
                       </Button>
                     )}
                   </div>
-                  {selected.renderDetail()}
+                  {/* Con key cada registro monta su documento de cero y pagina a tamaño real. */}
+                  <div key={selected.key}>{selected.renderDetail()}</div>
                 </>
               ) : (
                 <div className="chrm-detail-empty">

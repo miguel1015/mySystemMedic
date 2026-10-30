@@ -107,6 +107,77 @@
 }
 
 /* ========================
+   Entrada de los modales con documentos (prop `instant`)
+   ======================== */
+
+/* Animación CSS y no de framer-motion: el navegador la arranca al pintar el primer
+   fotograma, cuando ya terminó de montar el documento, así que no se salta el comienzo.
+   Solo anima opacidad y transformación, que corren en el compositor y siguen fluidas
+   aunque el hilo principal quede ocupado después. */
+.modal-overlay.modal-instant {
+  animation: modal-instant-fade 0.25s ease-out both;
+}
+
+.modal-wrapper.modal-instant .modal-dialog-custom {
+  animation: modal-instant-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Salida: el componente desmonta el modal al terminar la animación del cuadro
+   (animationend), y el fondo se va en el mismo tiempo para no quedar el modal solo. */
+.modal-overlay.modal-instant.is-closing {
+  animation: modal-instant-fade-out 0.2s ease-in both;
+}
+
+.modal-wrapper.modal-instant.is-closing .modal-dialog-custom {
+  animation: modal-instant-leave 0.2s ease-in both;
+}
+
+/* Mientras se va, los clics pasan a la página. */
+.modal-instant.is-closing {
+  pointer-events: none;
+}
+
+@keyframes modal-instant-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-instant-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes modal-instant-enter {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes modal-instant-leave {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(24px) scale(0.94);
+  }
+}
+
+/* Sin `animation: none`: la salida necesita que dispare animationend para desmontar. */
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay.modal-instant,
+  .modal-wrapper.modal-instant .modal-dialog-custom {
+    animation-duration: 0.01s !important;
+  }
+}
+
+/* ========================
    Scrollbar styling
    ======================== */
 

@@ -62,6 +62,7 @@ const MedicationApplicationPrintPreviewModal = ({
         onClose={onClose}
         title="Aplicación de Medicamentos"
         size="xl"
+        instant
         footer={
           <>
             <Button onClick={onClose}>Cerrar</Button>

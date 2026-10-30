@@ -23,6 +23,7 @@ import { XrayPrintDocument } from "@/app/container/care/xray/XrayPrintDocument"
 import { ExpenseSheetPrintDocument } from "@/app/container/care/expenseSheet/ExpenseSheetPrintDocument"
 import type { AdmissionRecord } from "@/app/container/care/admissionHistory/detail/useAdmissionRecord"
 import type { BrowserItem } from "./RecordBrowserModal"
+import FitPrintSheet from "./FitPrintSheet"
 import type { EvolutionEntry } from "./clinicalHistory.utils"
 
 // Documentos de un solo registro (o consolidados): se abren directamente.
@@ -186,7 +187,7 @@ export function evolutionPrintDocument(entry: EvolutionEntry, ctx: DocumentConte
 const documentItem = (item: Omit<BrowserItem, "renderDetail" | "renderPrint">, render: () => ReactNode): BrowserItem => ({
   ...item,
   renderPrint: render,
-  renderDetail: () => <div className="hci-print-screen-wrap">{render()}</div>,
+  renderDetail: () => <FitPrintSheet>{render()}</FitPrintSheet>,
 })
 
 const byDate = (a: BrowserItem & { sort: string }, b: BrowserItem & { sort: string }) => a.sort.localeCompare(b.sort)

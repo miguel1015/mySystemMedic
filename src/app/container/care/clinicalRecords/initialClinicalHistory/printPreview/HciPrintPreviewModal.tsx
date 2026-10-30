@@ -70,6 +70,7 @@ const HciPrintPreviewModal = ({
         onClose={onClose}
         title="Vista previa - Historia Clínica Inicial"
         size="xl"
+        instant
         footer={
           <>
             <Button onClick={onClose}>Cerrar</Button>

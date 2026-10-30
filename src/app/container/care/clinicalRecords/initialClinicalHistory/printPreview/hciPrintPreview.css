@@ -222,7 +222,9 @@
 .hci-print-screen-wrap {
   background: var(--dash-bg, #eef1f0);
   padding: 20px 0;
-  max-height: 72vh;
+  /* Cabe dentro del modal (90vh menos encabezado, pie y relleno ≈ 180px): si se pasa,
+     el cuerpo del modal saca su propia barra además de esta. */
+  max-height: min(72vh, calc(90vh - 180px));
   overflow-y: auto;
 }
 
