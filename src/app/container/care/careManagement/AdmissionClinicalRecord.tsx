@@ -1,18 +1,30 @@
 "use client"
 
 import {
+  CameraOutlined,
+  ContainerOutlined,
   DeleteOutlined,
+  DollarOutlined,
   EditOutlined,
+  ExperimentOutlined,
+  FileDoneOutlined,
   FileTextOutlined,
+  FormOutlined,
   HistoryOutlined,
   LockOutlined,
+  MedicineBoxOutlined,
   PrinterOutlined,
+  ProfileOutlined,
+  RightOutlined,
+  ScissorOutlined,
+  SolutionOutlined,
+  ToolOutlined,
   UnlockOutlined,
 } from "@ant-design/icons"
-import { Alert, Modal as AntModal, Button, Progress, Spin, Tag, Tooltip, Typography } from "antd"
+import { Alert, Modal as AntModal, Button, Empty, Progress, Skeleton, Spin, Tag, Tooltip } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
 import { useQueryClient } from "@tanstack/react-query"
-import { useRef, useState } from "react"
+import { useRef, useState, type ReactNode } from "react"
 import { useGetProvider } from "@/core/hooks/parameterization/providers/useGetProvider"
 import { useGetUsersByIds } from "@/core/hooks/users/useGetByIdUser"
 import { useGetAdmissionRecordSummary } from "@/core/hooks/care/admissions/useAdmissionHistory"
@@ -83,14 +95,75 @@ const HOJAS_GASTOS: { tipo: TipoHojaGastos; label: string }[] = [
   { tipo: "Urgencias", label: "Urgencias" },
 ]
 
-const headerCellStyle = { backgroundColor: "rgba(var(--theme-primary-rgb, 15,111,92), 0.08)" }
-const mutedText = { color: "var(--dash-text-secondary, #6b7280)", fontSize: 12 }
-
 const centeredSpin = (
   <div className="d-flex justify-content-center py-5">
     <Spin size="large" />
   </div>
 )
+
+type Tone = "emerald" | "blue" | "violet" | "amber" | "rose" | "cyan"
+
+const SMALL_WORDS = new Set(["y", "e", "de", "del", "la", "las", "el", "los", "en", "con", "sin"])
+
+// "ORTOPEDIA Y TRAUMATOLOGÍA" → "Ortopedia y Traumatología": las mayúsculas quedan para los títulos.
+const titleCase = (text: string) =>
+  text
+    .toLocaleLowerCase("es")
+    .split(" ")
+    .map((word, i) =>
+      i > 0 && SMALL_WORDS.has(word) ? word : word.charAt(0).toLocaleUpperCase("es") + word.slice(1),
+    )
+    .join(" ")
+
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w.charAt(0))
+    .join("")
+    .toUpperCase()
+
+interface RecordRowProps {
+  icon: ReactNode
+  tone: Tone
+  title: string
+  subtitle?: ReactNode
+  // Sin conteo la fila abre un documento único (HC inicial, epicrisis).
+  count?: number
+  onOpen: () => void
+}
+
+// Fila de la HC: toda la fila abre el registro.
+function RecordRow({ icon, tone, title, subtitle, count, onOpen }: RecordRowProps) {
+  return (
+    <button type="button" className="chv-row" onClick={onOpen}>
+      <span className={`chv-icon tone-${tone}`}>{icon}</span>
+      <span className="chv-row-text">
+        <span className="chv-row-title d-block">{title}</span>
+        <span className="chv-row-subtitle d-block">{subtitle}</span>
+      </span>
+      {count !== undefined && <span className="chv-count">{count}</span>}
+      <RightOutlined className="chv-chevron" />
+    </button>
+  )
+}
+
+// rows null: la sección aún carga y se muestra un esqueleto.
+const hasRows = (rows: ReactNode[] | null) => rows === null || rows.some(Boolean)
+
+function Section({ title, rows }: { title: string; rows: ReactNode[] | null }) {
+  return (
+    <section className="chv-section">
+      <div className="chv-section-title">{title}</div>
+      {rows ?? (
+        <div className="chv-section-skeleton">
+          <Skeleton active avatar={{ shape: "square" }} paragraph={{ rows: 1 }} />
+        </div>
+      )}
+    </section>
+  )
+}
 
 interface Props {
   admission: ClinicalHistoryAdmission
@@ -239,7 +312,7 @@ export default function AdmissionClinicalRecord({ admission, patient, messageApi
               </Button>
             </Tooltip>
             <Tooltip title={closed ? CLOSED_HINT : undefined}>
-              <Button danger icon={<DeleteOutlined />} disabled={closed} onClick={() => handleDelete(entry)}>
+              <Button danger type="text" icon={<DeleteOutlined />} disabled={closed} onClick={() => handleDelete(entry)}>
                 Eliminar
               </Button>
             </Tooltip>
@@ -255,31 +328,19 @@ export default function AdmissionClinicalRecord({ admission, patient, messageApi
       }
     })
 
-  // Botón del documento, o un aviso cuando la admisión no tiene registros de ese tipo.
-  const docButton = (kind: ClinicalDocumentKind, label: string, count: number, title = label) =>
-    count > 0 ? (
-      <Button size="small" icon={<FileTextOutlined />} onClick={() => openDoc(kind, title)}>
-        {label} ({count})
-      </Button>
-    ) : (
-      <span style={mutedText}>Sin registros</span>
-    )
-
   if (summaryQuery.isError || record.admissionError) {
     return <Alert type="error" showIcon message="No se pudo cargar la información de la admisión." />
   }
   if (!summary) return centeredSpin
 
   const count = (m: ClinicalModule) => moduleCount(summary, m)
-  const otherRecords = (
-    [
-      { kind: "notasMedicas", label: "Notas médicas", count: count("notasMedicas") },
-      { kind: "notasEnfermeria", label: "Notas de enfermería", count: count("notasEnfermeria") },
-      { kind: "procedimientos", label: "Procedimientos", count: count("procedimientos") },
-      { kind: "cirugia", label: "Descripción quirúrgica y anestesia", count: count("cirugia") },
-      { kind: "formulasPos", label: "Fórmulas POS", count: count("formulasPos") },
-    ] satisfies { kind: ClinicalDocumentKind; label: string; count: number }[]
-  ).filter((r) => r.count > 0)
+  const otherRecords = [
+    { kind: "notasMedicas", label: "Notas médicas", icon: <SolutionOutlined />, count: count("notasMedicas") },
+    { kind: "notasEnfermeria", label: "Notas de enfermería", icon: <FormOutlined />, count: count("notasEnfermeria") },
+    { kind: "procedimientos", label: "Procedimientos", icon: <ToolOutlined />, count: count("procedimientos") },
+    { kind: "cirugia", label: "Descripción quirúrgica y anestesia", icon: <ScissorOutlined />, count: count("cirugia") },
+    { kind: "formulasPos", label: "Fórmulas POS", icon: <ProfileOutlined />, count: count("formulasPos") },
+  ] satisfies { kind: ClinicalDocumentKind; label: string; icon: ReactNode; count: number }[]
 
   const browserGroup = browser?.type === "evoluciones" ? groups.find((g) => g.key === browser.groupKey) : undefined
   const browserLoading =
@@ -289,52 +350,69 @@ export default function AdmissionClinicalRecord({ admission, patient, messageApi
   const hci = record.hcInicial
   const openDocumentLoading = !!openDocument && loadingAny(DOCUMENT_MODULES(openDocument.kind))
 
+  // Fila de un módulo con listado o documento; sin registros no se muestra.
+  const moduleRow = (kind: ClinicalDocumentKind, label: string, icon: ReactNode, tone: Tone, n: number, title = label) =>
+    n > 0 && (
+      <RecordRow
+        key={kind}
+        icon={icon}
+        tone={tone}
+        title={label}
+        subtitle={`${n} ${n === 1 ? "registro" : "registros"}`}
+        count={n}
+        onOpen={() => openDoc(kind, title)}
+      />
+    )
+
+  const patientFields = [
+    { label: "Documento", value: `${patient.documentTypeCode} ${patient.documentoPaciente}` },
+    { label: "Admisión", value: `N° ${admission.id}` },
+    { label: "Ingreso", value: formatDateTime(admission.admissionDate) },
+    { label: "Ámbito", value: admission.careScopeName },
+    { label: "EPS", value: admission.epsNombre },
+    { label: "Convenio", value: admission.convenioNombre },
+  ].filter((f) => f.value)
+
   return (
     <>
-      <div
-        style={{
-          backgroundColor: "var(--theme-primary, #0F6F5C)",
-          color: "#ffffff",
-          padding: "12px 16px",
-          borderRadius: 6,
-          marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 700 }}>PACIENTE: {patient.nombrePaciente}</div>
-          <div style={{ fontSize: 13, marginTop: 4, display: "flex", flexWrap: "wrap", columnGap: 16 }}>
-            <span>
-              Documento: {patient.documentTypeCode} {patient.documentoPaciente}
-            </span>
-            <span>Admisión N° {admission.id}</span>
-            <span>Ingreso: {formatDateTime(admission.admissionDate)}</span>
-            {admission.careScopeName && <span>Ámbito: {admission.careScopeName}</span>}
-            <span>EPS: {admission.epsNombre}</span>
+      <div className="chv-patient">
+        <div className="chv-patient-main">
+          <div className="chv-avatar">{initials(patient.nombrePaciente)}</div>
+          <div style={{ minWidth: 0 }}>
+            <div className="chv-patient-name">{patient.nombrePaciente}</div>
+            <div className="chv-patient-grid">
+              {patientFields.map((f) => (
+                <div className="chv-field" key={f.label}>
+                  <span className="chv-field-label">{f.label}</span>
+                  <span>{f.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Tag icon={closed ? <LockOutlined /> : <UnlockOutlined />} color={closed ? "red" : "green"}>
-            {closed ? `Cerrada · ${admission.numeroFactura}` : "Abierta"}
-          </Tag>
-          <Button icon={<PrinterOutlined />} onClick={openPrint}>
-            Imprimir HC
-          </Button>
+        <div className="chv-patient-side">
+          <div className="chv-patient-status">
+            <Tag
+              icon={closed ? <LockOutlined /> : <UnlockOutlined />}
+              color={closed ? "red" : "green"}
+              style={{ marginInlineEnd: 0, padding: "2px 10px", fontSize: 13 }}
+            >
+              {closed ? "Cerrada" : "Abierta"}
+            </Tag>
+            <Button type="primary" icon={<PrinterOutlined />} onClick={openPrint}>
+              Imprimir HC
+            </Button>
+          </div>
+          {closed && (
+            <Tooltip title="La historia clínica se puede consultar e imprimir, pero sus evoluciones no se pueden modificar ni eliminar.">
+              <span className="chv-readonly">
+                <LockOutlined /> Solo lectura · facturada {admission.numeroFactura}
+              </span>
+            </Tooltip>
+          )}
         </div>
       </div>
 
-      {closed && (
-        <Alert
-          type="info"
-          showIcon
-          style={{ marginBottom: 16 }}
-          message="La admisión está cerrada (facturada). La historia clínica se puede consultar e imprimir, pero sus evoluciones no se pueden modificar ni eliminar."
-        />
-      )}
       {failedModules.length > 0 && (
         <Alert
           type="warning"
@@ -344,153 +422,104 @@ export default function AdmissionClinicalRecord({ admission, patient, messageApi
         />
       )}
 
-      {loadingSpecialties ? (
-        centeredSpin
-      ) : (
-        <>
-          <div className="table-responsive" style={{ marginBottom: 16 }}>
-            <table className="table table-bordered align-middle" style={{ backgroundColor: "var(--dash-surface, #ffffff)" }}>
-              <thead>
-                <tr style={headerCellStyle}>
-                  <th style={{ width: "30%" }}>Especialidad de atención</th>
-                  <th style={{ width: "40%" }}>Historia Clínica</th>
-                  <th style={{ width: "30%" }}>Epicrisis</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style={{ fontWeight: 600 }}>HISTORIA CLÍNICA INICIAL</td>
-                  <td>
-                    {hci ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <Button
-                          size="small"
-                          icon={<FileTextOutlined />}
-                          onClick={() => openDoc("hcInicial", "Historia clínica inicial")}
-                        >
-                          Ver HC inicial
-                        </Button>
-                        <span style={mutedText}>
-                          {hci.admissionDate?.slice(0, 10)} {hci.admissionTime?.slice(0, 5)}
-                          {hci.nombreProfesional ? ` · ${hci.nombreProfesional}` : ""}
-                        </span>
-                      </div>
-                    ) : (
-                      <span style={mutedText}>Sin historia clínica inicial</span>
-                    )}
-                  </td>
-                  <td
-                    rowSpan={Math.max(groups.length, 1) + otherRecords.length + 1}
-                    style={{ verticalAlign: "top" }}
-                  >
-                    {egreso ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
-                        <Button
-                          type="primary"
-                          size="small"
-                          icon={<FileTextOutlined />}
-                          onClick={() => openDoc("epicrisis", "Epicrisis")}
-                        >
-                          Ver epicrisis
-                        </Button>
-                        <span style={mutedText}>Con nota de egreso</span>
-                      </div>
-                    ) : (
-                      <span style={mutedText}>Sin epicrisis</span>
-                    )}
-                  </td>
-                </tr>
-                {groups.map((group) => {
-                  const last = group.entries[group.entries.length - 1]
-                  return (
-                    <tr key={group.key}>
-                      <td style={{ fontWeight: 600 }}>{group.nombre}</td>
-                      <td>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                          <Button
-                            size="small"
-                            icon={<FileTextOutlined />}
-                            onClick={() => setBrowser({ type: "evoluciones", groupKey: group.key })}
-                          >
-                            Evoluciones ({group.entries.length})
-                          </Button>
-                          <span style={mutedText}>
-                            Última: {last.data.fechaEvolucion} {last.data.horaEvolucion?.slice(0, 5)}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-                {groups.length === 0 && (
-                  <tr>
-                    <td style={{ fontWeight: 600 }}>EVOLUCIONES</td>
-                    <td>
-                      <span style={mutedText}>Sin evoluciones registradas</span>
-                    </td>
-                  </tr>
-                )}
-                {/* Los demás registros clínicos van como filas, igual que las especialidades. */}
-                {otherRecords.map((r) => (
-                  <tr key={r.kind}>
-                    <td style={{ fontWeight: 600 }}>{r.label.toUpperCase()}</td>
-                    <td>
-                      <Button size="small" icon={<FileTextOutlined />} onClick={() => openDoc(r.kind, r.label)}>
-                        Ver registros ({r.count})
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+      {(() => {
+        // Solo se muestra lo que tiene registros: filas vacías y secciones sin filas no aparecen.
+        const historyRows = loadingSpecialties
+          ? null
+          : [
+              hci && (
+                <RecordRow
+                  key="hcInicial"
+                  icon={<FileTextOutlined />}
+                  tone="emerald"
+                  title="HC inicial"
+                  subtitle={[
+                    `${hci.admissionDate?.slice(0, 10) ?? ""} ${hci.admissionTime?.slice(0, 5) ?? ""}`.trim(),
+                    hci.nombreProfesional,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  onOpen={() => openDoc("hcInicial", "Historia clínica inicial")}
+                />
+              ),
+              egreso && (
+                <RecordRow
+                  key="epicrisis"
+                  icon={<FileDoneOutlined />}
+                  tone="emerald"
+                  title="Epicrisis"
+                  subtitle="Con nota de egreso"
+                  onOpen={() => openDoc("epicrisis", "Epicrisis")}
+                />
+              ),
+            ]
+        const evolutionRows = loadingSpecialties
+          ? null
+          : groups.map((group) => {
+              const last = group.entries[group.entries.length - 1]
+              return (
+                <RecordRow
+                  key={group.key}
+                  icon={<MedicineBoxOutlined />}
+                  tone="blue"
+                  title={titleCase(group.nombre)}
+                  subtitle={`Última: ${last.data.fechaEvolucion} ${last.data.horaEvolucion?.slice(0, 5) ?? ""} · ${last.data.nombreProfesional}`}
+                  count={group.entries.length}
+                  onOpen={() => setBrowser({ type: "evoluciones", groupKey: group.key })}
+                />
+              )
+            })
+        const otherRows = otherRecords.map((r) => moduleRow(r.kind, r.label, r.icon, "violet", r.count))
+        const orderRows = [
+          moduleRow("ordenes", "Órdenes médicas", <ContainerOutlined />, "amber", count("ordenes")),
+          moduleRow("aplicaciones", "Aplicación de medicamentos", <MedicineBoxOutlined />, "amber", count("aplicaciones")),
+        ]
+        const supportRows = [
+          moduleRow("laboratorio", "Laboratorio", <ExperimentOutlined />, "cyan", count("laboratorio"), "Resultados de laboratorio"),
+          moduleRow("imagenes", "Imágenes diagnósticas", <CameraOutlined />, "cyan", count("imagenes")),
+        ]
+        const expenseRows = moduleStatus("gastos").isLoading
+          ? null
+          : HOJAS_GASTOS.map(({ tipo, label }) =>
+              moduleRow(
+                `gastos-${tipo}`,
+                label,
+                <DollarOutlined />,
+                "rose",
+                record.hojaGastos.filter((r) => r.tipoHoja === tipo).length,
+                `Hoja de gastos de ${label.toLowerCase()}`,
+              ),
+            )
 
-      <div className="table-responsive" style={{ marginBottom: 16 }}>
-        <table className="table table-bordered align-middle" style={{ backgroundColor: "var(--dash-surface, #ffffff)" }}>
-          <thead>
-            <tr style={headerCellStyle}>
-              <th>Órdenes</th>
-              <th>Aplicación de medicamentos</th>
-              <th>Laboratorio</th>
-              <th>Imágenes diagnósticas</th>
-              <th colSpan={HOJAS_GASTOS.length}>Hoja de gastos</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{docButton("ordenes", "Órdenes", count("ordenes"), "Órdenes médicas")}</td>
-              <td>{docButton("aplicaciones", "Aplicaciones", count("aplicaciones"), "Aplicación de medicamentos")}</td>
-              <td>{docButton("laboratorio", "Laboratorio", count("laboratorio"), "Resultados de laboratorio")}</td>
-              <td>{docButton("imagenes", "Imágenes", count("imagenes"), "Imágenes diagnósticas")}</td>
-              {HOJAS_GASTOS.map(({ tipo, label }) => (
-                <td key={tipo}>
-                  <div style={mutedText}>{label}</div>
-                  {moduleStatus("gastos").isLoading ? (
-                    <Spin size="small" />
-                  ) : (
-                    docButton(
-                      `gastos-${tipo}`,
-                      "Hoja",
-                      record.hojaGastos.filter((r) => r.tipoHoja === tipo).length,
-                      `Hoja de gastos de ${label.toLowerCase()}`,
-                    )
-                  )}
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        const left = [
+          <Section key="historia" title="Historia clínica" rows={historyRows} />,
+          <Section key="evoluciones" title="Evoluciones por especialidad" rows={evolutionRows} />,
+          <Section key="otros" title="Otros registros clínicos" rows={otherRows} />,
+        ].filter((s) => hasRows(s.props.rows))
+        const right = [
+          <Section key="ordenes" title="Órdenes y medicamentos" rows={orderRows} />,
+          <Section key="apoyo" title="Apoyo diagnóstico" rows={supportRows} />,
+          <Section key="gastos" title="Hojas de gastos" rows={expenseRows} />,
+        ].filter((s) => hasRows(s.props.rows))
+
+        if (left.length === 0 && right.length === 0) {
+          return <Empty description="La admisión no tiene registros clínicos." style={{ padding: 40 }} />
+        }
+        return (
+          <div className={`chv-layout${left.length === 0 || right.length === 0 ? " single" : ""}`}>
+            {left.length > 0 && <div className="chv-column">{left}</div>}
+            {right.length > 0 && <div className="chv-column">{right}</div>}
+          </div>
+        )
+      })()}
 
 
       {audits.length > 0 && (
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          {audits.length} {audits.length === 1 ? "cambio registrado" : "cambios registrados"} en las evoluciones de
-          esta admisión. Último: {audits[0].accion.toLowerCase()} por {audits[0].nombreUsuario},{" "}
+        <span className="chv-footnote">
+          <HistoryOutlined /> {audits.length} {audits.length === 1 ? "cambio registrado" : "cambios registrados"} en
+          las evoluciones de esta admisión. Último: {audits[0].accion.toLowerCase()} por {audits[0].nombreUsuario},{" "}
           {formatDateTime(audits[0].fechaAccion)}.
-        </Typography.Text>
+        </span>
       )}
 
       <RecordBrowserModal

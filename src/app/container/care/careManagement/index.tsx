@@ -1,8 +1,7 @@
 "use client"
 
 import { SearchOutlined } from "@ant-design/icons"
-import { Alert, Button, Empty, Input, Segmented, Spin, Table, Tag, message } from "antd"
-import type { ColumnsType } from "antd/es/table"
+import { Alert, Button, Empty, Input, Select, Space, Spin, Tag, message } from "antd"
 import Title from "antd/es/typography/Title"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useSearchParams } from "next/navigation"
@@ -12,12 +11,13 @@ import {
   useSearchClinicalHistory,
   type ClinicalHistorySearchCriteria,
 } from "@/core/hooks/care/clinicalHistory/useClinicalHistory"
-import type {
-  ClinicalHistoryAdmission,
-  ClinicalHistorySearchBy,
-} from "@/core/interfaces/care/clinicalHistory"
+import type { ClinicalHistorySearchBy } from "@/core/interfaces/care/clinicalHistory"
 import { formatDateTime } from "@/core/utils/date"
 import AdmissionClinicalRecord from "./AdmissionClinicalRecord"
+import "./careManagement.css"
+
+// Admisiones visibles antes de "Ver todas".
+const ADMISSIONS_PREVIEW = 6
 
 const SEARCH_OPTIONS: { value: ClinicalHistorySearchBy; label: string; placeholder: string }[] = [
   { value: "documento", label: "Documento", placeholder: "Número de documento del paciente" },
@@ -57,12 +57,14 @@ const ClinicalHistoryView = () => {
     initialAdmissionId ? { by: "numero", value: initialAdmissionId } : null,
   )
   const [selectedAdmissionId, setSelectedAdmissionId] = useState<number | null>(null)
+  const [showAllAdmissions, setShowAllAdmissions] = useState(false)
 
   const { data: result, isFetching, isError } = useSearchClinicalHistory(criteria)
 
   // Con una sola admisión (o al buscar por número) se abre directamente.
   useEffect(() => {
     setSelectedAdmissionId(result?.admisiones.length === 1 ? result.admisiones[0].id : null)
+    setShowAllAdmissions(false)
   }, [result])
 
   const handleSearch = () => {
@@ -78,27 +80,13 @@ const ClinicalHistoryView = () => {
     setCriteria({ by: searchBy, value })
   }
 
-  const selectedAdmission = result?.admisiones.find((a) => a.id === selectedAdmissionId)
-
-  const columns: ColumnsType<ClinicalHistoryAdmission> = [
-    { title: "N° admisión", dataIndex: "id", key: "id", width: 120 },
-    {
-      title: "Fecha de ingreso",
-      dataIndex: "admissionDate",
-      key: "admissionDate",
-      render: (value: string) => formatDateTime(value),
-    },
-    { title: "Ámbito", dataIndex: "careScopeName", key: "careScopeName", render: (v: string) => v || "—" },
-    { title: "Tipo de admisión", dataIndex: "admissionTypeName", key: "admissionTypeName" },
-    { title: "EPS", dataIndex: "epsNombre", key: "epsNombre" },
-    {
-      title: "Estado",
-      key: "estado",
-      align: "center",
-      render: (_, r) =>
-        r.cerrada ? <Tag color="red">Cerrada</Tag> : <Tag color="green">Abierta</Tag>,
-    },
-  ]
+  const admissions = result?.admisiones ?? []
+  const selectedAdmission = admissions.find((a) => a.id === selectedAdmissionId)
+  // La admisión seleccionada siempre queda a la vista aunque esté más allá del corte.
+  const visibleAdmissions =
+    showAllAdmissions || admissions.length <= ADMISSIONS_PREVIEW
+      ? admissions
+      : admissions.filter((a, i) => i < ADMISSIONS_PREVIEW || a.id === selectedAdmissionId)
 
   const placeholder = SEARCH_OPTIONS.find((o) => o.value === searchBy)?.placeholder
 
@@ -112,11 +100,12 @@ const ClinicalHistoryView = () => {
         </Title>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
-        <Segmented
+      <Space.Compact className="chv-search">
+        <Select
           value={searchBy}
-          onChange={(value) => setSearchBy(value as ClinicalHistorySearchBy)}
+          onChange={setSearchBy}
           options={SEARCH_OPTIONS.map(({ value, label }) => ({ value, label }))}
+          style={{ width: 150, flex: "0 0 150px" }}
         />
         <Input
           value={term}
@@ -125,12 +114,11 @@ const ClinicalHistoryView = () => {
           placeholder={placeholder}
           allowClear
           maxLength={30}
-          style={{ maxWidth: 360 }}
         />
         <Button type="primary" icon={<SearchOutlined />} loading={isFetching} onClick={handleSearch}>
           Buscar
         </Button>
-      </div>
+      </Space.Compact>
 
       {isError && (
         <Alert type="error" showIcon style={{ marginBottom: 16 }} message="No se pudo consultar la historia clínica. Intente de nuevo." />
@@ -148,24 +136,41 @@ const ClinicalHistoryView = () => {
 
       {result && (
         <>
-          <div style={{ marginBottom: 8, fontWeight: 600 }}>
-            {result.nombrePaciente} · {result.documentTypeCode} {result.documentoPaciente}
+          <div style={{ marginBottom: 8, fontSize: 13, color: "var(--dash-text-secondary)" }}>
+            {admissions.length} {admissions.length === 1 ? "admisión" : "admisiones"} de{" "}
+            <strong style={{ color: "var(--dash-text-primary)" }}>{result.nombrePaciente}</strong> ·{" "}
+            {result.documentTypeCode} {result.documentoPaciente}
           </div>
-          <Table<ClinicalHistoryAdmission>
-            size="small"
-            columns={columns}
-            dataSource={result.admisiones}
-            rowKey="id"
-            pagination={result.admisiones.length > 5 ? { pageSize: 5, showSizeChanger: false } : false}
-            scroll={{ x: "max-content" }}
-            rowSelection={{
-              type: "radio",
-              selectedRowKeys: selectedAdmissionId ? [selectedAdmissionId] : [],
-              onChange: (keys) => setSelectedAdmissionId(Number(keys[0])),
-            }}
-            onRow={(r) => ({ onClick: () => setSelectedAdmissionId(r.id), style: { cursor: "pointer" } })}
-            style={{ marginBottom: 20 }}
-          />
+          <div className="chv-admissions" role="radiogroup" aria-label="Admisiones del paciente">
+            {visibleAdmissions.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                role="radio"
+                aria-checked={a.id === selectedAdmissionId}
+                className={`chv-admission${a.id === selectedAdmissionId ? " active" : ""}`}
+                onClick={() => setSelectedAdmissionId(a.id)}
+              >
+                <span className="chv-admission-top">
+                  <span>N° {a.id}</span>
+                  <Tag color={a.cerrada ? "red" : "green"} style={{ marginInlineEnd: 0 }}>
+                    {a.cerrada ? "Cerrada" : "Abierta"}
+                  </Tag>
+                </span>
+                <span className="chv-admission-meta">{formatDateTime(a.admissionDate)}</span>
+                <span className="chv-admission-meta">
+                  {[a.careScopeName, a.epsNombre].filter(Boolean).join(" · ") || a.admissionTypeName}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="chv-more">
+            {admissions.length > ADMISSIONS_PREVIEW && (
+              <Button type="link" size="small" style={{ padding: 0 }} onClick={() => setShowAllAdmissions((v) => !v)}>
+                {showAllAdmissions ? "Ver menos" : `Ver todas (${admissions.length})`}
+              </Button>
+            )}
+          </div>
 
           {selectedAdmission ? (
             <AdmissionClinicalRecord

@@ -36,3 +36,296 @@
     max-height: none;
   }
 }
+
+/* ── Consultar HC: buscador, admisiones y tarjeta del paciente ── */
+.chv-search {
+  display: flex;
+  max-width: 560px;
+  margin-bottom: 20px;
+}
+
+.chv-admissions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.chv-admission {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--dash-text-primary);
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.chv-admission:hover {
+  border-color: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.5);
+}
+
+.chv-admission.active {
+  border-color: var(--theme-primary, #0f6f5c);
+  background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.06);
+  box-shadow: 0 0 0 1px var(--theme-primary, #0f6f5c);
+}
+
+.chv-admission-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.chv-admission-meta {
+  font-size: 12px;
+  color: var(--dash-text-secondary);
+}
+
+.chv-more {
+  margin-bottom: 20px;
+}
+
+.chv-patient {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  margin: 12px 0 24px;
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-left: 4px solid var(--theme-primary, #0f6f5c);
+  border-radius: var(--radius-md, 12px);
+  box-shadow: var(--dash-shadow-sm);
+}
+
+.chv-patient-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 420px;
+}
+
+.chv-avatar {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--theme-primary, #0f6f5c);
+  background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.12);
+}
+
+.chv-patient-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.chv-patient-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  margin-top: 6px;
+}
+
+.chv-field {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.chv-field-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dash-text-secondary);
+}
+
+.chv-patient-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.chv-patient-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chv-readonly {
+  font-size: 12px;
+  color: var(--dash-text-secondary);
+}
+
+/* ── Secciones de la HC ── */
+.chv-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.chv-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.chv-section {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: var(--radius-md, 12px);
+  overflow: hidden;
+}
+
+.chv-section-title {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dash-text-secondary);
+  border-bottom: 1px solid var(--dash-border-subtle);
+}
+
+.chv-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  color: var(--dash-text-primary);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--dash-border-subtle);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.chv-row:last-child {
+  border-bottom: 0;
+}
+
+.chv-row:hover,
+.chv-row:focus-visible {
+  background: var(--dash-surface-hover);
+  outline: none;
+}
+
+.chv-icon {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
+
+.chv-icon.tone-emerald { color: #0f8a70; background: rgba(16, 185, 129, 0.12); }
+.chv-icon.tone-blue { color: #2f6fd6; background: rgba(59, 130, 246, 0.12); }
+.chv-icon.tone-violet { color: #7c4ddb; background: rgba(139, 92, 246, 0.12); }
+.chv-icon.tone-amber { color: #b7791f; background: rgba(245, 158, 11, 0.14); }
+.chv-icon.tone-rose { color: #d1435b; background: rgba(244, 63, 94, 0.12); }
+.chv-icon.tone-cyan { color: #0e8aa6; background: rgba(6, 182, 212, 0.12); }
+
+[data-bs-theme="dark"] .chv-icon.tone-emerald { color: #34d399; }
+[data-bs-theme="dark"] .chv-icon.tone-blue { color: #7aa7f5; }
+[data-bs-theme="dark"] .chv-icon.tone-violet { color: #b39bf7; }
+[data-bs-theme="dark"] .chv-icon.tone-amber { color: #f6c35b; }
+[data-bs-theme="dark"] .chv-icon.tone-rose { color: #f58a9c; }
+[data-bs-theme="dark"] .chv-icon.tone-cyan { color: #5fd3eb; }
+
+.chv-row-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.chv-row-title {
+  font-weight: 600;
+}
+
+.chv-row-subtitle {
+  font-size: 12px;
+  color: var(--dash-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chv-count {
+  min-width: 26px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--radius-pill, 999px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--theme-primary, #0f6f5c);
+  background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.12);
+}
+
+[data-bs-theme="dark"] .chv-count {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.16);
+}
+
+.chv-chevron {
+  color: var(--dash-text-tertiary);
+  font-size: 12px;
+}
+
+.chv-section-skeleton {
+  padding: 16px;
+}
+
+.chv-footnote {
+  display: block;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--dash-text-secondary);
+}
+
+@media (max-width: 992px) {
+  .chv-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .chv-patient {
+    padding: 14px 16px;
+  }
+
+  .chv-patient-side {
+    align-items: flex-start;
+    width: 100%;
+  }
+}
+
+/* Si solo una columna tiene registros, ocupa todo el ancho. */
+.chv-layout.single {
+  grid-template-columns: minmax(0, 1fr);
+}

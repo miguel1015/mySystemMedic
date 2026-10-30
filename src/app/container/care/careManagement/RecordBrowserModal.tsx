@@ -120,11 +120,16 @@ export default function RecordBrowserModal({ open, onClose, ...props }: Props) {
         )}
       </Modal>
 
-      {/* Igual que los demás documentos: se imprime desde un portal en <body>. */}
+      {/* Igual que los demás documentos: se imprime desde un portal en <body>. Lleva también
+          la clase de la factura porque su CSS (cargado por la impresión de la HC completa)
+          oculta al imprimir todo hijo de <body> que no la tenga. */}
       {open &&
         printContent &&
         typeof window !== "undefined" &&
-        createPortal(<div className="hci-print-portal">{printContent}</div>, window.document.body)}
+        createPortal(
+          <div className="hci-print-portal invoice-print-portal">{printContent}</div>,
+          window.document.body,
+        )}
     </>
   )
 }

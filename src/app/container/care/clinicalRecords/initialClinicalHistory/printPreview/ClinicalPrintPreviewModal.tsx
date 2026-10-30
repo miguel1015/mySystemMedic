@@ -57,7 +57,9 @@ const ClinicalPrintPreviewModal = ({ open, onClose, title, renderDocument }: Pro
         !isLoading &&
         typeof window !== "undefined" &&
         createPortal(
-          <div className="hci-print-portal">{printContent}</div>,
+          // invoice-print-portal: si el CSS de la factura está cargado, oculta al imprimir
+          // todo hijo de <body> que no lleve esa clase.
+          <div className="hci-print-portal invoice-print-portal">{printContent}</div>,
           window.document.body,
         )}
     </>
