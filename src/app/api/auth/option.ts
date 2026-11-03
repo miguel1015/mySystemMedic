@@ -7,7 +7,7 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
+        username: { label: "Usuario", type: "text" },
         password: { label: "Password", type: "password" },
       },
 
@@ -15,11 +15,11 @@ export const authOptions: NextAuthOptions = {
         if (!credentials) return null;
 
         try {
-          const { email, password } = credentials;
+          const { username, password } = credentials;
 
           const loginUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`;
           const { data } = await axios.post(loginUrl, {
-            Email: email,
+            Username: username,
             Password: password,
           });
 

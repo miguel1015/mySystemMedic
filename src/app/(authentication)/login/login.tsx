@@ -21,7 +21,7 @@ import {
 import styles from "./login.module.scss";
 
 const loginSchema = z.object({
-  email: z.string().min(1, "Usuario es requerido"),
+  username: z.string().trim().min(1, "Usuario es requerido"),
   password: z.string().min(1, "Contraseña es requerida"),
 });
 
@@ -52,12 +52,12 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
     }
   }, [hasCallbackParam, router]);
 
-  const onSubmit = async (data: { email: string; password: string }) => {
+  const onSubmit = async (data: LoginFormValues) => {
     setLoading(true);
 
     const res = await signIn("credentials", {
       redirect: false,
-      email: data.email,
+      username: data.username,
       password: data.password,
     });
 
@@ -136,7 +136,7 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
 
           <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="email">
+              <label className={styles.label} htmlFor="username">
                 Usuario
               </label>
               <div className={styles.inputWrap}>
@@ -144,18 +144,18 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
                   <User size={18} />
                 </span>
                 <input
-                  id="email"
+                  id="username"
                   type="text"
                   autoComplete="username"
                   placeholder="Ingresa tu usuario"
-                  className={`${styles.input} ${errors.email ? styles.error : ""}`}
-                  {...register("email")}
+                  className={`${styles.input} ${errors.username ? styles.error : ""}`}
+                  {...register("username")}
                 />
               </div>
-              {errors.email && (
+              {errors.username && (
                 <span className={styles.errorMsg}>
                   <AlertCircle size={13} />
-                  {errors.email.message}
+                  {errors.username.message}
                 </span>
               )}
             </div>
