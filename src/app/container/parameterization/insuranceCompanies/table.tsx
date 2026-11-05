@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/components/container";
+import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
 import ModalConfirm from "@/components/modalConfirmation.tsx";
 import { useDeleteInsuranceCompany } from "@/core/hooks/parameterization/insuranceCompany/useDeleteInsuranceCompany";
 import { useInsurers } from "@/core/hooks/utils/useInsurer";
@@ -33,12 +34,15 @@ export default function InsuranceTable({ onEdit }: InsuranceTableProps) {
     );
   }, [search, dataInsurers]);
 
+  // Numeración continua entre páginas (antd da el índice dentro de la página).
+  const { onTableChange, rowNumber } = useRowNumbering(filteredInsurers.length);
+
   // ---------- COLUMNAS ----------
   const columns: ColumnsType<TInsurers> = [
     {
       title: "#",
       width: 80,
-      render: (_value, _record, index) => index + 1,
+      render: (_value, _record, index) => rowNumber(index),
     },
     {
       title: "ID",
@@ -86,6 +90,7 @@ export default function InsuranceTable({ onEdit }: InsuranceTableProps) {
 
       {/* Tabla */}
       <Table<TInsurers>
+        onChange={onTableChange}
         size="small"
         columns={columns}
         dataSource={filteredInsurers}

@@ -1,244 +1,119 @@
 "use client"
 
-import { useContracts } from "@/core/hooks/parameterization/contracts/useGetAllContracts"
-import { useMedicines } from "@/core/hooks/parameterization/medicines/useGetAllMedicines"
-import { useTariffs } from "@/core/hooks/parameterization/tariffs/useGetAllTariffs"
-import { useContractCatalogs } from "@/core/hooks/parameterization/contracts/useContractCatalogs"
-import { motion } from "framer-motion"
-import {
-  FileText,
-  Pill,
-  Receipt,
-  Activity,
-  TrendingUp,
-  BarChart3,
-  CalendarDays,
-  Sparkles,
-} from "lucide-react"
+import Link from "next/link"
 import { useMemo } from "react"
-import { ContractsByStatusChart } from "./charts/ContractsByStatusChart"
-import { MedicinePriceChart } from "./charts/MedicinePriceChart"
-import { ContractsTimelineChart } from "./charts/ContractsTimelineChart"
-import { TariffDistributionChart } from "./charts/TariffDistributionChart"
-import { StatCard, StatCardSkeleton } from "./StatCard"
+import { Button, Skeleton } from "antd"
+import { FileAddOutlined, AlertOutlined, EditOutlined, HistoryOutlined } from "@ant-design/icons"
+import { useMe } from "@/core/hooks/users/useMeUser"
+import { useNavigationAccess } from "@/core/hooks/authentication/useNavigationAccess"
+import { canAccessRoute } from "@/core/utils/routeAccess"
+import { DashboardCarousel, CarouselSlide } from "./Carousel"
+import { TodaySlide } from "./slides/TodaySlide"
+import { ClinicalSlide } from "./slides/ClinicalSlide"
+import { BillingSlide } from "./slides/BillingSlide"
+import { greetingFor, useNow } from "./utils"
 import styles from "./dashboard.module.scss"
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.07 },
-  },
-}
+const QUICK_ACTIONS = [
+  { href: "/care/admissions/new", label: "Nueva admisión", icon: <FileAddOutlined /> },
+  { href: "/care/triage/new", label: "Nuevo triage", icon: <AlertOutlined /> },
+  { href: "/care/evolveClinicalHistory", label: "Evolucionar HC", icon: <EditOutlined /> },
+  { href: "/care/admissionHistory", label: "Consultar HC", icon: <HistoryOutlined /> },
+]
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 14 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
-  },
-}
-
-function ChartCardSkeleton() {
-  return (
-    <div className={styles.chartCard}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-        <div className={styles.skeletonIcon} style={{ width: 32, height: 32, borderRadius: 10 }} />
-        <div className={styles.skeleton} style={{ width: 140, height: 13 }} />
-      </div>
-      <div className={styles.skeletonChart} />
-    </div>
-  )
-}
-
-function getGreeting() {
-  const h = new Date().getHours()
-  if (h < 12) return "Buenos días"
-  if (h < 19) return "Buenas tardes"
-  return "Buenas noches"
-}
-
+// Inicio. Encabezado fijo y un carrusel de vistas (Hoy, Atención clínica, Facturación).
+// Cada vista y cada sección aparece solo si el rol puede abrir el módulo del que sale su
+// información, así recepción, clínica, facturación y administración ven lo suyo.
 export default function DashboardContainer() {
-  const { data: contracts, isLoading: loadingContracts } = useContracts()
-  const { data: medicines, isLoading: loadingMedicines } = useMedicines()
-  const { data: tariffs, isLoading: loadingTariffs } = useTariffs()
-  useContractCatalogs()
+  const now = useNow()
+  const { data: me } = useMe()
+  const { data: access, isLoading: loadingAccess } = useNavigationAccess()
 
-  const contractCount = contracts?.length ?? 0
-  const medicineCount = medicines?.length ?? 0
-  const tariffCount = tariffs?.length ?? 0
-  const activeContracts = contracts?.filter((c) => c.status === "Activo").length ?? 0
+  // /api/users/me devuelve firstName y userProfileName (la interfaz User aún no los declara).
+  const profile = me as (typeof me & { firstName?: string; userProfileName?: string }) | undefined
+  const firstName = (profile?.firstName || profile?.name)?.trim().split(/\s+/)[0]
+  const roleName = profile?.userProfileName || profile?.role
+  const date = now.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" })
 
-  const today = useMemo(
-    () =>
-      new Date().toLocaleDateString("es-ES", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-      }),
-    []
-  )
+  const slides = useMemo<CarouselSlide[]>(() => {
+    if (!access) return []
+    const can = (route: string) => canAccessRoute(route, access)
+
+    const today = {
+      day: can("/care/triage"),
+      ongoing: can("/care/ongoingCare"),
+      billing: can("/billing/admissionIntegral"),
+      contracts: can("/parameterization/contracts"),
+      medicines: can("/parameterization/medicines"),
+      tariffs: can("/parameterization/tariffs"),
+    }
+    const clinical = { triage: can("/care/triage"), admissions: can("/care/admissions") }
+    const invoices = can("/billing/electronicInvoices")
+
+    const list: CarouselSlide[] = [
+      { id: "today", label: "Hoy", render: () => <TodaySlide access={today} now={now} /> },
+    ]
+    if (clinical.triage || clinical.admissions || today.ongoing) {
+      list.push({
+        id: "clinical",
+        label: "Atención clínica",
+        render: ({ cycle }) => (
+          <ClinicalSlide
+            now={now}
+            cycle={cycle}
+            showTriage={clinical.triage}
+            showAdmissions={clinical.admissions}
+            showOngoing={today.ongoing}
+          />
+        ),
+      })
+    }
+    if (invoices) {
+      list.push({
+        id: "billing",
+        label: "Facturación",
+        render: ({ cycle }) => <BillingSlide now={now} cycle={cycle} showPending={today.billing} />,
+      })
+    }
+    return list
+  }, [access, now])
+
+  const actions = access ? QUICK_ACTIONS.filter((a) => canAccessRoute(a.href, access)) : []
 
   return (
-    <motion.div
-      className={styles.wrapper}
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {/* Hero */}
-      <motion.section className={styles.hero} variants={itemVariants}>
-        <div className={styles.heroContent}>
-          <div>
-            <span className={styles.heroEyebrow}>
-              <Sparkles size={13} /> Panel de control
-            </span>
-            <h1 className={styles.greeting}>{getGreeting()}, bienvenido 👋</h1>
-            <p className={styles.subtitle}>
-              Este es el resumen general del sistema clínico DataMedic.
-            </p>
-          </div>
-          <div className={styles.heroDate}>
-            <CalendarDays size={16} />
-            {today}
-          </div>
+    <div className={styles.wrapper}>
+      <header className={styles.top}>
+        <div>
+          <h1 className={styles.greeting}>
+            {greetingFor(now)}
+            {firstName ? `, ${firstName}` : ""}
+          </h1>
+          <p className={styles.meta}>
+            <span className={styles.date}>{date}</span>
+            {roleName && <span className={styles.role}>{roleName}</span>}
+          </p>
         </div>
-      </motion.section>
 
-      {/* Stats */}
-      <motion.div variants={itemVariants}>
-        <div className={styles.sectionLabel}>Indicadores</div>
-        <div className={styles.statsGrid}>
-          {loadingContracts ? (
-            <StatCardSkeleton />
-          ) : (
-            <StatCard
-              icon={<FileText />}
-              title="Contratos"
-              value={contractCount}
-              subtitle={`${activeContracts} activos`}
-              color="#0F6F5C"
-              gradient="linear-gradient(135deg, #0F6F5C 0%, #10B981 100%)"
-              delay={0}
-            />
-          )}
-          {loadingMedicines ? (
-            <StatCardSkeleton />
-          ) : (
-            <StatCard
-              icon={<Pill />}
-              title="Medicamentos"
-              value={medicineCount}
-              subtitle="Registrados"
-              color="#6366F1"
-              gradient="linear-gradient(135deg, #6366F1 0%, #818CF8 100%)"
-              delay={0.06}
-            />
-          )}
-          {loadingTariffs ? (
-            <StatCardSkeleton />
-          ) : (
-            <StatCard
-              icon={<Receipt />}
-              title="Tarifarios"
-              value={tariffCount}
-              subtitle="Configurados"
-              color="#F59E0B"
-              gradient="linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)"
-              delay={0.12}
-            />
-          )}
+        {actions.length > 0 && (
+          <nav className={styles.actions} aria-label="Accesos rápidos">
+            {actions.map((a, i) => (
+              <Link key={a.href} href={a.href} legacyBehavior passHref>
+                <Button type={i === 0 ? "primary" : "default"} icon={a.icon} href={a.href}>
+                  {a.label}
+                </Button>
+              </Link>
+            ))}
+          </nav>
+        )}
+      </header>
+
+      {loadingAccess ? (
+        <div className={styles.panel}>
+          <Skeleton active paragraph={{ rows: 4 }} />
         </div>
-      </motion.div>
-
-      {/* Charts Row 1 */}
-      <motion.div variants={itemVariants}>
-        <div className={styles.sectionLabel}>Contratos</div>
-        <div className={styles.chartsGrid}>
-          {loadingContracts ? (
-            <ChartCardSkeleton />
-          ) : (
-            <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
-              <div className={styles.chartCardHeader}>
-                <h3 className={styles.chartTitle}>
-                  <span
-                    className={styles.chartTitleIcon}
-                    style={{ background: "rgba(15, 111, 92, 0.1)", color: "#0F6F5C" }}
-                  >
-                    <Activity size={16} />
-                  </span>
-                  Estado de Contratos
-                </h3>
-              </div>
-              <ContractsByStatusChart contracts={contracts ?? []} />
-            </motion.div>
-          )}
-
-          {loadingContracts ? (
-            <ChartCardSkeleton />
-          ) : (
-            <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
-              <div className={styles.chartCardHeader}>
-                <h3 className={styles.chartTitle}>
-                  <span
-                    className={styles.chartTitleIcon}
-                    style={{ background: "rgba(99, 102, 241, 0.1)", color: "#6366F1" }}
-                  >
-                    <TrendingUp size={16} />
-                  </span>
-                  Contratos por Mes
-                </h3>
-              </div>
-              <ContractsTimelineChart contracts={contracts ?? []} />
-            </motion.div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Charts Row 2 */}
-      <motion.div variants={itemVariants}>
-        <div className={styles.sectionLabel}>Inventario</div>
-        <div className={styles.chartsGrid}>
-          {loadingMedicines ? (
-            <ChartCardSkeleton />
-          ) : (
-            <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
-              <div className={styles.chartCardHeader}>
-                <h3 className={styles.chartTitle}>
-                  <span
-                    className={styles.chartTitleIcon}
-                    style={{ background: "rgba(245, 158, 11, 0.1)", color: "#F59E0B" }}
-                  >
-                    <BarChart3 size={16} />
-                  </span>
-                  Precios de Medicamentos
-                </h3>
-              </div>
-              <MedicinePriceChart medicines={medicines ?? []} />
-            </motion.div>
-          )}
-
-          {loadingTariffs ? (
-            <ChartCardSkeleton />
-          ) : (
-            <motion.div className={styles.chartCard} whileHover={{ scale: 1.005 }} transition={{ duration: 0.2 }}>
-              <div className={styles.chartCardHeader}>
-                <h3 className={styles.chartTitle}>
-                  <span
-                    className={styles.chartTitleIcon}
-                    style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10B981" }}
-                  >
-                    <Receipt size={16} />
-                  </span>
-                  Distribución de Tarifarios
-                </h3>
-              </div>
-              <TariffDistributionChart tariffs={tariffs ?? []} />
-            </motion.div>
-          )}
-        </div>
-      </motion.div>
-    </motion.div>
+      ) : (
+        <DashboardCarousel slides={slides} interval={20_000} />
+      )}
+    </div>
   )
 }

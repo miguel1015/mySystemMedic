@@ -1,6 +1,7 @@
 "use client"
 
 import SelectAutocomplete from "@/components/select"
+import { careScopeColor } from "@/core/utils/displayText"
 import { Alert, Avatar, Button, Modal as AntdModal, Spin, Tag } from "antd"
 import {
   ArrowRightOutlined,
@@ -16,15 +17,6 @@ import { AnimatePresence, motion } from "framer-motion"
 import { useWatch } from "react-hook-form"
 import { useTransferServiceForm } from "./useTransferServiceForm"
 import { formatDateTime } from "@/core/utils/date"
-
-const CARE_SCOPE_COLORS: Record<string, string> = {
-  Triage: "gold",
-  Urgencia: "red",
-  Urgencias: "red",
-  Hospitalización: "blue",
-  "Consulta externa": "green",
-  Cirugía: "purple",
-}
 
 const sectionCardStyle: React.CSSProperties = {
   background: "var(--dash-surface, #ffffff)",
@@ -168,7 +160,7 @@ export default function TransferServiceForm({
             ¿Confirma trasladar a <strong>{admission.nombrePaciente}</strong>?
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Tag color={CARE_SCOPE_COLORS[admission.careScopeName] ?? "default"}>
+            <Tag color={careScopeColor(admission.careScopeName)}>
               {admission.careScopeName}
             </Tag>
             <ArrowRightOutlined style={{ color: "var(--dash-text-tertiary, #9ca3af)" }} />
@@ -265,7 +257,7 @@ export default function TransferServiceForm({
           <div>
             <div style={metaLabelStyle}>Ámbito actual</div>
             <Tag
-              color={CARE_SCOPE_COLORS[admission.careScopeName] ?? "default"}
+              color={careScopeColor(admission.careScopeName)}
               style={{ fontSize: 13, padding: "4px 12px", borderRadius: 6 }}
             >
               {admission.careScopeName}

@@ -1,0 +1,244 @@
+/* Carrusel del inicio: pestañas con progreso, flechas y pausa. Las vistas comparten la
+   misma celda de grid, así la altura no salta al cambiar de una a otra. */
+
+.carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--dash-border);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 14px 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--dash-text-secondary);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: color 0.2s ease;
+
+  &:hover { color: var(--dash-text-primary); }
+
+  &:focus-visible {
+    outline: 2px solid var(--theme-primary, #0f6f5c);
+    outline-offset: -2px;
+    border-radius: 8px;
+  }
+}
+
+.tabActive {
+  color: var(--dash-text-primary);
+}
+
+// Línea bajo la pestaña: en la activa se llena durante el intervalo.
+.track {
+  position: relative;
+  display: block;
+  height: 3px;
+  margin-bottom: -1px;
+  border-radius: 3px 3px 0 0;
+  overflow: hidden;
+}
+
+.tabActive .track {
+  background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.16);
+}
+
+.fill {
+  position: absolute;
+  inset: 0;
+  background: var(--theme-primary, #0f6f5c);
+  transform-origin: left;
+  animation-name: progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+:global([data-bs-theme="dark"]) {
+  .fill { background: #5fd3ad; }
+  .tabActive .track { background: rgba(95, 211, 173, 0.16); }
+}
+
+@keyframes progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.controls {
+  display: flex;
+  gap: 6px;
+  padding-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.control {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface);
+  color: var(--dash-text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    background: var(--dash-surface-hover);
+    border-color: color-mix(in srgb, var(--theme-primary, #0f6f5c) 35%, var(--dash-border));
+  }
+
+  &:active { transform: scale(0.94); }
+
+  &:focus-visible {
+    outline: 2px solid var(--theme-primary, #0f6f5c);
+    outline-offset: 2px;
+  }
+
+  &[aria-pressed="true"] {
+    background: var(--theme-primary, #0f6f5c);
+    border-color: var(--theme-primary, #0f6f5c);
+    color: #fff;
+  }
+}
+
+/* ── Vistas ── */
+.viewport {
+  // Posicionado para que el recorte también aplique a los elementos absolutos de las
+  // vistas ocultas (textos para lector de pantalla, marcadores).
+  position: relative;
+  display: grid;
+  align-items: start;
+  box-sizing: border-box;
+  // Recorta la vista que entra desde el costado (sin scroll horizontal) y la que sale
+  // si es más alta que la activa mientras el alto se anima.
+  overflow: clip;
+  // Deja ver el halo de foco de los elementos del borde.
+  padding: 4px;
+  margin: -4px;
+  transition: height 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.slide {
+  grid-area: 1 / 1;
+  min-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(calc(var(--offset, 1) * 56px)) scale(0.985);
+  filter: blur(6px);
+  transition:
+    opacity 0.45s ease,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.5s ease,
+    visibility 0s linear 0.7s;
+}
+
+.slideActive {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  filter: none;
+  transition:
+    opacity 0.55s ease 0.12s,
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.08s,
+    filter 0.6s ease 0.08s,
+    visibility 0s linear 0s;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translateX(calc(var(--enter, 1) * 32px)); }
+  to { opacity: 1; transform: none; }
+}
+
+// Tablet y celular: solo existe la vista activa y entra con una animación propia (sin
+// las vistas apiladas, el desenfoque de varias capas sobra en equipos modestos). Las
+// gráficas se vuelven a montar al mostrarse, así que miden bien su ancho.
+@media (max-width: 991.98px) {
+  .slide:not(.slideActive) { display: none; }
+
+  .slideActive {
+    animation: enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .bar {
+    flex-wrap: wrap;
+    border-bottom: 0;
+    gap: 8px;
+  }
+
+  .tabs {
+    width: 100%;
+    border-bottom: 1px solid var(--dash-border);
+  }
+
+  .tab {
+    flex: 1;
+    align-items: stretch;
+    text-align: center;
+    padding: 8px 4px 0;
+    font-size: 14px;
+  }
+
+  .controls {
+    width: 100%;
+    justify-content: flex-end;
+    padding-bottom: 0;
+  }
+
+  .control { width: 36px; height: 36px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewport { transition: none; }
+
+  .slide,
+  .slideActive {
+    transform: none;
+    filter: none;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+  }
+
+  .slideActive { transition: opacity 0.2s ease, visibility 0s; animation: none; }
+}

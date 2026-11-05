@@ -1,6 +1,7 @@
 "use client"
 
 import { Container } from "@/components/container"
+import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
 import ModalConfirm from "@/components/modalConfirmation.tsx"
 import { Button, Input, Space, Table, Tooltip } from "antd"
 import type { ColumnsType } from "antd/es/table"
@@ -41,11 +42,14 @@ const MedicineTable = ({ onEdit }: MedicineProps) => {
     )
   }, [search, dataMedicines])
 
+  // Numeración continua entre páginas (antd da el índice dentro de la página).
+  const { onTableChange, rowNumber } = useRowNumbering(filteredMedicines.length);
+
   const columns: ColumnsType<TMedicine> = [
     {
       title: "#",
       width: 20,
-      render: (_value, _record, index) => index + 1,
+      render: (_value, _record, index) => rowNumber(index),
     },
     {
       title: "ID",
@@ -173,6 +177,7 @@ const MedicineTable = ({ onEdit }: MedicineProps) => {
       </div>
 
       <Table<TMedicine>
+        onChange={onTableChange}
         size="small"
         columns={columns}
         dataSource={filteredMedicines}

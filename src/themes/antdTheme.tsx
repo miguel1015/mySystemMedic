@@ -4,6 +4,7 @@ import { ConfigProvider, theme } from "antd"
 import { createContext, useEffect, useState, useContext, useMemo } from "react"
 import { Theme } from "./enum"
 import { getThemeClient } from "./theme.client"
+import { applyFont, DEFAULT_FONT, FONT_STORAGE_KEY, isFontKey, type FontKey } from "./fonts"
 import {
   type ThemeColorPalette,
   COLOR_PALETTES,
@@ -13,20 +14,38 @@ import {
 } from "./colorPalettes"
 
 type ThemeMode = Theme.Light | Theme.Dark
+// Lo que eligió el usuario. "auto" sigue el modo claro/oscuro del equipo.
+export type ThemeSetting = Theme.Light | Theme.Dark | Theme.Auto
+
+const THEME_SETTING_KEY = "themeMode"
 
 const ThemeContext = createContext<{
+  // Tema efectivo (siempre claro u oscuro): es lo que leen las pantallas.
   theme: ThemeMode;
   setTheme: (t: ThemeMode) => void;
+  themeSetting: ThemeSetting;
+  setThemeSetting: (t: ThemeSetting) => void;
   themeColor: string;
   setThemeColor: (c: string) => void;
   palette: ThemeColorPalette;
+  font: FontKey;
+  setFont: (f: FontKey) => void;
 }>({
   theme: Theme.Light,
   setTheme: () => {},
+  themeSetting: Theme.Light,
+  setThemeSetting: () => {},
+  font: DEFAULT_FONT,
+  setFont: () => {},
   themeColor: COLOR_PALETTES[DEFAULT_THEME_COLOR].primary,
   setThemeColor: () => {},
   palette: COLOR_PALETTES[DEFAULT_THEME_COLOR],
 })
+
+const systemTheme = (): ThemeMode =>
+  typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? Theme.Dark
+    : Theme.Light
 
 export const useAppTheme = () => useContext(ThemeContext)
 export const useThemeColor = () => {
@@ -42,6 +61,7 @@ export default function AntdThemeProvider({
   initialTheme?: ThemeMode;
 }) {
   const [currentTheme, setCurrentTheme] = useState<ThemeMode>(initialTheme)
+  const [themeSetting, setThemeSettingState] = useState<ThemeSetting>(initialTheme)
   const [themeColor, setThemeColorState] = useState(
     COLOR_PALETTES[DEFAULT_THEME_COLOR].primary,
   )
@@ -49,12 +69,28 @@ export default function AntdThemeProvider({
   const palette = useMemo(() => getPaletteByPrimary(themeColor), [themeColor])
 
   useEffect(() => {
+    // "auto" se guarda aparte: la cookie "theme" (que lee el servidor) siempre lleva el
+    // tema efectivo, así el primer render ya sale claro u oscuro según corresponda.
+    if (localStorage.getItem(THEME_SETTING_KEY) === Theme.Auto) {
+      setThemeSettingState(Theme.Auto)
+      updateTheme(systemTheme())
+      return
+    }
     const storedTheme = getThemeClient()
-    setCurrentTheme(storedTheme)
-    localStorage.setItem("theme", storedTheme)
-    document.cookie = `theme=${storedTheme}; path=/; max-age=31536000`
-    document.documentElement.setAttribute("data-bs-theme", storedTheme)
+    setThemeSettingState(storedTheme)
+    updateTheme(storedTheme)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // En automático, seguir los cambios del sistema operativo en vivo.
+  useEffect(() => {
+    if (themeSetting !== Theme.Auto) return
+    const mq = window.matchMedia("(prefers-color-scheme: dark)")
+    const onChange = () => updateTheme(mq.matches ? Theme.Dark : Theme.Light)
+    mq.addEventListener("change", onChange)
+    return () => mq.removeEventListener("change", onChange)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [themeSetting])
 
   useEffect(() => {
     const stored = localStorage.getItem("sidebarColor")
@@ -63,17 +99,41 @@ export default function AntdThemeProvider({
     }
   }, [])
 
+  const [font, setFontState] = useState<FontKey>(DEFAULT_FONT)
+  useEffect(() => {
+    const stored = localStorage.getItem(FONT_STORAGE_KEY)
+    if (isFontKey(stored)) {
+      setFontState(stored)
+      applyFont(stored)
+    }
+  }, [])
+
+  const setFont = (key: FontKey) => {
+    setFontState(key)
+    localStorage.setItem(FONT_STORAGE_KEY, key)
+    applyFont(key)
+  }
+
   const setThemeColor = (color: string) => {
     setThemeColorState(color)
     localStorage.setItem("sidebarColor", color)
   }
 
-  const updateTheme = (newTheme: ThemeMode) => {
+  function updateTheme(newTheme: ThemeMode) {
     setCurrentTheme(newTheme)
     localStorage.setItem("theme", newTheme)
     document.cookie = `theme=${newTheme}; path=/; max-age=31536000`
     document.documentElement.setAttribute("data-bs-theme", newTheme)
   }
+
+  const setThemeSetting = (setting: ThemeSetting) => {
+    setThemeSettingState(setting)
+    localStorage.setItem(THEME_SETTING_KEY, setting)
+    updateTheme(setting === Theme.Auto ? systemTheme() : setting)
+  }
+
+  // Elegir claro u oscuro a mano sale del modo automático.
+  const setTheme = (t: ThemeMode) => setThemeSetting(t)
 
   // Inject CSS custom properties whenever palette or theme changes
   useEffect(() => {
@@ -99,7 +159,11 @@ export default function AntdThemeProvider({
     <ThemeContext.Provider
       value={{
         theme: currentTheme,
-        setTheme: updateTheme,
+        setTheme,
+        themeSetting,
+        setThemeSetting,
+        font,
+        setFont,
         themeColor,
         setThemeColor,
         palette,

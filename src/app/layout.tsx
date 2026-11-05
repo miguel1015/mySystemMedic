@@ -10,7 +10,13 @@ import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/react";
-import { Bricolage_Grotesque, Manrope } from "next/font/google";
+import {
+  Atkinson_Hyperlegible,
+  Bricolage_Grotesque,
+  IBM_Plex_Sans,
+  Manrope,
+  Source_Sans_3,
+} from "next/font/google";
 import Script from "next/script";
 
 const fontDisplay = Bricolage_Grotesque({
@@ -25,6 +31,32 @@ const fontBody = Manrope({
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-body",
   display: "swap",
+});
+
+// Tipografías opcionales (Configuraciones del menú, ver src/themes/fonts.ts). Sin
+// preload: el navegador solo las descarga si el usuario elige una.
+const fontAtkinson = Atkinson_Hyperlegible({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-atkinson",
+  display: "swap",
+  preload: false,
+});
+
+const fontPlex = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plex",
+  display: "swap",
+  preload: false,
+});
+
+const fontSource = Source_Sans_3({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-source",
+  display: "swap",
+  preload: false,
 });
 import ReactQueryProvider from "./api/queryClientProvider";
 import ToasterProvider from "../components/toast/toast";
@@ -48,7 +80,7 @@ export default async function RootLayout({
     <html
       lang="en"
       data-bs-theme={currentTheme}
-      className={`${fontDisplay.variable} ${fontBody.variable}`}
+      className={`${fontDisplay.variable} ${fontBody.variable} ${fontAtkinson.variable} ${fontPlex.variable} ${fontSource.variable}`}
     >
       <body>
         <ProgressBar />

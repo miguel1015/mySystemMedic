@@ -1,4 +1,5 @@
 import CustomButton from "@/components/button";
+import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
 import { Container } from "@/components/container";
 import ModalConfirm from "@/components/modalConfirmation.tsx";
 import { useDeleteUser } from "@/core/hooks/users/useDeleteUser";
@@ -32,11 +33,14 @@ export default function UsersTable({
     );
   }, [search, dataUsers]);
 
+  // Numeración continua entre páginas (antd da el índice dentro de la página).
+  const { onTableChange, rowNumber } = useRowNumbering(filteredUsers.length);
+
   const columns: ColumnsType<GetUser> = [
     {
       title: "#",
       width: 60,
-      render: (_value, _record, index) => index + 1,
+      render: (_value, _record, index) => rowNumber(index),
     },
     {
       title: "Nombre",
@@ -103,6 +107,7 @@ export default function UsersTable({
       </div>
 
       <Table<GetUser>
+        onChange={onTableChange}
         columns={columns}
         dataSource={filteredUsers}
         rowKey="id"

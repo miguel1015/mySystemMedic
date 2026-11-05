@@ -2,12 +2,11 @@
    DataMedic — Health-Tech Esmeralda · Design Tokens
    ══════════════════════════════════════════════════ */
 :root {
-  /* Typography */
-  --font-display:
-    "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  --font-body:
-    "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Typography: --font-display (Bricolage Grotesque) y --font-body (Manrope) los
+     define next/font en <html> (src/app/layout.tsx), con sus nombres internos y su
+     fuente de respaldo ajustada. No se redefinen aquí: con la misma especificidad,
+     esta hoja ganaba y el navegador nunca descargaba las fuentes de la marca.
+     La tipografía elegida en Configuraciones cambia --font-body (src/themes/fonts.ts). */
 
   /* Surfaces & neutrals (light) */
   --dash-bg: #f4f7f6;
@@ -171,9 +170,25 @@ h6,
 
 /* ── Refined Ant Design tables ── */
 .ant-table-wrapper {
+  // La tabla usa la superficie del tema (no transparente): las columnas fijas
+  // (p. ej. "Acciones") necesitan un fondo opaco para tapar lo que se desplaza debajo,
+  // y antd les ponía el suyo (#141419 en oscuro), distinto al del resto de la fila.
   .ant-table {
-    background: transparent;
+    background: var(--dash-surface);
     border-radius: var(--radius-md);
+  }
+
+  .ant-table-tbody > tr > td.ant-table-cell-fix-left,
+  .ant-table-tbody > tr > td.ant-table-cell-fix-right,
+  .ant-table-tbody > tr > td.ant-table-cell-fix-start,
+  .ant-table-tbody > tr > td.ant-table-cell-fix-end {
+    background: var(--dash-surface);
+  }
+
+  // Filas vacías / sin datos y celdas de resumen con el mismo fondo.
+  .ant-table-placeholder > td,
+  .ant-table-summary > tr > td {
+    background: var(--dash-surface) !important;
   }
 
   .ant-table-thead > tr > th {

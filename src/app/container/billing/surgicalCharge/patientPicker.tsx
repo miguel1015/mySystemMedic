@@ -1,19 +1,13 @@
 "use client"
 
 import { useActiveAdmissions } from "@/core/hooks/care/admissions/useGetActiveAdmissions"
+import { formatPersonName, formatCatalogLabel, careScopeColor } from "@/core/utils/displayText";
 import { ActiveAdmission } from "@/core/interfaces/care/types"
 import { ArrowRightOutlined, SearchOutlined } from "@ant-design/icons"
 import { Button, Input, Table, Tag } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
-
-const CARE_SCOPE_COLORS: Record<string, string> = {
-  Urgencia: "red",
-  Hospitalización: "blue",
-  "Consulta externa": "green",
-  Cirugía: "purple",
-}
 
 const PatientPicker = () => {
   const router = useRouter()
@@ -70,7 +64,7 @@ const PatientPicker = () => {
       title: "Nombre completo",
       dataIndex: "patientFullName",
       sorter: (a, b) => a.patientFullName.localeCompare(b.patientFullName),
-      render: (value: string) => <span style={{ fontWeight: 500 }}>{value}</span>,
+      render: (value: string) => <span style={{ fontWeight: 500 }}>{formatPersonName(value)}</span>,
     },
     {
       title: "Nro. Documento",
@@ -84,7 +78,7 @@ const PatientPicker = () => {
       title: "Ámbito de atención",
       dataIndex: "careScope",
       width: 180,
-      render: (value: string) => <Tag color={CARE_SCOPE_COLORS[value] || "default"}>{value}</Tag>,
+      render: (value: string) => <Tag color={careScopeColor(value)}>{formatCatalogLabel(value)}</Tag>,
     },
     {
       title: "",

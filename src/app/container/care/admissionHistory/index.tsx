@@ -1,6 +1,7 @@
 "use client"
 
 import { Container } from "@/components/container"
+import { formatPersonName, formatInstitutionName } from "@/core/utils/displayText";
 import Title from "@/components/title"
 import { Button, Input, Table, Tag, Tooltip } from "antd"
 import type { ColumnsType } from "antd/es/table"
@@ -24,8 +25,8 @@ export default function AdmissionHistoryContainer() {
       key: "documento",
       render: (_, r) => `${r.documentTypeCode} ${r.documentoPatiente}`,
     },
-    { title: "Paciente", dataIndex: "nombrePaciente", key: "nombrePaciente" },
-    { title: "EPS (última admisión cerrada)", dataIndex: "epsNombre", key: "epsNombre" },
+    { title: "Paciente", dataIndex: "nombrePaciente", key: "nombrePaciente", render: (v: string) => formatPersonName(v) },
+    { title: "EPS (última admisión cerrada)", dataIndex: "epsNombre", key: "epsNombre", render: (v: string) => formatInstitutionName(v) },
     {
       title: "Admisiones cerradas",
       key: "admisiones",

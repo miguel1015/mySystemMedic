@@ -9,7 +9,7 @@ $sidebar-overlay-z-index: 1025;
   --sidebar-background: #123129;
   --sidebar-background-2: #0b201b;
   --sidebar-border-color: rgba(255, 255, 255, 0.07);
-  --sidebar-link-color: rgba(226, 240, 236, 0.62);
+  --sidebar-link-color: rgba(226, 240, 236, 0.78);
   --sidebar-link-color-hover: #ffffff;
   --sidebar-link-hover-bg: rgba(255, 255, 255, 0.06);
   --theme-primary: #0f6f5c;
@@ -198,13 +198,81 @@ $sidebar-overlay-z-index: 1025;
   .sidebar-logo-text .word span {
     color: #6ee7c4;
   }
+  .sidebar-logo-text {
+    min-width: 0;
+  }
+
   .sidebar-logo-text .tag {
-    font-size: 10px;
+    font-size: 11.5px;
     font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(226, 240, 236, 0.4);
-    margin-top: 2px;
+    color: rgba(226, 240, 236, 0.62);
+    margin-top: 3px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.is-ips {
+      color: rgba(226, 240, 236, 0.78);
+    }
+  }
+
+  /* ── Buscador (abre la paleta Ctrl + K) ── */
+  .sidebar-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin: 0 0 10px;
+    padding: 9px 10px 9px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md, 12px);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(226, 240, 236, 0.72);
+    font-size: 13.5px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .sidebar-search-text { flex: 1; }
+
+    kbd {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(226, 240, 236, 0.8);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      box-shadow: none;
+    }
+  }
+
+  .sidebar-section-title {
+    margin: 14px 12px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(226, 240, 236, 0.58);
+  }
+
+  .sidebar-recents .sidebar-nav-item .nav-icon {
+    width: 26px;
+    height: 26px;
+    flex-basis: 26px;
+    font-size: 12px;
+  }
+
+  /* Foco visible con teclado en todo el menú */
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid #6ee7c4;
+    outline-offset: 2px;
   }
 
   /* ── Nav scroll area ── */
@@ -279,15 +347,22 @@ $sidebar-overlay-z-index: 1025;
     color: rgba(226, 240, 236, 0.72);
   }
 
-  .sidebar-account-mini-icon {
-    width: 28px;
-    height: 28px;
-    flex: 0 0 28px;
+  .sidebar-account-avatar {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
     display: grid;
     place-items: center;
-    border-radius: 8px;
-    color: var(--theme-primary, #8ff0d4);
-    background: rgba(var(--theme-primary-rgb, 16, 185, 129), 0.18);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: linear-gradient(140deg, var(--theme-primary-hover, #10b981), var(--theme-primary, #0f6f5c));
+  }
+
+  .sidebar-account-mini-text {
+    flex: 1;
   }
 
   .sidebar-account-mini-text {
@@ -304,63 +379,93 @@ $sidebar-overlay-z-index: 1025;
     }
 
     strong {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 12px;
-      font-weight: 800;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 13px;
+      font-weight: 700;
     }
 
     small {
       margin-top: 2px;
-      color: rgba(226, 240, 236, 0.48);
-      font-size: 10.5px;
-      font-weight: 700;
+      color: rgba(226, 240, 236, 0.62);
+      font-size: 11.5px;
+      font-weight: 500;
     }
   }
 
   .sidebar-settings-button {
-    justify-content: center;
-    gap: 9px;
+    gap: 10px;
     padding: 10px 12px;
     color: #eafff8;
     background: rgba(var(--theme-primary-rgb, 16, 185, 129), 0.16);
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 700;
+
+    .sidebar-settings-text { flex: 1; text-align: left; }
+
+    .sidebar-settings-chevron {
+      font-size: 11px;
+      opacity: 0.7;
+      transition: transform 0.25s ease;
+    }
 
     &:hover,
     &[aria-expanded="true"] {
-      transform: translateY(-1px);
       color: #fff;
       background: rgba(var(--theme-primary-rgb, 16, 185, 129), 0.28);
-      box-shadow: 0 10px 22px rgba(var(--theme-primary-rgb, 6, 95, 70), 0.16);
+    }
+
+    &[aria-expanded="true"] .sidebar-settings-chevron {
+      transform: rotate(180deg);
     }
   }
 
+  .sidebar-setting-value {
+    margin-left: auto;
+    color: rgba(226, 240, 236, 0.9);
+    font-weight: 600;
+  }
+
+  .sidebar-settings-reset {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 7px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: rgba(226, 240, 236, 0.72);
+    font-size: 12px;
+    font-weight: 600;
+
+    &:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  // Alto máximo con desplazamiento propio: abierto el panel, los módulos del menú
+  // siguen a la vista en pantallas bajas.
   .sidebar-settings-panel {
     margin-top: 10px;
     padding: 12px;
-    max-height: min(48vh, 360px);
+    max-height: min(42vh, 380px);
     overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     background: rgba(5, 18, 15, 0.42);
     backdrop-filter: blur(8px);
   }
 
-  .sidebar-settings-title,
   .sidebar-setting-label {
     display: flex;
     align-items: center;
     gap: 8px;
-  }
-
-  .sidebar-settings-title {
-    justify-content: center;
-    margin-bottom: 12px;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
   }
 
   .sidebar-setting-block + .sidebar-setting-block {
@@ -369,15 +474,15 @@ $sidebar-overlay-z-index: 1025;
 
   .sidebar-setting-label {
     margin-bottom: 8px;
-    color: rgba(226, 240, 236, 0.68);
-    font-size: 11.5px;
-    font-weight: 700;
+    color: rgba(226, 240, 236, 0.72);
+    font-size: 12px;
+    font-weight: 600;
   }
 
   .sidebar-theme-toggle {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
     padding: 4px;
     border-radius: 11px;
     background: rgba(255, 255, 255, 0.06);
@@ -386,15 +491,17 @@ $sidebar-overlay-z-index: 1025;
       min-width: 0;
       border: 0;
       border-radius: 8px;
-      padding: 7px 8px;
+      padding: 7px 2px;
       display: inline-flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      color: rgba(226, 240, 236, 0.68);
+      gap: 3px;
+      color: rgba(226, 240, 236, 0.72);
       background: transparent;
-      font-size: 12px;
-      font-weight: 800;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
       transition:
         background 0.2s ease,
         color 0.2s ease,
@@ -415,6 +522,54 @@ $sidebar-overlay-z-index: 1025;
         box-shadow: 0 8px 18px rgba(var(--theme-primary-rgb, 15, 111, 92), 0.24);
       }
     }
+  }
+
+  /* Tipografía: 2 × 2, cada opción con "Aa" en su propia fuente */
+  .sidebar-font-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+
+    button {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(226, 240, 236, 0.78);
+      text-align: left;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+      &:hover {
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.24);
+      }
+
+      &.active {
+        color: #fff;
+        border-color: var(--theme-primary-hover, #10b981);
+        background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.32);
+      }
+    }
+  }
+
+  .sidebar-font-sample {
+    flex: 0 0 auto;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .sidebar-font-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11.5px;
+    font-weight: 600;
   }
 
   .sidebar-color-grid {
@@ -452,21 +607,20 @@ $sidebar-overlay-z-index: 1025;
     }
   }
 
+  // Discreto en reposo: el rojo aparece solo al pasar el mouse o con el foco.
   .sidebar-logout-button {
-    justify-content: center;
-    gap: 9px;
-    margin-top: 10px;
-    padding: 10px 12px;
-    background: rgba(239, 68, 68, 0.12);
-    color: #fecaca;
+    gap: 10px;
+    margin-top: 6px;
+    padding: 9px 12px;
+    background: transparent;
+    color: rgba(226, 240, 236, 0.72);
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 600;
 
-    &:hover {
-      transform: translateY(-1px);
-      color: #fff;
-      background: rgba(239, 68, 68, 0.28);
-      box-shadow: 0 10px 22px rgba(127, 29, 29, 0.18);
+    &:hover,
+    &:focus-visible {
+      color: #fecaca;
+      background: rgba(239, 68, 68, 0.16);
     }
   }
 }
@@ -484,11 +638,9 @@ $sidebar-overlay-z-index: 1025;
     padding: 9px 12px !important;
     border: none;
     border-radius: var(--radius-md, 12px);
-    color: rgba(226, 240, 236, 0.5);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    color: rgba(226, 240, 236, 0.78);
+    font-size: 13.5px;
+    font-weight: 600;
     text-decoration: none;
     transition:
       color 0.2s ease,
@@ -508,20 +660,47 @@ $sidebar-overlay-z-index: 1025;
 
     .nav-chevron {
       opacity: 0.6;
+      font-size: 10px;
       transition: transform 0.25s ease;
     }
 
     &:hover {
-      color: rgba(255, 255, 255, 0.85);
+      color: #fff;
       background: var(--sidebar-link-hover-bg);
     }
   }
 
   &.show > .nav-link {
-    color: var(--theme-primary-hover, #8ff0d4);
+    color: #fff;
     .nav-chevron {
       transform: rotate(180deg);
     }
+  }
+
+  /* Módulos (primer nivel): ícono en cápsula, igual que los enlaces */
+  &.is-module > .nav-link .nav-icon {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(226, 240, 236, 0.8);
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  &.is-module.show > .nav-link .nav-icon {
+    background: rgba(var(--theme-primary-rgb, 16, 185, 129), 0.28);
+    color: #fff;
+  }
+
+  /* Sub-grupos (menús con submenús dentro de un módulo) */
+  .nav-group > .nav-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(226, 240, 236, 0.72);
   }
 
   .nav-group-items {
@@ -619,7 +798,7 @@ $sidebar-overlay-z-index: 1025;
   padding-left: 42px !important;
   font-size: 13px;
   font-weight: 500;
-  color: rgba(226, 240, 236, 0.5);
+  color: rgba(226, 240, 236, 0.68);
 
   &::after {
     content: "";
@@ -689,18 +868,23 @@ $sidebar-overlay-z-index: 1025;
   }
 }
 
-/* ── Edge tab (sidebar re-open trigger) ── */
-@keyframes edgeTabPulse {
-  0%, 100% { box-shadow: 3px 0 16px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.38); }
-  50%       { box-shadow: 3px 0 28px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.68); }
+/* ── Pestaña para reabrir el menú ──
+   Se mantiene el ícono de siempre, ahora sin animación infinita (distrae en una
+   pantalla de trabajo): late una vez al aparecer. En escritorio la página le reserva
+   su borde para que no tape contenido; en celular baja a la esquina inferior izquierda,
+   al alcance del pulgar. */
+$edge-tab-width: 44px;
+
+@keyframes tabEnter {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
 
 @keyframes tabLogobeat {
   0%, 100% { transform: scale(1); }
-  14%       { transform: scale(1.18); }
-  28%       { transform: scale(1); }
-  42%       { transform: scale(1.12); }
-  56%       { transform: scale(1); }
+  20% { transform: scale(1.18); }
+  40% { transform: scale(1); }
+  60% { transform: scale(1.1); }
 }
 
 .sidebar-edge-tab {
@@ -709,64 +893,317 @@ $sidebar-overlay-z-index: 1025;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1035;
+  display: flex;
+  align-items: center;
   cursor: pointer;
   border: none;
-  outline: none;
   padding: 0;
   background: none;
   -webkit-tap-highlight-color: transparent;
 
   .tab-inner {
+    position: relative;
+    width: $edge-tab-width;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 7px;
-    padding: 18px 11px;
+    padding: 18px 0;
     border-radius: 0 16px 16px 0;
     color: #fff;
     background: linear-gradient(160deg, var(--theme-primary-hover, #10b981) 0%, var(--theme-primary, #0f6f5c) 100%);
-    box-shadow: 3px 0 16px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.38);
-    animation: edgeTabPulse 3.5s ease-in-out infinite;
+    box-shadow: 3px 4px 16px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.3);
+    animation: tabEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
     transition:
       transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 0.25s ease;
   }
 
   .tab-logo {
-    animation: tabLogobeat 4s ease-in-out infinite;
+    animation: tabLogobeat 1.2s ease-in-out 0.45s 1;
   }
 
   .tab-chevron {
+    font-size: 11px;
+    opacity: 0.85;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  // Pacientes pendientes de admisión mientras el menú está cerrado.
+  .tab-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #fbbf24;
+    box-shadow: 0 0 0 2px var(--theme-primary, #0f6f5c);
+
+    &.is-urgent { background: #f87171; }
+  }
+
+  // Etiqueta con el atajo, visible al pasar el mouse o con el foco del teclado.
+  .tab-hint {
+    margin-left: 10px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #0f1f1b;
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
     opacity: 0;
-    transform: translateY(4px);
-    transition:
-      opacity 0.22s ease,
-      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateX(-6px);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.22s ease;
+
+    kbd {
+      margin-left: 6px;
+      padding: 1px 6px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.16);
+      font-family: inherit;
+      font-size: 11px;
+      box-shadow: none;
+    }
   }
 
-  &:hover .tab-inner {
-    transform: translateX(6px);
-    box-shadow: 5px 0 32px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.65);
-    animation: none;
+  &:hover .tab-inner,
+  &:focus-visible .tab-inner {
+    transform: translateX(4px);
+    box-shadow: 5px 4px 24px rgba(var(--theme-primary-rgb, 16, 185, 129), 0.5);
   }
 
-  &:hover .tab-chevron {
+  &:hover .tab-chevron,
+  &:focus-visible .tab-chevron {
+    transform: translateX(2px);
+  }
+
+  &:hover .tab-hint,
+  &:focus-visible .tab-hint {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 
-  /* mobile: hide when sidebar is open */
+  &:focus-visible {
+    outline: none;
+
+    .tab-inner { outline: 2px solid #fff; outline-offset: 2px; }
+  }
+
+  /* celular: abajo a la izquierda; se oculta con el menú abierto */
   @media (max-width: 767.98px) {
+    top: auto;
+    bottom: 20px;
+    transform: none;
+
+    .tab-inner {
+      width: auto;
+      flex-direction: row;
+      padding: 12px 14px 12px 12px;
+      border-radius: 0 14px 14px 0;
+    }
+
+    .tab-hint { display: none; }
+
     &[data-sidebar-open="true"] {
       opacity: 0;
       pointer-events: none;
     }
   }
 
-  /* desktop: hide when sidebar is visible */
+  /* escritorio: solo existe con el menú cerrado */
   @media (min-width: 768px) {
     &[data-sidebar-open="false"] {
       display: none;
     }
+  }
+}
+
+/* Escritorio con el menú cerrado: el contenido deja libre el ancho de la pestaña. */
+@include media-breakpoint-up(md) {
+  .sidebar.show + .wrapper {
+    margin-left: $edge-tab-width;
+    max-width: calc(100vw - #{$edge-tab-width});
+    width: calc(100% - #{$edge-tab-width});
+  }
+}
+
+/* ── Paleta de búsqueda (Ctrl + K) ── */
+@keyframes cpIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.cp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1080;
+  background: rgba(6, 14, 12, 0.5);
+  animation: cpFade 0.15s ease both;
+}
+
+@keyframes cpFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.command-palette {
+  position: absolute;
+  top: 12vh;
+  left: 50%;
+  width: min(580px, calc(100vw - 32px));
+  margin-left: calc(min(580px, calc(100vw - 32px)) / -2);
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--dash-border, #e4eae8);
+  background: var(--dash-surface, #ffffff);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  animation: cpIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @media (max-width: 575.98px) {
+    top: 16px;
+  }
+
+  .cp-search {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--dash-border, #e4eae8);
+
+    input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--dash-text-primary, #0f1f1b);
+      font-size: 16px;
+
+      &::placeholder { color: var(--dash-text-secondary, #5b6b66); }
+    }
+  }
+
+  .cp-search-icon {
+    font-size: 17px;
+    color: var(--dash-text-secondary, #5b6b66);
+  }
+
+  .cp-list {
+    list-style: none;
+    margin: 0;
+    padding: 6px 8px 8px;
+    max-height: min(56vh, 460px);
+    overflow-y: auto;
+
+    ul { list-style: none; margin: 0; padding: 0; }
+  }
+
+  .cp-section {
+    padding: 10px 10px 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dash-text-secondary, #5b6b66);
+  }
+
+  .cp-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+
+    &.is-active {
+      background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.1);
+    }
+  }
+
+  .cp-item-icon {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--theme-primary, #0f6f5c);
+    background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.1);
+  }
+
+  .cp-item-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .cp-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dash-text-primary, #0f1f1b);
+  }
+
+  .cp-item-trail {
+    font-size: 12px;
+    color: var(--dash-text-secondary, #5b6b66);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cp-item-enter {
+    color: var(--dash-text-secondary, #5b6b66);
+    font-size: 12px;
+  }
+
+  .cp-empty {
+    padding: 22px 12px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--dash-text-secondary, #5b6b66);
+  }
+
+  .cp-footer {
+    display: flex;
+    gap: 18px;
+    padding: 10px 18px;
+    border-top: 1px solid var(--dash-border, #e4eae8);
+    font-size: 12px;
+    color: var(--dash-text-secondary, #5b6b66);
+  }
+
+  kbd {
+    display: inline-block;
+    min-width: 20px;
+    padding: 1px 6px;
+    border: 1px solid var(--dash-border, #e4eae8);
+    border-radius: 6px;
+    background: var(--dash-surface-2, #fbfcfc);
+    color: var(--dash-text-primary, #0f1f1b);
+    font-family: inherit;
+    font-size: 11px;
+    text-align: center;
+    box-shadow: none;
+  }
+}
+
+[data-bs-theme="dark"] .command-palette .cp-item.is-active,
+[data-bs-theme="dark"] .command-palette .cp-item-icon {
+  background: rgba(95, 211, 173, 0.12);
+}
+
+[data-bs-theme="dark"] .command-palette .cp-item-icon {
+  color: #5fd3ad;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-edge-tab .tab-inner,
+  .sidebar-edge-tab .tab-logo,
+  .cp-overlay,
+  .command-palette {
+    animation: none;
   }
 }

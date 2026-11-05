@@ -1,6 +1,7 @@
 "use client"
 
 import Modal from "@/components/modal"
+import { formatInstitutionName, formatCatalogLabel } from "@/core/utils/displayText";
 import { Button, Table, Tag } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import { FileSearchOutlined } from "@ant-design/icons"
@@ -35,10 +36,10 @@ export default function PatientAdmissionsModal({
       key: "admissionDate",
       render: (value: string) => formatDateTime(value),
     },
-    { title: "Ámbito", dataIndex: "careScopeName", key: "careScopeName" },
+    { title: "Ámbito", dataIndex: "careScopeName", key: "careScopeName", render: (v: string) => formatCatalogLabel(v) },
     { title: "Tipo", dataIndex: "admissionTypeName", key: "admissionTypeName" },
     { title: "Triage", dataIndex: "triagePrioridad", key: "triagePrioridad", align: "center" },
-    { title: "EPS", dataIndex: "epsNombre", key: "epsNombre" },
+    { title: "EPS", dataIndex: "epsNombre", key: "epsNombre", render: (v: string) => formatInstitutionName(v) },
     { title: "Convenio", dataIndex: "convenioNombre", key: "convenioNombre" },
     {
       title: "Estado",

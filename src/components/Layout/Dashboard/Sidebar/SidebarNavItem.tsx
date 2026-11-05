@@ -12,10 +12,11 @@ type Props = {
   href: string;
   icon?: IconDefinition;
   level?: number;
+  variant?: "recent";
 } & PropsWithChildren;
 
 export default function SidebarNavItem(props: Props) {
-  const { icon, children, href } = props;
+  const { icon, children, href, variant } = props;
   const pathname = usePathname();
   const {
     showSidebarState: [, setIsShowSidebar],
@@ -31,7 +32,8 @@ export default function SidebarNavItem(props: Props) {
       <Link
         href={href}
         onClick={() => setIsShowSidebar(false)}
-        className={classNames("sidebar-nav-item", { active: isActive })}
+        aria-current={isActive ? "page" : undefined}
+        className={classNames("sidebar-nav-item", { active: isActive, "is-recent": variant === "recent" })}
       >
         {icon ? (
           <span className="nav-icon">

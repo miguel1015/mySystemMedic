@@ -15,7 +15,7 @@ import {
 } from "react-bootstrap";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { DownOutlined } from "@ant-design/icons";
 import { usePathname } from "next/navigation";
 
 type SidebarNavGroupToggleProps = {
@@ -47,8 +47,8 @@ const SidebarNavGroupToggle = (props: SidebarNavGroupToggleProps) => {
         </span>
       )}
       <span className="nav-text text-truncate">{children}</span>
-      <span className="nav-chevron">
-        <FontAwesomeIcon size="xs" icon={faChevronDown} />
+      <span className="nav-chevron" aria-hidden>
+        <DownOutlined />
       </span>
     </Button>
   );
@@ -70,10 +70,16 @@ type SidebarNavGroupProps = {
   toggleIcon?: IconDefinition;
   toggleText: string;
   level?: number;
+  // Modo controlado (módulos): el padre decide cuál está abierto, así abrir uno cierra
+  // el anterior. Sin estas props el grupo se maneja solo, como antes.
+  open?: boolean;
+  onToggle?: (open: boolean) => void;
+  className?: string;
 } & PropsWithChildren;
 
 export default function SidebarNavGroup(props: SidebarNavGroupProps) {
-  const { toggleIcon, toggleText, children, level = 0 } = props;
+  const { toggleIcon, toggleText, children, level = 0, open, onToggle, className } = props;
+  const controlled = open !== undefined;
   const pathname = usePathname();
 
   const childHrefs = extractHrefs(children);
@@ -87,8 +93,13 @@ export default function SidebarNavGroup(props: SidebarNavGroupProps) {
     <Accordion
       as="li"
       bsPrefix="nav-group"
-      className={classNames({ show: isShow })}
-      defaultActiveKey={hasActiveChild ? "0" : undefined}
+      className={classNames(className, { show: isShow })}
+      {...(controlled
+        ? {
+            activeKey: open ? "0" : null,
+            onSelect: (key: unknown) => onToggle?.(key === "0"),
+          }
+        : { defaultActiveKey: hasActiveChild ? "0" : undefined })}
       style={{ marginLeft: `${level * 8}px` }}
     >
       <SidebarNavGroupToggle

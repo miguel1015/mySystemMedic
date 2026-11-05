@@ -1,6 +1,7 @@
 "use client";
 
 import CustomButton from "@/components/button";
+import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
 import { Container } from "@/components/container";
 import ModalConfirm from "@/components/modalConfirmation.tsx";
 import { useDeleteContract } from "../../../../core/hooks/parameterization/contracts/useDeleteContract";
@@ -39,11 +40,14 @@ const ContractsTable = ({ onEdit }: ContractsTableProps) => {
     );
   }, [search, dataContracts]);
 
+  // Numeración continua entre páginas (antd da el índice dentro de la página).
+  const { onTableChange, rowNumber } = useRowNumbering(filteredContracts.length);
+
   const columns: ColumnsType<TContract> = [
     {
       title: "#",
       width: "5%",
-      render: (_value, _record, index) => index + 1,
+      render: (_value, _record, index) => rowNumber(index),
     },
     {
       title: "Nombre del contrato",
@@ -111,6 +115,7 @@ const ContractsTable = ({ onEdit }: ContractsTableProps) => {
       </div>
 
       <Table<TContract>
+        onChange={onTableChange}
         columns={columns}
         dataSource={filteredContracts}
         rowKey="id"

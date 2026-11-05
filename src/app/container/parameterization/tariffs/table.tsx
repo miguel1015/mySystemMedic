@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/components/container";
+import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
 import ModalConfirm from "@/components/modalConfirmation.tsx";
 import { Button, Input, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -35,11 +36,14 @@ const TariffsTable = ({ onEdit }: TariffsTableProps) => {
     );
   }, [search, dataTariffs]);
 
+  // Numeración continua entre páginas (antd da el índice dentro de la página).
+  const { onTableChange, rowNumber } = useRowNumbering(filteredTariffs.length);
+
   const columns: ColumnsType<TTariffs> = [
     {
       title: "#",
       width: 50,
-      render: (_value, _record, index) => index + 1,
+      render: (_value, _record, index) => rowNumber(index),
     },
     {
       title: "ID",
@@ -127,6 +131,7 @@ const TariffsTable = ({ onEdit }: TariffsTableProps) => {
       </div>
 
       <Table<TTariffs>
+        onChange={onTableChange}
         size="small"
         columns={columns}
         dataSource={filteredTariffs}

@@ -1,6 +1,8 @@
 "use client"
 
 import { Button, Input, Table, Tag } from "antd"
+import { formatPersonName, formatCatalogLabel, careScopeColor, careScopeKey } from "@/core/utils/displayText";
+import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
 import type { ColumnsType } from "antd/es/table"
 import { useMemo, useState } from "react"
 import { SearchOutlined, SettingOutlined } from "@ant-design/icons"
@@ -27,13 +29,16 @@ const AdmissionsTable = ({ data, loading, onAction }: AdmissionsTableProps) => {
     )
   }, [search, data])
 
+  // Numeración continua entre páginas (antd da el índice dentro de la página).
+  const { onTableChange, rowNumber } = useRowNumbering(filteredData.length);
+
   const columns: ColumnsType<ActiveAdmission> = [
     {
       title: "#",
       width: 60,
       align: "center",
       render: (_value, _record, index) => (
-        <span style={{ fontWeight: 600, color: "var(--dash-text-secondary, #6b7280)" }}>{index + 1}</span>
+        <span style={{ fontWeight: 600, color: "var(--dash-text-secondary, #6b7280)" }}>{rowNumber(index)}</span>
       ),
     },
     {
@@ -55,7 +60,7 @@ const AdmissionsTable = ({ data, loading, onAction }: AdmissionsTableProps) => {
       width: 280,
       sorter: (a, b) => a.patientFullName.localeCompare(b.patientFullName),
       render: (value: string) => (
-        <span style={{ fontWeight: 500 }}>{value}</span>
+        <span style={{ fontWeight: 500 }}>{formatPersonName(value)}</span>
       ),
     },
     {
@@ -76,16 +81,10 @@ const AdmissionsTable = ({ data, loading, onAction }: AdmissionsTableProps) => {
         { text: "Consulta externa", value: "Consulta externa" },
         { text: "Cirugía", value: "Cirugía" },
       ],
-      onFilter: (value, record) => record.careScope === value,
-      render: (value: string) => {
-        const colorMap: Record<string, string> = {
-          Urgencia: "red",
-          Hospitalización: "blue",
-          "Consulta externa": "green",
-          Cirugía: "purple",
-        }
-        return <Tag color={colorMap[value] || "default"}>{value}</Tag>
-      },
+      onFilter: (value, record) => careScopeKey(record.careScope) === careScopeKey(String(value)),
+      render: (value: string) => (
+        <Tag color={careScopeColor(value)}>{formatCatalogLabel(value)}</Tag>
+      ),
     },
     {
       title: "Acciones",
@@ -122,6 +121,7 @@ const AdmissionsTable = ({ data, loading, onAction }: AdmissionsTableProps) => {
         />
       </div>
       <Table<ActiveAdmission>
+        onChange={onTableChange}
         size="middle"
         columns={columns}
         dataSource={filteredData}

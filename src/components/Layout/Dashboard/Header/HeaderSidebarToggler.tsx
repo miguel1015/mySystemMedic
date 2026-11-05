@@ -2,8 +2,7 @@
 
 import { useSidebar } from "@/components/Layout/Dashboard/SidebarProvider";
 import { Button } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars } from "@fortawesome/free-solid-svg-icons";
+import { MenuFoldOutlined } from "@ant-design/icons";
 import classNames from "classnames";
 import React from "react";
 
@@ -23,10 +22,11 @@ export default function HeaderSidebarToggler() {
       type="button"
       aria-controls="sidebar"
       aria-expanded={isShowSidebar}
+      aria-label="Cerrar menú (Ctrl + B)"
+      title="Cerrar menú (Ctrl + B)"
       onClick={toggleSidebar}
     >
-      <FontAwesomeIcon
-        icon={faBars}
+      <MenuFoldOutlined
         className={classNames("toggler-icon", {
           open: isShowSidebar,
           closed: !isShowSidebar,

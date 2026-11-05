@@ -1,6 +1,8 @@
 "use client"
 
 import { Button, Input, Select, Space, Table, Spin, Tag } from "antd"
+import { formatPersonName } from "@/core/utils/displayText";
+import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
 import type { ColumnsType } from "antd/es/table"
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -74,6 +76,9 @@ export default function TriageTable({ data, isLoading }: TriageTableProps) {
     })
   }
 
+  // Numeración continua entre páginas (antd da el índice dentro de la página).
+  const { onTableChange, rowNumber } = useRowNumbering(filtered.length);
+
   const columns: ColumnsType<TriageResponse> = [
     {
       title: "#",
@@ -86,7 +91,7 @@ export default function TriageTable({ data, isLoading }: TriageTableProps) {
             color: "var(--dash-text-secondary, #6b7280)",
           }}
         >
-          {index + 1}
+          {rowNumber(index)}
         </span>
       ),
     },
@@ -119,7 +124,7 @@ export default function TriageTable({ data, isLoading }: TriageTableProps) {
       sorter: (a, b) =>
         (a.nombrePaciente ?? "").localeCompare(b.nombrePaciente ?? ""),
       render: (value: string) => (
-        <span style={{ fontWeight: 500 }}>{value}</span>
+        <span style={{ fontWeight: 500 }}>{formatPersonName(value)}</span>
       ),
     },
     {
@@ -225,6 +230,7 @@ export default function TriageTable({ data, isLoading }: TriageTableProps) {
       </div>
 
       <Table<TriageResponse>
+        onChange={onTableChange}
         size="middle"
         columns={columns}
         dataSource={filtered}

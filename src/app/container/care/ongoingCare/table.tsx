@@ -1,6 +1,8 @@
 "use client";
 
 import { Button, DatePicker, Input, Select, Table, Tag } from "antd";
+import { formatPersonName, formatCatalogLabel, careScopeColor } from "@/core/utils/displayText";
+import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo, useState } from "react";
 import { DollarOutlined, SearchOutlined } from "@ant-design/icons";
@@ -16,13 +18,6 @@ interface OngoingCareTableProps {
   loading: boolean;
 }
 
-const CARE_SCOPE_COLORS: Record<string, string> = {
-  Triage: "gold",
-  Urgencia: "red",
-  Hospitalización: "blue",
-  "Consulta externa": "green",
-  Cirugía: "purple",
-};
 
 const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
   const router = useRouter();
@@ -79,6 +74,9 @@ const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
       );
   }, [search, careScopeFilter, dateRange, data]);
 
+  // Numeración continua entre páginas (antd da el índice dentro de la página).
+  const { onTableChange, rowNumber } = useRowNumbering(filteredData.length);
+
   const columns: ColumnsType<OngoingAttention> = [
     {
       title: "#",
@@ -91,7 +89,7 @@ const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
             color: "var(--dash-text-secondary, #6b7280)",
           }}
         >
-          {index + 1}
+          {rowNumber(index)}
         </span>
       ),
     },
@@ -125,7 +123,7 @@ const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
       width: 260,
       sorter: (a, b) => a.patientFullName.localeCompare(b.patientFullName),
       render: (value: string) => (
-        <span style={{ fontWeight: 500 }}>{value}</span>
+        <span style={{ fontWeight: 500 }}>{formatPersonName(value)}</span>
       ),
     },
     {
@@ -148,7 +146,7 @@ const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
       dataIndex: "careScope",
       width: 180,
       render: (value: string) => (
-        <Tag color={CARE_SCOPE_COLORS[value] || "default"}>{value}</Tag>
+        <Tag color={careScopeColor(value)}>{formatCatalogLabel(value)}</Tag>
       ),
     },
     {
@@ -217,6 +215,7 @@ const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
         />
       </div>
       <Table<OngoingAttention>
+        onChange={onTableChange}
         size="middle"
         columns={columns}
         dataSource={filteredData}

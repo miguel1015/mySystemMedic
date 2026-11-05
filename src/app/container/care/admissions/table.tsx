@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Dropdown, Table, Tag } from "antd";
+import { formatPersonName, formatInstitutionName } from "@/core/utils/displayText";
 import type { MenuProps } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
@@ -162,7 +163,7 @@ export default function AdmissionsTable({
       dataIndex: "nombrePaciente",
       width: 240,
       render: (value: string) => (
-        <span style={{ fontWeight: 500 }}>{value}</span>
+        <span style={{ fontWeight: 500 }}>{formatPersonName(value)}</span>
       ),
     },
     {
@@ -172,7 +173,7 @@ export default function AdmissionsTable({
       render: (value: string | null | undefined, record) =>
         value ? (
           <div style={{ lineHeight: 1.3 }}>
-            <div>{value}</div>
+            <div>{formatPersonName(value)}</div>
             <div style={{ fontSize: 12, color: "#8c8c8c" }}>
               {record.acompananteParentesco}
             </div>
@@ -193,6 +194,7 @@ export default function AdmissionsTable({
       dataIndex: "epsNombre",
       width: 220,
       ellipsis: true,
+      render: (value: string) => formatInstitutionName(value),
     },
     {
       title: "Convenio",
