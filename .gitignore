@@ -38,3 +38,8 @@ yarn-error.log*
 next-env.d.ts
 
 CLAUDE.md
+
+# Claude Code (configuración y skills locales)
+.claude/
+skills-lock.json
+PRODUCT.md
