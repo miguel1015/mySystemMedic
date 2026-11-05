@@ -2,11 +2,12 @@ import { ENDPOINTS } from "@/core/api/endpoints"
 import type {
   ElectronicInvoiceAttachedDocument,
   ElectronicInvoiceListItem,
+  ElectronicInvoicePdf,
   ElectronicInvoiceSendEmailResponse,
 } from "@/core/interfaces/care/billing"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
+export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { credentials: "include", ...init })
   const contentType = res.headers.get("content-type") ?? ""
   const data = contentType.includes("application/json")
@@ -72,6 +73,17 @@ export function useDownloadAttachedDocument() {
       queryClient.invalidateQueries({ queryKey: ["electronic-invoices"], exact: true })
       queryClient.invalidateQueries({ queryKey: ["electronic-invoices", "detail"] })
     },
+  })
+}
+
+// PDF de la factura en Base64. Solo se pide al abrir la vista previa.
+export function useGetElectronicInvoicePdf(id?: number | null) {
+  return useQuery({
+    queryKey: ["electronic-invoices", "pdf", id],
+    queryFn: () => request<ElectronicInvoicePdf>(ENDPOINTS.ELECTRONIC_INVOICE.PDF(id!)),
+    enabled: !!id,
+    retry: false,
+    staleTime: Infinity,
   })
 }
 

@@ -6,318 +6,348 @@ import Title from "@/components/title"
 import {
   useDownloadAttachedDocument,
   useGetElectronicInvoiceAttachedDocument,
-  useGetElectronicInvoiceById,
 } from "@/core/hooks/care/billing/useElectronicInvoiceDocuments"
-import type { BillingMovementResponse } from "@/core/interfaces/care/billing"
+import { formatInstitutionName, formatPersonName } from "@/core/utils/displayText"
 import {
+  AppstoreOutlined,
   ArrowLeftOutlined,
+  BankOutlined,
+  CalendarOutlined,
+  CheckCircleFilled,
   CloudUploadOutlined,
+  CodeOutlined,
   CopyOutlined,
   DownloadOutlined,
+  ExclamationCircleOutlined,
+  FileProtectOutlined,
+  FileTextOutlined,
+  IdcardOutlined,
+  InfoCircleOutlined,
+  RightOutlined,
+  SafetyCertificateOutlined,
   SolutionOutlined,
+  UserOutlined,
 } from "@ant-design/icons"
-import {
-  Alert,
-  Badge,
-  Button,
-  Col,
-  Descriptions,
-  Empty,
-  Row,
-  Skeleton,
-  Space,
-  Table,
-  Tabs,
-  Tag,
-  Tooltip,
-  message,
-} from "antd"
-import type { ColumnsType } from "antd/es/table"
+import { Button, Empty, Segmented, Skeleton, Table, Tabs, Tag, Tooltip, message } from "antd"
 import { useRouter } from "next/navigation"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import { RipsMissingField, RipsServiceGroupKey, buildRips } from "./buildRips"
 import { parseFevXml } from "./parseFevXml"
-import { RipsIssuesPanel } from "./RipsIssuesPanel"
-import { RipsStatusTag } from "./RipsStatusTag"
-import { useRipsSources } from "./useRipsSources"
+import { countRipsIssues } from "./RipsIssuesPanel"
 import {
-  RipsServiceGroupKey,
-  RipsServicios,
-  buildRips,
-  classifyMovement,
-} from "./buildRips"
+  CodeCell,
+  GROUP_LABELS,
+  GROUP_ORDER,
+  ServiceRow,
+  buildServiceRows,
+  columnsFor,
+} from "./ripsServiceTable"
+import { RipsStatusTag } from "./RipsStatusTag"
+import styles from "./rips.module.scss"
+import { useRipsInvoiceData } from "./useRipsSources"
 
 interface RipsDetailProps {
   invoiceId: number
 }
 
-const sectionCardStyle: React.CSSProperties = {
-  background: "var(--dash-surface, #ffffff)",
-  border: "1px solid var(--dash-border, #e5e7eb)",
-  borderRadius: 10,
-  padding: "16px 18px",
-  height: "100%",
+type Tone = "default" | "error" | "warning" | "success" | "neutral"
+
+const TONE_CLASS: Record<Tone, string | undefined> = {
+  default: undefined,
+  error: styles.toneError,
+  warning: styles.toneWarning,
+  success: styles.toneSuccess,
+  neutral: styles.toneNeutral,
 }
 
-const monoStyle: React.CSSProperties = { fontFamily: "monospace" }
-
-// Muestra el valor tal como iría en el JSON; si falta, lo marca para que se vea qué
-// dato hay que completar en MediNexus.
-function CodeCell({ value, hint }: { value: string | number | null | undefined; hint?: string }) {
-  if (value === null || value === undefined || value === "") {
-    return (
-      <Tooltip title={hint ?? "Dato pendiente para el RIPS"}>
-        <Tag color="orange" style={{ marginInlineEnd: 0 }}>
-          Sin código
-        </Tag>
-      </Tooltip>
-    )
-  }
-  return <span style={monoStyle}>{value}</span>
-}
-
-function WithName({ name, code, hint }: { name?: string | null; code: string | null; hint?: string }) {
+function StatTile({
+  icon,
+  label,
+  value,
+  hint,
+  tone = "default",
+}: {
+  icon: React.ReactNode
+  label: string
+  value: React.ReactNode
+  hint?: React.ReactNode
+  tone?: Tone
+}) {
   return (
-    <Space size={6} wrap>
+    <div className={[styles.stat, TONE_CLASS[tone]].filter(Boolean).join(" ")}>
+      <div className={styles.statIcon}>{icon}</div>
+      <div className={styles.statBody}>
+        <div className={styles.statLabel}>{label}</div>
+        <div className={styles.statValue}>{value}</div>
+        {hint && <div className={styles.statHint}>{hint}</div>}
+      </div>
+    </div>
+  )
+}
+
+function Card({
+  icon,
+  title,
+  extra,
+  children,
+  className,
+  bodyless,
+}: {
+  icon: React.ReactNode
+  title: string
+  extra?: React.ReactNode
+  children: React.ReactNode
+  className?: string
+  bodyless?: boolean
+}) {
+  return (
+    <section className={[styles.card, className].filter(Boolean).join(" ")}>
+      <header className={styles.cardHeader}>
+        <h2 className={styles.cardTitle}>
+          {icon}
+          {title}
+        </h2>
+        {extra}
+      </header>
+      {bodyless ? children : <div className={styles.cardBody}>{children}</div>}
+    </section>
+  )
+}
+
+function Field({
+  label,
+  children,
+  wide,
+}: {
+  label: string
+  children: React.ReactNode
+  wide?: boolean
+}) {
+  return (
+    <div className={[styles.field, wide && styles.fieldWide].filter(Boolean).join(" ")}>
+      <div className={styles.fieldLabel}>{label}</div>
+      <div className={styles.fieldValue}>{children}</div>
+    </div>
+  )
+}
+
+// Nombre legible + el código que viaja en el JSON (o "Sin código" si falta).
+function NamedCode({ name, code, hint }: { name?: string | null; code: string | null; hint?: string }) {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
       <span>{name || "-"}</span>
-      <CodeCell value={code} hint={hint} />
-    </Space>
+      {code ? <span className={styles.codeChip}>{code}</span> : <CodeCell value={null} hint={hint} />}
+    </span>
   )
 }
 
-interface ServiceRow {
-  key: string
-  consecutivo: number
-  codigo: string | null
-  descripcion: string
-  diagnostico: string | null
-  profesional: string | null
-  cantidad: number | null
-  vrUnitario: number | null
-  vrServicio: number | null
-  extra: string | null
+function initials(name: string | null | undefined) {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return "?"
+  const first = parts[0][0]
+  const last = parts.length > 2 ? parts[2][0] : parts.length > 1 ? parts[1][0] : ""
+  return `${first}${last}`.toUpperCase()
 }
 
-const GROUP_LABELS: Record<RipsServiceGroupKey, string> = {
-  consultas: "Consultas",
-  procedimientos: "Procedimientos",
-  urgencias: "Urgencias",
-  hospitalizacion: "Hospitalización",
-  recienNacidos: "Recién nacidos",
-  medicamentos: "Medicamentos",
-  otrosServicios: "Otros servicios",
-}
+function IssuesCard({ missing }: { missing: RipsMissingField[] }) {
+  // Cerrado por defecto: el resumen de errores y avisos se ve en el encabezado.
+  const [open, setOpen] = useState(false)
+  const [filter, setFilter] = useState<"all" | "error" | "warning">("all")
+  const { errors, warnings } = countRipsIssues(missing)
 
-const GROUP_ORDER: RipsServiceGroupKey[] = [
-  "consultas",
-  "procedimientos",
-  "medicamentos",
-  "otrosServicios",
-  "urgencias",
-  "hospitalizacion",
-  "recienNacidos",
-]
+  const groups = useMemo(() => {
+    const map = new Map<string, RipsMissingField[]>()
+    for (const item of missing) {
+      if (filter !== "all" && item.severity !== filter) continue
+      const list = map.get(item.group) ?? []
+      list.push(item)
+      map.set(item.group, list)
+    }
+    return Array.from(map.entries())
+  }, [missing, filter])
 
-function buildServiceRows(
-  servicios: RipsServicios,
-  movements: BillingMovementResponse[],
-): Record<RipsServiceGroupKey, ServiceRow[]> {
-  // Los nombres no viajan en el JSON de consultas, procedimientos y medicamentos; se toman
-  // de los cargos en el mismo orden en que buildRips los recorrió.
-  const namesByGroup: Record<RipsServiceGroupKey, string[]> = {
-    consultas: [],
-    procedimientos: [],
-    urgencias: [],
-    hospitalizacion: [],
-    recienNacidos: [],
-    medicamentos: [],
-    otrosServicios: [],
-  }
-  for (const movement of movements.filter((item) => item.isActive !== false)) {
-    namesByGroup[classifyMovement(movement)].push(movement.name)
-  }
-
-  return {
-    consultas: servicios.consultas.map((item, index) => ({
-      key: `c-${item.consecutivo}`,
-      consecutivo: item.consecutivo,
-      codigo: item.codConsulta,
-      descripcion: namesByGroup.consultas[index] ?? "-",
-      diagnostico: item.codDiagnosticoPrincipal,
-      profesional: item.numDocumentoIdentificacion,
-      cantidad: 1,
-      vrUnitario: item.vrServicio,
-      vrServicio: item.vrServicio,
-      extra: item.fechaInicioAtencion,
-    })),
-    procedimientos: servicios.procedimientos.map((item, index) => ({
-      key: `p-${item.consecutivo}`,
-      consecutivo: item.consecutivo,
-      codigo: item.codProcedimiento,
-      descripcion: namesByGroup.procedimientos[index] ?? "-",
-      diagnostico: item.codDiagnosticoPrincipal,
-      profesional: item.numDocumentoIdentificacion,
-      cantidad: 1,
-      vrUnitario: item.vrServicio,
-      vrServicio: item.vrServicio,
-      extra: item.fechaInicioAtencion,
-    })),
-    medicamentos: servicios.medicamentos.map((item, index) => ({
-      key: `m-${item.consecutivo}`,
-      consecutivo: item.consecutivo,
-      codigo: item.codTecnologiaSalud,
-      descripcion: namesByGroup.medicamentos[index] ?? "-",
-      diagnostico: item.codDiagnosticoPrincipal,
-      profesional: item.numDocumentoIdentificacion,
-      cantidad: item.cantidadMedicamento,
-      vrUnitario: item.vrUnitMedicamento,
-      vrServicio: item.vrServicio,
-      extra: item.fechaDispensAdmon,
-    })),
-    otrosServicios: servicios.otrosServicios.map((item) => ({
-      key: `o-${item.consecutivo}`,
-      consecutivo: item.consecutivo,
-      codigo: item.codTecnologiaSalud,
-      descripcion: item.nomTecnologiaSalud ?? "-",
-      diagnostico: null,
-      profesional: item.numDocumentoIdentificacion,
-      cantidad: item.cantidadOS,
-      vrUnitario: item.vrUnitOS,
-      vrServicio: item.vrServicio,
-      extra: item.tipoOS,
-    })),
-    urgencias: servicios.urgencias.map((item) => ({
-      key: `u-${item.consecutivo}`,
-      consecutivo: item.consecutivo,
-      codigo: item.codDiagnosticoPrincipalE,
-      descripcion: `Ingreso ${item.fechaInicioAtencion ?? "-"} · Egreso ${item.fechaEgreso ?? "-"}`,
-      diagnostico: item.codDiagnosticoPrincipal,
-      profesional: null,
-      cantidad: null,
-      vrUnitario: null,
-      vrServicio: null,
-      extra: item.condicionDestinoUsuarioEgreso,
-    })),
-    hospitalizacion: servicios.hospitalizacion.map((item) => ({
-      key: `h-${item.consecutivo}`,
-      consecutivo: item.consecutivo,
-      codigo: item.codDiagnosticoPrincipalE,
-      descripcion: `Ingreso ${item.fechaInicioAtencion ?? "-"} · Egreso ${item.fechaEgreso ?? "-"}`,
-      diagnostico: item.codDiagnosticoPrincipal,
-      profesional: null,
-      cantidad: null,
-      vrUnitario: null,
-      vrServicio: null,
-      extra: item.condicionDestinoUsuarioEgreso,
-    })),
-    recienNacidos: [],
-  }
-}
-
-function columnsFor(group: RipsServiceGroupKey): ColumnsType<ServiceRow> {
-  const isEpisode = group === "urgencias" || group === "hospitalizacion"
-
-  if (isEpisode) {
-    return [
-      { title: "#", dataIndex: "consecutivo", width: 50 },
-      { title: "Periodo", dataIndex: "descripcion" },
-      {
-        title: "Dx ingreso",
-        dataIndex: "diagnostico",
-        width: 110,
-        render: (value) => <CodeCell value={value} />,
-      },
-      {
-        title: "Dx egreso",
-        dataIndex: "codigo",
-        width: 110,
-        render: (value) => <CodeCell value={value} hint="No hay egreso registrado" />,
-      },
-      {
-        title: "Condición egreso",
-        dataIndex: "extra",
-        width: 140,
-        render: (value) => <CodeCell value={value} />,
-      },
-    ]
-  }
-
-  const codeTitle =
-    group === "medicamentos" ? "CUM" : group === "otrosServicios" ? "Código" : "CUPS"
-
-  const columns: ColumnsType<ServiceRow> = [
-    { title: "#", dataIndex: "consecutivo", width: 50 },
-    {
-      title: codeTitle,
-      dataIndex: "codigo",
-      width: 120,
-      render: (value) => <CodeCell value={value} />,
-    },
-    { title: "Descripción", dataIndex: "descripcion", ellipsis: true },
-  ]
-
-  if (group === "otrosServicios") {
-    columns.push({
-      title: "Tipo OS",
-      dataIndex: "extra",
-      width: 90,
-      render: (value) => <CodeCell value={value} />,
-    })
-  } else {
-    columns.push({
-      title: "Dx principal",
-      dataIndex: "diagnostico",
-      width: 110,
-      render: (value) => <CodeCell value={value} />,
-    })
-  }
-
-  columns.push(
-    {
-      title: "Profesional",
-      dataIndex: "profesional",
-      width: 120,
-      render: (value) => <CodeCell value={value} hint="No se identificó el profesional" />,
-    },
-    { title: "Cant.", dataIndex: "cantidad", width: 60, align: "right" },
-    {
-      title: "Valor",
-      dataIndex: "vrServicio",
-      width: 120,
-      align: "right",
-      render: (value: number | null) => formatCurrency(value),
-    },
+  return (
+    <section className={styles.card}>
+      <header className={[styles.cardHeader, styles.accordionHeader, !open && styles.accordionClosed].filter(Boolean).join(" ")}>
+        <button
+          type="button"
+          className={styles.accordionToggle}
+          onClick={() => setOpen((value) => !value)}
+          aria-expanded={open}
+          aria-controls="rips-validation-panel"
+        >
+          <RightOutlined className={[styles.chevron, open && styles.chevronOpen].filter(Boolean).join(" ")} />
+          <span className={styles.cardTitle}>
+            <SafetyCertificateOutlined />
+            Validación previa al MUV
+          </span>
+          <span className={styles.issuesSummary}>
+            {missing.length === 0 ? (
+              <span className={[styles.pill, styles.pillSuccess].join(" ")}>
+                <CheckCircleFilled /> Sin problemas
+              </span>
+            ) : (
+              <>
+                {errors > 0 && (
+                  <span className={[styles.pill, styles.pillError].join(" ")}>
+                    {errors} {errors === 1 ? "error" : "errores"}
+                  </span>
+                )}
+                {warnings > 0 && (
+                  <span className={[styles.pill, styles.pillWarning].join(" ")}>
+                    {warnings} {warnings === 1 ? "aviso" : "avisos"}
+                  </span>
+                )}
+              </>
+            )}
+          </span>
+        </button>
+        {open && missing.length > 0 && (
+          <Segmented
+            size="small"
+            value={filter}
+            onChange={(value) => setFilter(value as typeof filter)}
+            options={[
+              { label: `Todos (${missing.length})`, value: "all" },
+              { label: `Errores (${errors})`, value: "error", disabled: errors === 0 },
+              { label: `Avisos (${warnings})`, value: "warning", disabled: warnings === 0 },
+            ]}
+          />
+        )}
+      </header>
+      <div
+        id="rips-validation-panel"
+        className={[styles.accordionPanel, open && styles.accordionPanelOpen].filter(Boolean).join(" ")}
+      >
+        <div className={styles.accordionInner}>
+          <div className={styles.cardBody}>
+      {missing.length === 0 ? (
+        <div className={styles.allGood}>
+          <CheckCircleFilled />
+          No se detectaron datos faltantes ni valores que el MUV rechace.
+        </div>
+      ) : (
+        <div className={styles.issueGroups}>
+          {groups.map(([group, items]) => {
+            const groupErrors = items.filter((item) => item.severity === "error").length
+            return (
+              <div key={group} className={styles.issueGroup}>
+                <div className={styles.issueGroupTitle}>
+                  <span>{group}</span>
+                  <span
+                    className={[
+                      styles.pill,
+                      groupErrors > 0 ? styles.pillError : styles.pillWarning,
+                    ].join(" ")}
+                  >
+                    {items.length}
+                  </span>
+                </div>
+                <ul className={styles.issueList}>
+                  {items.map((item) => (
+                    <li key={`${item.field}-${item.reason}`} className={styles.issue}>
+                      <span
+                        className={[
+                          styles.issueDot,
+                          item.severity === "error" ? styles.issueDotError : styles.issueDotWarning,
+                        ].join(" ")}
+                        title={item.severity === "error" ? "Error" : "Aviso"}
+                      />
+                      <span>
+                        <span className={styles.issueField}>{item.field}</span>
+                        {item.reason}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          })}
+        </div>
+      )}
+          </div>
+        </div>
+      </div>
+    </section>
   )
+}
 
-  return columns
+function CodeBlock({
+  title,
+  content,
+  actions,
+}: {
+  title: string
+  content: string
+  actions?: React.ReactNode
+}) {
+  return (
+    <div>
+      <div className={styles.codeToolbar}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
+          <span className={styles.codeDots}>
+            <i />
+            <i />
+            <i />
+          </span>
+          {title}
+        </span>
+        <span style={{ display: "inline-flex", gap: 6 }}>{actions}</span>
+      </div>
+      <pre className={styles.code}>{content}</pre>
+    </div>
+  )
+}
+
+function LoadingState() {
+  return (
+    <div className={styles.page}>
+      <div className={styles.stats}>
+        {[0, 1, 2, 3].map((key) => (
+          <div key={key} className={styles.stat}>
+            <Skeleton active avatar={{ shape: "square" }} paragraph={{ rows: 1 }} title />
+          </div>
+        ))}
+      </div>
+      <div className={styles.grid}>
+        <div className={styles.card}>
+          <div className={styles.cardBody}>
+            <Skeleton active paragraph={{ rows: 6 }} />
+          </div>
+        </div>
+        <div className={styles.card}>
+          <div className={styles.cardBody}>
+            <Skeleton active avatar paragraph={{ rows: 6 }} />
+          </div>
+        </div>
+      </div>
+      <div className={styles.card}>
+        <div className={styles.cardBody}>
+          <Skeleton active paragraph={{ rows: 8 }} />
+        </div>
+      </div>
+    </div>
+  )
 }
 
 const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
   const router = useRouter()
   const [messageApi, contextHolder] = message.useMessage()
 
-  const { data: invoice = null, isLoading: isLoadingInvoices } =
-    useGetElectronicInvoiceById(invoiceId)
-  const admissionId = invoice?.admissionId ?? null
+  // Factura + datos de la admisión en una sola petición.
+  const { data, isLoading, isError, error } = useRipsInvoiceData(invoiceId)
+  const invoice = data?.invoice ?? null
+  const sources = data?.sources
 
-  // XML (AttachedDocument) que viaja como xmlFevFile junto al RIPS.
+  // El XML (AttachedDocument) va aparte: puede pesar y, en facturas antiguas, el backend lo
+  // pide a Facturación Electrónica. Se pide en paralelo con lo anterior.
   const {
     data: attachedDocument,
     isLoading: isLoadingAttached,
     isError: isAttachedError,
     error: attachedError,
-  } = useGetElectronicInvoiceAttachedDocument(invoice?.id ?? null)
+  } = useGetElectronicInvoiceAttachedDocument(invoiceId)
   const downloadXml = useDownloadAttachedDocument()
-
-  const {
-    admission,
-    patient,
-    provider,
-    movements,
-    diagnosticosIngreso,
-    diagnosticoEgreso,
-    hcProfessional,
-    isLoading: isLoadingSources,
-  } = useRipsSources(admissionId)
 
   // Factura leída del XML para cruzarla con el RIPS. Mientras carga queda undefined (no se
   // valida); si no hay XML o no se puede leer, null.
@@ -326,27 +356,36 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
     return parseFevXml(attachedDocument?.base64)
   }, [isLoadingAttached, attachedDocument])
 
-  const isLoading = isLoadingInvoices || isLoadingSources
-
   const result = useMemo(() => {
-    if (!invoice || !admission) return null
+    if (!invoice || !sources) return null
     return buildRips({
       invoiceNum: invoice.invoiceNum,
-      admission,
-      patient,
-      provider,
-      movements,
-      diagnosticosIngreso,
-      diagnosticoEgreso,
-      professional: hcProfessional,
+      admission: sources.admission,
+      patient: sources.patient,
+      provider: sources.provider,
+      movements: sources.movements,
+      diagnosticosIngreso: sources.diagnosticosIngreso,
+      diagnosticoEgreso: sources.diagnosticoEgreso,
+      professional: sources.hcProfessional,
       fev,
     })
-  }, [invoice, admission, patient, provider, movements, diagnosticosIngreso, diagnosticoEgreso, hcProfessional, fev])
+  }, [invoice, sources, fev])
 
   const serviceRows = useMemo(
-    () => (result ? buildServiceRows(result.rips.usuarios[0].servicios, movements) : null),
-    [result, movements],
+    () =>
+      result && sources
+        ? buildServiceRows(result.rips.usuarios[0].servicios, sources.movements)
+        : null,
+    [result, sources],
   )
+
+  const availableGroups = useMemo(
+    () => (serviceRows ? GROUP_ORDER.filter((group) => serviceRows[group].length > 0) : []),
+    [serviceRows],
+  )
+  const [selectedGroup, setSelectedGroup] = useState<RipsServiceGroupKey | null>(null)
+  const activeGroup =
+    selectedGroup && availableGroups.includes(selectedGroup) ? selectedGroup : availableGroups[0]
 
   const json = useMemo(() => (result ? JSON.stringify(result.rips, null, 2) : ""), [result])
 
@@ -383,119 +422,16 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
     URL.revokeObjectURL(url)
   }
 
-  const usuario = result?.rips.usuarios[0]
-
-  const serviceTabs = serviceRows
-    ? GROUP_ORDER.filter((group) => serviceRows[group].length > 0).map((group) => ({
-        key: group,
-        label: (
-          <Space size={6}>
-            {GROUP_LABELS[group]}
-            <Badge count={serviceRows[group].length} color="var(--theme-primary, #0F6F5C)" />
-          </Space>
-        ),
-        children: (
-          <Table<ServiceRow>
-            size="small"
-            columns={columnsFor(group)}
-            dataSource={serviceRows[group]}
-            rowKey="key"
-            pagination={false}
-            scroll={{ x: "max-content" }}
-          />
-        ),
-      }))
-    : []
-
-  const mainTabs = [
-    {
-      key: "servicios",
-      label: "Servicios",
-      children:
-        serviceTabs.length > 0 ? (
-          <Tabs size="small" items={serviceTabs} />
-        ) : (
-          <Empty description="La admisión no tiene servicios para reportar" />
-        ),
-    },
-    {
-      key: "json",
-      label: "JSON",
-      children: (
-        <div>
-          <Space style={{ marginBottom: 10 }}>
-            <Button icon={<CopyOutlined />} onClick={handleCopy}>
-              Copiar
-            </Button>
-            <Button icon={<DownloadOutlined />} onClick={handleDownload}>
-              Descargar
-            </Button>
-          </Space>
-          <pre
-            style={{
-              ...monoStyle,
-              fontSize: 12,
-              background: "var(--dash-surface-2, #fbfcfc)",
-              color: "var(--dash-text-primary, #0f1f1b)",
-              border: "1px solid var(--dash-border, #e5e7eb)",
-              borderRadius: 8,
-              padding: 14,
-              maxHeight: "55vh",
-              overflow: "auto",
-              margin: 0,
-            }}
-          >
-            {json}
-          </pre>
-        </div>
-      ),
-    },
-    {
-      key: "muv",
-      label: "Validación MUV",
-      children: (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Alert
-            type="info"
-            showIcon
-            title="Aún no se ha enviado al Mecanismo Único de Validación"
-            description="Aquí aparecerán el CUV o los errores (RVC/RVG) que devuelva el Ministerio. Abajo está el paquete tal como se enviará a CargarFevRips: el RIPS más el XML de la factura en Base64."
-          />
-          {!attachedDocument && (
-            <Alert
-              type="warning"
-              showIcon
-              title="Falta el XML de la factura"
-              description="Sin el AttachedDocument el MUV no puede validar el RIPS. Revise que Facturación Electrónica lo haya generado para esta factura."
-            />
-          )}
-          <pre
-            style={{
-              ...monoStyle,
-              fontSize: 12,
-              background: "var(--dash-surface-2, #fbfcfc)",
-              color: "var(--dash-text-primary, #0f1f1b)",
-              border: "1px solid var(--dash-border, #e5e7eb)",
-              borderRadius: 8,
-              padding: 14,
-              maxHeight: "55vh",
-              overflow: "auto",
-              margin: 0,
-            }}
-          >
-            {muvPackagePreview}
-          </pre>
-        </div>
-      ),
-    },
-  ]
-
   const goBack = () => router.push("/billing/electronicInvoices")
 
-  if (!isLoadingInvoices && !invoice) {
+  if (!isLoading && (isError || !invoice)) {
     return (
       <Container fluid padding="md">
-        <Empty description="No se encontró la factura electrónica.">
+        <Empty
+          description={
+            error?.message && isError ? error.message : "No se encontró la factura electrónica."
+          }
+        >
           <Button icon={<ArrowLeftOutlined />} onClick={goBack}>
             Volver a facturas
           </Button>
@@ -504,192 +440,360 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
     )
   }
 
+  const usuario = result?.rips.usuarios[0]
+  const patient = sources?.patient
+  const admission = sources?.admission
+  const { errors: errorCount, warnings: warningCount } = countRipsIssues(result?.missing ?? [])
+  const serviceCount = availableGroups.reduce(
+    (total, group) => total + (serviceRows?.[group].length ?? 0),
+    0,
+  )
+  const activeRows = activeGroup && serviceRows ? serviceRows[activeGroup] : []
+  const activeGroupTotal = activeRows.reduce((total, row) => total + (row.vrServicio ?? 0), 0)
+
+  const xmlTile = isLoadingAttached ? (
+    <StatTile
+      icon={<FileProtectOutlined />}
+      label="XML de la factura"
+      value={<Skeleton.Button active size="small" style={{ width: 110 }} />}
+      hint="Consultando AttachedDocument…"
+      tone="neutral"
+    />
+  ) : attachedDocument ? (
+    <StatTile
+      icon={<FileProtectOutlined />}
+      label="XML de la factura"
+      value="Disponible"
+      tone="success"
+      hint={
+        <Button
+          type="link"
+          size="small"
+          icon={<DownloadOutlined />}
+          loading={downloadXml.isPending}
+          onClick={() => downloadXml.mutate(invoiceId)}
+          style={{ padding: 0, height: "auto" }}
+        >
+          Descargar AttachedDocument
+        </Button>
+      }
+    />
+  ) : (
+    <StatTile
+      icon={<FileProtectOutlined />}
+      label="XML de la factura"
+      value="No disponible"
+      tone="error"
+      hint={isAttachedError ? attachedError?.message : "Sin XML el MUV no puede validar"}
+    />
+  )
+
+  const mainTabs = [
+    {
+      key: "servicios",
+      label: (
+        <span>
+          <AppstoreOutlined /> Servicios
+        </span>
+      ),
+      children: (
+        <div className={styles.tabPane}>
+          {availableGroups.length === 0 || !activeGroup ? (
+            <Empty description="La admisión no tiene servicios para reportar" />
+          ) : (
+            <>
+              <div className={styles.groupBar}>
+                <Segmented
+                  value={activeGroup}
+                  onChange={(value) => setSelectedGroup(value as RipsServiceGroupKey)}
+                  options={availableGroups.map((group) => ({
+                    value: group,
+                    label: (
+                      <span>
+                        {GROUP_LABELS[group]}
+                        <span className={styles.groupCount}>{serviceRows![group].length}</span>
+                      </span>
+                    ),
+                  }))}
+                />
+                {activeGroup !== "urgencias" && activeGroup !== "hospitalizacion" && (
+                  <span className={styles.groupTotal}>
+                    Subtotal {GROUP_LABELS[activeGroup].toLowerCase()}:{" "}
+                    <strong>{formatCurrency(activeGroupTotal)}</strong>
+                  </span>
+                )}
+              </div>
+              <div className={styles.table}>
+                <Table<ServiceRow>
+                  size="middle"
+                  columns={columnsFor(activeGroup)}
+                  dataSource={activeRows}
+                  rowKey="key"
+                  pagination={activeRows.length > 15 ? { pageSize: 15, size: "small" } : false}
+                  scroll={{ x: "max-content" }}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "json",
+      label: (
+        <span>
+          <CodeOutlined /> JSON RIPS
+        </span>
+      ),
+      children: (
+        <div className={styles.tabPane}>
+          <CodeBlock
+            title={`RIPS_${invoice?.invoiceNum ?? ""}.json`}
+            content={json}
+            actions={
+              <>
+                <Button size="small" icon={<CopyOutlined />} onClick={handleCopy}>
+                  Copiar
+                </Button>
+                <Button size="small" icon={<DownloadOutlined />} onClick={handleDownload}>
+                  Descargar
+                </Button>
+              </>
+            }
+          />
+        </div>
+      ),
+    },
+    {
+      key: "muv",
+      label: (
+        <span>
+          <CloudUploadOutlined /> Paquete MUV
+        </span>
+      ),
+      children: (
+        <div className={styles.tabPane}>
+          <div className={styles.muvSteps}>
+            {[
+              {
+                title: "RIPS armado",
+                text: errorCount > 0 ? `${errorCount} errores por corregir` : "Sin errores de rechazo",
+                done: errorCount === 0,
+              },
+              {
+                title: "XML de la factura",
+                text: attachedDocument ? "AttachedDocument listo" : "Falta el AttachedDocument",
+                done: !!attachedDocument,
+              },
+              { title: "Envío al MUV", text: "Integración pendiente", done: false },
+              { title: "CUV", text: "Se mostrará al validar", done: false },
+            ].map((step, index) => (
+              <div key={step.title} className={styles.muvStep}>
+                <span
+                  className={[styles.muvStepNumber, step.done && styles.muvStepDone]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {step.done ? <CheckCircleFilled /> : index + 1}
+                </span>
+                <div>
+                  <div className={styles.muvStepTitle}>{step.title}</div>
+                  <div className={styles.muvStepText}>{step.text}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <CodeBlock title="POST /api/PaquetesFevRips/CargarFevRips" content={muvPackagePreview} />
+        </div>
+      ),
+    },
+  ]
+
   return (
     <Container fluid padding="md">
       {contextHolder}
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 12,
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <Button type="text" icon={<ArrowLeftOutlined />} onClick={goBack} aria-label="Volver" />
-          <SolutionOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-          <Title level={3}>RIPS · Factura {invoice?.invoiceNum ?? ""}</Title>
-          <RipsStatusTag status="pending" />
-        </div>
-        <Tooltip title="Disponible cuando el backend tenga la integración con el MUV">
-          <Button type="primary" icon={<CloudUploadOutlined />} disabled>
-            Enviar al MUV
-          </Button>
-        </Tooltip>
-      </div>
-
-      {isLoading || !result || !usuario ? (
-        <Skeleton active paragraph={{ rows: 12 }} />
-      ) : (
-        <>
-          <Alert
-            type="info"
-            showIcon
-            style={{ marginBottom: 16 }}
-            title="Vista previa del RIPS"
-            description="Se arma con los datos actuales de la admisión. Los campos marcados como “Sin código” son datos que MediNexus todavía no guarda con el código oficial de SISPRO."
-          />
-
-          <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-            <Col xs={24} xl={10}>
-              <div style={sectionCardStyle}>
-                <h6 style={{ fontWeight: 700, marginBottom: 12 }}>Factura</h6>
-                <Descriptions
-                  bordered
-                  size="small"
-                  column={1}
-                  items={[
-                    {
-                      key: "factura",
-                      label: "N° factura",
-                      children: <span style={monoStyle}>{result.rips.numFactura}</span>,
-                    },
-                    {
-                      key: "nit",
-                      label: "NIT obligado",
-                      children: <CodeCell value={result.rips.numDocumentoIdObligado} />,
-                    },
-                    {
-                      key: "prestador",
-                      label: "Código prestador (REPS)",
-                      children: <CodeCell value={result.codPrestador} />,
-                    },
-                    { key: "eps", label: "EPS", children: invoice?.insurerName ?? "-" },
-                    {
-                      key: "xml",
-                      label: "XML factura (AttachedDocument)",
-                      children: isLoadingAttached ? (
-                        <Skeleton.Button active size="small" />
-                      ) : attachedDocument ? (
-                        <Space size={8} wrap>
-                          <Tag color="success" style={{ marginInlineEnd: 0 }}>
-                            Disponible
-                          </Tag>
-                          <Button
-                            size="small"
-                            icon={<DownloadOutlined />}
-                            loading={downloadXml.isPending}
-                            onClick={() => invoice && downloadXml.mutate(invoice.id)}
-                          >
-                            Descargar
-                          </Button>
-                        </Space>
-                      ) : (
-                        <Tooltip title={isAttachedError ? attachedError?.message : undefined}>
-                          <Tag color="error" style={{ marginInlineEnd: 0 }}>
-                            No disponible
-                          </Tag>
-                        </Tooltip>
-                      ),
-                    },
-                    {
-                      key: "cuv",
-                      label: "CUV",
-                      children: (
-                        <span style={{ color: "var(--dash-text-secondary, #6b7280)" }}>Pendiente</span>
-                      ),
-                    },
-                    {
-                      key: "total",
-                      label: "Total servicios RIPS",
-                      children: <strong>{formatCurrency(result.totalServicios)}</strong>,
-                    },
-                  ]}
-                />
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <div className={styles.headerMain}>
+            <Button
+              className={styles.backButton}
+              type="text"
+              icon={<ArrowLeftOutlined />}
+              onClick={goBack}
+              aria-label="Volver a facturas"
+            />
+            <div className={styles.headerIcon}>
+              <SolutionOutlined />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div className={styles.eyebrow}>Facturación · RIPS</div>
+              <div className={styles.titleRow}>
+                <Title level={3}>
+                  Factura <span className={styles.invoiceNum}>{invoice?.invoiceNum ?? "…"}</span>
+                </Title>
+                <RipsStatusTag status="pending" />
               </div>
-            </Col>
-
-            <Col xs={24} xl={14}>
-              <div style={sectionCardStyle}>
-                <h6 style={{ fontWeight: 700, marginBottom: 12 }}>Usuario</h6>
-                <Descriptions
-                  bordered
-                  size="small"
-                  column={{ xs: 1, md: 2 }}
-                  items={[
-                    {
-                      key: "doc",
-                      label: "Documento",
-                      children: (
-                        <span style={monoStyle}>
-                          {usuario.tipoDocumentoIdentificacion} {usuario.numDocumentoIdentificacion}
-                        </span>
-                      ),
-                    },
-                    { key: "nombre", label: "Nombre", children: invoice?.patientName ?? "-" },
-                    {
-                      key: "nacimiento",
-                      label: "Fecha de nacimiento",
-                      children: formatDate(patient?.birthDate),
-                    },
-                    {
-                      key: "tipoUsuario",
-                      label: "Tipo de usuario",
-                      children: (
-                        <CodeCell
-                          value={usuario.tipoUsuario}
-                          hint="El tipo de usuario del convenio no tiene código SISPRO"
-                        />
-                      ),
-                    },
-                    {
-                      key: "sexo",
-                      label: "Sexo",
-                      children: <WithName name={patient?.sexName} code={usuario.codSexo} />,
-                    },
-                    {
-                      key: "municipio",
-                      label: "Municipio de residencia",
-                      children: (
-                        <WithName name={patient?.cityName} code={usuario.codMunicipioResidencia} />
-                      ),
-                    },
-                    {
-                      key: "zona",
-                      label: "Zona",
-                      children: (
-                        <WithName
-                          name={patient?.zoneName}
-                          code={usuario.codZonaTerritorialResidencia}
-                        />
-                      ),
-                    },
-                    {
-                      key: "incapacidad",
-                      // Si la atención generó incapacidad (LstSiNo); no es la discapacidad del paciente.
-                      label: "Incapacidad generada",
-                      children: (
-                        <Tooltip title="Aún no se registra en la atención; se reporta NO">
-                          <span style={monoStyle}>{usuario.incapacidad}</span>
-                        </Tooltip>
-                      ),
-                    },
-                  ]}
-                />
-              </div>
-            </Col>
-          </Row>
-
-          <RipsIssuesPanel missing={result.missing} style={{ marginBottom: 16 }} />
-
-          <div style={sectionCardStyle}>
-            <Tabs items={mainTabs} />
+              {invoice && (
+                <div className={styles.meta}>
+                  <span>
+                    <UserOutlined /> {formatPersonName(invoice.patientName)}
+                  </span>
+                  {invoice.insurerName && (
+                    <span>
+                      <BankOutlined /> {formatInstitutionName(invoice.insurerName)}
+                    </span>
+                  )}
+                  <span>
+                    <CalendarOutlined /> Emitida el {formatDate(invoice.createdAt)}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
-        </>
-      )}
+          <div className={styles.headerActions}>
+            <Button icon={<DownloadOutlined />} onClick={handleDownload} disabled={!result}>
+              JSON
+            </Button>
+            <Tooltip title="Disponible cuando el backend tenga la integración con el MUV">
+              <Button type="primary" icon={<CloudUploadOutlined />} disabled>
+                Enviar al MUV
+              </Button>
+            </Tooltip>
+          </div>
+        </header>
+
+        {isLoading || !result || !usuario || !invoice ? (
+          <LoadingState />
+        ) : (
+          <>
+            <div className={styles.note}>
+              <InfoCircleOutlined />
+              <span>
+                Vista previa armada con los datos actuales de la admisión. Lo marcado como{" "}
+                <strong>“Sin código”</strong> es información que MediNexus aún no guarda con el
+                código oficial de SISPRO.
+              </span>
+            </div>
+
+            <div className={styles.stats}>
+              <StatTile
+                icon={<FileTextOutlined />}
+                label="Total servicios RIPS"
+                value={formatCurrency(result.totalServicios)}
+                hint={admission?.convenioNombre}
+              />
+              <StatTile
+                icon={<AppstoreOutlined />}
+                label="Servicios reportados"
+                value={serviceCount}
+                hint={
+                  availableGroups.length > 0
+                    ? availableGroups
+                        .map((group) => `${serviceRows![group].length} ${GROUP_LABELS[group].toLowerCase()}`)
+                        .join(" · ")
+                    : "Sin servicios"
+                }
+                tone={serviceCount > 0 ? "default" : "neutral"}
+              />
+              <StatTile
+                icon={errorCount > 0 ? <ExclamationCircleOutlined /> : <CheckCircleFilled />}
+                label="Validación previa"
+                value={
+                  errorCount > 0
+                    ? `${errorCount} ${errorCount === 1 ? "error" : "errores"}`
+                    : "Sin errores"
+                }
+                hint={
+                  warningCount > 0
+                    ? `${warningCount} ${warningCount === 1 ? "aviso" : "avisos"} por revisar`
+                    : "Lista para enviar"
+                }
+                tone={errorCount > 0 ? "error" : warningCount > 0 ? "warning" : "success"}
+              />
+              {xmlTile}
+            </div>
+
+            <div className={styles.grid}>
+              <Card icon={<FileTextOutlined />} title="Factura">
+                <div className={styles.fields}>
+                  <Field label="N° factura">
+                    <span className={styles.mono}>{result.rips.numFactura}</span>
+                  </Field>
+                  <Field label="NIT obligado">
+                    <CodeCell value={result.rips.numDocumentoIdObligado} />
+                  </Field>
+                  <Field label="Código prestador (REPS)">
+                    <CodeCell value={result.codPrestador} />
+                  </Field>
+                  <Field label="CUV">
+                    <span style={{ color: "var(--dash-text-tertiary)" }}>Pendiente</span>
+                  </Field>
+                  <Field label="EPS" wide>
+                    {invoice.insurerName ? formatInstitutionName(invoice.insurerName) : "-"}
+                  </Field>
+                  {invoice.cufe && (
+                    <Field label="CUFE" wide>
+                      <Tooltip title={invoice.cufe}>
+                        <span className={styles.mono}>
+                          {invoice.cufe.slice(0, 24)}…{invoice.cufe.slice(-8)}
+                        </span>
+                      </Tooltip>
+                    </Field>
+                  )}
+                </div>
+                <div className={styles.total}>
+                  <span className={styles.totalLabel}>Total servicios RIPS</span>
+                  <span className={styles.totalValue}>{formatCurrency(result.totalServicios)}</span>
+                </div>
+              </Card>
+
+              <Card icon={<IdcardOutlined />} title="Usuario">
+                <div className={styles.patientHead}>
+                  <div className={styles.avatar}>{initials(formatPersonName(invoice.patientName))}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div className={styles.patientName}>{formatPersonName(invoice.patientName)}</div>
+                    <div className={styles.patientDoc}>
+                      <span className={styles.codeChip}>{usuario.tipoDocumentoIdentificacion}</span>{" "}
+                      <span className={styles.mono}>{usuario.numDocumentoIdentificacion}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.fields}>
+                  <Field label="Fecha de nacimiento">{formatDate(patient?.birthDate)}</Field>
+                  <Field label="Sexo">
+                    <NamedCode name={patient?.sexName} code={usuario.codSexo} />
+                  </Field>
+                  <Field label="Tipo de usuario">
+                    <CodeCell
+                      value={usuario.tipoUsuario}
+                      hint="El tipo de usuario del convenio no tiene código SISPRO"
+                    />
+                  </Field>
+                  <Field label="Municipio de residencia">
+                    <NamedCode name={patient?.cityName} code={usuario.codMunicipioResidencia} />
+                  </Field>
+                  <Field label="Zona">
+                    <NamedCode name={patient?.zoneName} code={usuario.codZonaTerritorialResidencia} />
+                  </Field>
+                  {/* Si la atención generó incapacidad (LstSiNo); no es la discapacidad del paciente. */}
+                  <Field label="Incapacidad generada">
+                    <Tooltip title="Aún no se registra en la atención; se reporta NO">
+                      <Tag style={{ marginInlineEnd: 0 }}>{usuario.incapacidad}</Tag>
+                    </Tooltip>
+                  </Field>
+                </div>
+              </Card>
+            </div>
+
+            <IssuesCard missing={result.missing} />
+
+            <section className={[styles.card, styles.tabsCard].join(" ")}>
+              <Tabs items={mainTabs} />
+            </section>
+          </>
+        )}
+      </div>
     </Container>
   )
 }

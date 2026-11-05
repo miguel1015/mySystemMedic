@@ -28,6 +28,8 @@ export const CARE_ENDPOINTS = {
     HISTORY_BY_PATIENT: (patientId: IdParam) =>
       `/api/auth/care/admissions/history/patients/${patientId}`,
     SUMMARY: (id: IdParam) => `/api/auth/care/admissions/${id}/summary`,
+    RIPS_SOURCES: (id: IdParam, providerId: IdParam) =>
+      `/api/auth/care/admissions/${id}/rips-sources?providerId=${providerId}`,
   },
   TRIAGE: {
     GET_ALL: "/api/auth/care/triage",
@@ -275,5 +277,8 @@ export const CARE_ENDPOINTS = {
     ATTACHED_DOCUMENT: (id: IdParam) =>
       `/api/auth/care/electronic-invoices/${id}/attached-document`,
     SEND_EMAIL: (id: IdParam) => `/api/auth/care/electronic-invoices/${id}/send-email`,
+    PDF: (id: IdParam) => `/api/auth/care/electronic-invoices/${id}/pdf`,
+    RIPS_DATA: (id: IdParam, providerId: IdParam) =>
+      `/api/auth/care/electronic-invoices/${id}/rips-data?providerId=${providerId}`,
   },
 }

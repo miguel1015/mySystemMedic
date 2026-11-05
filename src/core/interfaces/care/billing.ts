@@ -137,7 +137,8 @@ export interface ElectronicInvoiceListItem {
   cufe: string | null
   stateDian: string | null
   pdfUrl: string | null
-  pdfBase64: string | null
+  // El PDF no viaja en la lista ni en el detalle; se pide aparte (ELECTRONIC_INVOICE.PDF).
+  hasPdf: boolean
   createdAt: string
   patientName: string
   patientDocument: string | null
@@ -156,6 +157,9 @@ export interface ElectronicInvoiceAttachedDocument {
   fileName: string
   base64: string
 }
+
+// PDF de la factura en Base64 (GET /electronic-invoices/{id}/pdf).
+export type ElectronicInvoicePdf = ElectronicInvoiceAttachedDocument
 
 export interface ElectronicInvoiceSendEmailResponse {
   email: string

@@ -1,0 +1,667 @@
+// Vista RIPS de una factura. Usa los tokens del dashboard (--dash-*, --theme-*) para
+// funcionar igual en modo claro y oscuro.
+
+$radius: 14px;
+$error: #ef4444;
+$warning: #f59e0b;
+$success: #10b981;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ---------- Encabezado ----------
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.headerMain {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.backButton {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.headerIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  font-size: 22px;
+  color: var(--theme-primary);
+  background: rgba(var(--theme-primary-rgb), 0.12);
+  border: 1px solid rgba(var(--theme-primary-rgb), 0.25);
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dash-text-tertiary);
+  margin-bottom: 2px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h3 {
+    margin: 0 !important;
+  }
+}
+
+.invoiceNum {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.01em;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--dash-text-secondary);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--dash-text-secondary);
+  background: var(--dash-surface-2);
+  border: 1px dashed var(--dash-border);
+
+  :global(.anticon) {
+    margin-top: 3px;
+    color: var(--theme-primary);
+  }
+}
+
+// ---------- Indicadores ----------
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.stat {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-radius: $radius;
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  box-shadow: var(--dash-shadow-sm);
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--stat-accent, var(--theme-primary));
+  }
+}
+
+.statIcon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  font-size: 17px;
+  color: var(--stat-accent, var(--theme-primary));
+  background: var(--stat-tint, rgba(var(--theme-primary-rgb), 0.12));
+}
+
+.statBody {
+  min-width: 0;
+  flex: 1;
+}
+
+.statLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dash-text-secondary);
+  margin-bottom: 2px;
+}
+
+.statValue {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--dash-text-primary);
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+
+.statHint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--dash-text-tertiary);
+}
+
+.toneError {
+  --stat-accent: #{$error};
+  --stat-tint: #{rgba($error, 0.12)};
+}
+
+.toneWarning {
+  --stat-accent: #{$warning};
+  --stat-tint: #{rgba($warning, 0.14)};
+}
+
+.toneSuccess {
+  --stat-accent: #{$success};
+  --stat-tint: #{rgba($success, 0.12)};
+}
+
+.toneNeutral {
+  --stat-accent: var(--dash-text-tertiary);
+  --stat-tint: var(--dash-surface-hover);
+}
+
+// ---------- Tarjetas ----------
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 20px;
+
+  @media (max-width: 1199px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.card {
+  border-radius: $radius;
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  box-shadow: var(--dash-shadow-sm);
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--dash-border-subtle);
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--dash-text-primary);
+
+  :global(.anticon) {
+    color: var(--theme-primary);
+  }
+}
+
+.cardBody {
+  padding: 18px 20px 20px;
+}
+
+// Pares etiqueta / valor en rejilla: la etiqueta arriba y el valor debajo evita que los
+// valores largos se partan letra por letra.
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 16px 20px;
+}
+
+.field {
+  min-width: 0;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dash-text-tertiary);
+  margin-bottom: 4px;
+}
+
+.fieldValue {
+  font-size: 14px;
+  color: var(--dash-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.codeChip {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--dash-text-secondary);
+  background: var(--dash-surface-hover);
+  border: 1px solid var(--dash-border-subtle);
+}
+
+.patientHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--dash-border-subtle);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--theme-primary), rgba(var(--theme-primary-rgb), 0.65));
+}
+
+.patientName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dash-text-primary);
+}
+
+.patientDoc {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--dash-text-secondary);
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(var(--theme-primary-rgb), 0.08);
+  border: 1px solid rgba(var(--theme-primary-rgb), 0.2);
+}
+
+.totalLabel {
+  font-size: 13px;
+  color: var(--dash-text-secondary);
+}
+
+.totalValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dash-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- Validación ----------
+
+.accordionHeader {
+  flex-wrap: wrap;
+  padding: 0 20px 0 0;
+  transition: border-color 0.2s ease;
+}
+
+.accordionClosed {
+  border-bottom-color: transparent;
+}
+
+.accordionToggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+  padding: 14px 0 14px 20px;
+  border: none;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--theme-primary);
+    outline-offset: -2px;
+    border-radius: 10px;
+  }
+
+  &:hover .chevron {
+    color: var(--theme-primary);
+  }
+}
+
+.chevron {
+  font-size: 12px;
+  color: var(--dash-text-tertiary);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+// grid-template-rows 0fr → 1fr anima la altura sin medirla.
+.accordionPanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.accordionPanelOpen {
+  grid-template-rows: 1fr;
+}
+
+.accordionInner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accordionPanel,
+  .chevron {
+    transition: none;
+  }
+}
+
+.issuesSummary {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pillError {
+  color: $error;
+  background: rgba($error, 0.12);
+}
+
+.pillWarning {
+  color: $warning;
+  background: rgba($warning, 0.14);
+}
+
+.pillSuccess {
+  color: $success;
+  background: rgba($success, 0.12);
+}
+
+.issueGroups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.issueGroup {
+  border-radius: 10px;
+  border: 1px solid var(--dash-border-subtle);
+  background: var(--dash-surface-2);
+  overflow: hidden;
+}
+
+.issueGroupTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-text-primary);
+  border-bottom: 1px solid var(--dash-border-subtle);
+}
+
+.issueList {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.issue {
+  display: flex;
+  gap: 10px;
+  padding: 7px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--dash-text-secondary);
+}
+
+.issueDot {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.issueDotError {
+  background: $error;
+  box-shadow: 0 0 0 3px rgba($error, 0.18);
+}
+
+.issueDotWarning {
+  background: $warning;
+  box-shadow: 0 0 0 3px rgba($warning, 0.2);
+}
+
+.issueField {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dash-text-primary);
+  margin-right: 4px;
+}
+
+.allGood {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: $success;
+  font-weight: 500;
+}
+
+// ---------- Servicios / JSON ----------
+
+.tabsCard {
+  :global(.ant-tabs-nav) {
+    margin: 0 !important;
+    padding: 0 20px;
+  }
+}
+
+.tabPane {
+  padding: 18px 20px 20px;
+}
+
+.groupBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.groupCount {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  margin-left: 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--theme-primary);
+  background: rgba(var(--theme-primary-rgb), 0.14);
+}
+
+.groupTotal {
+  font-size: 13px;
+  color: var(--dash-text-secondary);
+
+  strong {
+    color: var(--dash-text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.table {
+  border: 1px solid var(--dash-border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.codeToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 10px 8px 14px;
+  border-radius: 10px 10px 0 0;
+  background: #0d1117;
+  border: 1px solid #222b36;
+  border-bottom: none;
+  color: #8b98a5;
+  font-size: 12px;
+}
+
+.codeDots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+
+  i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2b3440;
+  }
+}
+
+.code {
+  margin: 0;
+  padding: 16px 18px;
+  max-height: 60vh;
+  overflow: auto;
+  border-radius: 0 0 10px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #d6e2ee;
+  background: #0b0f14;
+  border: 1px solid #222b36;
+}
+
+.muvSteps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.muvStep {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--dash-border-subtle);
+  background: var(--dash-surface-2);
+}
+
+.muvStepNumber {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dash-text-secondary);
+  background: var(--dash-surface-hover);
+}
+
+.muvStepDone {
+  color: #fff;
+  background: $success;
+}
+
+.muvStepTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-text-primary);
+}
+
+.muvStepText {
+  font-size: 12px;
+  color: var(--dash-text-secondary);
+}
