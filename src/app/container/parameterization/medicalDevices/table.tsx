@@ -75,6 +75,12 @@ const MedicalDevicesTable = ({ onEdit }: MedicalDevicesProps) => {
       width: "auto",
     },
     {
+      title: "Unidad",
+      dataIndex: "inventoryUnitName",
+      width: "auto",
+      render: (value?: string) => value ?? "-",
+    },
+    {
       title: "Precio",
       dataIndex: "price",
       width: 120,

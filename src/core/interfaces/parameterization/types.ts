@@ -102,6 +102,8 @@ export interface TMedicalDevice {
   elementTypeName?: string;
   elementUsageId: number;
   elementUsageName?: string;
+  inventoryUnitId?: number;
+  inventoryUnitName?: string;
   ripsCode: string;
   price?: number | null;
   isReusable: boolean;

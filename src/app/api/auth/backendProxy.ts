@@ -9,7 +9,7 @@ interface Params {
   path?: string[]
 }
 
-type Method = "GET" | "POST" | "PUT"
+type Method = "GET" | "POST" | "PUT" | "DELETE"
 
 interface ProxyOptions {
   // Mensaje para 403: el backend responde sin cuerpo cuando el rol no alcanza.
@@ -39,7 +39,7 @@ export function createBackendProxy(backendEndpoint: string, { forbiddenMessage }
     }
 
     try {
-      const body = method === "GET" ? undefined : await req.text()
+      const body = method === "GET" || method === "DELETE" ? undefined : await req.text()
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}${resolveUrl(backendEndpoint, req, params)}`,
         {
@@ -75,5 +75,6 @@ export function createBackendProxy(backendEndpoint: string, { forbiddenMessage }
     GET: (req: Request, { params }: { params: Params }) => handle(req, params, "GET"),
     POST: (req: Request, { params }: { params: Params }) => handle(req, params, "POST"),
     PUT: (req: Request, { params }: { params: Params }) => handle(req, params, "PUT"),
+    DELETE: (req: Request, { params }: { params: Params }) => handle(req, params, "DELETE"),
   }
 }

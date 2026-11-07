@@ -1,0 +1,383 @@
+/* Módulo de farmacia: mismas superficies, bordes y tipografía que DataTable. */
+
+/* ── Indicadores del inventario ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.stat {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--dash-border);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--dash-surface);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.45);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--theme-primary, #0f6f5c);
+    outline-offset: 2px;
+  }
+}
+
+.statActive {
+  border-color: var(--theme-primary, #0f6f5c);
+  box-shadow: 0 0 0 1px var(--theme-primary, #0f6f5c);
+}
+
+.statLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--dash-text-secondary);
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--dash-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* ── Barra de filtros de las tablas paginadas en el servidor ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.search {
+  width: min(100%, 360px);
+}
+
+.filter {
+  min-width: 170px;
+  max-width: 260px;
+}
+
+.toolbarEnd {
+  margin-left: auto;
+  font-size: 13.5px;
+  color: var(--dash-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Celdas ── */
+.product {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 200px;
+}
+
+.productName {
+  font-weight: 600;
+  color: var(--dash-text-primary);
+}
+
+.sub {
+  font-size: 12.5px;
+  color: var(--dash-text-secondary);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.qty {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.qtyIn {
+  color: #15803d;
+}
+
+.qtyOut {
+  color: #b91c1c;
+}
+
+/* ── Formularios de operación ── */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 18px;
+  align-items: start;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.panel {
+  border: 1px solid var(--dash-border);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--dash-surface);
+  padding: 18px 20px;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.step {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--theme-primary, #0f6f5c);
+  background: rgba(var(--theme-primary-rgb, 15, 111, 92), 0.12);
+  flex: none;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--dash-text-primary);
+}
+
+.panelHint {
+  margin: 0 0 0 auto;
+  font-size: 13px;
+  color: var(--dash-text-secondary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  > label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dash-text-secondary);
+  }
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+/* ── Líneas (productos de la operación) ── */
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.line {
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--dash-surface-2, var(--dash-surface));
+}
+
+.lineHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.lineError {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+.emptyLines {
+  padding: 26px 16px;
+  text-align: center;
+  color: var(--dash-text-secondary);
+  border: 1px dashed var(--dash-border);
+  border-radius: 12px;
+}
+
+/* Lotes disponibles (FEFO) */
+.lotTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+
+  th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--dash-text-secondary);
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--dash-border);
+  }
+
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--dash-border);
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.lotTableWrap {
+  overflow-x: auto;
+}
+
+/* ── Resumen lateral ── */
+.summary {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+}
+
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+
+  dt {
+    color: var(--dash-text-secondary);
+  }
+
+  dd {
+    margin: 0;
+    text-align: right;
+    font-weight: 600;
+    color: var(--dash-text-primary);
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* ── Detalle de movimiento ── */
+.meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 18px;
+  margin-bottom: 18px;
+
+  dt {
+    font-size: 12.5px;
+    color: var(--dash-text-secondary);
+  }
+
+  dd {
+    margin: 2px 0 0;
+    font-weight: 600;
+    color: var(--dash-text-primary);
+    overflow-wrap: anywhere;
+  }
+}
+
+.note {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--dash-surface-2, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--dash-border);
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.success {
+  text-align: center;
+  padding: 28px 16px 8px;
+}
+
+.successIcon {
+  font-size: 44px;
+  color: #16a34a;
+}
+
+.successTitle {
+  margin: 12px 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dash-text-primary);
+}
+
+.successActions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+@media (max-width: 767.98px) {
+  .search {
+    width: 100%;
+  }
+
+  .filter {
+    flex: 1 1 0;
+    min-width: 140px;
+    max-width: none;
+  }
+
+  .toolbarEnd {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+}

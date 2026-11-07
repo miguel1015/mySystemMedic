@@ -41,6 +41,9 @@ import {
   faWallet,
   faWarehouse,
   faXRay,
+  faRightLeft,
+  faSliders,
+  faTruckRampBox,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -85,6 +88,11 @@ const NAV_ICONS: Record<string, IconDefinition> = {
   faFlag: faFlag,
   faCalculator: faCalculator,
   faClockRotateLeft: faClockRotateLeft,
+  // Farmacia
+  faHandHoldingMedical: faHandHoldingMedical,
+  faTruckRampBox: faTruckRampBox,
+  faRightLeft: faRightLeft,
+  faSliders: faSliders,
 };
 
 export const getNavIcon = (icon?: string | null): IconDefinition | undefined =>

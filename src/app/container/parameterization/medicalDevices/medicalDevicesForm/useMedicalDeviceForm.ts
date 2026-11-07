@@ -26,6 +26,7 @@ const schema = z.object({
   elementName: z.string().min(1, "Nombre de elemento es obligatorio"),
   elementTypeId: requiredSelect("un tipo de elemento"),
   elementUsageId: requiredSelect("un uso del elemento"),
+  inventoryUnitId: requiredSelect("la unidad de medida"),
   // El código RIPS lo genera el back al crear; aquí solo se muestra.
   ripsCode: z.string().optional(),
   price: z
@@ -44,6 +45,7 @@ const defaultValues: Partial<TMedicalDeviceForm> = {
   elementName: "",
   elementTypeId: undefined,
   elementUsageId: undefined,
+  inventoryUnitId: 1,
   ripsCode: "",
   price: undefined,
   isReusable: undefined,
@@ -71,6 +73,7 @@ export function useMedicalDeviceForm({
         elementName: medicalDeviceData.elementName ?? "",
         elementTypeId: medicalDeviceData.elementTypeId,
         elementUsageId: medicalDeviceData.elementUsageId,
+        inventoryUnitId: medicalDeviceData.inventoryUnitId ?? 1,
         ripsCode: medicalDeviceData.ripsCode ?? "",
         price: medicalDeviceData.price ?? undefined,
         isReusable: String(Boolean(medicalDeviceData.isReusable)) as
@@ -88,6 +91,7 @@ export function useMedicalDeviceForm({
       elementName: data.elementName,
       elementTypeId: data.elementTypeId,
       elementUsageId: data.elementUsageId,
+      inventoryUnitId: data.inventoryUnitId,
       price: data.price,
       isReusable: data.isReusable === "true",
       isInvasive: data.isInvasive === "true",

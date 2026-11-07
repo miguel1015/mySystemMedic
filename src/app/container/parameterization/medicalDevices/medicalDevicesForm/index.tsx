@@ -7,6 +7,7 @@ import { Button, Spin } from "antd";
 import { TUtils } from "../../../../../types/utils";
 import { useMedicalDeviceForm } from "./useMedicalDeviceForm";
 import { useSelectOptions } from "./useSelectOptions";
+import { useInventoryUnits } from "@/core/hooks/pharmacy/usePharmacy";
 
 const yesNoOptions = [
   { value: "true", label: "Sí" },
@@ -32,7 +33,11 @@ const MedicalDevicesForm: React.FC<TUtils> = ({
     isLoading: loadingOptions,
   } = useSelectOptions();
 
-  if (loadingOptions || (editUserId && loadingMedicalDevice)) {
+  // Unidad en que farmacia cuenta las existencias del insumo.
+  const { data: units = [], isLoading: loadingUnits } = useInventoryUnits();
+  const unitOptions = units.map((u) => ({ value: u.id, label: u.name }));
+
+  if (loadingOptions || loadingUnits || (editUserId && loadingMedicalDevice)) {
     return (
       <div style={{ textAlign: "center", padding: 40 }}>
         <Spin size="large" />
@@ -64,6 +69,15 @@ const MedicalDevicesForm: React.FC<TUtils> = ({
           placeholder="Uso del elemento"
           control={control}
           options={elementUsageOptions}
+          getPopupContainer={() => document.body}
+        />
+
+        <SelectAutocomplete
+          name="inventoryUnitId"
+          label="Unidad de medida"
+          placeholder="Unidad, caja, rollo…"
+          control={control}
+          options={unitOptions}
           getPopupContainer={() => document.body}
         />
 
