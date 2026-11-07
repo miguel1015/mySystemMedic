@@ -177,14 +177,20 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
   const codigoAseguradora = Form.useWatch("codigoAseguradora", form)
   const nombreAseguradora = Form.useWatch("nombreAseguradora", form)
   const isBilling = mode === "billing"
-  // Del vehículo fantasma no se conoce nada: la sección IV queda vacía y bloqueada.
+  // Del vehículo fantasma no se conoce nada: las secciones IV (vehículo) y V (propietario)
+  // quedan vacías y bloqueadas.
   const esFantasma = estado === FURIPS_ESTADO.FANTASMA
 
   // Sin SOAT vigente la reclamación va a la ADRES.
   const handleEstadoChange = (value: string) => {
     if (value === FURIPS_ESTADO.FANTASMA) {
-      form.setFieldsValue(VEHICULO_VACIO)
-      form.validateFields(Object.keys(VEHICULO_VACIO) as (keyof typeof VEHICULO_VACIO)[])
+      form.setFieldsValue({ ...VEHICULO_VACIO, propietario: {} })
+      form.validateFields([
+        ...(Object.keys(VEHICULO_VACIO) as (keyof typeof VEHICULO_VACIO)[]),
+        ...PERSONA_CAMPOS.map((f) => ["propietario", f]),
+        ["propietario", "stateId"],
+        ["propietario", "cityId"],
+      ])
       return
     }
     if (!furipsRequierePoliza(value) && !isFilled(form.getFieldValue("codigoAseguradora"))) {
@@ -644,12 +650,18 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
                   label="Código SIRAS"
                   rules={[
                     {
+                      required: true,
+                      whitespace: true,
+                      message: "Indique el código SIRAS",
+                    },
+                    {
                       pattern: /^[A-Za-z0-9-]{1,30}$/,
                       message: "Solo letras, números y guiones",
                     },
                   ]}
                 >
-                  <Input maxLength={30} disabled={esFantasma} />
+                  {/* Obligatorio en todos los casos, también con vehículo fantasma. */}
+                  <Input maxLength={30} />
                 </Form.Item>
               </Col>
               <Col xs={12} md={4}>
@@ -706,14 +718,20 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
             numeral="V"
             title="Datos del propietario del vehículo"
             extra={
-              <Button size="small" icon={<CopyOutlined />} onClick={() => copyVictimaTo("propietario")}>
+              <Button
+                size="small"
+                icon={<CopyOutlined />}
+                disabled={esFantasma}
+                onClick={() => copyVictimaTo("propietario")}
+              >
                 Igual a la víctima
               </Button>
             }
           >
             <p className="furips-section-hint">
-              Opcional. Si diligencia algún dato, se exigen los demás. Para una empresa use el tipo de
-              documento NI y escriba la razón social en el primer apellido.
+              {esFantasma
+                ? "Vehículo fantasma: no se conoce el propietario, la sección queda vacía."
+                : "Opcional. Si diligencia algún dato, se exigen los demás. Para una empresa use el tipo de documento NI y escriba la razón social en el primer apellido."}
             </p>
             <PersonaFields
               form={form}
@@ -721,6 +739,7 @@ function FuripsFormContent({ admissionId, mode, datos, furips, cities, states, o
               cities={cities}
               states={states}
               allowRazonSocial
+              disabled={esFantasma}
             />
           </Section>
 
@@ -896,7 +915,6 @@ const VEHICULO_VACIO = {
   codigoAseguradora: null,
   nombreAseguradora: null,
   numeroPoliza: null,
-  siras: null,
   vigenciaDesde: null,
   vigenciaHasta: null,
   cobroExcedentePoliza: false,
@@ -1044,100 +1062,106 @@ function PersonaFields({
   cities,
   states,
   allowRazonSocial,
+  disabled = false,
 }: {
   form: FormInstance<FuripsFormValues>
   prefix: "propietario" | "conductor"
   cities: TCities[]
   states: TStates[]
   allowRazonSocial?: boolean
+  disabled?: boolean
 }) {
   const triggers = PERSONA_CAMPOS.map((f) => [prefix, f])
   const tipoDocumento = Form.useWatch([prefix, "tipoDocumento"], form)
   const esRazonSocial = allowRazonSocial && tipoDocumento === "NI"
   const rule = (message: string) => [groupRequired(triggers, message)]
 
+  // componentDisabled bloquea todos los controles de la sección; los que ya tienen su
+  // propio `disabled` lo combinan, porque un `disabled={false}` explícito le gana.
   return (
-    <Row gutter={16}>
-      <Col xs={24} md={6}>
-        <Form.Item
-          name={[prefix, "primerApellido"]}
-          label={allowRazonSocial ? "1er apellido o razón social" : "1er apellido"}
+    <ConfigProvider componentDisabled={disabled}>
+      <Row gutter={16}>
+        <Col xs={24} md={6}>
+          <Form.Item
+            name={[prefix, "primerApellido"]}
+            label={allowRazonSocial ? "1er apellido o razón social" : "1er apellido"}
+            dependencies={triggers}
+            rules={rule(esRazonSocial ? "Indique la razón social" : "Indique el primer apellido")}
+          >
+            <Input maxLength={esRazonSocial ? 200 : 60} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={6}>
+          <Form.Item name={[prefix, "segundoApellido"]} label="2do apellido">
+            <Input maxLength={60} disabled={disabled || esRazonSocial} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={6}>
+          <Form.Item
+            name={[prefix, "primerNombre"]}
+            label="1er nombre"
+            dependencies={[...triggers, [prefix, "tipoDocumento"]]}
+            rules={esRazonSocial ? [] : rule("Indique el primer nombre")}
+          >
+            <Input maxLength={60} disabled={disabled || esRazonSocial} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={6}>
+          <Form.Item name={[prefix, "segundoNombre"]} label="2do nombre">
+            <Input maxLength={60} disabled={disabled || esRazonSocial} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={6}>
+          <Form.Item
+            name={[prefix, "tipoDocumento"]}
+            label="Tipo de documento"
+            dependencies={triggers}
+            rules={rule("Seleccione el tipo de documento")}
+          >
+            <Select allowClear options={FURIPS_TIPOS_DOCUMENTO} placeholder="— Seleccione —" />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={6}>
+          <Form.Item
+            name={[prefix, "numeroDocumento"]}
+            label="No. documento"
+            dependencies={triggers}
+            rules={rule("Indique el número de documento")}
+          >
+            <Input maxLength={20} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={6}>
+          <Form.Item
+            name={[prefix, "telefono"]}
+            label="Teléfono"
+            dependencies={triggers}
+            rules={rule("Indique el teléfono")}
+          >
+            <Input maxLength={20} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={6}>
+          <Form.Item
+            name={[prefix, "direccion"]}
+            label="Dirección de residencia"
+            dependencies={triggers}
+            rules={rule("Indique la dirección")}
+          >
+            <Input maxLength={200} />
+          </Form.Item>
+        </Col>
+        <LocationFields
+          form={form}
+          stateName={[prefix, "stateId"]}
+          cityName={[prefix, "cityId"]}
+          cities={cities}
+          states={states}
           dependencies={triggers}
-          rules={rule(esRazonSocial ? "Indique la razón social" : "Indique el primer apellido")}
-        >
-          <Input maxLength={esRazonSocial ? 200 : 60} />
-        </Form.Item>
-      </Col>
-      <Col xs={24} md={6}>
-        <Form.Item name={[prefix, "segundoApellido"]} label="2do apellido">
-          <Input maxLength={60} disabled={esRazonSocial} />
-        </Form.Item>
-      </Col>
-      <Col xs={24} md={6}>
-        <Form.Item
-          name={[prefix, "primerNombre"]}
-          label="1er nombre"
-          dependencies={[...triggers, [prefix, "tipoDocumento"]]}
-          rules={esRazonSocial ? [] : rule("Indique el primer nombre")}
-        >
-          <Input maxLength={60} disabled={esRazonSocial} />
-        </Form.Item>
-      </Col>
-      <Col xs={24} md={6}>
-        <Form.Item name={[prefix, "segundoNombre"]} label="2do nombre">
-          <Input maxLength={60} disabled={esRazonSocial} />
-        </Form.Item>
-      </Col>
-      <Col xs={24} md={6}>
-        <Form.Item
-          name={[prefix, "tipoDocumento"]}
-          label="Tipo de documento"
-          dependencies={triggers}
-          rules={rule("Seleccione el tipo de documento")}
-        >
-          <Select allowClear options={FURIPS_TIPOS_DOCUMENTO} placeholder="— Seleccione —" />
-        </Form.Item>
-      </Col>
-      <Col xs={24} md={6}>
-        <Form.Item
-          name={[prefix, "numeroDocumento"]}
-          label="No. documento"
-          dependencies={triggers}
-          rules={rule("Indique el número de documento")}
-        >
-          <Input maxLength={20} />
-        </Form.Item>
-      </Col>
-      <Col xs={24} md={6}>
-        <Form.Item
-          name={[prefix, "telefono"]}
-          label="Teléfono"
-          dependencies={triggers}
-          rules={rule("Indique el teléfono")}
-        >
-          <Input maxLength={20} />
-        </Form.Item>
-      </Col>
-      <Col xs={24} md={6}>
-        <Form.Item
-          name={[prefix, "direccion"]}
-          label="Dirección de residencia"
-          dependencies={triggers}
-          rules={rule("Indique la dirección")}
-        >
-          <Input maxLength={200} />
-        </Form.Item>
-      </Col>
-      <LocationFields
-        form={form}
-        stateName={[prefix, "stateId"]}
-        cityName={[prefix, "cityId"]}
-        cities={cities}
-        states={states}
-        dependencies={triggers}
-        rules={rule("Requerido si diligencia la sección")}
-      />
-    </Row>
+          rules={rule("Requerido si diligencia la sección")}
+        />
+      </Row>
+    </ConfigProvider>
   )
 }
 

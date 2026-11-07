@@ -472,9 +472,16 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
           icon={<DownloadOutlined />}
           loading={downloadXml.isPending}
           onClick={() => downloadXml.mutate(invoiceId)}
-          style={{ padding: 0, height: "auto" }}
+          title="Descargar el AttachedDocument (XML firmado + respuesta DIAN)"
+          style={{
+            padding: 0,
+            height: "auto",
+            maxWidth: "100%",
+            whiteSpace: "normal",
+            textAlign: "left",
+          }}
         >
-          Descargar AttachedDocument
+          Descargar XML
         </Button>
       }
     />

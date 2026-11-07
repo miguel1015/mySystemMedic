@@ -3,8 +3,8 @@ import { getAll } from "@/core/api/baseService"
 import { ENDPOINTS } from "@/core/api/endpoints"
 import { AdmissionResponse } from "@/core/interfaces/care/types"
 
-// Un solo criterio por búsqueda. Sin `soloActivas` el backend devuelve también las
-// cerradas (historial del paciente).
+// Un solo criterio por búsqueda. Con `soloActivas` el backend excluye las eliminadas
+// y las ya facturadas (cerradas); sin él devuelve también las cerradas (historial).
 export type AdmissionSearchCriteria = (
   | { numero: number }
   | { documento: string }
