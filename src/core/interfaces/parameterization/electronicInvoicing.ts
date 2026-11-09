@@ -57,6 +57,22 @@ export interface TElectronicInvoiceCertificate {
   isActive: boolean
 }
 
+// Datos leídos del .pfx que Facturación Electrónica usa realmente para firmar.
+export type TElectronicInvoiceCertificateFileStatus = "OK" | "MISSING" | "UNREADABLE" | "ERROR"
+
+export interface TElectronicInvoiceCertificateFile {
+  status: TElectronicInvoiceCertificateFileStatus
+  message?: string | null
+  subject?: string | null
+  issuer?: string | null
+  serialNumber?: string | null
+  startDate?: string | null
+  endDate?: string | null
+  hasPrivateKey: boolean
+  // false cuando la vigencia del archivo no coincide con el certificado activo del historial.
+  matchesRegistry: boolean
+}
+
 export interface TElectronicInvoiceCatalogItem {
   id: number
   code: string
@@ -84,6 +100,8 @@ export interface TElectronicInvoiceSettings {
   software?: TElectronicInvoiceSoftware | null
   resolutions: TElectronicInvoiceResolution[]
   certificates: TElectronicInvoiceCertificate[]
+  // Opcional: un backend sin desplegar todavía no lo envía.
+  certificateFile?: TElectronicInvoiceCertificateFile | null
   states: TElectronicInvoiceCatalogItem[]
   local: TElectronicInvoiceLocalSettings
 }

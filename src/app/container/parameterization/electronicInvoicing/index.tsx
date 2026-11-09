@@ -50,7 +50,7 @@ export default function ElectronicInvoicingContainer() {
   }
 
   const activeResolution = data.resolutions.find((r) => r.isActive)
-  const certificate = certificateStatus(data.certificates.find((c) => c.isActive))
+  const certificate = certificateStatus(data.certificates, data.certificateFile)
 
   const tabItems = [
     {
@@ -74,6 +74,7 @@ export default function ElectronicInvoicingContainer() {
       children: (
         <CertificateTab
           certificates={data.certificates}
+          certificateFile={data.certificateFile}
           hasCertificatePin={data.company?.hasCertificatePin ?? false}
         />
       ),
