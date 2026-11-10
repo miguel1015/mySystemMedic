@@ -141,9 +141,11 @@ function defaultValues(): TriageFormValues {
 interface UseTriageFormArgs {
   mode: TriageFormMode;
   initialTriage?: TriageResponse | null;
+  // Documento que llega desde el aviso "paciente por triage": se busca al abrir.
+  prefillDocument?: string;
 }
 
-export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
+export function useTriageForm({ mode, initialTriage, prefillDocument }: UseTriageFormArgs) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const createMutation = useCreateTriage();
@@ -223,8 +225,8 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
     }
   }, [mode, initialTriage, reset]);
 
-  const handleSearchPatient = async () => {
-    const doc = searchDoc.trim();
+  const handleSearchPatient = async (docOverride?: string) => {
+    const doc = (docOverride ?? searchDoc).trim();
     if (!doc) {
       setSearchError({
         type: "other",
@@ -258,7 +260,17 @@ export function useTriageForm({ mode, initialTriage }: UseTriageFormArgs) {
     }
   };
 
-  const onInvalid = (errors: FieldErrors<TriageFormValues>) => {
+  const hasAppliedPrefillRef = useRef(false);
+
+  useEffect(() => {
+    if (mode !== "create" || hasAppliedPrefillRef.current || !prefillDocument) return;
+    hasAppliedPrefillRef.current = true;
+    setSearchDoc(prefillDocument);
+    handleSearchPatient(prefillDocument);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, prefillDocument]);
+
+  const onInvalid =(errors: FieldErrors<TriageFormValues>) => {
     // eslint-disable-next-line no-console
     console.warn("[TriageForm] validación fallida:", errors);
 

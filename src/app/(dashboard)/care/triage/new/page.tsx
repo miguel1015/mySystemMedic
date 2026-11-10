@@ -4,11 +4,13 @@ import { Container } from "@/components/container"
 import Title from "@/components/title"
 import { Button } from "antd"
 import { ArrowLeftOutlined, MedicineBoxOutlined } from "@ant-design/icons"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import TriageForm from "@/app/container/care/triage/triageForm"
 
 export default function NewTriagePage() {
   const router = useRouter()
+  // Desde el aviso "paciente por triage" llega el documento para cargar al paciente.
+  const prefillDocument = useSearchParams().get("document") ?? undefined
 
   return (
     <Container>
@@ -36,7 +38,7 @@ export default function NewTriagePage() {
         </Button>
       </div>
 
-      <TriageForm mode="create" />
+      <TriageForm mode="create" prefillDocument={prefillDocument} />
     </Container>
   )
 }

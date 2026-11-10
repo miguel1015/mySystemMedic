@@ -8,37 +8,55 @@ import {
   CheckCircleOutlined,
   FolderOpenOutlined,
   InboxOutlined,
+  UserAddOutlined,
 } from "@ant-design/icons"
 import { AdmissionNotification } from "@/core/interfaces/care/admissionNotifications"
+import { TriageNotification } from "@/core/interfaces/care/triageNotifications"
 import AdmissionNotificationCard from "./AdmissionNotificationCard"
+import TriageNotificationCard from "./TriageNotificationCard"
 import { isPending } from "./admissionNotificationUtils"
 import { useThemeVars } from "./useThemeVars"
 
-type FolderKey = "urgent" | "pending" | "resolved"
+export type FolderKey = "urgent" | "pending" | "resolved" | "triage" | "triaged"
 
 interface Folder {
   key: FolderKey
   label: string
   hint: string
   icon: ReactNode
-  tone: "danger" | "warning" | "success"
-  items: AdmissionNotification[]
+  tone: "danger" | "warning" | "success" | "info"
+  count: number
+  // Carpeta con pendientes por atender (no las de "atendidas").
+  actionable: boolean
+  render: (now: number) => ReactNode[]
   empty: string
 }
 
 interface AdmissionNotificationCenterProps {
   open: boolean
+  canReceiveAdmissions: boolean
+  canReceiveTriage: boolean
   notifications: AdmissionNotification[]
+  triageNotifications: TriageNotification[]
   onAdmit: (notification: AdmissionNotification) => void
+  onTriage: (notification: TriageNotification) => void
+  // Se abrió la carpeta de pacientes por triage: los nuevos pasan a vistos.
+  onTriageFolderViewed: () => void
   onClose: () => void
 }
 
-// Centro de notificaciones con carpetas: urgentes (I a III), pendientes (IV y V) y atendidas
-// en las últimas 24 horas.
+// Centro de notificaciones con carpetas. Admisionistas: urgentes (I a III), pendientes (IV y
+// V) y atendidas. Personal asistencial: pacientes nuevos por triage y triados. Las atendidas
+// son las de las últimas 24 horas.
 export default function AdmissionNotificationCenter({
   open,
+  canReceiveAdmissions,
+  canReceiveTriage,
   notifications,
+  triageNotifications,
   onAdmit,
+  onTriage,
+  onTriageFolderViewed,
   onClose,
 }: AdmissionNotificationCenterProps) {
   const themeVars = useThemeVars()
@@ -46,44 +64,105 @@ export default function AdmissionNotificationCenter({
   const [now, setNow] = useState(() => Date.now())
 
   const folders = useMemo<Folder[]>(() => {
-    const pending = notifications.filter(isPending)
-    return [
-      {
-        key: "urgent",
-        label: "Urgentes",
-        hint: "Prioridad I a III",
-        icon: <AlertOutlined />,
-        tone: "danger",
-        items: pending.filter((n) => n.isUrgent),
-        empty: "No hay urgencias pendientes de admisión.",
-      },
-      {
-        key: "pending",
-        label: "Pendientes",
-        hint: "Prioridad IV y V",
-        icon: <FolderOpenOutlined />,
-        tone: "warning",
-        items: pending.filter((n) => !n.isUrgent),
-        empty: "No hay pacientes en espera de admisión.",
-      },
-      {
-        key: "resolved",
-        label: "Atendidas",
-        hint: "Últimas 24 horas",
-        icon: <CheckCircleOutlined />,
-        tone: "success",
-        items: notifications.filter((n) => !isPending(n)),
-        empty: "Aún no se ha admisionado ningún paciente notificado.",
-      },
-    ]
-  }, [notifications])
+    const result: Folder[] = []
+
+    if (canReceiveAdmissions) {
+      const pending = notifications.filter(isPending)
+      const renderAdmissions = (items: AdmissionNotification[]) => (now: number) =>
+        items.map((n) => (
+          <AdmissionNotificationCard key={n.id} notification={n} onAdmit={onAdmit} now={now} />
+        ))
+      const urgent = pending.filter((n) => n.isUrgent)
+      const nonUrgent = pending.filter((n) => !n.isUrgent)
+      const resolved = notifications.filter((n) => !isPending(n))
+
+      result.push(
+        {
+          key: "urgent",
+          label: "Urgentes",
+          hint: "Prioridad I a III",
+          icon: <AlertOutlined />,
+          tone: "danger",
+          count: urgent.length,
+          actionable: true,
+          render: renderAdmissions(urgent),
+          empty: "No hay urgencias pendientes de admisión.",
+        },
+        {
+          key: "pending",
+          label: "Pendientes",
+          hint: "Prioridad IV y V",
+          icon: <FolderOpenOutlined />,
+          tone: "warning",
+          count: nonUrgent.length,
+          actionable: true,
+          render: renderAdmissions(nonUrgent),
+          empty: "No hay pacientes en espera de admisión.",
+        },
+        {
+          key: "resolved",
+          label: "Atendidas",
+          hint: "Últimas 24 horas",
+          icon: <CheckCircleOutlined />,
+          tone: "success",
+          count: resolved.length,
+          actionable: false,
+          render: renderAdmissions(resolved),
+          empty: "Aún no se ha admisionado ningún paciente notificado.",
+        },
+      )
+    }
+
+    if (canReceiveTriage) {
+      const renderTriage = (items: TriageNotification[]) => (now: number) =>
+        items.map((n) => (
+          <TriageNotificationCard key={n.id} notification={n} onTriage={onTriage} now={now} />
+        ))
+      const waiting = triageNotifications.filter((n) => n.status === "PENDIENTE")
+      const triaged = triageNotifications.filter((n) => n.status !== "PENDIENTE")
+
+      result.push(
+        {
+          key: "triage",
+          label: "Por triage",
+          hint: "Pacientes nuevos",
+          icon: <UserAddOutlined />,
+          tone: "info",
+          count: waiting.length,
+          actionable: true,
+          render: renderTriage(waiting),
+          empty: "No hay pacientes nuevos esperando triage.",
+        },
+        {
+          key: "triaged",
+          label: "Triados",
+          hint: "Últimas 24 horas",
+          icon: <CheckCircleOutlined />,
+          tone: "success",
+          count: triaged.length,
+          actionable: false,
+          render: renderTriage(triaged),
+          empty: "Aún no se ha hecho triage a ningún paciente notificado.",
+        },
+      )
+    }
+
+    return result
+  }, [
+    canReceiveAdmissions,
+    canReceiveTriage,
+    notifications,
+    triageNotifications,
+    onAdmit,
+    onTriage,
+  ])
 
   // Al abrir, la primera carpeta con pendientes.
   useEffect(() => {
     if (!open) return
     setNow(Date.now())
-    const firstWithItems = folders.find((f) => f.key !== "resolved" && f.items.length > 0)
-    setActive(firstWithItems?.key ?? "urgent")
+    const firstWithItems = folders.find((f) => f.actionable && f.count > 0)
+    setActive(firstWithItems?.key ?? folders[0]?.key ?? "urgent")
     // Solo al abrir: después el usuario elige la carpeta.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
@@ -96,7 +175,34 @@ export default function AdmissionNotificationCenter({
   }, [open])
 
   const current = folders.find((f) => f.key === active) ?? folders[0]
-  const pendingTotal = folders[0].items.length + folders[1].items.length
+
+  // Ver la carpeta de triage marca como vistos los pacientes nuevos.
+  const viewingTriage = open && current?.key === "triage"
+  useEffect(() => {
+    if (viewingTriage) onTriageFolderViewed()
+  }, [viewingTriage, onTriageFolderViewed])
+
+  if (!current) return null
+
+  const admissionPending = folders
+    .filter((f) => f.key === "urgent" || f.key === "pending")
+    .reduce((sum, f) => sum + f.count, 0)
+  const triagePending = folders.find((f) => f.key === "triage")?.count ?? 0
+
+  const summary = [
+    canReceiveAdmissions &&
+      (admissionPending === 0
+        ? "Sin pacientes pendientes de admisión"
+        : `${admissionPending} ${admissionPending === 1 ? "paciente pendiente" : "pacientes pendientes"} de admisión`),
+    canReceiveTriage &&
+      (triagePending === 0
+        ? "Sin pacientes esperando triage"
+        : `${triagePending} ${triagePending === 1 ? "paciente espera" : "pacientes esperan"} triage`),
+  ]
+    .filter(Boolean)
+    .join(" · ")
+
+  const items = current.render(now)
 
   return (
     <Modal
@@ -116,11 +222,7 @@ export default function AdmissionNotificationCenter({
           </span>
           <div>
             <h3 className="anc-center-title">Centro de notificaciones</h3>
-            <p className="anc-center-subtitle">
-              {pendingTotal === 0
-                ? "No hay pacientes pendientes de admisión."
-                : `${pendingTotal} ${pendingTotal === 1 ? "paciente pendiente" : "pacientes pendientes"} de admisión`}
-            </p>
+            <p className="anc-center-subtitle">{summary}</p>
           </div>
         </header>
 
@@ -139,28 +241,19 @@ export default function AdmissionNotificationCenter({
                 <span className="anc-folder-tab-label">{folder.label}</span>
                 <span className="anc-folder-tab-hint">{folder.hint}</span>
               </span>
-              <span className="anc-folder-count">{folder.items.length}</span>
+              <span className="anc-folder-count">{folder.count}</span>
             </button>
           ))}
         </div>
 
         <div className={`anc-folder-panel tone-${current.tone}`} role="tabpanel">
-          {current.items.length === 0 ? (
+          {items.length === 0 ? (
             <div className="anc-empty">
               <InboxOutlined />
               <span>{current.empty}</span>
             </div>
           ) : (
-            <div className="anc-list">
-              {current.items.map((notification) => (
-                <AdmissionNotificationCard
-                  key={notification.id}
-                  notification={notification}
-                  onAdmit={onAdmit}
-                  now={now}
-                />
-              ))}
-            </div>
+            <div className="anc-list">{items}</div>
           )}
         </div>
       </div>

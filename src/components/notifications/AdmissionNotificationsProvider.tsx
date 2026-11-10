@@ -12,7 +12,8 @@ import {
 } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
-import { Modal } from "antd"
+import { Button, Modal, notification as antdNotification } from "antd"
+import { UserAddOutlined } from "@ant-design/icons"
 import {
   HubConnectionBuilder,
   HubConnectionState,
@@ -24,14 +25,26 @@ import {
   useAdmissionNotifications,
   useMarkAdmissionNotificationsSeen,
 } from "@/core/hooks/notifications/useAdmissionNotifications"
+import {
+  TRIAGE_NOTIFICATIONS_QUERY_KEY,
+  useMarkTriageNotificationsSeen,
+  useTriageNotifications,
+} from "@/core/hooks/notifications/useTriageNotifications"
 import { AdmissionNotification } from "@/core/interfaces/care/admissionNotifications"
+import { TriageNotification } from "@/core/interfaces/care/triageNotifications"
 import AdmissionNotificationCenter from "./AdmissionNotificationCenter"
 import UrgentAdmissionModal from "./UrgentAdmissionModal"
-import { buildAdmissionUrl, isPending, playUrgentChime } from "./admissionNotificationUtils"
+import {
+  buildAdmissionUrl,
+  buildTriageUrl,
+  isPending,
+  playUrgentChime,
+} from "./admissionNotificationUtils"
 import "./admissionNotifications.scss"
 
 const HUB_URL = `${process.env.NEXT_PUBLIC_API_URL}/hubs/notifications`
-const CHANGED_EVENT = "admissionNotificationsChanged"
+const ADMISSIONS_CHANGED_EVENT = "admissionNotificationsChanged"
+const TRIAGE_CHANGED_EVENT = "triageNotificationsChanged"
 
 // Reintenta para siempre: Render free se duerme y tarda en despertar.
 const RECONNECT_DELAYS = [0, 2_000, 5_000, 10_000]
@@ -56,24 +69,37 @@ const AdmissionNotificationsContext = createContext<AdmissionNotificationsContex
 
 export const useAdmissionNotificationsContext = () => useContext(AdmissionNotificationsContext)
 
-// Notificaciones de admisión del admisionista: la consulta al back es la fuente de verdad y
-// SignalR solo avisa que hay que volver a consultar. Monta el modal urgente y el centro de
-// notificaciones para todo el dashboard, así aparecen en cualquier vista.
+// Notificaciones del dashboard: admisiones pendientes (admisionistas) y pacientes nuevos que
+// esperan triage (médico general, enfermero, auxiliar de enfermería). La consulta al back es
+// la fuente de verdad y SignalR solo avisa que hay que volver a consultar. Monta el modal
+// urgente y el centro de notificaciones para todo el dashboard, así aparecen en cualquier vista.
 export default function AdmissionNotificationsProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const queryClient = useQueryClient()
   const [modal, modalContextHolder] = Modal.useModal()
+  const [toast, toastContextHolder] = antdNotification.useNotification()
 
   const [connected, setConnected] = useState(false)
   const [centerOpen, setCenterOpen] = useState(false)
 
-  const { data, dataUpdatedAt, refetch } = useAdmissionNotifications({
-    pollWhileDisconnected: !connected,
-  })
+  const {
+    data,
+    dataUpdatedAt,
+    refetch,
+  } = useAdmissionNotifications({ pollWhileDisconnected: !connected })
+  const {
+    data: triageData,
+    dataUpdatedAt: triageUpdatedAt,
+    refetch: refetchTriage,
+  } = useTriageNotifications({ pollWhileDisconnected: !connected })
   const markSeen = useMarkAdmissionNotificationsSeen()
+  const markTriageSeen = useMarkTriageNotificationsSeen()
 
-  const canReceive = data?.canReceive ?? false
+  const canReceiveAdmissions = data?.canReceive ?? false
+  const canReceiveTriage = triageData?.canReceive ?? false
+  const canReceive = canReceiveAdmissions || canReceiveTriage
+
   const items = useMemo(() => data?.items ?? [], [data])
   const pending = useMemo(() => items.filter(isPending), [items])
   const urgentUnseen = useMemo(
@@ -81,18 +107,30 @@ export default function AdmissionNotificationsProvider({ children }: { children:
     [pending],
   )
 
-  const refresh = useCallback(() => {
+  const triageItems = useMemo(() => triageData?.items ?? [], [triageData])
+  const triagePending = useMemo(
+    () => triageItems.filter((n) => n.status === "PENDIENTE"),
+    [triageItems],
+  )
+  const triageUnseen = useMemo(() => triagePending.filter((n) => !n.seen), [triagePending])
+
+  const refreshAdmissions = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ADMISSION_NOTIFICATIONS_QUERY_KEY })
+  }, [queryClient])
+  const refreshTriage = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: TRIAGE_NOTIFICATIONS_QUERY_KEY })
   }, [queryClient])
 
   // Al navegar se vuelve a consultar si lo que hay tiene más de 15 s.
-  const lastUpdateRef = useRef(dataUpdatedAt)
-  lastUpdateRef.current = dataUpdatedAt
+  const lastUpdateRef = useRef({ admissions: dataUpdatedAt, triage: triageUpdatedAt })
+  lastUpdateRef.current = { admissions: dataUpdatedAt, triage: triageUpdatedAt }
   useEffect(() => {
-    if (canReceive && Date.now() - lastUpdateRef.current > 15_000) refetch()
-  }, [pathname, canReceive, refetch])
+    const now = Date.now()
+    if (canReceiveAdmissions && now - lastUpdateRef.current.admissions > 15_000) refetch()
+    if (canReceiveTriage && now - lastUpdateRef.current.triage > 15_000) refetchTriage()
+  }, [pathname, canReceiveAdmissions, canReceiveTriage, refetch, refetchTriage])
 
-  // Conexión SignalR, solo para admisionistas.
+  // Conexión SignalR, solo para quien recibe algún tipo de aviso.
   useEffect(() => {
     if (!canReceive || !process.env.NEXT_PUBLIC_API_URL) return
 
@@ -108,12 +146,18 @@ export default function AdmissionNotificationsProvider({ children }: { children:
       .configureLogging(LogLevel.None)
       .build()
 
-    connection.on(CHANGED_EVENT, refresh)
+    const refreshAll = () => {
+      refreshAdmissions()
+      refreshTriage()
+    }
+
+    connection.on(ADMISSIONS_CHANGED_EVENT, refreshAdmissions)
+    connection.on(TRIAGE_CHANGED_EVENT, refreshTriage)
     connection.onreconnecting(() => setConnected(false))
     connection.onreconnected(() => {
       setConnected(true)
       // Lo que llegó mientras estaba desconectado está en la BD.
-      refresh()
+      refreshAll()
     })
 
     const start = async () => {
@@ -121,7 +165,7 @@ export default function AdmissionNotificationsProvider({ children }: { children:
         await connection.start()
         if (disposed) return
         setConnected(true)
-        refresh()
+        refreshAll()
       } catch {
         if (!disposed) retryTimer = setTimeout(start, MAX_RECONNECT_DELAY)
       }
@@ -142,7 +186,7 @@ export default function AdmissionNotificationsProvider({ children }: { children:
         connection.stop().catch(() => undefined)
       }
     }
-  }, [canReceive, refresh])
+  }, [canReceive, refreshAdmissions, refreshTriage])
 
   // Sonido cuando llega una urgencia nueva (no al recargar las que ya se conocían).
   const knownUrgentIdsRef = useRef<Set<number> | null>(null)
@@ -154,14 +198,14 @@ export default function AdmissionNotificationsProvider({ children }: { children:
     knownUrgentIdsRef.current = new Set([...(known ?? []), ...ids])
   }, [data, urgentUnseen])
 
-  const goToAdmission = useCallback(
-    (notification: AdmissionNotification) => {
-      const url = buildAdmissionUrl(notification)
+  // Pide confirmación antes de salir de un formulario con posibles cambios sin guardar.
+  const navigateSafely = useCallback(
+    (url: string, okText: string, reloadPrefix: string) => {
       const navigate = () => {
         setCenterOpen(false)
-        // El formulario de admisión toma el documento solo al montarse: si ya está abierto se
+        // Los formularios toman el documento solo al montarse: si ya está abierto se
         // recarga para que cargue el nuevo paciente.
-        if (pathname.startsWith("/care/admissions/new")) window.location.assign(url)
+        if (pathname.startsWith(reloadPrefix)) window.location.assign(url)
         else router.push(url)
       }
 
@@ -173,13 +217,66 @@ export default function AdmissionNotificationsProvider({ children }: { children:
       modal.confirm({
         title: "¿Salir de esta vista?",
         content: "Estás en un formulario. Si tienes cambios sin guardar, se perderán.",
-        okText: "Sí, ir a admisionar",
+        okText,
         cancelText: "Quedarme aquí",
         onOk: navigate,
       })
     },
     [modal, pathname, router],
   )
+
+  const goToAdmission = useCallback(
+    (notification: AdmissionNotification) =>
+      navigateSafely(buildAdmissionUrl(notification), "Sí, ir a admisionar", "/care/admissions/new"),
+    [navigateSafely],
+  )
+
+  const goToTriage = useCallback(
+    (notification: TriageNotification) => {
+      if (!notification.seen) markTriageSeen.mutate([notification.id])
+      navigateSafely(buildTriageUrl(notification), "Sí, ir a triage", "/care/triage/new")
+    },
+    [markTriageSeen, navigateSafely],
+  )
+
+  // Aviso discreto (no urgente) cuando llega un paciente nuevo para triage. No se muestra
+  // para los que ya existían al cargar la página ni para los que registró el propio usuario
+  // (le llegan como vistos).
+  const knownTriageIdsRef = useRef<Set<number> | null>(null)
+  useEffect(() => {
+    if (!triageData) return
+    const known = knownTriageIdsRef.current
+    if (known) {
+      triageUnseen
+        .filter((n) => !known.has(n.id))
+        .forEach((n) => {
+          const key = `triage-notification-${n.id}`
+          toast.open({
+            key,
+            icon: <UserAddOutlined style={{ color: "var(--theme-primary, #0F6F5C)" }} />,
+            title: "Nuevo paciente para triage",
+            description: [n.patientName, [n.documentTypeCode, n.documentNumber].filter(Boolean).join(" ")]
+              .filter(Boolean)
+              .join(" · "),
+            placement: "bottomRight",
+            duration: 10,
+            actions: (
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => {
+                  toast.destroy(key)
+                  goToTriage(n)
+                }}
+              >
+                Hacer triage
+              </Button>
+            ),
+          })
+        })
+    }
+    knownTriageIdsRef.current = new Set([...(known ?? []), ...triageItems.map((n) => n.id)])
+  }, [triageData, triageItems, triageUnseen, toast, goToTriage])
 
   // El modal muestra todas las urgencias sin ver: cerrar o admisionar las marca como vistas.
   const dismissUrgent = useCallback(() => {
@@ -194,35 +291,48 @@ export default function AdmissionNotificationsProvider({ children }: { children:
     [dismissUrgent, goToAdmission],
   )
 
+  // Abrir la carpeta "Por triage" marca como vistos los pacientes nuevos.
+  const markTriageSeenMutate = markTriageSeen.mutate
+  const unseenTriageIds = useMemo(() => triageUnseen.map((n) => n.id), [triageUnseen])
+  const markTriageFolderSeen = useCallback(() => {
+    if (unseenTriageIds.length > 0) markTriageSeenMutate(unseenTriageIds)
+  }, [markTriageSeenMutate, unseenTriageIds])
+
   const contextValue = useMemo<AdmissionNotificationsContextValue>(
     () => ({
       canReceive,
-      pendingCount: pending.length,
+      pendingCount: pending.length + triagePending.length,
       urgentPendingCount: pending.filter((n) => n.isUrgent).length,
       openCenter: () => setCenterOpen(true),
     }),
-    [canReceive, pending],
+    [canReceive, pending, triagePending],
   )
 
   return (
     <AdmissionNotificationsContext.Provider value={contextValue}>
       {children}
       {modalContextHolder}
+      {toastContextHolder}
+      {canReceiveAdmissions && (
+        <UrgentAdmissionModal
+          open={urgentUnseen.length > 0 && !centerOpen}
+          notifications={urgentUnseen}
+          onAdmit={admitFromUrgent}
+          onClose={dismissUrgent}
+        />
+      )}
       {canReceive && (
-        <>
-          <UrgentAdmissionModal
-            open={urgentUnseen.length > 0 && !centerOpen}
-            notifications={urgentUnseen}
-            onAdmit={admitFromUrgent}
-            onClose={dismissUrgent}
-          />
-          <AdmissionNotificationCenter
-            open={centerOpen}
-            notifications={items}
-            onAdmit={goToAdmission}
-            onClose={() => setCenterOpen(false)}
-          />
-        </>
+        <AdmissionNotificationCenter
+          open={centerOpen}
+          canReceiveAdmissions={canReceiveAdmissions}
+          canReceiveTriage={canReceiveTriage}
+          notifications={items}
+          triageNotifications={triageItems}
+          onAdmit={goToAdmission}
+          onTriage={goToTriage}
+          onTriageFolderViewed={markTriageFolderSeen}
+          onClose={() => setCenterOpen(false)}
+        />
       )}
     </AdmissionNotificationsContext.Provider>
   )

@@ -1,64 +1,15 @@
 "use client";
 
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Input, Table, Tooltip, Typography } from "antd";
+import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
+import { Button, Checkbox, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { cie10Services } from "@/core/hooks/care/cie10/useSearchCie10";
-import { useState } from "react";
+import { Cie10DiagnosisSelect } from "../../../dischargeNote/Cie10DiagnosisSelect";
 import type { DiagnosisRow } from "../../types";
-
-interface Cie10SelectProps {
-  code: string;
-  onSelect: (cie10Id: number, codigo: string, descripcion: string) => void;
-  onCodeChange: (codigo: string) => void;
-  disabled?: boolean;
-}
-
-const Cie10CodeSearch = ({ code, onSelect, onCodeChange, disabled }: Cie10SelectProps) => {
-  const [loading, setLoading] = useState(false);
-  const [notFound, setNotFound] = useState(false);
-
-  const handleChange = (value: string) => {
-    setNotFound(false);
-    onCodeChange(value);
-  };
-
-  const handleSearch = async () => {
-    const query = code.trim();
-    if (!query) return;
-    setLoading(true);
-    setNotFound(false);
-    try {
-      const results = await cie10Services.search(query);
-      const match = results.find((item) => item.codigo.toLowerCase() === query.toLowerCase());
-      if (match) {
-        onSelect(match.id, match.codigo, match.descripcion);
-      } else {
-        onCodeChange(query);
-        setNotFound(true);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div>
-      <Input.Search
-        value={code}
-        onChange={(e) => handleChange(e.target.value)}
-        onSearch={handleSearch}
-        enterButton
-        loading={loading}
-        placeholder="Código CIE-10"
-        disabled={disabled}
-      />
-      {notFound && (
-        <div style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>El código no existe</div>
-      )}
-    </div>
-  );
-};
 
 interface Props {
   diagnoses: DiagnosisRow[];
@@ -66,13 +17,11 @@ interface Props {
   disabled?: boolean;
 }
 
+// El diagnóstico principal es la primera fila; se cambia moviendo las filas.
 export const DiagnosesTab = ({ diagnoses, onDiagnosesChange, disabled }: Props) => {
   const update = (id: number, patch: Partial<DiagnosisRow>) => {
     onDiagnosesChange(
-      diagnoses.map((item) => {
-        if (item.id !== id) return patch.main ? { ...item, main: false } : item;
-        return { ...item, ...patch };
-      }),
+      diagnoses.map((item) => (item.id === id ? { ...item, ...patch } : item)),
     );
   };
 
@@ -84,7 +33,7 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange, disabled }: Props) 
         cie10Id: null,
         code: "",
         diagnosis: "",
-        main: false,
+        confirmed: false,
       },
     ]);
   };
@@ -93,47 +42,93 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange, disabled }: Props) 
     onDiagnosesChange(diagnoses.filter((item) => item.id !== id));
   };
 
+  const move = (index: number, offset: -1 | 1) => {
+    const target = index + offset;
+    if (target < 0 || target >= diagnoses.length) return;
+    const next = [...diagnoses];
+    [next[index], next[target]] = [next[target], next[index]];
+    onDiagnosesChange(next);
+  };
+
+  const isDuplicate = (record: DiagnosisRow) =>
+    !!record.cie10Id &&
+    diagnoses.some((item) => item.id !== record.id && item.cie10Id === record.cie10Id);
+
   const columns: ColumnsType<DiagnosisRow> = [
     {
-      title: "Código CIE-10",
-      dataIndex: "code",
-      width: 200,
-      render: (_v, record) => (
-        <Cie10CodeSearch
-          code={record.code}
-          onCodeChange={(codigo) => update(record.id, { code: codigo, diagnosis: "", cie10Id: null })}
-          onSelect={(cie10Id, codigo, descripcion) =>
-            update(record.id, { cie10Id, code: codigo, diagnosis: descripcion })
-          }
-          disabled={disabled}
-        />
+      title: "Orden",
+      width: 110,
+      align: "center",
+      render: (_v, _record, index) => (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
+          <Tooltip title="Subir">
+            <Button
+              size="small"
+              type="text"
+              icon={<ArrowUpOutlined />}
+              onClick={() => move(index, -1)}
+              disabled={disabled || index === 0}
+            />
+          </Tooltip>
+          <Tooltip title="Bajar">
+            <Button
+              size="small"
+              type="text"
+              icon={<ArrowDownOutlined />}
+              onClick={() => move(index, 1)}
+              disabled={disabled || index === diagnoses.length - 1}
+            />
+          </Tooltip>
+        </div>
       ),
     },
     {
-      title: "Descripción",
+      title: "Diagnóstico CIE-10 (código o descripción)",
       dataIndex: "diagnosis",
-      render: (_v, record) => (
-        <span
-          style={{
-            color: record.diagnosis ? undefined : "#9ca3af",
-            fontSize: 13,
-          }}
-        >
-          {record.diagnosis || "—"}
-        </span>
+      render: (_v, record, index) => (
+        <div style={{ display: "grid", gap: 4 }}>
+          {index === 0 && (
+            <Tag color="green" style={{ width: "fit-content", margin: 0 }}>
+              Principal
+            </Tag>
+          )}
+          <Cie10DiagnosisSelect
+            value={record.cie10Id ?? undefined}
+            selectedLabel={
+              record.cie10Id ? `${record.code} - ${record.diagnosis}` : undefined
+            }
+            onSelect={(cie10Id, codigo, descripcion) =>
+              update(record.id, {
+                cie10Id: cie10Id ?? null,
+                code: codigo,
+                diagnosis: descripcion,
+              })
+            }
+            placeholder="Buscar por código o descripción"
+            allowClear
+            disabled={disabled}
+          />
+          {isDuplicate(record) && (
+            <span style={{ color: "#ef4444", fontSize: 12 }}>
+              Este diagnóstico ya está en la tabla
+            </span>
+          )}
+        </div>
       ),
     },
     {
-      title: "Principal",
-      dataIndex: "main",
-      width: 105,
+      title: "Confirmado",
+      dataIndex: "confirmed",
+      width: 120,
       align: "center",
       render: (_v, record) => (
-        <Checkbox
-          checked={record.main}
-          onChange={(e) => update(record.id, { main: e.target.checked })}
-          disabled={disabled}
-        />
+        <Tooltip title="Sin marcar se reporta como impresión diagnóstica">
+          <Checkbox
+            checked={record.confirmed}
+            onChange={(e) => update(record.id, { confirmed: e.target.checked })}
+            disabled={disabled}
+          />
+        </Tooltip>
       ),
     },
     {
@@ -166,9 +161,14 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange, disabled }: Props) 
           marginBottom: 14,
         }}
       >
-        <Typography.Title level={5} style={{ margin: 0 }}>
-          4. Diagnósticos (CIE-10) <span className="field-required">*</span>
-        </Typography.Title>
+        <div>
+          <Typography.Title level={5} style={{ margin: 0 }}>
+            4. Diagnósticos (CIE-10) <span className="field-required">*</span>
+          </Typography.Title>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            El primero de la tabla es el diagnóstico principal.
+          </Typography.Text>
+        </div>
         <Button type="primary" ghost icon={<PlusOutlined />} onClick={add} disabled={disabled}>
           Agregar diagnóstico
         </Button>

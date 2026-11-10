@@ -211,7 +211,7 @@ const InitialClinicalHistoryContainer = () => {
     currentDoctor;
   const selectedDoctorUser = users.find((u) => u.id === selectedDoctorId);
   const mainDiagnosis = useMemo(
-    () => diagnoses.find((d) => d.main && d.code),
+    () => diagnoses.find((d) => !!d.code),
     [diagnoses],
   );
 
@@ -283,31 +283,40 @@ const InitialClinicalHistoryContainer = () => {
 
           <div className="clinical-history-summary">
             <div className="summary-cell">
-              <div className="summary-cell-label">Fecha de admisión</div>
+              <div className="summary-cell-label">Fecha y hora de admisión</div>
               <div className="summary-cell-value">
-                {formatDate(admission?.admissionDate, "") || "—"}
+                {admission?.admissionDate
+                  ? `${formatDate(admission.admissionDate, "")} ${formatTime(admission.admissionDate, "")}`.trim()
+                  : "—"}
               </div>
             </div>
             <div className="summary-cell">
-              <div className="summary-cell-label">Hora de admisión</div>
-              <div className="summary-cell-value">
-                {formatTime(admission?.admissionDate, "") || "—"}
-              </div>
+              <div className="summary-cell-label">Ámbito</div>
+              <div className="summary-cell-value">{patient.careScope || "—"}</div>
             </div>
-            <div className="summary-cell">
-              <div className="summary-cell-label">Servicio</div>
-              <div className="summary-cell-value">{patient.careScope}</div>
-            </div>
-            <div className="summary-cell">
+            <div className="summary-cell summary-cell--wide">
               <div className="summary-cell-label">Médico tratante</div>
               <div className="summary-cell-value">
                 {canAssignDoctor ? (
                   <Select
                     showSearch
+                    // Busca por el nombre del médico, no por su id.
+                    optionFilterProp="label"
+                    filterOption={(input, option) =>
+                      String(option?.label ?? "")
+                        .normalize("NFD")
+                        .replace(/[̀-ͯ]/g, "")
+                        .toLowerCase()
+                        .includes(
+                          input.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(),
+                        )
+                    }
+                    placeholder="Buscar médico"
                     value={selectedDoctorId}
                     options={doctorOptions}
                     onChange={setSelectedDoctorId}
                     style={{ width: "100%", marginTop: 2 }}
+                    popupMatchSelectWidth={false}
                     size="small"
                   />
                 ) : (
@@ -335,10 +344,11 @@ const InitialClinicalHistoryContainer = () => {
               </div>
             </div>
             <div className="summary-cell">
-              <div className="summary-cell-label">Estado</div>
+              <div className="summary-cell-label">Servicio</div>
               <div className="summary-cell-value">
+                {/* La historia clínica inicial siempre se abre por urgencias. */}
                 <Tag color="green" style={{ margin: 0 }}>
-                  Hospitalizado
+                  Urgencias
                 </Tag>
               </div>
             </div>
@@ -582,8 +592,13 @@ const InitialClinicalHistoryContainer = () => {
         attentionDate={existingHCInicial?.admissionDate?.slice(0, 10) || admissionDate}
         attentionTime={existingHCInicial?.admissionTime || admissionTime}
         contractName={admission?.convenioNombre ?? ""}
-        doctorName={selectedDoctor}
-        doctorUser={selectedDoctorUser}
+        // La HCI firma con quien la registró; el médico tratante solo es respaldo.
+        doctorName={existingHCInicial?.nombreProfesional || selectedDoctor}
+        doctorUser={
+          existingHCInicial?.userId
+            ? users.find((u) => u.id === existingHCInicial.userId)
+            : selectedDoctorUser
+        }
         users={users}
         hcInicial={existingHCInicial}
         diagnoses={diagnoses}

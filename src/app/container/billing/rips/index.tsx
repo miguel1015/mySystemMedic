@@ -367,6 +367,7 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
       diagnosticosIngreso: sources.diagnosticosIngreso,
       diagnosticoEgreso: sources.diagnosticoEgreso,
       professional: sources.hcProfessional,
+      registroSiras: sources.registroSiras,
       fev,
     })
   }, [invoice, sources, fev])

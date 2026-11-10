@@ -50,12 +50,12 @@ export interface DocumentContext {
 }
 
 const hciDiagnoses = (record: AdmissionRecord): DiagnosisRow[] =>
-  (record.hcInicial?.analisisDiagnosticosPlan?.diagnosticos ?? []).map((d, idx) => ({
+  (record.hcInicial?.analisisDiagnosticosPlan?.diagnosticos ?? []).map((d) => ({
     id: d.id,
     cie10Id: d.id,
     code: d.codigo,
     diagnosis: d.descripcion,
-    main: idx === 0,
+    confirmed: d.confirmado === true,
   }))
 
 // Datos comunes a todos los documentos: encabezado del paciente y firmantes.

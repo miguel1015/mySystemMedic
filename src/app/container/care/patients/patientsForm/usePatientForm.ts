@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
@@ -11,6 +11,7 @@ import {
   TPatientForm,
   patientDefaultValues,
 } from "@/zod/patientSchema";
+import { PatientData } from "@/core/interfaces/care/types";
 
 interface UsePatientFormProps {
   setOpen: (open: boolean) => void;
@@ -27,6 +28,10 @@ export function usePatientForm({
   const updatePatient = useUpdatePatient();
   const { data: patientData, isLoading: loadingPatient } =
     useGetPatientById(editPatientId);
+
+  // Paciente nuevo ya validado, a la espera de que se elija si se avisa para triage.
+  const [pendingCreate, setPendingCreate] = useState<PatientData | null>(null);
+  const [notifyChoice, setNotifyChoice] = useState<boolean | null>(null);
 
   const { control, handleSubmit, reset, watch, setValue } =
     useForm<TPatientForm>({
@@ -107,16 +112,38 @@ export function usePatientForm({
       return;
     }
 
-    createPatient.mutate(data, {
-      onSuccess: () => {
-        reset();
-        setOpen(false);
-        toast.success("Paciente creado correctamente");
+    // Antes de crear se pregunta si se avisa al personal asistencial.
+    setPendingCreate(data as PatientData);
+  };
+
+  const confirmCreate = (notifyTriage: boolean) => {
+    if (!pendingCreate || createPatient.isPending) return;
+
+    setNotifyChoice(notifyTriage);
+    createPatient.mutate(
+      { ...pendingCreate, notifyTriage },
+      {
+        onSuccess: () => {
+          setPendingCreate(null);
+          reset();
+          setOpen(false);
+          toast.success(
+            notifyTriage
+              ? "Paciente creado y notificado para triage"
+              : "Paciente creado correctamente",
+          );
+        },
+        onError: (err: Error) => {
+          setPendingCreate(null);
+          toast.error(err.message);
+        },
       },
-      onError: (err: Error) => {
-        toast.error(err.message);
-      },
-    });
+    );
+  };
+
+  // Cerrar el modal sin elegir vuelve al formulario sin crear nada.
+  const cancelCreate = () => {
+    if (!createPatient.isPending) setPendingCreate(null);
   };
 
   const handleCancel = () => {
@@ -130,6 +157,11 @@ export function usePatientForm({
     handleSubmit,
     onSubmit,
     handleCancel,
+    notifyPromptOpen: pendingCreate !== null,
+    // Botón que muestra la carga mientras se crea: true = "Sí, notificar", false = "No".
+    creatingWithNotify: createPatient.isPending ? notifyChoice : null,
+    confirmCreate,
+    cancelCreate,
     isEditing: !!editPatientId,
     loadingPatient,
     isSubmitting: createPatient.isPending || updatePatient.isPending,

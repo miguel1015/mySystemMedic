@@ -12,7 +12,14 @@ import {
   Typography,
 } from "antd"
 import type { MessageInstance } from "antd/es/message/interface"
-import { CSSProperties, useMemo, useState } from "react"
+import { CSSProperties, useEffect, useMemo, useRef, useState } from "react"
+import {
+  emptyClinicalVitals,
+  useAdmissionTriageVitals,
+  type ClinicalVitals,
+} from "@/core/hooks/care/triage/useAdmissionTriageVitals"
+
+type DischargeVitals = Omit<ClinicalVitals, "glasgow">
 import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
 import "../initialClinicalHistory/initialClinicalHistory.css"
 import { DischargeNoteRecentModal } from "./DischargeNoteRecentModal"
@@ -125,11 +132,21 @@ export function DischargeNoteContent({
   const [diagnosticoId, setDiagnosticoId] = useState<number | null>(null)
 
   // Tab 1: Datos Clínicos
-  const [vitals, setVitals] = useState({
-    ta: "120/80", fc: 80, fr: 18,
-    temperature: 36.5, saturation: 98,
-    weight: 80, height: 175,
-  })
+  // Una nota nueva arranca con los signos del triage de la admisión.
+  const { vitals: triageVitals } = useAdmissionTriageVitals(admissionId)
+  const dischargeVitalsFromTriage = (): DischargeVitals => {
+    const { ta, fc, fr, temperature, saturation, weight, height } = triageVitals ?? emptyClinicalVitals
+    return { ta, fc, fr, temperature, saturation, weight, height }
+  }
+  const [vitals, setVitals] = useState<DischargeVitals>(dischargeVitalsFromTriage)
+  const triageVitalsAppliedRef = useRef(false)
+
+  useEffect(() => {
+    if (triageVitalsAppliedRef.current || !triageVitals || datosClinicosId !== null) return
+    triageVitalsAppliedRef.current = true
+    setVitals(dischargeVitalsFromTriage())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [triageVitals, datosClinicosId])
   const [condicionesGenerales, setCondicionesGenerales] = useState("")
   const [cabezaCuello, setCabezaCuello] = useState("")
   const [torax, setTorax] = useState("")
@@ -171,7 +188,7 @@ export function DischargeNoteContent({
   const resetForm = () => {
     setDatosClinicosId(null)
     setDiagnosticoId(null)
-    setVitals({ ta: "120/80", fc: 80, fr: 18, temperature: 36.5, saturation: 98, weight: 80, height: 175 })
+    setVitals(dischargeVitalsFromTriage())
     setCondicionesGenerales("")
     setCabezaCuello("")
     setTorax("")
@@ -647,7 +664,7 @@ export function DischargeNoteContent({
                     ) : (
                       <InputNumber
                         style={{ width: "100%" }}
-                        value={(vitals as Record<string, number | string>)[key] as number}
+                        value={((vitals as Record<string, number | string>)[key] as number) || null}
                         onChange={(v) => setVitals({ ...vitals, [key]: Number(v) || 0 })}
                       />
                     )}

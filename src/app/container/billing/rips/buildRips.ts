@@ -196,7 +196,7 @@ export interface RipsUsuario {
   incapacidad: string
   consecutivo: number
   codPaisOrigen: Nullable<string>
-  registroSIRAS: null
+  registroSIRAS: Nullable<string>
   servicios: RipsServicios
 }
 
@@ -244,6 +244,8 @@ export interface BuildRipsArgs {
   diagnosticosIngreso: Cie10CodeResponse[]
   diagnosticoEgreso: DiagnosticoEgresoResponse | null
   professional: RipsProfessional | null
+  // Código SIRAS del FURIPS activo de la admisión; null si no tiene FURIPS.
+  registroSiras?: string | null
   // Factura electrónica leída del XML. undefined: aún no se ha cargado (no se valida);
   // null: no hay XML o no se pudo leer.
   fev?: FevSummary | null
@@ -297,8 +299,9 @@ const TIPO_MEDICAMENTO_REGISTRO_SANITARIO = "01"
 const DIAS_TRATAMIENTO_APLICACION = 1
 
 // tipoDiagnosticoPrincipal (RIPSTipoDiagnosticoPrincipalVersion2): 01 = impresión
-// diagnóstica. MediNexus no registra si el diagnóstico está confirmado.
+// diagnóstica, 02 = confirmado nuevo, 03 = confirmado repetido (aún no se calcula).
 const TIPO_DIAGNOSTICO_IMPRESION = "01"
+const TIPO_DIAGNOSTICO_CONFIRMADO_NUEVO = "02"
 
 // Tabla TipoOtrosServicios.
 const TIPO_OS_DISPOSITIVOS = "01"
@@ -444,6 +447,7 @@ export function buildRips({
   diagnosticosIngreso,
   diagnosticoEgreso,
   professional,
+  registroSiras,
   fev,
 }: BuildRipsArgs): RipsBuildResult {
   const missingMap = new Map<string, RipsMissingField>()
@@ -495,6 +499,18 @@ export function buildRips({
     .filter((code): code is string => !!code)
   const egresoPrincipal = toCie10(diagnosticoEgreso?.codigoDiagnosticoEgreso1)
   const principal = egresoPrincipal ?? ingresoCodes[0] ?? null
+  // Solo los diagnósticos de la HC inicial registran si están confirmados; el de egreso no.
+  const principalConfirmado =
+    !egresoPrincipal &&
+    !!principal &&
+    diagnosticosIngreso.find((diagnostico) => toCie10(diagnostico.codigo) === principal)
+      ?.confirmado === true
+  const tipoDiagnosticoPrincipal = principalConfirmado
+    ? TIPO_DIAGNOSTICO_CONFIRMADO_NUEVO
+    : TIPO_DIAGNOSTICO_IMPRESION
+  const tipoDiagnosticoWarning = egresoPrincipal
+    ? "El diagnóstico principal es el de egreso, que no registra si está confirmado; se reporta 01 (impresión diagnóstica)"
+    : "El diagnóstico principal no está marcado como confirmado en la HC inicial; se reporta 01 (impresión diagnóstica)"
   const relacionados = Array.from(
     new Set(
       [
@@ -655,7 +671,7 @@ export function buildRips({
       checkCommon("Consultas")
       const profesional = resolveProfessional("Consultas", movement)
       if (!causaMotivo) addIssue("Consultas", "causaMotivoAtencion", PENDING_CATALOG_CODE)
-      addWarning("Consultas", "tipoDiagnosticoPrincipal", "No se registra si el diagnóstico está confirmado; se reporta 01 (impresión diagnóstica)")
+      if (!principalConfirmado) addWarning("Consultas", "tipoDiagnosticoPrincipal", tipoDiagnosticoWarning)
       const vrServicio = money(movement.totalValue)
       checkValue("Consultas", movement.name, vrServicio)
       servicios.consultas.push({
@@ -680,7 +696,7 @@ export function buildRips({
         codDiagnosticoRelacionado3: relacionados[2] ?? null,
         codDiagnosticoRelacionado3CIE11: null,
         nomCodDiagnosticoRelacionado3CIE11: null,
-        tipoDiagnosticoPrincipal: TIPO_DIAGNOSTICO_IMPRESION,
+        tipoDiagnosticoPrincipal,
         ...profesional,
         vrServicio,
         ...recaudoFields("Consultas", movement, vrServicio),
@@ -942,8 +958,14 @@ export function buildRips({
   }
   if (!tipoUsuario) {
     addIssue("Usuario", "tipoUsuario", "El tipo de usuario del convenio no tiene código SISPRO")
-  } else if (tipoUsuario === TIPO_USUARIO_SOAT) {
-    addIssue("Usuario", "registroSIRAS", "El tipo de usuario es 10 (SOAT): el RIPS exige el número de registro SIRAS, que MediNexus no captura (RVC095)")
+  }
+  // registroSIRAS sale del FURIPS de la admisión y solo se reporta con tipoUsuario 10 (RVC095).
+  const siras = registroSiras?.trim() || null
+  const esSoat = tipoUsuario === TIPO_USUARIO_SOAT
+  if (esSoat && !siras) {
+    addIssue("Usuario", "registroSIRAS", "El tipo de usuario es 10 (SOAT): registre el FURIPS de la admisión con el código SIRAS (RVC095)")
+  } else if (!esSoat && siras) {
+    addWarning("Usuario", "registroSIRAS", "La admisión tiene FURIPS pero el convenio no es SOAT (tipo de usuario 10): el SIRAS no se reporta")
   }
   if (!codSexo) addIssue("Usuario", "codSexo", PENDING_CATALOG_CODE)
   if (!codPaisResidencia || !codPaisOrigen) {
@@ -967,7 +989,7 @@ export function buildRips({
     codZonaTerritorialResidencia: codZona,
     incapacidad: INCAPACIDAD_NO,
     codPaisOrigen,
-    registroSIRAS: null,
+    registroSIRAS: esSoat ? siras : null,
     servicios,
   }
 

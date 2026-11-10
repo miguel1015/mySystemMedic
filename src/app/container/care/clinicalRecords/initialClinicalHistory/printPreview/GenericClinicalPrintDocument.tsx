@@ -26,6 +26,7 @@ interface Props {
   sections: ClinicalPrintSection[];
   doctorName: string;
   doctorUser?: GetUser;
+  showProcessDates?: boolean;
 }
 
 export const GenericClinicalPrintDocument = ({
@@ -41,6 +42,7 @@ export const GenericClinicalPrintDocument = ({
   sections,
   doctorName,
   doctorUser,
+  showProcessDates,
 }: Props) => {
   const headerBlock = (
     <ClinicalDocumentHeader
@@ -53,6 +55,7 @@ export const GenericClinicalPrintDocument = ({
       attentionLabel={attentionLabel}
       attentionDate={attentionDate}
       attentionTime={attentionTime}
+      showProcessDates={showProcessDates}
     />
   );
 
@@ -79,12 +82,6 @@ export const GenericClinicalPrintDocument = ({
       node: (
         <div className="hci-print-signatures">
           <DoctorSignatureBox doctorName={doctorName} doctorUser={doctorUser} />
-          <div className="hci-print-signature-box">
-            <div className="hci-print-signature-img" />
-            <div className="hci-print-signature-line">
-              Paciente / Responsable
-            </div>
-          </div>
         </div>
       ),
     });

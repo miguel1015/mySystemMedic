@@ -24,6 +24,22 @@ import {
   PatientNotFoundError,
   patientByDocumentService,
 } from "@/core/hooks/care/triage/useSearchPatientByDocument";
+import { triagesServices } from "@/core/hooks/care/triage/useGetAllTriages";
+
+// La admisión toma la fecha del último triage activo del paciente, que es el
+// mismo que el backend vincula al crearla.
+async function findLatestTriageDate(patient: PatientMiniResponse) {
+  const triages = await triagesServices.getAll();
+  const latest = (triages ?? [])
+    .filter(
+      (t) =>
+        t.isActive !== false &&
+        (t.pacienteId === patient.id ||
+          t.numeroDocumento === patient.numeroDocumento),
+    )
+    .sort((a, b) => b.fechaHora.localeCompare(a.fechaHora))[0];
+  return latest?.fechaHora ?? null;
+}
 
 type SearchErrorType = "not-found" | "other";
 
@@ -600,6 +616,17 @@ export function useAdmissionForm({
       setValue("birthDate", found.fechaNacimiento?.split("T")[0] ?? "");
       setValue("gender", found.sexo ?? "");
       setSearchError(null);
+
+      try {
+        const triageDate = await findLatestTriageDate(found);
+        if (triageDate) {
+          setValue("admissionDate", toDateTimeLocal(triageDate));
+        } else {
+          toast.error("El paciente no tiene triage registrado.");
+        }
+      } catch {
+        toast.error("No fue posible obtener la fecha del triage del paciente.");
+      }
     } catch (err) {
       setPatient(null);
       if (err instanceof PatientNotFoundError) {

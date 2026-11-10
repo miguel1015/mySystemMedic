@@ -88,6 +88,7 @@ const RipsTab = ({ admissionId, readOnly = false, onValidationChange }: RipsTabP
     diagnosticoEgreso,
     hcProfessional,
     professionals,
+    registroSiras,
     isLoading,
   } = useRipsSources(admissionId)
 
@@ -142,13 +143,14 @@ const RipsTab = ({ admissionId, readOnly = false, onValidationChange }: RipsTabP
           diagnosticosIngreso,
           diagnosticoEgreso,
           professional: hcProfessional,
+          registroSiras,
         })
       : null
 
   const savedResult = useMemo(
     () => buildFor(movements),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [admission, patient, provider, movements, diagnosticosIngreso, diagnosticoEgreso, hcProfessional],
+    [admission, patient, provider, movements, diagnosticosIngreso, diagnosticoEgreso, hcProfessional, registroSiras],
   )
   const draftResult = useMemo(
     () => (dirtyCount > 0 ? buildFor(draftMovements) : savedResult),

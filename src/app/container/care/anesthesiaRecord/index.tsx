@@ -67,6 +67,7 @@ import {
 import { calculateAgeLabel } from "../xray/xray.utils"
 import { AnesthesiaRecordPrintDocument } from "./AnesthesiaRecordPrintDocument"
 import { Cie10CodeSelect } from "./Cie10CodeSelect"
+import { TariffProcedureSelect } from "./TariffProcedureSelect"
 import {
   ACTO_ANESTESICO_LABELS,
   ESTADO_COLORS,
@@ -104,6 +105,7 @@ interface AnesthesiaFormValues {
   monitoreoEcg?: string
   observaciones?: string
   condicionesIngreso?: string
+  // Campo retirado del formulario; se conserva el valor de records antiguos.
   observacion?: string
   actoAnestesico?: ActoAnestesico
   drogasAnestesicas?: string
@@ -328,7 +330,9 @@ const AnesthesiaRecordContainer = () => {
     const values = await validateForm()
     if (!values) return null
 
-    const payload = toPayload(values)
+    // "Observación" ya no está en el formulario: se reenvía la del record para
+    // que actualizar no la borre en la base de datos.
+    const payload = { ...toPayload(values), observacion: editing?.observacion ?? "" }
     const snapshot = JSON.stringify(payload)
 
     if (editing && savedSnapshot === snapshot) return editing
@@ -703,7 +707,7 @@ const AnesthesiaRecordContainer = () => {
 
           <div className="anesthesia-grid-2">
             <Form.Item label="Procedimiento a realizar" name="procedimientoARealizar">
-              <TextArea rows={3} maxLength={4000} />
+              <TariffProcedureSelect />
             </Form.Item>
             <Form.Item label="Procedimiento realizado" name="procedimientoRealizado">
               <TextArea rows={3} maxLength={4000} />
@@ -719,14 +723,11 @@ const AnesthesiaRecordContainer = () => {
             </Form.Item>
           </div>
 
-          <div className="anesthesia-grid">
+          <div className="anesthesia-grid-2">
             <Form.Item label="Observaciones" name="observaciones">
               <TextArea rows={2} maxLength={2000} />
             </Form.Item>
             <Form.Item label="Condiciones del paciente al ingreso" name="condicionesIngreso">
-              <TextArea rows={2} maxLength={2000} />
-            </Form.Item>
-            <Form.Item label="Observación" name="observacion">
               <TextArea rows={2} maxLength={2000} />
             </Form.Item>
           </div>

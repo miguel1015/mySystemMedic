@@ -89,7 +89,8 @@ export const AnesthesiaRecordPrintDocument = ({
         { label: "Monitoreo ECG", value: record.monitoreoEcg },
         { label: "Observaciones", value: record.observaciones },
         { label: "Condiciones del paciente al ingreso", value: record.condicionesIngreso },
-        { label: "Observación", value: record.observacion },
+        // Campo retirado del formulario: solo se imprime en records antiguos que lo tengan.
+        ...(record.observacion ? [{ label: "Observación", value: record.observacion }] : []),
       ]),
       ...sectionUnits("acto", "Acto anestésico", [
         {

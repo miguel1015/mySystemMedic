@@ -1,5 +1,6 @@
 import { AdmissionNotification } from "@/core/interfaces/care/admissionNotifications"
 import { TriagePriority } from "@/core/interfaces/care/types"
+import { TriageNotification } from "@/core/interfaces/care/triageNotifications"
 
 // Mismos colores que los botones de prioridad del formulario de triage.
 export const TRIAGE_PRIORITY_META: Record<TriagePriority, { name: string; color: string }> = {
@@ -18,6 +19,12 @@ export function buildAdmissionUrl(n: AdmissionNotification) {
     triageId: String(n.triageId),
   })
   return `/care/admissions/new?${params.toString()}`
+}
+
+// Formulario de triage con el paciente ya cargado.
+export function buildTriageUrl(n: TriageNotification) {
+  const params = new URLSearchParams({ document: n.documentNumber })
+  return `/care/triage/new?${params.toString()}`
 }
 
 // "hace 3 min", "hace 2 h", "hace 1 día".

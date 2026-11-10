@@ -87,6 +87,20 @@
   margin-bottom: 14px;
 }
 
+/* Epicrisis: fechas del proceso debajo de los datos del paciente. */
+.hci-print-process-dates {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 24px;
+  margin: -4px 0 14px;
+}
+
+/* Fuerza el campo a iniciar fila en la primera columna. */
+.hci-print-patient-grid .hci-print-row--new-line {
+  grid-column-start: 1;
+}
+
 .hci-print-row {
   display: flex;
   gap: 6px;

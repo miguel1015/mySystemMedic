@@ -2,6 +2,8 @@ export interface Cie10CodeResponse {
   id: number;
   codigo: string;
   descripcion: string;
+  // Solo en los diagnósticos de la HC inicial.
+  confirmado?: boolean | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -83,7 +85,8 @@ export interface AnalisisDiagnosticosPlanHCInicialResponse {
 export interface AnalisisDiagnosticosPlanHCInicialRequest {
   analisis: string | null;
   plan: string | null;
-  idsCie10: number[];
+  // En orden: el primero es el diagnóstico principal.
+  diagnosticos: { idCie10: number; confirmado: boolean }[];
 }
 
 export interface HCInicialResponse {

@@ -3,7 +3,8 @@ export interface DiagnosisRow {
   cie10Id: number | null
   code: string
   diagnosis: string
-  main: boolean
+  // Diagnóstico confirmado (RIPS 02) o impresión diagnóstica (01). El principal es la primera fila.
+  confirmed: boolean
 }
 
 export interface QxSearchItem {

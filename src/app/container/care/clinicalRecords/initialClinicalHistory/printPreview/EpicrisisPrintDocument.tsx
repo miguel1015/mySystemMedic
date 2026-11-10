@@ -164,6 +164,7 @@ export const EpicrisisPrintDocument = ({
         attentionDate={attentionDate}
         attentionTime={attentionTime}
         contractName={contractName}
+        showProcessDates
         doctorName={doctorName}
         doctorUser={doctorUser}
         hcInicial={hcInicial}
@@ -181,6 +182,7 @@ export const EpicrisisPrintDocument = ({
                 admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
+                showProcessDates
                 documentTitle={evo.especialidadNombre ? `Evolución - ${evo.especialidadNombre}` : "Evolución"}
                 attentionLabel="Fecha y hora de evolución:"
                 attentionDate={evo.fechaEvolucion}
@@ -224,6 +226,7 @@ export const EpicrisisPrintDocument = ({
                 admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
+                showProcessDates
                 documentTitle={
                   evo.especialidadNombre
                     ? `Evolución de Especialista - ${evo.especialidadNombre}`
@@ -257,6 +260,7 @@ export const EpicrisisPrintDocument = ({
                 admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
+                showProcessDates
                 documentTitle="Procedimiento Menor"
                 attentionLabel="Fecha y hora del procedimiento:"
                 attentionDate={proc.fechaProcedimiento}
@@ -282,6 +286,7 @@ export const EpicrisisPrintDocument = ({
                 admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
+                showProcessDates
                 documentTitle="Procedimiento Diagnóstico"
                 attentionLabel="Fecha y hora del procedimiento:"
                 attentionDate={proc.fechaProcedimiento}
@@ -311,6 +316,7 @@ export const EpicrisisPrintDocument = ({
                 admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
+                showProcessDates
                 documentTitle="Procedimiento No Quirúrgico"
                 attentionLabel="Fecha y hora del procedimiento:"
                 attentionDate={proc.fechaProcedimiento}
@@ -336,6 +342,7 @@ export const EpicrisisPrintDocument = ({
                 admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
+                showProcessDates
                 documentTitle="Nota de Enfermería"
                 attentionLabel="Fecha y hora de la nota:"
                 attentionDate={nota.fechaNota}
@@ -366,6 +373,7 @@ export const EpicrisisPrintDocument = ({
                 admissionId={admissionId}
                 admissionDate={admissionDate}
                 contractName={contractName}
+                showProcessDates
                 documentTitle="Nota de Egreso"
                 attentionLabel="Fecha y hora de egreso:"
                 attentionDate={fechaEgreso?.format("YYYY-MM-DD") ?? ""}

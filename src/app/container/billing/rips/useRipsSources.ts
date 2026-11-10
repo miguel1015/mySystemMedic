@@ -23,6 +23,8 @@ export interface RipsSources {
   diagnosticoEgreso: DiagnosticoEgresoResponse | null
   hcProfessional: RipsProfessional | null
   professionals: ProfessionalOption[]
+  // Código SIRAS del FURIPS activo de la admisión.
+  registroSiras: string | null
 }
 
 export interface RipsInvoiceData {
@@ -48,6 +50,7 @@ const EMPTY_SOURCES = {
   diagnosticoEgreso: null,
   hcProfessional: null,
   professionals: [] as ProfessionalOption[],
+  registroSiras: null,
 }
 
 // Lo usan la pestaña de validación de Admisión integral y cualquier vista que parta de la

@@ -96,6 +96,11 @@ export function useSaveFurips() {
     onSuccess: (data) => {
       queryClient.setQueryData(byAdmissionKey(data.admissionId), data)
       queryClient.invalidateQueries({ queryKey: ["furips", "search"] })
+      // El RIPS toma el código SIRAS del FURIPS.
+      queryClient.invalidateQueries({
+        queryKey: ["billing-movements", "by-admission", data.admissionId, "rips-sources"],
+      })
+      queryClient.invalidateQueries({ queryKey: ["electronic-invoices", "rips-data"] })
     },
   })
 }

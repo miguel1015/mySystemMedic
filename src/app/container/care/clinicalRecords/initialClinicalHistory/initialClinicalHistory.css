@@ -119,6 +119,11 @@
   min-width: 0;
 }
 
+/* Celda del médico tratante: el doble de ancho para que el select muestre el nombre. */
+@media (min-width: 900px) {
+  .summary-cell--wide { grid-column: span 2; }
+}
+
 .summary-cell-label {
   font-size: 10.5px;
   font-weight: 700;
@@ -589,7 +594,7 @@
 
 .evolution-objective-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   min-width: 0;
 }

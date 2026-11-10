@@ -3,7 +3,8 @@
 import GridContainer from "@/components/componentLayout";
 import Input from "@/components/input";
 import SelectAutocomplete from "@/components/select";
-import { Button, Divider } from "antd";
+import { Button, Divider, Modal } from "antd";
+import { BellOutlined } from "@ant-design/icons";
 import { usePatientForm } from "./usePatientForm";
 import PatientFormSkeleton from "./patientFormSkeleton";
 
@@ -31,6 +32,10 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
     handleSubmit,
     onSubmit,
     handleCancel,
+    notifyPromptOpen,
+    creatingWithNotify,
+    confirmCreate,
+    cancelCreate,
     isEditing,
     loadingPatient,
     isSubmitting,
@@ -54,7 +59,10 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
     return <PatientFormSkeleton />;
   }
 
+  const creating = creatingWithNotify !== null;
+
   return (
+    <>
     <form onSubmit={handleSubmit(onSubmit)}>
       {/* ── DATOS GENERALES ── */}
       <p style={sectionTitleStyle}>Datos Generales</p>
@@ -250,6 +258,45 @@ const PatientsForm: React.FC<PatientsFormProps> = ({
         </Button>
       </div>
     </form>
+
+    <Modal
+      title={
+        <span>
+          <BellOutlined style={{ marginRight: 8, color: "var(--theme-primary, #0F6F5C)" }} />
+          ¿Notificar para triage?
+        </span>
+      }
+      open={notifyPromptOpen}
+      onCancel={cancelCreate}
+      maskClosable={false}
+      closable={!creating}
+      footer={[
+        <Button
+          key="no"
+          onClick={() => confirmCreate(false)}
+          loading={creatingWithNotify === false}
+          disabled={creating}
+        >
+          No, solo crear
+        </Button>,
+        <Button
+          key="yes"
+          type="primary"
+          onClick={() => confirmCreate(true)}
+          loading={creatingWithNotify === true}
+          disabled={creating}
+        >
+          Sí, notificar
+        </Button>,
+      ]}
+    >
+      <p>¿Desea notificar que este paciente nuevo espera triage?</p>
+      <p style={{ marginBottom: 0, color: "var(--dash-text-tertiary, #8c8c8c)" }}>
+        El aviso les llegará al médico general, al enfermero y al auxiliar de
+        enfermería.
+      </p>
+    </Modal>
+    </>
   );
 };
 

@@ -8,6 +8,7 @@ import {
   formatDateTime,
   type PrintPatient,
 } from "./printDocument.utils";
+import { useAdmissionDischargeDate } from "./useAdmissionDischargeDate";
 import { formatDate, formatTime } from "@/core/utils/date";
 
 interface Props {
@@ -21,6 +22,8 @@ interface Props {
   attentionDate: string;
   attentionTime: string;
   showSex?: boolean;
+  /** Epicrisis: antes del título, fecha de egreso y fecha/hora del proceso. */
+  showProcessDates?: boolean;
 }
 
 export const ClinicalDocumentHeader = ({
@@ -30,93 +33,115 @@ export const ClinicalDocumentHeader = ({
   admissionDate,
   contractName,
   documentTitle,
-  // attentionLabel,
+  attentionLabel,
   attentionDate,
   attentionTime,
   showSex = false,
-}: Props) => (
-  <div className="hci-print-header-block">
-    <div className="hci-print-header">
-      <InstitutionLogo provider={provider} className="hci-print-logo" />
-      <div className="hci-print-entity">
-        <div className="hci-print-entity-name">
-          {provider?.name || "Institución Prestadora de Salud"}
+  showProcessDates = false,
+}: Props) => {
+  const dischargeDate = useAdmissionDischargeDate(admissionId);
+  const dischargeLabel = formatDateTime(dischargeDate ?? "") || emptyDash;
+
+  return (
+    <div className="hci-print-header-block">
+      <div className="hci-print-header">
+        <InstitutionLogo provider={provider} className="hci-print-logo" />
+        <div className="hci-print-entity">
+          <div className="hci-print-entity-name">
+            {provider?.name || "Institución Prestadora de Salud"}
+          </div>
+          {provider?.nit && <div>NIT: {provider.nit}</div>}
+          {provider?.address && <div>Dirección: {provider.address}</div>}
+          {provider?.phone && <div>Tel: {provider.phone}</div>}
+          {provider?.enableCode && (
+            <div>Código de habilitación: {provider.enableCode}</div>
+          )}
         </div>
-        {provider?.nit && <div>NIT: {provider.nit}</div>}
-        {provider?.address && <div>Dirección: {provider.address}</div>}
-        {provider?.phone && <div>Tel: {provider.phone}</div>}
-        {provider?.enableCode && (
-          <div>Código de habilitación: {provider.enableCode}</div>
+        <div className="hci-print-hc-number">
+          <div className="hci-print-hc-number-title">Historia Clínica</div>
+          <div>N° {admissionId ?? emptyDash}</div>
+        </div>
+      </div>
+
+      <div className="hci-print-title">{documentTitle}</div>
+
+      <div className="hci-print-patient-grid">
+        <div className="hci-print-row">
+          <span className="hci-print-label">Documento:</span>
+          <span className="hci-print-value">
+            {patient.documentType} {patient.documentNumber}
+          </span>
+        </div>
+        <div className="hci-print-row">
+          <span className="hci-print-label">Paciente:</span>
+          <span className="hci-print-value">{patient.name?.toUpperCase()}</span>
+        </div>
+        <div className="hci-print-row">
+          <span className="hci-print-label">Ciudad:</span>
+          <span className="hci-print-value">{patient.city || emptyDash}</span>
+        </div>
+        <div className="hci-print-row">
+          <span className="hci-print-label">Fecha de nacimiento:</span>
+          <span className="hci-print-value">{patient.birthDate}</span>
+        </div>
+        <div className="hci-print-row">
+          <span className="hci-print-label">Edad:</span>
+          <span className="hci-print-value">
+            {calculateAge(patient.birthDate)}
+          </span>
+        </div>
+        {showSex && (
+          <div className="hci-print-row">
+            <span className="hci-print-label">Sexo:</span>
+            <span className="hci-print-value">{patient.sex || emptyDash}</span>
+          </div>
+        )}
+        <div className="hci-print-row">
+          <span className="hci-print-label">Convenio:</span>
+          <span className="hci-print-value">{contractName || emptyDash}</span>
+        </div>
+        <div className="hci-print-row">
+          <span className="hci-print-label">Teléfono/Celular:</span>
+          <span className="hci-print-value">{patient.phone || emptyDash}</span>
+        </div>
+        <div className="hci-print-row">
+          <span className="hci-print-label">Servicio:</span>
+          <span className="hci-print-value">{patient.careScope}</span>
+        </div>
+        {/* Las fechas van juntas en su propia fila, se muestre o no "Sexo". */}
+        <div className="hci-print-row hci-print-row--new-line">
+          <span className="hci-print-label">Fecha de admisión:</span>
+          <span className="hci-print-value">
+            {formatDateTime(admissionDate) || emptyDash}
+          </span>
+        </div>
+        {/* En la epicrisis la fecha de egreso va en la línea de fechas de abajo. */}
+        {!showProcessDates && (
+          <div className="hci-print-row">
+            <span className="hci-print-label">Fecha de egreso:</span>
+            <span className="hci-print-value">{dischargeLabel}</span>
+          </div>
         )}
       </div>
-      <div className="hci-print-hc-number">
-        <div className="hci-print-hc-number-title">Historia Clínica</div>
-        <div>N° {admissionId ?? emptyDash}</div>
-      </div>
-    </div>
 
-    <div className="hci-print-title">{documentTitle}</div>
-
-    <div className="hci-print-patient-grid">
-      <div className="hci-print-row">
-        <span className="hci-print-label">Fecha de admisión:</span>
-        <span className="hci-print-value">
-          {formatDateTime(admissionDate) || emptyDash}
-        </span>
-      </div>
-      <div className="hci-print-row">
-        <span className="hci-print-label">Paciente:</span>
-        <span className="hci-print-value">{patient.name?.toUpperCase()}</span>
-      </div>
-      <div className="hci-print-row">
-        <span className="hci-print-label">Documento:</span>
-        <span className="hci-print-value">
-          {patient.documentType} {patient.documentNumber}
-        </span>
-      </div>
-      <div className="hci-print-row">
-        <span className="hci-print-label">Aseguradora:</span>
-        <span className="hci-print-value">{patient.insurer}</span>
-      </div>
-      <div className="hci-print-row">
-        <span className="hci-print-label">Ciudad:</span>
-        <span className="hci-print-value">{patient.city || emptyDash}</span>
-      </div>
-      <div className="hci-print-row">
-        <span className="hci-print-label">Fecha de nacimiento:</span>
-        <span className="hci-print-value">{patient.birthDate}</span>
-      </div>
-      <div className="hci-print-row">
-        <span className="hci-print-label">Edad:</span>
-        <span className="hci-print-value">
-          {calculateAge(patient.birthDate)}
-        </span>
-      </div>
-      {showSex && (
-        <div className="hci-print-row">
-          <span className="hci-print-label">Sexo:</span>
-          <span className="hci-print-value">{patient.sex || emptyDash}</span>
+      {/* Epicrisis: después de los datos del paciente, egreso y fecha del proceso. */}
+      {showProcessDates && (
+        <div className="hci-print-process-dates">
+          <div className="hci-print-row">
+            <span className="hci-print-label">Fecha de egreso:</span>
+            <span className="hci-print-value">{dischargeLabel}</span>
+          </div>
+          <div className="hci-print-row">
+            <span className="hci-print-label">
+              {attentionLabel || "Fecha y hora:"}
+            </span>
+            <span className="hci-print-value">
+              {formatDate(attentionDate, emptyDash)}{" "}
+              {attentionTime ? formatTime(attentionTime, "") : ""}
+            </span>
+          </div>
         </div>
       )}
-      <div className="hci-print-row">
-        <span className="hci-print-label">Convenio:</span>
-        <span className="hci-print-value">{contractName || emptyDash}</span>
-      </div>
-      <div className="hci-print-row">
-        <span className="hci-print-label">Teléfono/Celular:</span>
-        <span className="hci-print-value">{patient.phone || emptyDash}</span>
-      </div>
-      <div className="hci-print-row">
-        <span className="hci-print-label">Servicio:</span>
-        <span className="hci-print-value">{patient.careScope}</span>
-      </div>
     </div>
-
-    {/* <div className="hci-print-row"> */}
-    {/* <span className="hci-print-label">{attentionLabel}</span> */}
-    {/* <span className="hci-print-value">
-        {formatDate(attentionDate, emptyDash)} {formatTime(attentionTime, emptyDash)}
-      </span>
-    </div> */}
-  </div>
-);
+  );
+};

@@ -74,10 +74,11 @@ export const sidebarRecords = [
   { key: "egreso", title: "Nota de Egreso", date: "", count: 0, active: false },
 ]
 
+// Vacíos a propósito: los formularios se precargan con los signos del triage.
 export const defaultEvoVitals: EvoVitalsState = {
-  ta: "120/80", fc: 80, fr: 18,
-  temperature: 36.5, saturation: 98, glasgow: 15,
-  weight: 80, height: 175,
+  ta: "", fc: 0, fr: 0,
+  temperature: 0, saturation: 0, glasgow: 0,
+  weight: 0, height: 0,
 }
 
 export const labelStyle: CSSProperties = {

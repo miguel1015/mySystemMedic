@@ -1,38 +1,49 @@
-"use client"
+"use client";
 
-import { CloseCircleOutlined, EyeOutlined, HeartOutlined, SaveOutlined } from "@ant-design/icons"
-import { Button, Input, InputNumber, Tag, Typography } from "antd"
-import type { MessageInstance } from "antd/es/message/interface"
-import { useEffect, useMemo, useState } from "react"
-import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger"
-import { useCreateEvolucion } from "@/core/hooks/care/evoluciones/useCreateEvolucion"
-import { useUpdateEvolucion } from "@/core/hooks/care/evoluciones/useUpdateEvolucion"
-import type { EvolucionResponse } from "@/core/interfaces/care/hciInicial"
-import type { GetUser } from "@/core/interfaces/user/users"
-import { defaultEvoVitals, labelStyle } from "../constants"
-import type { EvoVitalsState } from "../types"
-import { EvolucionesRecentModal } from "./EvolucionesRecentModal"
-import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal"
-import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument"
-import type { PrintPatient } from "../printPreview/printDocument.utils"
+import {
+  CloseCircleOutlined,
+  EyeOutlined,
+  HeartOutlined,
+  SaveOutlined,
+} from "@ant-design/icons";
+import { Button, Input, InputNumber, Tag, Typography } from "antd";
+import type { MessageInstance } from "antd/es/message/interface";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useAdmissionTriageVitals } from "@/core/hooks/care/triage/useAdmissionTriageVitals";
+import ClinicalRecordHistoryTrigger from "@/components/clinicalRecordHistoryModal/ClinicalRecordHistoryTrigger";
+import { useCreateEvolucion } from "@/core/hooks/care/evoluciones/useCreateEvolucion";
+import { useUpdateEvolucion } from "@/core/hooks/care/evoluciones/useUpdateEvolucion";
+import type { EvolucionResponse } from "@/core/interfaces/care/hciInicial";
+import type { GetUser } from "@/core/interfaces/user/users";
+import { defaultEvoVitals, labelStyle } from "../constants";
+import type { EvoVitalsState } from "../types";
+import { EvolucionesRecentModal } from "./EvolucionesRecentModal";
+import ClinicalPrintPreviewModal from "../printPreview/ClinicalPrintPreviewModal";
+import { GenericClinicalPrintDocument } from "../printPreview/GenericClinicalPrintDocument";
+import type { PrintPatient } from "../printPreview/printDocument.utils";
 
 interface Props {
-  admissionId?: string | number
-  selectedDoctorId?: number
-  selectedDoctor: string
-  onDoctorChange: (doctorId: number | undefined) => void
-  patientName: string
-  messageApi: MessageInstance
-  historyClosed?: boolean
-  patient?: PrintPatient
-  admissionDate?: string
-  contractName?: string
-  doctorUser?: GetUser
+  admissionId?: string | number;
+  selectedDoctorId?: number;
+  selectedDoctor: string;
+  onDoctorChange: (doctorId: number | undefined) => void;
+  patientName: string;
+  messageApi: MessageInstance;
+  historyClosed?: boolean;
+  patient?: PrintPatient;
+  admissionDate?: string;
+  contractName?: string;
+  doctorUser?: GetUser;
 }
 
-const { TextArea } = Input
+const { TextArea } = Input;
 
-const vitalsConfig: Array<{ label: string; key: keyof EvoVitalsState; isString?: boolean; placeholder: string }> = [
+const vitalsConfig: Array<{
+  label: string;
+  key: keyof EvoVitalsState;
+  isString?: boolean;
+  placeholder: string;
+}> = [
   { label: "TA (mmHg)", key: "ta", isString: true, placeholder: "120/80" },
   { label: "FC (lpm)", key: "fc", placeholder: "80" },
   { label: "FR (rpm)", key: "fr", placeholder: "18" },
@@ -41,10 +52,10 @@ const vitalsConfig: Array<{ label: string; key: keyof EvoVitalsState; isString?:
   { label: "Glasgow", key: "glasgow", placeholder: "15" },
   { label: "Peso (kg)", key: "weight", placeholder: "80" },
   { label: "Talla (cm)", key: "height", placeholder: "175" },
-]
+];
 
-const todayDate = () => new Date().toISOString().slice(0, 10)
-const nowTime = () => new Date().toTimeString().slice(0, 8)
+const todayDate = () => new Date().toISOString().slice(0, 10);
+const nowTime = () => new Date().toTimeString().slice(0, 8);
 
 export const EvolutionSection = ({
   admissionId,
@@ -59,7 +70,6 @@ export const EvolutionSection = ({
   contractName = "",
   doctorUser,
 }: Props) => {
-
   const resolvedPatient: PrintPatient = patient ?? {
     name: patientName,
     documentType: "",
@@ -68,59 +78,76 @@ export const EvolutionSection = ({
     birthDate: "",
     sex: "",
     insurer: "",
-  }
+  };
 
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [fechaEvolucion, setFechaEvolucion] = useState(todayDate)
-  const [horaEvolucion, setHoraEvolucion] = useState(nowTime)
-  const [evoMotivo, setEvoMotivo] = useState("")
-  const [evoPlan, setEvoPlan] = useState("")
-  const [evoVitals, setEvoVitals] = useState<EvoVitalsState>({ ...defaultEvoVitals })
-  const [savedImc, setSavedImc] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [fechaEvolucion, setFechaEvolucion] = useState(todayDate);
+  const [horaEvolucion, setHoraEvolucion] = useState(nowTime);
+  const [evoMotivo, setEvoMotivo] = useState("");
+  const [evoPlan, setEvoPlan] = useState("");
+  const [evoVitals, setEvoVitals] = useState<EvoVitalsState>({
+    ...defaultEvoVitals,
+  });
+  const [savedImc, setSavedImc] = useState<number | null>(null);
 
-  const [recentOpen, setRecentOpen] = useState(false)
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewTitle, setPreviewTitle] = useState("Vista previa de la evolución")
-  const [previewFecha, setPreviewFecha] = useState("")
-  const [previewHora, setPreviewHora] = useState("")
-  const [previewDoctor, setPreviewDoctor] = useState("")
-  const [previewMotivo, setPreviewMotivo] = useState("")
-  const [previewVitals, setPreviewVitals] = useState<EvoVitalsState>({ ...defaultEvoVitals })
-  const [previewImc, setPreviewImc] = useState<number | null>(null)
-  const [previewPlan, setPreviewPlan] = useState("")
+  const [recentOpen, setRecentOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewTitle, setPreviewTitle] = useState(
+    "Vista previa de la evolución",
+  );
+  const [previewFecha, setPreviewFecha] = useState("");
+  const [previewHora, setPreviewHora] = useState("");
+  const [previewDoctor, setPreviewDoctor] = useState("");
+  const [previewMotivo, setPreviewMotivo] = useState("");
+  const [previewVitals, setPreviewVitals] = useState<EvoVitalsState>({
+    ...defaultEvoVitals,
+  });
+  const [previewImc, setPreviewImc] = useState<number | null>(null);
+  const [previewPlan, setPreviewPlan] = useState("");
 
-  const createEvolucion = useCreateEvolucion()
-  const updateEvolucion = useUpdateEvolucion()
-  const isSaving = createEvolucion.isPending || updateEvolucion.isPending
+  const createEvolucion = useCreateEvolucion();
+  const updateEvolucion = useUpdateEvolucion();
+  const isSaving = createEvolucion.isPending || updateEvolucion.isPending;
 
   const evoBmi = useMemo(() => {
-    const h = evoVitals.height / 100
-    if (!h || !evoVitals.weight) return ""
-    return (evoVitals.weight / (h * h)).toFixed(1)
-  }, [evoVitals.height, evoVitals.weight])
+    const h = evoVitals.height / 100;
+    if (!h || !evoVitals.weight) return "";
+    return (evoVitals.weight / (h * h)).toFixed(1);
+  }, [evoVitals.height, evoVitals.weight]);
 
-  const reset = () => {
-    setEditingId(null)
-    setFechaEvolucion(todayDate())
-    setHoraEvolucion(nowTime())
-    setEvoMotivo("")
-    setEvoPlan("")
-    setEvoVitals({ ...defaultEvoVitals })
-    setSavedImc(null)
-  }
+  // Una evolución nueva arranca con los signos del triage de la admisión.
+  const { vitals: triageVitals } = useAdmissionTriageVitals(admissionId);
+  const triageVitalsAppliedRef = useRef(false);
 
   useEffect(() => {
-    if (!historyClosed) return
-    reset()
+    if (triageVitalsAppliedRef.current || !triageVitals) return;
+    if (editingId !== null || historyClosed) return;
+    triageVitalsAppliedRef.current = true;
+    setEvoVitals({ ...triageVitals });
+  }, [triageVitals, editingId, historyClosed]);
+
+  const reset = () => {
+    setEditingId(null);
+    setFechaEvolucion(todayDate());
+    setHoraEvolucion(nowTime());
+    setEvoMotivo("");
+    setEvoPlan("");
+    setEvoVitals({ ...(triageVitals ?? defaultEvoVitals) });
+    setSavedImc(null);
+  };
+
+  useEffect(() => {
+    if (!historyClosed) return;
+    reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historyClosed])
+  }, [historyClosed]);
 
   const loadForEdit = (evolucion: EvolucionResponse) => {
-    setEditingId(evolucion.id)
-    setFechaEvolucion(evolucion.fechaEvolucion)
-    setHoraEvolucion(evolucion.horaEvolucion?.slice(0, 8) || "")
-    setEvoMotivo(evolucion.motivoConsulta)
-    setEvoPlan(evolucion.plan)
+    setEditingId(evolucion.id);
+    setFechaEvolucion(evolucion.fechaEvolucion);
+    setHoraEvolucion(evolucion.horaEvolucion?.slice(0, 8) || "");
+    setEvoMotivo(evolucion.motivoConsulta);
+    setEvoPlan(evolucion.plan);
     setEvoVitals({
       ta: evolucion.tensionArterial || "",
       fc: evolucion.frecuenciaCardiaca || 0,
@@ -130,56 +157,62 @@ export const EvolutionSection = ({
       glasgow: evolucion.glasgow || 0,
       weight: evolucion.peso || 0,
       height: evolucion.talla ? evolucion.talla * 100 : 0,
-    })
-    setSavedImc(evolucion.imc ?? null)
-    setRecentOpen(false)
-    onDoctorChange(evolucion.userId)
-  }
+    });
+    setSavedImc(evolucion.imc ?? null);
+    setRecentOpen(false);
+    onDoctorChange(evolucion.userId);
+  };
 
   const openPreview = () => {
-    setPreviewTitle(editingId ? "Vista previa - Evolución (edición)" : "Vista previa de la evolución")
-    setPreviewFecha(fechaEvolucion)
-    setPreviewHora(horaEvolucion)
-    setPreviewDoctor(selectedDoctor)
-    setPreviewMotivo(evoMotivo)
-    setPreviewVitals({ ...evoVitals })
-    setPreviewImc(evoBmi ? Number(evoBmi) : savedImc)
-    setPreviewPlan(evoPlan)
-    setPreviewOpen(true)
-  }
+    setPreviewTitle(
+      editingId
+        ? "Vista previa - Evolución (edición)"
+        : "Vista previa de la evolución",
+    );
+    setPreviewFecha(fechaEvolucion);
+    setPreviewHora(horaEvolucion);
+    setPreviewDoctor(selectedDoctor);
+    setPreviewMotivo(evoMotivo);
+    setPreviewVitals({ ...evoVitals });
+    setPreviewImc(evoBmi ? Number(evoBmi) : savedImc);
+    setPreviewPlan(evoPlan);
+    setPreviewOpen(true);
+  };
 
   const validateAndSave = async () => {
     if (historyClosed) {
-      messageApi.error("La historia clínica inicial está clausurada; no se pueden registrar nuevas evoluciones.")
-      return
+      messageApi.error(
+        "La historia clínica inicial está clausurada; no se pueden registrar nuevas evoluciones.",
+      );
+      return;
     }
 
-    const motivo = evoMotivo.trim()
-    const plan = evoPlan.trim()
+    const motivo = evoMotivo.trim();
+    const plan = evoPlan.trim();
 
     if (!fechaEvolucion) {
-      messageApi.error("La fecha de evolución es obligatoria.")
-      return
+      messageApi.error("La fecha de evolución es obligatoria.");
+      return;
     }
     if (!horaEvolucion) {
-      messageApi.error("La hora de evolución es obligatoria.")
-      return
+      messageApi.error("La hora de evolución es obligatoria.");
+      return;
     }
     if (!motivo) {
-      messageApi.error("El motivo de consulta es obligatorio.")
-      return
+      messageApi.error("El motivo de consulta es obligatorio.");
+      return;
     }
     if (!plan) {
-      messageApi.error("El campo Plan es obligatorio.")
-      return
+      messageApi.error("El campo Plan es obligatorio.");
+      return;
     }
     if (!admissionId) {
-      messageApi.error("No se encontró la admisión asociada a esta evolución.")
-      return
+      messageApi.error("No se encontró la admisión asociada a esta evolución.");
+      return;
     }
     if (!selectedDoctorId) {
-      messageApi.error("Seleccione un médico tratante antes de guardar.")
-      return
+      messageApi.error("Seleccione un médico tratante antes de guardar.");
+      return;
     }
 
     const basePayload = {
@@ -196,29 +229,29 @@ export const EvolutionSection = ({
       peso: evoVitals.weight || null,
       talla: evoVitals.height ? evoVitals.height / 100 : null,
       plan,
-    }
+    };
 
     try {
-      let saved: EvolucionResponse
+      let saved: EvolucionResponse;
       if (editingId) {
         saved = await updateEvolucion.mutateAsync({
           id: editingId,
           data: { ...basePayload, isActive: true },
-        })
-        messageApi.success("Evolución actualizada correctamente")
+        });
+        messageApi.success("Evolución actualizada correctamente");
       } else {
         saved = await createEvolucion.mutateAsync({
           admissionId: Number(admissionId),
           ...basePayload,
-        })
-        messageApi.success("Evolución guardada correctamente")
+        });
+        messageApi.success("Evolución guardada correctamente");
       }
 
-      setPreviewTitle("Evolución guardada")
-      setPreviewFecha(saved.fechaEvolucion)
-      setPreviewHora(saved.horaEvolucion)
-      setPreviewDoctor(saved.nombreProfesional)
-      setPreviewMotivo(saved.motivoConsulta)
+      setPreviewTitle("Evolución guardada");
+      setPreviewFecha(saved.fechaEvolucion);
+      setPreviewHora(saved.horaEvolucion);
+      setPreviewDoctor(saved.nombreProfesional);
+      setPreviewMotivo(saved.motivoConsulta);
       setPreviewVitals({
         ta: saved.tensionArterial || "",
         fc: saved.frecuenciaCardiaca || 0,
@@ -228,20 +261,24 @@ export const EvolutionSection = ({
         glasgow: saved.glasgow || 0,
         weight: saved.peso || 0,
         height: saved.talla ? saved.talla * 100 : 0,
-      })
-      setPreviewImc(saved.imc ?? null)
-      setPreviewPlan(saved.plan)
-      setPreviewOpen(true)
-      reset()
+      });
+      setPreviewImc(saved.imc ?? null);
+      setPreviewPlan(saved.plan);
+      setPreviewOpen(true);
+      reset();
     } catch (err) {
-      messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la evolución.")
+      messageApi.error(
+        err instanceof Error ? err.message : "No se pudo guardar la evolución.",
+      );
     }
-  }
+  };
 
   return (
     <div className="evolution-tab-content evolution-tab-content--full">
       <div className="qx-form-header">
-        <HeartOutlined style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }} />
+        <HeartOutlined
+          style={{ color: "var(--theme-primary, #0f6f5c)", fontSize: 18 }}
+        />
         <Typography.Title level={5} style={{ margin: 0 }}>
           {editingId ? `Editar Evolución #${editingId}` : "Nueva Evolución"}
         </Typography.Title>
@@ -296,14 +333,14 @@ export const EvolutionSection = ({
           <span className="section-title">Motivo de consulta</span>
         </div>
         <label style={labelStyle}>
-          Motivo de consulta <span className="field-required">*</span>
+          Subjetivo - objetivo <span className="field-required">*</span>
         </label>
         <TextArea
           rows={4}
           value={evoMotivo}
           onChange={(e) => setEvoMotivo(e.target.value)}
           placeholder="Registre el motivo de atención o seguimiento del paciente..."
-          maxLength={1000}
+          maxLength={5000}
           showCount
           disabled={historyClosed}
         />
@@ -322,15 +359,19 @@ export const EvolutionSection = ({
                 <Input
                   value={evoVitals[key] as string}
                   placeholder={placeholder}
-                  onChange={(e) => setEvoVitals({ ...evoVitals, [key]: e.target.value })}
+                  onChange={(e) =>
+                    setEvoVitals({ ...evoVitals, [key]: e.target.value })
+                  }
                   disabled={historyClosed}
                 />
               ) : (
                 <InputNumber
                   style={{ width: "100%" }}
-                  value={evoVitals[key] as number}
+                  value={(evoVitals[key] as number) || null}
                   placeholder={placeholder}
-                  onChange={(v) => setEvoVitals({ ...evoVitals, [key]: Number(v) || 0 })}
+                  onChange={(v) =>
+                    setEvoVitals({ ...evoVitals, [key]: Number(v) || 0 })
+                  }
                   disabled={historyClosed}
                 />
               )}
@@ -374,11 +415,17 @@ export const EvolutionSection = ({
 
       <div className="clinical-history-footer-actions">
         {editingId && (
-          <Button icon={<CloseCircleOutlined />} onClick={reset} disabled={historyClosed}>
+          <Button
+            icon={<CloseCircleOutlined />}
+            onClick={reset}
+            disabled={historyClosed}
+          >
             Cancelar edición
           </Button>
         )}
-        <Button onClick={reset} disabled={historyClosed}>Limpiar formulario</Button>
+        <Button onClick={reset} disabled={historyClosed}>
+          Limpiar formulario
+        </Button>
         <Button
           type="primary"
           icon={<SaveOutlined />}
@@ -426,12 +473,26 @@ export const EvolutionSection = ({
                   { label: "TA", value: previewVitals.ta || null },
                   { label: "FC (lpm)", value: previewVitals.fc || null },
                   { label: "FR (rpm)", value: previewVitals.fr || null },
-                  { label: "Temperatura (°C)", value: previewVitals.temperature || null },
-                  { label: "Sat. O₂ (%)", value: previewVitals.saturation || null },
+                  {
+                    label: "Temperatura (°C)",
+                    value: previewVitals.temperature || null,
+                  },
+                  {
+                    label: "Sat. O₂ (%)",
+                    value: previewVitals.saturation || null,
+                  },
                   { label: "Glasgow", value: previewVitals.glasgow || null },
                   { label: "Peso (kg)", value: previewVitals.weight || null },
-                  { label: "Talla (m)", value: previewVitals.height ? previewVitals.height / 100 : null },
-                  { label: "IMC", value: previewImc != null ? `${previewImc} kg/m²` : null },
+                  {
+                    label: "Talla (m)",
+                    value: previewVitals.height
+                      ? previewVitals.height / 100
+                      : null,
+                  },
+                  {
+                    label: "IMC",
+                    value: previewImc != null ? `${previewImc} kg/m²` : null,
+                  },
                 ],
               },
               {
@@ -448,5 +509,5 @@ export const EvolutionSection = ({
         onClick={() => setRecentOpen(true)}
       />
     </div>
-  )
-}
+  );
+};

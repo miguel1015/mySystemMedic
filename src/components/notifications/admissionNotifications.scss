@@ -439,6 +439,9 @@
   &.tone-success {
     --anc-tone: var(--anc-success);
   }
+  &.tone-info {
+    --anc-tone: var(--anc-primary);
+  }
 }
 
 .anc-folder-tab-icon {

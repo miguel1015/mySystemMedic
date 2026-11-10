@@ -4,8 +4,9 @@ import { faBell } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useAdmissionNotificationsContext } from "./AdmissionNotificationsProvider"
 
-// Campana del sidebar: el número es la cantidad de pacientes pendientes de admisión. Se pone
-// roja y pulsa si alguno es urgente. Solo la ven los admisionistas.
+// Campana del sidebar: el número suma los pacientes pendientes de admisión (admisionistas) y
+// los que esperan triage (médico general, enfermero, auxiliar de enfermería). Se pone roja y
+// pulsa si alguna admisión es urgente. Solo la ve quien recibe algún tipo de aviso.
 export default function NotificationBell() {
   const { canReceive, pendingCount, urgentPendingCount, openCenter } =
     useAdmissionNotificationsContext()
@@ -15,7 +16,7 @@ export default function NotificationBell() {
   const label =
     pendingCount === 0
       ? "Notificaciones: sin pacientes pendientes"
-      : `Notificaciones: ${pendingCount} ${pendingCount === 1 ? "paciente pendiente" : "pacientes pendientes"} de admisión`
+      : `Notificaciones: ${pendingCount} ${pendingCount === 1 ? "paciente pendiente" : "pacientes pendientes"}`
 
   return (
     <button

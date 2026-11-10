@@ -1,6 +1,6 @@
 import { Modal } from "antd";
 import type { MessageInstance } from "antd/es/message/interface";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useCreateAnalisisDiagnosticosPlanHCInicial,
   useUpdateAnalisisDiagnosticosPlanHCInicial,
@@ -23,6 +23,10 @@ import {
 } from "@/core/hooks/care/hciInicial/useSaveSubjetivo";
 import { useGetHCInicialByAdmission } from "@/core/hooks/care/hciInicial/useGetHCInicialByAdmission";
 import {
+  emptyClinicalVitals,
+  useAdmissionTriageVitals,
+} from "@/core/hooks/care/triage/useAdmissionTriageVitals";
+import {
   antecedentesFields,
   defaultAntecedentes,
   defaultPhysicalExam,
@@ -36,16 +40,8 @@ import type {
   VitalsState,
 } from "../../types";
 
-const defaultVitals: VitalsState = {
-  ta: "120/80",
-  fc: 80,
-  fr: 18,
-  temperature: 36.5,
-  saturation: 98,
-  glasgow: 15,
-  weight: 80,
-  height: 175,
-};
+// Sin valores inventados: una HC nueva se precarga con los signos del triage.
+const defaultVitals: VitalsState = { ...emptyClinicalVitals };
 
 const defaultSubjective: SubjectiveState = {
   motivoConsulta: "",
@@ -111,8 +107,13 @@ export const useHciInicialForm = ({
   const [savingAnalisis, setSavingAnalisis] = useState(false);
   const [closingHistoria, setClosingHistoria] = useState(false);
 
-  const { data: existingHCInicial, refetch: refetchHCInicial } =
-    useGetHCInicialByAdmission(admissionId);
+  const {
+    data: existingHCInicial,
+    refetch: refetchHCInicial,
+    isFetched: hcInicialFetched,
+  } = useGetHCInicialByAdmission(admissionId);
+  const { vitals: triageVitals } = useAdmissionTriageVitals(admissionId);
+  const triageVitalsAppliedRef = useRef(false);
 
   const createSubjetivo = useCreateSubjetivoHCInicial();
   const updateSubjetivo = useUpdateSubjetivoHCInicial();
@@ -198,7 +199,7 @@ export const useHciInicialForm = ({
           cie10Id: d.id,
           code: d.codigo,
           diagnosis: d.descripcion,
-          main: false,
+          confirmed: d.confirmado === true,
         })),
       );
     }
@@ -206,6 +207,16 @@ export const useHciInicialForm = ({
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingHCInicial, hydrated]);
+
+  // Mientras la HC no tenga signos vitales guardados, se precargan los del
+  // triage de la admisión (una sola vez, para no pisar lo que digite el médico).
+  useEffect(() => {
+    if (triageVitalsAppliedRef.current || !triageVitals) return;
+    if (!hcInicialFetched || isLocked) return;
+    if (existingHCInicial?.signosVitales) return;
+    triageVitalsAppliedRef.current = true;
+    setVitals({ ...triageVitals });
+  }, [triageVitals, hcInicialFetched, isLocked, existingHCInicial]);
 
   useEffect(() => {
     if (!isLocked) return;
@@ -461,7 +472,10 @@ export const useHciInicialForm = ({
       messageApi.error("El plan es obligatorio.");
       return;
     }
-    const hasMain = diagnoses.some((item) => item.main && item.cie10Id);
+    // El diagnóstico principal es el primero de la tabla.
+    const hasMain = diagnoses.length > 0 && !!diagnoses[0].cie10Id;
+    const cie10Ids = diagnoses.map((d) => d.cie10Id).filter((id): id is number => id != null);
+    const hasDuplicates = new Set(cie10Ids).size !== cie10Ids.length;
     const hasIncomplete = diagnoses.some(
       (item) => !item.cie10Id || !item.diagnosis,
     );
@@ -471,6 +485,10 @@ export const useHciInicialForm = ({
     }
     if (hasIncomplete) {
       messageApi.warning("Complete o elimine los diagnósticos incompletos.");
+      return;
+    }
+    if (hasDuplicates) {
+      messageApi.warning("Hay diagnósticos repetidos. Elimine los duplicados.");
       return;
     }
     if (!admissionId) {
@@ -485,9 +503,9 @@ export const useHciInicialForm = ({
       const payload = {
         analisis: analysis || null,
         plan: plan || null,
-        idsCie10: diagnoses
-          .map((d) => d.cie10Id)
-          .filter((id): id is number => id != null),
+        diagnosticos: diagnoses
+          .filter((d) => d.cie10Id != null)
+          .map((d) => ({ idCie10: d.cie10Id as number, confirmado: d.confirmed })),
       };
       const saved = analisisId
         ? await updateAnalisis.mutateAsync({

@@ -148,13 +148,13 @@ export const MedicalNotesSection = ({
       messageApi.success(
         editingId ? "Nota médica actualizada correctamente" : `Nota médica guardada para ${patientName}.`,
       )
-      setEditingId(saved.id)
       setPreviewTitle("Nota médica guardada")
       setPreviewFecha(saved.fechaNota)
       setPreviewHora(saved.horaNota)
       setPreviewNota(saved.nota)
       setPreviewDoctor(saved.nombreProfesional)
       setPreviewOpen(true)
+      reset()
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "No se pudo guardar la nota médica.")
     }

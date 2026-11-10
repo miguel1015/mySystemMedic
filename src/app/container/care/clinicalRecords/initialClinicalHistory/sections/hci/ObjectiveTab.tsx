@@ -1,7 +1,7 @@
 "use client"
 
 import { HistoryOutlined } from "@ant-design/icons"
-import { Button, Input, InputNumber, Typography } from "antd"
+import { Button, Checkbox, Input, InputNumber, Typography } from "antd"
 import { useMemo, useState } from "react"
 import { antecedentesFields, labelStyle, physicalExamFields, sectionCardStyle } from "../../constants"
 import type { AntecedentesState, PhysicalExamState, VitalsState } from "../../types"
@@ -37,6 +37,10 @@ const vitalsConfig: Array<{
   { label: "Talla cm", key: "height", min: 0, max: 300 },
 ]
 
+const NORMAL_TEXT = "Normal"
+// El check refleja el texto: si el médico edita el campo, deja de estar marcado.
+const isNormal = (value?: string) => value?.trim().toLowerCase() === NORMAL_TEXT.toLowerCase()
+
 export const ObjectiveTab = ({
   vitals,
   onVitalsChange,
@@ -68,12 +72,29 @@ export const ObjectiveTab = ({
                 <span style={{ fontSize: 13, fontWeight: 700, color: "var(--dash-text-secondary, #344054)" }}>
                   {label} <span className="field-required">*</span>
                 </span>
-                <Input
-                  size="small"
-                  value={physicalExam[key]}
-                  onChange={(e) => onPhysicalExamChange({ ...physicalExam, [key]: e.target.value })}
-                  disabled={disabled}
-                />
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                  <Input
+                    size="small"
+                    value={physicalExam[key]}
+                    onChange={(e) => onPhysicalExamChange({ ...physicalExam, [key]: e.target.value })}
+                    disabled={disabled}
+                    style={{ flex: 1, minWidth: 0 }}
+                  />
+                  {/* Atajo: escribe "Normal" en el campo, que sigue siendo editable. */}
+                  <Checkbox
+                    checked={isNormal(physicalExam[key])}
+                    onChange={(e) =>
+                      onPhysicalExamChange({
+                        ...physicalExam,
+                        [key]: e.target.checked ? NORMAL_TEXT : "",
+                      })
+                    }
+                    disabled={disabled}
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    Normal
+                  </Checkbox>
+                </div>
               </div>
             ))}
           </div>
@@ -94,7 +115,7 @@ export const ObjectiveTab = ({
                 ) : (
                   <InputNumber
                     style={{ width: "100%" }}
-                    value={vitals[key] as number}
+                    value={(vitals[key] as number) || null}
                     min={min}
                     max={max}
                     step={step ?? 1}

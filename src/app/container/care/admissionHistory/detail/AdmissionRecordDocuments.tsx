@@ -176,12 +176,12 @@ export function AdmissionRecordDocuments({
     historia: () => {
       const hci = record.hcInicial
       const diagnoses: DiagnosisRow[] = (hci?.analisisDiagnosticosPlan?.diagnosticos ?? []).map(
-        (d, idx) => ({
+        (d) => ({
           id: d.id,
           cie10Id: d.id,
           code: d.codigo,
           diagnosis: d.descripcion,
-          main: idx === 0,
+          confirmed: d.confirmado === true,
         }),
       )
       return (

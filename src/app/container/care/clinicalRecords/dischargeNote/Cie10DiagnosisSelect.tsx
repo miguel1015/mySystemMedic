@@ -11,10 +11,13 @@ interface Props {
   disabled?: boolean
   allowClear?: boolean
   style?: React.CSSProperties
+  /** Texto del diagnóstico ya elegido, para mostrarlo sin haber buscado. */
+  selectedLabel?: string
 }
 
 export const Cie10DiagnosisSelect = ({
   value,
+  selectedLabel,
   onSelect,
   placeholder,
   disabled,
@@ -52,10 +55,15 @@ export const Cie10DiagnosisSelect = ({
     onSelect(id, found?.codigo ?? "", found?.descripcion ?? "")
   }
 
-  const selectOptions = useMemo(
-    () => options.map((o) => ({ value: o.id, label: `${o.codigo} - ${o.descripcion}` })),
-    [options],
-  )
+  // Si ya hay un diagnóstico elegido (p. ej. cargado de un registro guardado) que no está en
+  // los resultados de búsqueda, se agrega para que el select muestre su texto y no el id.
+  const selectOptions = useMemo(() => {
+    const list = options.map((o) => ({ value: o.id, label: `${o.codigo} - ${o.descripcion}` }))
+    if (value && selectedLabel && !list.some((o) => o.value === value)) {
+      list.unshift({ value, label: selectedLabel })
+    }
+    return list
+  }, [options, value, selectedLabel])
 
   return (
     <Select

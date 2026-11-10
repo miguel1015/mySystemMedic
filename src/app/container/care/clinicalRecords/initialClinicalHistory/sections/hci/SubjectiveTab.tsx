@@ -47,7 +47,7 @@ export const SubjectiveTab = ({
           disabled={disabled}
         />
       </div>
-      <div>
+      <div style={{ gridColumn: "1" }}>
         <label style={labelStyle}>Motivo de consulta <span className="field-required">*</span></label>
         <Input
           value={value.motivoConsulta}

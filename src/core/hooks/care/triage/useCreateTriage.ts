@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { create } from "@/core/api/baseService"
 import { ENDPOINTS } from "@/core/api/endpoints"
 import { ADMISSION_NOTIFICATIONS_QUERY_KEY } from "@/core/hooks/notifications/useAdmissionNotifications"
+import { TRIAGE_NOTIFICATIONS_QUERY_KEY } from "@/core/hooks/notifications/useTriageNotifications"
 import {
   TriageCreateRequest,
   TriageResponse,
@@ -23,6 +24,8 @@ export function useCreateTriage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["triages"] })
       queryClient.invalidateQueries({ queryKey: ADMISSION_NOTIFICATIONS_QUERY_KEY })
+      // El aviso de "paciente por triage" queda atendido con este triage.
+      queryClient.invalidateQueries({ queryKey: TRIAGE_NOTIFICATIONS_QUERY_KEY })
     },
   })
 }

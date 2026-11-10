@@ -21,6 +21,7 @@ interface Props {
   contractName: string;
   doctorName: string;
   doctorUser?: GetUser;
+  showProcessDates?: boolean;
   hcInicial?: HCInicialResponse | null;
   diagnoses: DiagnosisRow[];
 }
@@ -35,6 +36,7 @@ export const HciPrintDocument = ({
   contractName,
   doctorName,
   doctorUser,
+  showProcessDates,
   hcInicial,
   diagnoses,
 }: Props) => {
@@ -42,7 +44,7 @@ export const HciPrintDocument = ({
   const objetivo = hcInicial?.objetivo;
   const vitales = hcInicial?.signosVitales;
   const analisisPlan = hcInicial?.analisisDiagnosticosPlan;
-  const mainDiagnosis = diagnoses.find((d) => d.main && d.code);
+  const mainDiagnosis = diagnoses.find((d) => !!d.code);
 
   const headerBlock = (
     <ClinicalDocumentHeader
@@ -55,6 +57,7 @@ export const HciPrintDocument = ({
       attentionLabel="Fecha y hora de atención:"
       attentionDate={attentionDate}
       attentionTime={attentionTime}
+      showProcessDates={showProcessDates}
     />
   );
 
@@ -185,7 +188,7 @@ export const HciPrintDocument = ({
           sectionTitle: "Diagnóstico(s)",
           isFirst: idx === 0,
           label:
-            mainDiagnosis?.code === d.codigo
+            idx === 0
               ? "Diagnóstico Principal"
               : `Diagnóstico ${idx + 1}`,
           value: `${d.codigo} – ${d.descripcion}`,
@@ -218,12 +221,6 @@ export const HciPrintDocument = ({
       node: (
         <div className="hci-print-signatures">
           <DoctorSignatureBox doctorName={doctorName} doctorUser={doctorUser} />
-          <div className="hci-print-signature-box">
-            <div className="hci-print-signature-img" />
-            <div className="hci-print-signature-line">
-              Paciente / Responsable
-            </div>
-          </div>
         </div>
       ),
     });

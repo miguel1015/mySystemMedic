@@ -55,12 +55,6 @@ export const NotaMedicaPrintDocument = ({
 
       <div className="hci-print-signatures">
         <DoctorSignatureBox doctorName={doctorName} doctorUser={doctorUser} />
-        <div className="hci-print-signature-box">
-          <div className="hci-print-signature-img" />
-          <div className="hci-print-signature-line">
-            Paciente / Responsable
-          </div>
-        </div>
       </div>
     </div>
   </div>

@@ -80,11 +80,13 @@ const priorityLabels: Record<number, { label: string; color: string }> = {
 interface TriageFormProps {
   mode?: TriageFormMode;
   initialTriage?: TriageResponse | null;
+  prefillDocument?: string;
 }
 
 export default function TriageForm({
   mode = "create",
   initialTriage = null,
+  prefillDocument,
 }: TriageFormProps) {
   const {
     control,
@@ -103,7 +105,7 @@ export default function TriageForm({
     notifyingAdmission,
     confirmAdmit,
     cancelAdmit,
-  } = useTriageForm({ mode, initialTriage });
+  } = useTriageForm({ mode, initialTriage, prefillDocument });
 
   const isEdit = mode === "edit";
   const showFormBody = isEdit ? !!editingTriage : !!patient;
@@ -171,7 +173,7 @@ export default function TriageForm({
               <Button
                 type="primary"
                 size="large"
-                onClick={handleSearchPatient}
+                onClick={() => handleSearchPatient()}
                 loading={searching}
                 icon={<SearchOutlined />}
               >

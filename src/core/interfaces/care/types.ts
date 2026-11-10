@@ -28,6 +28,8 @@ export interface PatientData {
   bloodGroupId: number;
   rhFactorId: number;
   isActive?: boolean;
+  // Solo al crear: avisar al personal asistencial que el paciente espera triage.
+  notifyTriage?: boolean;
 }
 
 export interface GetPatient extends PatientData {

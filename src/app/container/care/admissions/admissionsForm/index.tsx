@@ -254,8 +254,9 @@ export default function AdmissionsForm({
               <Input
                 type="datetime-local"
                 name="admissionDate"
-                label="Fecha de admision"
+                label={isEdit ? "Fecha de admision" : "Fecha de admision (triage)"}
                 control={control}
+                disabled={!isEdit}
               />
               <SelectAutocomplete
                 name="careModality"
@@ -320,7 +321,7 @@ export default function AdmissionsForm({
               />
               <SelectAutocomplete
                 name="insurerId"
-                label="EPS / Aseguradora"
+                label="Contrato"
                 placeholder="Seleccione"
                 control={control}
                 options={insurerOptions}
