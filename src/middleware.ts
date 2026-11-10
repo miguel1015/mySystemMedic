@@ -1,22 +1,23 @@
 import { withAuth } from "next-auth/middleware";
+import { SESSION_IDLE_MINUTES } from "@/core/auth/sessionConfig";
 
+// El middleware solo decodifica la cookie (no ejecuta el callback jwt ni puede
+// renovar). Un access token vencido no basta para sacar al usuario: mientras siga
+// siendo renovable (vencido hace menos que la ventana de inactividad y dentro del
+// tope absoluto), la página carga y la renovación ocurre en el servidor/cliente.
 export default withAuth({
   callbacks: {
     authorized({ token }) {
-      // Si no hay token, no está autorizado
-      if (!token) return false;
+      if (!token?.accessToken || token.error) return false;
 
-      // Si el token tiene la marca de expirado (puesta en authOptions), forzamos logout
-      if (token.expired) {
+      const now = Date.now();
+
+      const sessionEnd = token.sessionExpiresAt ? Date.parse(token.sessionExpiresAt) : NaN;
+      if (Number.isFinite(sessionEnd) && sessionEnd <= now) return false;
+
+      const expiresAt = token.expiresAt ? Date.parse(token.expiresAt) : NaN;
+      if (Number.isFinite(expiresAt) && expiresAt + SESSION_IDLE_MINUTES * 60_000 <= now) {
         return false;
-      }
-
-      // Verificación adicional por fecha si existe expiresAt
-      if (token.expiresAt) {
-        const expiresAt = new Date(token.expiresAt as string);
-        if (expiresAt < new Date()) {
-          return false;
-        }
       }
 
       return true;

@@ -1,6 +1,82 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";
+import { SESSION_MAX_HOURS, REFRESH_BEFORE_MS } from "@/core/auth/sessionConfig";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+interface BackendAuthResponse {
+  accessToken: string;
+  expiresAt: string;
+  sessionExpiresAt?: string;
+}
+
+// El backend devuelve fechas UTC sin "Z"; se normalizan para que Date las lea como UTC.
+function toIso(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const hasZone = /[zZ]|[+-]\d{2}:?\d{2}$/.test(value);
+  return new Date(hasZone ? value : `${value}Z`).toISOString();
+}
+
+function fallbackSessionEnd(): string {
+  return new Date(Date.now() + SESSION_MAX_HOURS * 3600_000).toISOString();
+}
+
+/* =========================================================================
+ * Renovación del access token contra MediNexus (/api/auth/refresh).
+ * Devuelve null si el backend rechaza el token (sesión vencida, usuario
+ * inactivo, tope absoluto). Lanza si el backend no responde (red, cold start),
+ * para no cerrar la sesión por un fallo pasajero.
+ * ========================================================================= */
+async function refreshAccessToken(accessToken: string): Promise<BackendAuthResponse | null> {
+  try {
+    const { data } = await axios.post<BackendAuthResponse>(
+      `${API_URL}/api/auth/refresh`,
+      { AccessToken: accessToken },
+      { timeout: 15000 },
+    );
+    return data?.accessToken ? data : null;
+  } catch (error) {
+    if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 400)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+async function renewIfNeeded(token: JWT): Promise<JWT> {
+  if (token.error || !token.accessToken) return token;
+
+  const now = Date.now();
+  const sessionEnd = token.sessionExpiresAt ? Date.parse(token.sessionExpiresAt) : NaN;
+  if (Number.isFinite(sessionEnd) && sessionEnd <= now) {
+    return { ...token, error: "SessionExpired" };
+  }
+
+  const expiresAt = token.expiresAt ? Date.parse(token.expiresAt) : NaN;
+  if (Number.isFinite(expiresAt) && expiresAt - now > REFRESH_BEFORE_MS) {
+    return token;
+  }
+
+  try {
+    const renewed = await refreshAccessToken(token.accessToken);
+    if (!renewed) return { ...token, error: "RefreshFailed" };
+
+    const user = token.user ? { ...token.user, accessToken: renewed.accessToken } : token.user;
+    return {
+      ...token,
+      user,
+      accessToken: renewed.accessToken,
+      expiresAt: toIso(renewed.expiresAt),
+      sessionExpiresAt: toIso(renewed.sessionExpiresAt) ?? token.sessionExpiresAt,
+    };
+  } catch (error) {
+    // Backend caído o lento: se conserva el token y se reintenta en la próxima llamada.
+    console.error("[auth] refresh failed (transient):", axios.isAxiosError(error) ? error.message : error);
+    return token;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -17,18 +93,16 @@ export const authOptions: NextAuthOptions = {
         try {
           const { username, password } = credentials;
 
-          const loginUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`;
-          const { data } = await axios.post(loginUrl, {
+          const { data } = await axios.post<BackendAuthResponse>(`${API_URL}/api/auth/login`, {
             Username: username,
             Password: password,
           });
 
           if (!data?.accessToken) return null;
 
-          const { data: me } = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
-            { headers: { Authorization: `Bearer ${data.accessToken}` } }
-          );
+          const { data: me } = await axios.get(`${API_URL}/api/users/me`, {
+            headers: { Authorization: `Bearer ${data.accessToken}` },
+          });
 
           return {
             id: String(me.id),
@@ -42,12 +116,13 @@ export const authOptions: NextAuthOptions = {
             userProfileName: me.userProfileName,
             statusId: me.userStatusId,
             accessToken: data.accessToken,
-            expiresAt: data.expiresAt,
+            expiresAt: toIso(data.expiresAt),
+            sessionExpiresAt: toIso(data.sessionExpiresAt) ?? fallbackSessionEnd(),
           };
         } catch (error) {
           if (axios.isAxiosError(error)) {
             console.error("[authorize] login failed:", {
-              url: `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+              url: `${API_URL}/api/auth/login`,
               status: error.response?.status,
               data: error.response?.data,
               message: error.message,
@@ -61,40 +136,48 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
-  session: { strategy: "jwt" },
+  // La cookie de NextAuth no vive más que el tope absoluto de la sesión.
+  session: { strategy: "jwt", maxAge: SESSION_MAX_HOURS * 3600 },
 
   callbacks: {
     /* =====================================================
-     * 🔹 JWT CALLBACK — NO ROMPAS LA EJECUCIÓN
+     * JWT: renueva el access token cuando está por vencer.
+     * Solo queda persistido cuando lo llama /api/auth/session
+     * (getSession en el navegador); getServerSession renueva
+     * en memoria para esa petición sin reescribir la cookie.
      * ===================================================== */
     async jwt({ token, user }) {
       if (user) {
-        token.user = user;
-        token.accessToken = user.accessToken;
-        token.expiresAt = user.expiresAt;
-        return token;
+        return {
+          ...token,
+          user,
+          accessToken: user.accessToken,
+          expiresAt: user.expiresAt,
+          sessionExpiresAt: user.sessionExpiresAt ?? fallbackSessionEnd(),
+          error: undefined,
+        };
       }
 
-      const expiresAt = token.expiresAt as string | undefined;
-      if (!expiresAt || new Date(expiresAt) < new Date()) {
-        token.expired = true;
-      }
+      // Sesiones creadas antes de este cambio no traen tope absoluto.
+      if (!token.sessionExpiresAt) token.sessionExpiresAt = fallbackSessionEnd();
 
-      return token;
+      return renewIfNeeded(token);
     },
 
     /* =====================================================
-     * 🔹 SESSION CALLBACK — SOLO LEE DEL TOKEN, SIN HTTP
+     * SESSION: solo lee del token, sin HTTP.
      * ===================================================== */
     async session({ session, token }) {
-      if (token.expired || !token.accessToken || !token.user) {
+      if (token.error || !token.accessToken || !token.user) {
+        session.error = token.error ?? "SessionExpired";
         return session;
       }
 
       session.user = {
         ...token.user,
         accessToken: String(token.accessToken),
-        expiresAt: String(token.expiresAt),
+        expiresAt: token.expiresAt,
+        sessionExpiresAt: token.sessionExpiresAt,
       };
 
       return session;

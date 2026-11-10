@@ -19,6 +19,7 @@ import {
   User,
 } from "lucide-react";
 import styles from "./login.module.scss";
+import type { SessionEndReason } from "@/core/auth/sessionConfig";
 
 const loginSchema = z.object({
   username: z.string().trim().min(1, "Usuario es requerido"),
@@ -30,9 +31,15 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 interface LoginProps {
   callbackUrl: string;
   hasCallbackParam?: boolean;
+  endReason?: SessionEndReason;
 }
 
-export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
+const END_REASON_MESSAGES: Record<SessionEndReason, string> = {
+  idle: "Cerramos tu sesión por inactividad. Inicia sesión nuevamente para continuar.",
+  expired: "Tu sesión ha expirado, por favor inicia sesión nuevamente",
+};
+
+export default function Login({ callbackUrl, hasCallbackParam, endReason }: LoginProps) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -46,11 +53,18 @@ export default function Login({ callbackUrl, hasCallbackParam }: LoginProps) {
   });
 
   useEffect(() => {
-    if (hasCallbackParam) {
-      toast.error("Tu sesión ha expirado, por favor inicia sesión nuevamente");
-      router.replace("/login", { scroll: false });
+    if (endReason || hasCallbackParam) {
+      toast.error(END_REASON_MESSAGES[endReason ?? "expired"], {
+        id: "session-ended",
+        duration: 6000,
+      });
+      // Conserva callbackUrl para volver a la pantalla donde estaba trabajando.
+      const query = hasCallbackParam ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : "";
+      router.replace(`/login${query}`, { scroll: false });
     }
-  }, [hasCallbackParam, router]);
+    // Solo al montar: el replace quita "reason" y no debe volver a avisar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmit = async (data: LoginFormValues) => {
     setLoading(true);
