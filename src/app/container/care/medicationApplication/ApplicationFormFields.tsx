@@ -104,7 +104,7 @@ const ApplicationFormFields = ({
           </span>
           <InputNumber
             min={1}
-            max={maxUnd}
+            max={Number.isFinite(maxUnd) ? maxUnd : undefined}
             precision={0}
             value={unidades}
             status={showErrors && (unidades === null || unidades <= 0 || unidades > maxUnd) ? "error" : undefined}

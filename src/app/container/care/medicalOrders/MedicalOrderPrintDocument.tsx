@@ -130,7 +130,8 @@ export const MedicalOrderPrintDocument = ({
                 <span>{item.codigo}</span>
                 <span>{item.descripcion}</span>
                 <span className="mo-print-qty">
-                  {item.cantidad}
+                  {/* Medicamentos nuevos: sin cantidad total, vigentes hasta suspender. */}
+                  {item.cantidad > 0 ? item.cantidad : "—"}
                   {item.unidadMedida ? ` ${item.unidadMedida}` : ""}
                 </span>
                 <span>{describeIndicaciones(item) || emptyDash}</span>

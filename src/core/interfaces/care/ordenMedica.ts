@@ -28,6 +28,8 @@ export const ESTADOS_ORDEN_ITEM = [
   "Aplicada",
   "Vencida",
   "Cancelada",
+  // El médico retiró el concepto: deja de admitir aplicaciones.
+  "Suspendida",
 ] as const
 
 export type EstadoOrdenItem = (typeof ESTADOS_ORDEN_ITEM)[number]
@@ -57,12 +59,12 @@ export interface UnidadMedida {
 export interface OrdenMedicaItemRequest {
   conceptoTipo: ConceptoOrdenTipo
   conceptoId: number
-  cantidad: number
+  // Sin cantidad ni duración: el servidor guarda los medicamentos sin tope
+  // (vigentes hasta suspenderlos) y los demás conceptos con cantidad 1.
   indicaciones?: string
   unidadMedida?: string | null
   viaAdministracionCodigo?: string | null
   frecuenciaHoras?: number | null
-  duracionDias?: number | null
 }
 
 export interface OrdenMedicaRequest {

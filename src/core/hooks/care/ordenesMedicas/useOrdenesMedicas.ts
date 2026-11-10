@@ -84,6 +84,21 @@ export function useActualizarOrdenMedica() {
   })
 }
 
+// Suspende un concepto de una orden vigente: deja de admitir aplicaciones.
+// También refresca la pantalla de aplicación, que muestra el mismo concepto.
+export function useSuspenderItemOrden() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ itemId }: { itemId: number }) =>
+      create<OrdenMedica, Record<string, never>>(ENDPOINTS.ORDENES_MEDICAS.SUSPENDER_ITEM(itemId), {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: BY_ADMISSION_KEY })
+      queryClient.invalidateQueries({ queryKey: ["aplicaciones-ordenes", "by-admission"] })
+    },
+  })
+}
+
 export function useAnularOrdenMedica() {
   const queryClient = useQueryClient()
 

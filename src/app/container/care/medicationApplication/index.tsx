@@ -49,6 +49,7 @@ import EditApplicationModal from "./EditApplicationModal"
 import MedicationApplicationPrintPreviewModal from "./MedicationApplicationPrintPreviewModal"
 import {
   consumoDe,
+  disponibleDe,
   errorMessage,
   formatDateTime,
   formatQty,
@@ -71,6 +72,7 @@ const ESTADO_COLORS: Record<EstadoOrdenItem, string> = {
   Aplicada: "green",
   Vencida: "red",
   Cancelada: "default",
+  Suspendida: "orange",
 }
 
 // En medicamentos la dosis es libre y la diligencia quien aplica; en estudios y
@@ -79,7 +81,9 @@ const suggestedQuantity = (orden: OrdenActiva) =>
   isMedicine(orden) || orden.cantidadPendiente <= 0 ? null : Math.min(1, orden.cantidadPendiente)
 
 const suggestedUnidades = (orden: OrdenActiva) =>
-  isMedicine(orden) && maxUnidades(orden.cantidadPendiente) > 0 ? 1 : null
+  isMedicine(orden) && maxUnidades(disponibleDe(orden)) > 0 ? 1 : null
+
+const SIN_TOPE_LABEL = "Sin tope (hasta suspender)"
 
 const MedicationApplicationContainer = () => {
   const router = useRouter()
@@ -216,7 +220,7 @@ const MedicationApplicationContainer = () => {
       return
     }
 
-    const errors = validateAplicacion(selected, values, selected.cantidadPendiente)
+    const errors = validateAplicacion(selected, values, disponibleDe(selected))
     setValidationErrors(errors)
     if (errors.length > 0) {
       messageApi.error("Revise la información de la aplicación.")
@@ -231,7 +235,9 @@ const MedicationApplicationContainer = () => {
 
       const pendiente = actualizada?.cantidadPendiente ?? 0
       messageApi.success(
-        pendiente > 0
+        actualizada?.sinTope
+          ? "Aplicación registrada."
+          : pendiente > 0
           ? `${isMedicine(selected) ? "Aplicación" : "Realización"} registrada. Pendiente: ${formatQty(pendiente)} unidad(es).`
           : "Registro exitoso. La orden quedó completamente aplicada.",
       )
@@ -440,9 +446,9 @@ const MedicationApplicationContainer = () => {
         </div>
         <div>{isMedicine(orden) ? detalleMedicamento : `Cant.: ${formatQty(orden.cantidad)}`}</div>
         <div className="ma-order-progress">
-          {isMedicine(orden) ? "Aplicadas" : "Realizadas"}: {formatQty(orden.cantidadAplicada)}/
-          {formatQty(orden.cantidad)}
-          {orden.cantidadPendiente > 0 && ` · Pendiente: ${formatQty(orden.cantidadPendiente)}`}
+          {isMedicine(orden) ? "Aplicadas" : "Realizadas"}: {formatQty(orden.cantidadAplicada)}
+          {orden.sinTope ? ` · ${SIN_TOPE_LABEL}` : `/${formatQty(orden.cantidad)}`}
+          {!orden.sinTope && orden.cantidadPendiente > 0 && ` · Pendiente: ${formatQty(orden.cantidadPendiente)}`}
         </div>
       </button>
     )
@@ -575,7 +581,9 @@ const MedicationApplicationContainer = () => {
                       {
                         key: "ordenada",
                         label: "Cantidad ordenada",
-                        children: isMedicine(selected)
+                        children: selected.sinTope
+                          ? SIN_TOPE_LABEL
+                          : isMedicine(selected)
                           ? `${formatQty(selected.cantidad)} unidad(es)`
                           : formatQty(selected.cantidad),
                       },
@@ -585,7 +593,9 @@ const MedicationApplicationContainer = () => {
                       {
                         key: "pendiente",
                         label: "Aplicada / pendiente",
-                        children: `${formatQty(selected.cantidadAplicada)} / ${formatQty(selected.cantidadPendiente)}`,
+                        children: selected.sinTope
+                          ? `${formatQty(selected.cantidadAplicada)} / sin tope`
+                          : `${formatQty(selected.cantidadAplicada)} / ${formatQty(selected.cantidadPendiente)}`,
                       },
                       ...(isMedicine(selected)
                         ? [
@@ -658,7 +668,7 @@ const MedicationApplicationContainer = () => {
                         orden={selected}
                         values={values}
                         onChange={patchValues}
-                        disponible={selected.cantidadPendiente}
+                        disponible={disponibleDe(selected)}
                         showErrors={showErrors}
                         viaOptions={viaOptions}
                         loadingVias={loadingVias}

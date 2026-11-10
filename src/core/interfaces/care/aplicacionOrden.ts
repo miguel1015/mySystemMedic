@@ -57,6 +57,8 @@ export interface OrdenActiva {
   fechaVencimiento?: string | null
   indicaciones?: string | null
   cantidadAplicada: number
+  // Medicamento sin cantidad total (órdenes nuevas): admite dosis hasta que se suspenda.
+  sinTope?: boolean
   cantidadPendiente: number
   estado: EstadoOrdenItem
   aplicaciones: AplicacionOrden[]

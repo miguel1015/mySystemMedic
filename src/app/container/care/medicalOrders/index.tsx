@@ -12,6 +12,7 @@ import {
   useGetOrdenesMedicasByAdmission,
   useGetUnidadesMedida,
   useGetViasAdministracion,
+  useSuspenderItemOrden,
 } from "@/core/hooks/care/ordenesMedicas/useOrdenesMedicas"
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
 import {
@@ -22,6 +23,7 @@ import {
   type ConceptoOrdenTipo,
   type EstadoOrdenItem,
   type OrdenMedica,
+  type OrdenMedicaItem,
   type OrdenMedicaItemRequest,
   type OrdenMedicaRequest,
   type TipoOrden,
@@ -32,6 +34,7 @@ import {
   EditOutlined,
   FileAddOutlined,
   HistoryOutlined,
+  PauseCircleOutlined,
   PlusOutlined,
   PrinterOutlined,
   SaveOutlined,
@@ -66,7 +69,6 @@ import { formatDateTime } from "@/core/utils/date"
 
 const { TextArea } = Input
 
-const MAX_CANTIDAD = 10000
 const FUTURE_TOLERANCE_MS = 5 * 60 * 1000
 
 interface OrderItem {
@@ -76,13 +78,11 @@ interface OrderItem {
   codigo: string
   descripcion: string
   tipoOrden: TipoOrden
-  cantidad: number
   indicaciones: string
   // Datos de administración (solo medicamentos)
   unidadMedida: string
   viaAdministracionCodigo?: string
   frecuenciaHoras: number | null
-  duracionDias: number | null
 }
 
 export const ESTADO_COLORS: Record<EstadoOrdenItem, string> = {
@@ -91,7 +91,11 @@ export const ESTADO_COLORS: Record<EstadoOrdenItem, string> = {
   Aplicada: "green",
   Vencida: "red",
   Cancelada: "default",
+  Suspendida: "orange",
 }
+
+// Conceptos que el médico todavía puede suspender (siguen admitiendo aplicaciones).
+const SUSPENDIBLE_STATES: EstadoOrdenItem[] = ["Pendiente", "En proceso", "Vencida"]
 
 // Presentaciones habituales que se ofrecen además del catálogo de unidades.
 const UNIDADES_COMUNES = ["Tableta", "Cápsula", "Ampolla", "Frasco", "Sobre", "Gotas", "UI", "Unidad"]
@@ -101,12 +105,10 @@ const isMedicine = (item: { tipoOrden: TipoOrden }) => item.tipoOrden === "Medic
 const itemToRequest = (item: OrderItem): OrdenMedicaItemRequest => ({
   conceptoTipo: item.conceptoTipo,
   conceptoId: item.conceptoId,
-  cantidad: item.cantidad,
   indicaciones: item.indicaciones.trim(),
   unidadMedida: isMedicine(item) ? item.unidadMedida.trim() : null,
   viaAdministracionCodigo: isMedicine(item) ? item.viaAdministracionCodigo ?? null : null,
   frecuenciaHoras: isMedicine(item) ? item.frecuenciaHoras : null,
-  duracionDias: isMedicine(item) ? item.duracionDias : null,
 })
 
 const TIPO_COLORS: Record<TipoOrden, string> = {
@@ -150,9 +152,6 @@ const itemKey = (conceptoTipo: string, conceptoId: number) => `${conceptoTipo}-$
 
 const errorMessage = (err: unknown, fallback: string) =>
   err instanceof Error && err.message ? err.message : fallback
-
-const isValidQuantity = (value: unknown): value is number =>
-  typeof value === "number" && Number.isFinite(value) && value > 0 && value <= MAX_CANTIDAD
 
 const isOptionalIntInRange = (value: number | null, min: number, max: number) =>
   value === null || (Number.isInteger(value) && value >= min && value <= max)
@@ -210,6 +209,7 @@ const MedicalOrdersContainer = () => {
   const crearOrden = useCrearOrdenMedica()
   const actualizarOrden = useActualizarOrdenMedica()
   const anularOrden = useAnularOrdenMedica()
+  const suspenderItem = useSuspenderItemOrden()
   const isSaving = crearOrden.isPending || actualizarOrden.isPending
 
   /* ─────────────── Formulario ─────────────── */
@@ -339,8 +339,6 @@ const MedicalOrdersContainer = () => {
     }
     if (!ambito) errors.push("Seleccione el ámbito de la orden.")
     if (items.length === 0) errors.push("Cargue al menos un concepto en la orden.")
-    if (items.some((item) => !isValidQuantity(item.cantidad)))
-      errors.push("Todas las cantidades deben ser mayores a cero.")
     const medicamentos = items.filter(isMedicine)
     if (medicamentos.some((item) => !item.unidadMedida.trim()))
       errors.push("Indique la unidad de medida de cada medicamento.")
@@ -348,8 +346,6 @@ const MedicalOrdersContainer = () => {
       errors.push("Seleccione la vía de administración de cada medicamento.")
     if (medicamentos.some((item) => !isOptionalIntInRange(item.frecuenciaHoras, 1, 168)))
       errors.push("La frecuencia debe estar entre 1 y 168 horas.")
-    if (medicamentos.some((item) => !isOptionalIntInRange(item.duracionDias, 1, 365)))
-      errors.push("La duración debe estar entre 1 y 365 días.")
     if (items.some((item) => item.indicaciones.length > 1000))
       errors.push("Las indicaciones no pueden superar 1000 caracteres.")
     return errors
@@ -378,12 +374,10 @@ const MedicalOrdersContainer = () => {
       codigo: item.codigo,
       descripcion: item.descripcion,
       tipoOrden: item.tipoOrden,
-      cantidad: item.cantidad,
       indicaciones: item.indicaciones ?? "",
       unidadMedida: item.unidadMedida ?? "",
       viaAdministracionCodigo: item.viaAdministracionCodigo ?? undefined,
       frecuenciaHoras: item.frecuenciaHoras ?? null,
-      duracionDias: item.duracionDias ?? null,
     }))
     const fecha = isoToLocalInput(orden.fechaOrden)
 
@@ -418,7 +412,7 @@ const MedicalOrdersContainer = () => {
 
     const key = itemKey(concepto.conceptoTipo, concepto.conceptoId)
     if (items.some((item) => item.key === key)) {
-      messageApi.info("Ese concepto ya está en la orden; ajuste su cantidad en el listado.")
+      messageApi.info("Ese concepto ya está en la orden.")
       return
     }
 
@@ -431,7 +425,6 @@ const MedicalOrdersContainer = () => {
         codigo: concepto.codigo.trim(),
         descripcion: concepto.descripcion,
         tipoOrden: concepto.tipoOrden,
-        cantidad: 1,
         indicaciones: "",
         unidadMedida: concepto.unidadMedida?.trim() ?? "",
         viaAdministracionCodigo:
@@ -440,7 +433,6 @@ const MedicalOrdersContainer = () => {
             ? concepto.viaAdministracionCodigo
             : undefined,
         frecuenciaHoras: null,
-        duracionDias: null,
       },
     ])
     setSearchText("")
@@ -522,6 +514,15 @@ const MedicalOrdersContainer = () => {
     }
   }
 
+  const handleSuspender = async (item: OrdenMedicaItem) => {
+    try {
+      await suspenderItem.mutateAsync({ itemId: item.id })
+      messageApi.success(`${item.descripcion} suspendido. Ya no admite aplicaciones.`)
+    } catch (err) {
+      messageApi.error(errorMessage(err, "No se pudo suspender el concepto."))
+    }
+  }
+
   /* ─────────────── Columnas ─────────────── */
 
   const itemColumns: ColumnsType<OrderItem> = [
@@ -539,25 +540,6 @@ const MedicalOrdersContainer = () => {
       key: "tipoOrden",
       width: 170,
       render: (tipo: TipoOrden) => <Tag color={TIPO_COLORS[tipo] ?? "default"}>{tipo}</Tag>,
-    },
-    {
-      title: "Cant. total (unidades)",
-      dataIndex: "cantidad",
-      key: "cantidad",
-      width: 130,
-      render: (cantidad: number, record) => (
-        <InputNumber
-          min={0.01}
-          max={MAX_CANTIDAD}
-          precision={2}
-          value={cantidad}
-          status={isValidQuantity(cantidad) ? undefined : "error"}
-          onChange={(value) =>
-            updateItem(record.key, { cantidad: typeof value === "number" ? value : 0 })
-          }
-          style={{ width: "100%" }}
-        />
-      ),
     },
     {
       title: "Información adicional",
@@ -601,18 +583,6 @@ const MedicalOrdersContainer = () => {
                 addonBefore="c/"
                 onChange={(value) =>
                   updateItem(record.key, { frecuenciaHoras: typeof value === "number" ? value : null })
-                }
-              />
-              <InputNumber
-                size="small"
-                min={1}
-                max={365}
-                precision={0}
-                value={record.duracionDias}
-                placeholder="días"
-                addonAfter="días"
-                onChange={(value) =>
-                  updateItem(record.key, { duracionDias: typeof value === "number" ? value : null })
                 }
               />
             </div>
@@ -997,12 +967,33 @@ const MedicalOrdersContainer = () => {
                     <li key={item.id} style={{ marginBottom: 4 }}>
                       <Tag color={TIPO_COLORS[item.tipoOrden] ?? "default"}>{item.tipoOrden}</Tag>
                       <Tag color={ESTADO_COLORS[item.estado] ?? "default"}>{item.estado}</Tag>
-                      {item.codigo} - {item.descripcion} · {item.cantidadAplicada}/{item.cantidad}
+                      {item.codigo} - {item.descripcion} · {item.cantidadAplicada}
+                      {item.cantidad > 0 ? `/${item.cantidad}` : " aplicada(s), sin tope"}
                       {item.unidadMedida ? ` ${item.unidadMedida}` : ""}
                       {item.viaAdministracion ? ` · ${item.viaAdministracion}` : ""}
                       {item.frecuenciaHoras ? ` · c/${item.frecuenciaHoras} h` : ""}
                       {item.duracionDias ? ` · ${item.duracionDias} día(s)` : ""}
                       {item.indicaciones ? ` — ${item.indicaciones}` : ""}
+                      {SUSPENDIBLE_STATES.includes(item.estado) && (
+                        <Popconfirm
+                          title={`¿Suspender ${item.descripcion}?`}
+                          description="Dejará de admitir aplicaciones. Lo ya aplicado se conserva y no se puede reanudar."
+                          okText="Suspender"
+                          cancelText="Cancelar"
+                          okButtonProps={{ danger: true, loading: suspenderItem.isPending }}
+                          onConfirm={() => handleSuspender(item)}
+                        >
+                          <Button
+                            type="link"
+                            size="small"
+                            danger
+                            icon={<PauseCircleOutlined />}
+                            style={{ marginLeft: 8 }}
+                          >
+                            Suspender
+                          </Button>
+                        </Popconfirm>
+                      )}
                     </li>
                   ))}
                 </ul>

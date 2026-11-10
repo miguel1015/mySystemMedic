@@ -39,6 +39,11 @@ export const isMedicine = (orden: Pick<OrdenActiva, "tipoOrden">) => orden.tipoO
 // completar la última unidad.
 export const maxUnidades = (disponible: number) => Math.ceil(disponible)
 
+// Lo que una aplicación puede consumir de la orden. Un medicamento sin cantidad
+// total no tiene límite (Infinity); "extra" es lo que ya consumía al editar.
+export const disponibleDe = (orden: OrdenActiva, extra = 0) =>
+  orden.sinTope ? Number.POSITIVE_INFINITY : orden.cantidadPendiente + extra
+
 // Lo que una aplicación descontó de la orden: unidades en medicamentos, cantidad
 // realizada en estudios y procedimientos.
 export const consumoDe = (a: AplicacionOrden) => (isMedicine(a) ? a.unidadesConsumidas : a.cantidad)

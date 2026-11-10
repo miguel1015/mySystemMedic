@@ -207,6 +207,7 @@ export const CARE_ENDPOINTS = {
     GET_BY_ID: (id: IdParam) => `/api/auth/care/ordenes-medicas/${id}`,
     UPDATE: (id: IdParam) => `/api/auth/care/ordenes-medicas/${id}`,
     DELETE: (id: IdParam) => `/api/auth/care/ordenes-medicas/${id}`,
+    SUSPENDER_ITEM: (itemId: IdParam) => `/api/auth/care/ordenes-medicas/items/${itemId}/suspender`,
   },
   MEDICAMENTOS_POS: {
     GET_BY_ADMISSION: (admissionId: IdParam) =>

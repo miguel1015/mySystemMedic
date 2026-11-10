@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import ApplicationFormFields from "./ApplicationFormFields"
 import {
   consumoDe,
+  disponibleDe,
   errorMessage,
   isMedicine,
   toDateInput,
@@ -55,7 +56,7 @@ const EditApplicationModal = ({ orden, aplicacion, onClose, ...options }: Props)
   }, [aplicacion])
 
   // Lo que ya consumía esta aplicación vuelve a estar disponible para ella.
-  const disponible = aplicacion ? orden.cantidadPendiente + consumoDe(aplicacion) : 0
+  const disponible = aplicacion ? disponibleDe(orden, consumoDe(aplicacion)) : 0
   const label = isMedicine(orden) ? "aplicación" : "realización"
 
   const handleSave = async () => {
