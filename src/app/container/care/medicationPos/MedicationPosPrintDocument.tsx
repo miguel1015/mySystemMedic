@@ -68,6 +68,7 @@ export const MedicationPosPrintDocument = ({
       // attentionLabel="Fecha orden / fórmula:"
       attentionDate={formulaDate}
       attentionTime={formulaTime}
+      professional={{ name: formula.asistencialNombre, specialty: formula.asistencialEspecialidad, licenseCard: formula.asistencialTarjetaProfesional }}
       showSex
     />
   )

@@ -89,6 +89,7 @@ export const XrayPrintDocument = ({
       // attentionLabel="Fecha de generación del informe:"
       attentionDate={generatedDate}
       attentionTime={generatedTime}
+      professional={{ name: estudio.nombreProfesional, specialty: estudio.perfilProfesional || "Médico radiólogo", licenseCard: estudio.tarjetaProfesional }}
       showSex
     />
   )

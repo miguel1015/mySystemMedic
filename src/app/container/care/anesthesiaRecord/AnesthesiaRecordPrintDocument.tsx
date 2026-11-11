@@ -60,6 +60,7 @@ export const AnesthesiaRecordPrintDocument = ({
       documentTitle="Record de Anestesia"
       attentionDate={formatDate(record.fechaInicio, "")}
       attentionTime={formatTime(record.fechaInicio, "")}
+      professional={{ name: record.nombreResponsable, specialty: record.perfilResponsable || "Anestesiología", licenseCard: record.tarjetaResponsable }}
       showSex
     />
   )

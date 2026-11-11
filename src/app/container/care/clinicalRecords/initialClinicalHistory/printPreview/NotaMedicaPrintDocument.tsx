@@ -3,7 +3,12 @@
 import type { GetUser } from "@/core/interfaces/user/users";
 import type { TProvider } from "@/core/interfaces/parameterization/types";
 import { ClinicalDocumentHeader } from "./ClinicalDocumentHeader";
-import { DoctorSignatureBox, FieldRow, type PrintPatient } from "./printDocument.utils";
+import {
+  DoctorSignatureBox,
+  FieldRow,
+  buildHeaderProfessional,
+  type PrintPatient,
+} from "./printDocument.utils";
 import "./hciPrintPreview.css";
 
 interface Props {
@@ -43,6 +48,7 @@ export const NotaMedicaPrintDocument = ({
       attentionLabel="Fecha y hora de la nota:"
       attentionDate={fechaNota}
       attentionTime={horaNota?.slice(0, 5)}
+      professional={buildHeaderProfessional(doctorName, doctorUser)}
     />
 
     <div className="hci-print-body">

@@ -186,6 +186,7 @@ const XrayContainer = () => {
     insurer,
     city: patientRecord?.cityName || "",
     phone: patientRecord?.phone || "",
+    address: patientRecord?.address || "",
   }
 
   /* ─────────────── Acciones ─────────────── */

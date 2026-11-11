@@ -85,6 +85,7 @@ export const MedicalOrderPrintDocument = ({
       attentionLabel="Fecha y hora de la orden:"
       attentionDate={orderDate}
       attentionTime={orderTime}
+      professional={{ name: orden.asistencialNombre, specialty: orden.asistencialEspecialidad, licenseCard: orden.asistencialTarjetaProfesional }}
       showSex
     />
   )

@@ -52,6 +52,7 @@ export const LabResultPrintDocument = ({
       documentTitle="Resultado de Laboratorio"
       attentionDate={formatDate(record.fechaToma, "")}
       attentionTime={formatTime(record.fechaToma, "")}
+      professional={{ name: record.nombreProfesional, specialty: record.perfilProfesional, licenseCard: record.tarjetaProfesional }}
       showSex
     />
   )

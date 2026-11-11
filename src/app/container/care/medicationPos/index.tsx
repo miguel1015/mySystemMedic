@@ -242,6 +242,7 @@ const MedicationPosContainer = () => {
     insurer,
     city: patientRecord?.cityName || "",
     phone: patientRecord?.phone || "",
+    address: patientRecord?.address || "",
   }
 
   /* ─────────────── Estado de la fórmula ─────────────── */
