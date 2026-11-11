@@ -17,7 +17,11 @@ import { AdmissionResponse } from "@/core/interfaces/care/types"
 import { SurgicalWayType } from "@/core/interfaces/care/surgicalCharge"
 import { useMemo, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import { DEFAULT_LIQUIDATION_PERCENTAGE, getSurgicalWayLiquidationPercentage } from "./constants"
+import {
+  INCRUENT_MATERIALS_FALLBACK_VALUE,
+  getSurgicalWayLiquidationPercentage,
+  getSurgicalWayMaterialsCode,
+} from "./constants"
 import { roundToNearestHundred } from "./utils"
 
 export interface SelectedSurgicalService {
@@ -106,7 +110,31 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
     tariffId && selectedService && specialty && surgicalWayType && accessRouteId && doctorId,
   )
 
-  const canAnnex = concepts.length > 0 && selectedConceptIds.length > 0
+  // Conceptos ya ajustados al tipo de vía elegido: si la vía liquida los materiales con
+  // otro código (p. ej. 39305 en incruento por diferente vía), se reemplaza el código y su
+  // valor por el del tarifario seleccionado, para que el cambio se vea en el detalle del
+  // cargue, en la preliquidación y en lo que se guarda para la factura.
+  const displayedConcepts = useMemo(() => {
+    const materialsCode = getSurgicalWayMaterialsCode(surgicalWayType)
+    if (!materialsCode) return concepts
+
+    const materialsDetail = tariffDetails?.find(
+      (d) => d.tariffId === tariffId && d.referenceCode === materialsCode,
+    )
+
+    return concepts.map((concept) =>
+      concept.conceptType === "MATERIALES"
+        ? {
+            ...concept,
+            referenceCode: materialsCode,
+            value: materialsDetail?.value ?? INCRUENT_MATERIALS_FALLBACK_VALUE,
+            factors: materialsDetail?.factors ?? 1,
+          }
+        : concept,
+    )
+  }, [concepts, surgicalWayType, tariffDetails, tariffId])
+
+  const canAnnex = displayedConcepts.length > 0 && selectedConceptIds.length > 0
   const canPreliquidate = annexedProcedures.length > 0
 
   const resetService = () => {
@@ -200,7 +228,7 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
   const annexConcepts = () => {
     if (!selectedService || !specialty || !surgicalWayType || !accessRouteId || !doctorId) return
 
-    const chosen = concepts.filter((c) => selectedConceptIds.includes(c.id))
+    const chosen = displayedConcepts.filter((c) => selectedConceptIds.includes(c.id))
     const accessRouteName = accessRoutes?.find((a) => a.id === accessRouteId)?.name ?? ""
     const doctorName = doctors?.find((d) => d.id === doctorId)?.fullName ?? ""
 
@@ -228,17 +256,23 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
   const preliquidatedProcedures: PreliquidatedProcedure[] = useMemo(
     () =>
       annexedProcedures.map((procedure, index) => {
-        // El primer procedimiento anexado siempre se liquida al 100%, sin importar
-        // el tipo de vía seleccionado: esa regla solo aplica desde el segundo en adelante.
+        // La primera cirugía de cada cargue se liquida como primera (100%, salvo lo que
+        // su tipo de vía indique, p. ej. sala al 45% en incruento); las siguientes del
+        // mismo cargue se liquidan como adicionales. Un cargue guardado después vuelve
+        // a empezar con su primera cirugía.
         const isFirstProcedure = index === 0
 
         const preliquidatedConcepts = procedure.concepts.map((concept) => {
           const rawValue = concept.value * concept.factors
           const roundedValue = roundToNearestHundred(rawValue)
-          const percentageApplied = isFirstProcedure
-            ? DEFAULT_LIQUIDATION_PERCENTAGE
-            : getSurgicalWayLiquidationPercentage(procedure.surgicalWayType, concept.conceptType)
-          const percentageValue = (roundedValue * percentageApplied) / 100
+          const percentageApplied = getSurgicalWayLiquidationPercentage(
+            procedure.surgicalWayType,
+            concept.conceptType,
+            isFirstProcedure,
+          )
+          // El porcentaje se aplica sobre el valor base redondeado y el resultado se
+          // vuelve a aproximar a la centena más cercana.
+          const percentageValue = roundToNearestHundred((roundedValue * percentageApplied) / 100)
           return { ...concept, rawValue, roundedValue, percentageApplied, percentageValue }
         })
         const total = preliquidatedConcepts.reduce((sum, c) => sum + c.percentageValue, 0)
@@ -348,7 +382,7 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
     cancelCupsPending: () => setCupsPending(null),
     confirmCupsAssigned,
 
-    concepts,
+    concepts: displayedConcepts,
     selectedConceptIds,
     setSelectedConceptIds,
     closeConcepts,
