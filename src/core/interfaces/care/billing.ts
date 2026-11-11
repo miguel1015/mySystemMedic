@@ -21,6 +21,21 @@ export const SURGICAL_CONCEPT_TYPES = [
 
 export type SurgicalConceptType = (typeof SURGICAL_CONCEPT_TYPES)[number]["value"]
 
+// Rango de códigos del tarifario válido para cada concepto quirúrgico. Se usa para que,
+// al cambiar el código de un concepto, solo se ofrezcan códigos compatibles con él.
+export const SURGICAL_CONCEPT_CODE_RANGES: Record<SurgicalConceptType, { min: number; max: number }> = {
+  HONORARIO_CIRUJANO: { min: 39000, max: 39099 },
+  HONORARIO_ANESTESIOLOGO: { min: 39100, max: 39116 },
+  HONORARIO_AYUDANTIA: { min: 39117, max: 39199 },
+  DERECHO_SALA: { min: 39200, max: 39299 },
+  MATERIALES: { min: 39300, max: 39399 },
+}
+
+export function isCodeCompatibleWithConcept(conceptType: string, code: number): boolean {
+  const range = SURGICAL_CONCEPT_CODE_RANGES[conceptType as SurgicalConceptType]
+  return Boolean(range) && code >= range.min && code <= range.max
+}
+
 export interface SurgicalConceptDetail {
   itemId: number
   conceptType: string
