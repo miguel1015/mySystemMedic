@@ -44,6 +44,27 @@ export const DoctorSignatureBox = ({
   </div>
 );
 
+// Profesional del bloque "Fecha historia / Profesional / Especialidad / Rethus"
+// de la epicrisis. La especialidad es la registrada en el documento o, si no
+// hay, la del usuario (y en su defecto su perfil: Médico general, Enfermero...).
+export const buildHeaderProfessional = (
+  doctorName: string,
+  doctorUser?: {
+    especialidadNombre?: string | null;
+    userProfileName?: string;
+    licenseCard?: string;
+  },
+  documentSpecialty?: string | null,
+) => ({
+  name: doctorName,
+  specialty:
+    documentSpecialty?.trim() ||
+    doctorUser?.especialidadNombre?.trim() ||
+    doctorUser?.userProfileName?.trim() ||
+    undefined,
+  licenseCard: doctorUser?.licenseCard,
+});
+
 export interface PrintPatient {
   name: string;
   documentType: string;
@@ -54,6 +75,7 @@ export interface PrintPatient {
   insurer: string;
   city?: string;
   phone?: string;
+  address?: string;
 }
 
 export const FieldRow = ({
@@ -95,4 +117,5 @@ export const buildPrintPatient = (
   insurer: admission?.epsNombre || patient?.insurerName || "",
   city: patient?.cityName,
   phone: patient?.phone,
+  address: patient?.address,
 });

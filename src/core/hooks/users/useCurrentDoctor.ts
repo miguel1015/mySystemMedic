@@ -15,6 +15,8 @@ export interface DoctorOption {
   value: number;
   label: string;
   role?: string;
+  /** Perfil del usuario (Médico, Enfermero, Ortopedista...), para mostrarlo junto al nombre. */
+  profile?: string;
 }
 
 export function useCurrentDoctor() {
@@ -64,6 +66,7 @@ export function useCurrentDoctor() {
       value: user.id,
       label: buildFullName(user),
       role: user.userRoleName,
+      profile: user.userProfileName?.trim() || undefined,
     }));
 
     if (
@@ -75,6 +78,7 @@ export function useCurrentDoctor() {
         value: currentUserId,
         label: currentDoctor,
         role: currentDoctorUser?.userRoleName,
+        profile: currentDoctorUser?.userProfileName?.trim() || undefined,
       });
     }
 

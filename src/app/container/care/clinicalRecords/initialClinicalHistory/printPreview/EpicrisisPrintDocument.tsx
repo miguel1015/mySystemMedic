@@ -189,6 +189,7 @@ export const EpicrisisPrintDocument = ({
                 attentionTime={evo.horaEvolucion?.slice(0, 5)}
                 doctorName={evo.nombreProfesional}
                 doctorUser={findUser(evo.userId)}
+                doctorSpecialty={evo.especialidadNombre}
                 sections={[
                   {
                     title: "Motivo de consulta",
@@ -237,6 +238,7 @@ export const EpicrisisPrintDocument = ({
                 attentionTime={evo.horaEvolucion?.slice(0, 5)}
                 doctorName={evo.nombreProfesional}
                 doctorUser={findUser(evo.userId)}
+                doctorSpecialty={evo.especialidadNombre}
                 sections={[
                   {
                     title: "Motivo de consulta",

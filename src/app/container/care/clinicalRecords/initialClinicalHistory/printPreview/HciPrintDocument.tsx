@@ -7,7 +7,12 @@ import type { HCInicialResponse } from "@/core/interfaces/care/hciInicial";
 import { antecedentesFields, physicalExamFields } from "../constants";
 import type { DiagnosisRow } from "../types";
 import { ClinicalDocumentHeader } from "./ClinicalDocumentHeader";
-import { DoctorSignatureBox, FieldRow, type PrintPatient } from "./printDocument.utils";
+import {
+  DoctorSignatureBox,
+  FieldRow,
+  buildHeaderProfessional,
+  type PrintPatient,
+} from "./printDocument.utils";
 import { PaginatedPages, usePaginatedUnits, type Unit } from "./printPagination";
 import "./hciPrintPreview.css";
 
@@ -58,6 +63,7 @@ export const HciPrintDocument = ({
       attentionDate={attentionDate}
       attentionTime={attentionTime}
       showProcessDates={showProcessDates}
+      professional={buildHeaderProfessional(doctorName, doctorUser)}
     />
   );
 

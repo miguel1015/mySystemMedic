@@ -11,11 +11,11 @@ export const QX_TEAM_PROFILES = {
 
 export const physicalExamFields: Array<{ key: keyof PhysicalExamState; label: string }> = [
   { key: "cabezaCuello", label: "Cabeza y cuello" },
-  { key: "torax", label: "Torax" },
+  { key: "torax", label: "Tórax" },
   { key: "abdomen", label: "Abdomen" },
   { key: "extremidades", label: "Extremidades" },
   { key: "sistemaNervioso", label: "Sistema nervioso" },
-  { key: "organosSentidos", label: "Organos de los sentidos" },
+  { key: "organosSentidos", label: "Órganos de los sentidos" },
   { key: "genitourinario", label: "Genitourinario" },
 ]
 

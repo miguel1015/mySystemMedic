@@ -60,26 +60,26 @@ export const ObjectiveTab = ({
     return (vitals.weight / (h * h)).toFixed(1)
   }, [vitals.height, vitals.weight])
 
+  const completedExamFields = physicalExamFields.filter(({ key }) => physicalExam[key]?.trim()).length
+
   return (
     <div className="tab-section-inner">
       <Typography.Title level={5} style={{ marginTop: 0 }}>2. Objetivo</Typography.Title>
       <div className="evolution-objective-grid">
         <div style={sectionCardStyle}>
-          <Typography.Text strong>Examen físico</Typography.Text>
-          <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+          <div className="physical-exam-header">
+            <Typography.Text strong>Examen físico</Typography.Text>
+            <span className="physical-exam-progress">
+              {completedExamFields} de {physicalExamFields.length} completos
+            </span>
+          </div>
+          <div className="physical-exam-list">
             {physicalExamFields.map(({ key, label }) => (
-              <div className="physical-exam-row" key={key}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--dash-text-secondary, #344054)" }}>
-                  {label} <span className="field-required">*</span>
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                  <Input
-                    size="small"
-                    value={physicalExam[key]}
-                    onChange={(e) => onPhysicalExamChange({ ...physicalExam, [key]: e.target.value })}
-                    disabled={disabled}
-                    style={{ flex: 1, minWidth: 0 }}
-                  />
+              <div className="physical-exam-item" key={key}>
+                <div className="physical-exam-item-head">
+                  <label htmlFor={`physical-exam-${key}`} className="physical-exam-label">
+                    {label} <span className="field-required">*</span>
+                  </label>
                   {/* Atajo: escribe "Normal" en el campo, que sigue siendo editable. */}
                   <Checkbox
                     checked={isNormal(physicalExam[key])}
@@ -90,11 +90,20 @@ export const ObjectiveTab = ({
                       })
                     }
                     disabled={disabled}
-                    style={{ whiteSpace: "nowrap" }}
+                    className="physical-exam-normal"
                   >
                     Normal
                   </Checkbox>
                 </div>
+                {/* Crece con el texto para que el hallazgo se lea completo sin desplazarse. */}
+                <Input.TextArea
+                  id={`physical-exam-${key}`}
+                  value={physicalExam[key]}
+                  onChange={(e) => onPhysicalExamChange({ ...physicalExam, [key]: e.target.value })}
+                  placeholder={`Hallazgos de ${label.toLowerCase()}`}
+                  disabled={disabled}
+                  autoSize={{ minRows: 1, maxRows: 8 }}
+                />
               </div>
             ))}
           </div>

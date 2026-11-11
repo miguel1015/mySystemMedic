@@ -149,6 +149,8 @@ export const CARE_ENDPOINTS = {
   ESTUDIOS_RAYOS_X: {
     GET_BY_ADMISSION: (admissionId: IdParam) =>
       `/api/auth/care/estudios-rayos-x/by-admission/${admissionId}`,
+    ORDENES_PENDIENTES: (admissionId: IdParam) =>
+      `/api/auth/care/estudios-rayos-x/ordenes-pendientes/${admissionId}`,
     CREATE: "/api/auth/care/estudios-rayos-x",
     GET_BY_ID: (id: IdParam) => `/api/auth/care/estudios-rayos-x/${id}`,
     UPDATE: (id: IdParam) => `/api/auth/care/estudios-rayos-x/${id}`,

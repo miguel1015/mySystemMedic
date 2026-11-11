@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/components/container";
+import { DoctorSelect } from "@/components/select/DoctorSelect";
 import { useCurrentDoctor } from "@/core/hooks/users/useCurrentDoctor";
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById";
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient";
@@ -23,7 +24,7 @@ import {
   SearchOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Button, Input, Select, Tag, Typography, message } from "antd";
+import { Button, Input, Tag, Typography, message } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { DischargeNoteContent } from "../dischargeNote/DischargeNoteContent";
@@ -171,21 +172,34 @@ const InitialClinicalHistoryContainer = () => {
       admission?.nombrePaciente ||
       searchParams.get("patientName") ||
       "Andres Felipe Quintero Perez",
-    documentType: searchParams.get("documentType") || "CC",
+    documentType:
+      patientRecord?.documentTypeCode ||
+      admission?.documentTypeCode ||
+      searchParams.get("documentType") ||
+      "CC",
     documentNumber:
+      patientRecord?.documentNumber ||
       admission?.documentoPatiente ||
       searchParams.get("documentNumber") ||
       "1102796382",
     careScope:
       admission?.careScopeName || searchParams.get("careScope") || "Urgencias",
-    birthDate: searchParams.get("birthDate") || "2004-08-04",
-    sex: searchParams.get("sex") || "Masculino",
+    birthDate:
+      patientRecord?.birthDate?.slice(0, 10) ||
+      searchParams.get("birthDate") ||
+      "2004-08-04",
+    sex: patientRecord?.sexName || searchParams.get("sex") || "Masculino",
     clinicalRecord:
       searchParams.get("clinicalRecord") || `HC-${patientId || "1024"}`,
     room: searchParams.get("room") || "Observacion 4",
-    insurer: searchParams.get("insurer") || "EPS Sanitas",
+    insurer:
+      admission?.epsNombre ||
+      patientRecord?.insurerName ||
+      searchParams.get("insurer") ||
+      "EPS Sanitas",
     city: patientRecord?.cityName || searchParams.get("city") || "",
     phone: patientRecord?.phone || searchParams.get("phone") || "",
+    address: patientRecord?.address || "",
   };
 
   const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(
@@ -298,26 +312,10 @@ const InitialClinicalHistoryContainer = () => {
               <div className="summary-cell-label">Médico tratante</div>
               <div className="summary-cell-value">
                 {canAssignDoctor ? (
-                  <Select
-                    showSearch
-                    // Busca por el nombre del médico, no por su id.
-                    optionFilterProp="label"
-                    filterOption={(input, option) =>
-                      String(option?.label ?? "")
-                        .normalize("NFD")
-                        .replace(/[̀-ͯ]/g, "")
-                        .toLowerCase()
-                        .includes(
-                          input.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(),
-                        )
-                    }
-                    placeholder="Buscar médico"
+                  <DoctorSelect
                     value={selectedDoctorId}
                     options={doctorOptions}
                     onChange={setSelectedDoctorId}
-                    style={{ width: "100%", marginTop: 2 }}
-                    popupMatchSelectWidth={false}
-                    size="small"
                   />
                 ) : (
                   selectedDoctor

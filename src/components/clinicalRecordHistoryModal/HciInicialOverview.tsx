@@ -108,11 +108,11 @@ export const HciInicialOverview = ({ admissionId }: Props) => {
             <Typography.Text strong style={{ fontSize: 12.5 }}>Examen físico</Typography.Text>
             <div className="chrm-hci-grid" style={{ marginTop: 8, marginBottom: 16 }}>
               <Field label="Cabeza y cuello" value={objetivo.cabezaCuello} />
-              <Field label="Torax" value={objetivo.torax} />
+              <Field label="Tórax" value={objetivo.torax} />
               <Field label="Abdomen" value={objetivo.abdomen} />
               <Field label="Extremidades" value={objetivo.extremidades} />
               <Field label="Sistema nervioso" value={objetivo.sistemaNervioso} />
-              <Field label="Organos de los sentidos" value={objetivo.organosSentidos} />
+              <Field label="Órganos de los sentidos" value={objetivo.organosSentidos} />
               <Field label="Genitourinario" value={objetivo.genitourinario} />
             </div>
             <Typography.Text strong style={{ fontSize: 12.5 }}>Antecedentes</Typography.Text>

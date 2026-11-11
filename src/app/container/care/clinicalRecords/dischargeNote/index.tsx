@@ -10,7 +10,8 @@ import {
   PrinterOutlined,
   UserOutlined,
 } from "@ant-design/icons"
-import { Button, Select, Tag, Typography, message } from "antd"
+import { Button, Tag, Typography, message } from "antd"
+import { DoctorSelect } from "@/components/select/DoctorSelect"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { DischargeNoteContent } from "./DischargeNoteContent"
@@ -156,13 +157,10 @@ const DischargeNoteContainer = () => {
               <div className="summary-cell-label">Médico tratante</div>
               <div className="summary-cell-value">
                 {canAssignDoctor ? (
-                  <Select
-                    showSearch
+                  <DoctorSelect
                     value={selectedDoctorId}
                     options={doctorOptions}
                     onChange={setSelectedDoctorId}
-                    style={{ width: "100%", marginTop: 2 }}
-                    size="small"
                   />
                 ) : (
                   selectedDoctor

@@ -710,7 +710,7 @@ const AnesthesiaRecordContainer = () => {
               <TariffProcedureSelect />
             </Form.Item>
             <Form.Item label="Procedimiento realizado" name="procedimientoRealizado">
-              <TextArea rows={3} maxLength={4000} />
+              <TariffProcedureSelect />
             </Form.Item>
           </div>
 

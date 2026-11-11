@@ -4,7 +4,11 @@ import { useMemo } from "react";
 import type { GetUser } from "@/core/interfaces/user/users";
 import type { TProvider } from "@/core/interfaces/parameterization/types";
 import { ClinicalDocumentHeader } from "./ClinicalDocumentHeader";
-import { DoctorSignatureBox, type PrintPatient } from "./printDocument.utils";
+import {
+  DoctorSignatureBox,
+  buildHeaderProfessional,
+  type PrintPatient,
+} from "./printDocument.utils";
 import { PaginatedPages, usePaginatedUnits, type Unit } from "./printPagination";
 import "./hciPrintPreview.css";
 
@@ -26,6 +30,8 @@ interface Props {
   sections: ClinicalPrintSection[];
   doctorName: string;
   doctorUser?: GetUser;
+  /** Especialidad registrada en el documento; si no hay, la del usuario. */
+  doctorSpecialty?: string | null;
   showProcessDates?: boolean;
 }
 
@@ -42,6 +48,7 @@ export const GenericClinicalPrintDocument = ({
   sections,
   doctorName,
   doctorUser,
+  doctorSpecialty,
   showProcessDates,
 }: Props) => {
   const headerBlock = (
@@ -56,6 +63,7 @@ export const GenericClinicalPrintDocument = ({
       attentionDate={attentionDate}
       attentionTime={attentionTime}
       showProcessDates={showProcessDates}
+      professional={buildHeaderProfessional(doctorName, doctorUser, doctorSpecialty)}
     />
   );
 

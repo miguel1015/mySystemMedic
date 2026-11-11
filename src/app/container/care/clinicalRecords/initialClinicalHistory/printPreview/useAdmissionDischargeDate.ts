@@ -3,22 +3,35 @@
 import { useGetDatosClinicosEgresoByAdmission } from "@/core/hooks/care/dischargeNote/useGetDatosClinicosEgresoByAdmission";
 import { useGetDiagnosticosEgresoByIds } from "@/core/hooks/care/dischargeNote/useGetDiagnosticosEgresoByIds";
 
+export interface AdmissionDischarge {
+  /** Fecha y hora de egreso. */
+  date?: string;
+  /** Ámbito por el que egresa el paciente (p. ej. HOSPITALIZACION). */
+  service?: string;
+}
+
 /**
- * Fecha de egreso de la admisión para el encabezado de los PDF: sale del
- * diagnóstico de egreso de la nota de egreso activa (la más reciente si hay
- * varias). Sin nota de egreso guardada devuelve undefined.
+ * Egreso de la admisión para el encabezado de los PDF: sale del diagnóstico de
+ * egreso de la nota de egreso activa (la más reciente si hay varias). Sin nota
+ * de egreso guardada no hay fecha ni servicio.
  */
-export const useAdmissionDischargeDate = (
+export const useAdmissionDischarge = (
   admissionId?: string | number,
-): string | undefined => {
+): AdmissionDischarge => {
   const { data: datosEgreso } = useGetDatosClinicosEgresoByAdmission(admissionId);
   const activos = (datosEgreso ?? []).filter((d) => d.isActive !== false);
   const { data: diagnosticos } = useGetDiagnosticosEgresoByIds(
     activos.map((d) => d.diagnosticoEgresoId),
   );
 
-  return diagnosticos
+  const latest = diagnosticos
     .filter((d) => d.isActive !== false && !!d.fechaEgreso)
-    .map((d) => d.fechaEgreso)
-    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+    .sort((a, b) => new Date(b.fechaEgreso).getTime() - new Date(a.fechaEgreso).getTime())[0];
+
+  return { date: latest?.fechaEgreso, service: latest?.nombreAmbitoEgreso || undefined };
 };
+
+/** Solo la fecha de egreso (ver {@link useAdmissionDischarge}). */
+export const useAdmissionDischargeDate = (
+  admissionId?: string | number,
+): string | undefined => useAdmissionDischarge(admissionId).date;

@@ -87,13 +87,58 @@
   margin-bottom: 14px;
 }
 
-/* Epicrisis: fechas del proceso debajo de los datos del paciente. */
-.hci-print-process-dates {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+/* Epicrisis: tabla "Datos del Paciente — Epicrisis" en dos columnas de
+   etiqueta/valor, y debajo la fecha de la historia con su profesional. */
+.epicrisis-patient-table {
+  border-collapse: collapse;
+  margin-bottom: 14px;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.epicrisis-patient-table thead th {
+  background: #1f3a5f;
+  color: #fff;
+  font-weight: bold;
+  padding: 4px 8px;
+  text-align: left;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.epicrisis-patient-table tbody th,
+.epicrisis-patient-table tbody td {
+  border: 1px solid #b8c4d4;
+  padding: 3px 8px;
+  text-align: left;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.epicrisis-patient-table tbody th {
+  background: #e3ebf5;
+  font-weight: bold;
+  width: 17%;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.epicrisis-patient-table tbody td { width: 33%; }
+
+.epicrisis-patient-table .epicrisis-patient-name { font-weight: bold; }
+
+.epicrisis-history-info {
+  border-top: 1px solid #999;
+  margin-bottom: 14px;
+  padding-top: 10px;
+}
+
+.epicrisis-history-row { margin-bottom: 3px; }
+
+.epicrisis-history-row--split {
+  display: grid;
   gap: 2px 24px;
-  margin: -4px 0 14px;
+  grid-template-columns: 1fr 1fr;
 }
 
 /* Fuerza el campo a iniciar fila en la primera columna. */

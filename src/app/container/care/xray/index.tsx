@@ -8,6 +8,7 @@ import {
   useCreateEstudioRayosX,
   useDeleteEstudioRayosX,
   useGetEstudiosRayosXByAdmission,
+  useGetOrdenesRayosXPendientes,
   useUpdateEstudioRayosX,
 } from "@/core/hooks/care/rayosX/useEstudiosRayosX"
 import { useCurrentDoctor } from "@/core/hooks/users/useCurrentDoctor"
@@ -15,12 +16,14 @@ import {
   RESULTADOS_RAYOS_X,
   type EstudioRayosXResponse,
   type EstudioRayosXUpdateRequest,
+  type OrdenRayosXPendiente,
   type ResultadoRayosX,
 } from "@/core/interfaces/care/rayosX"
 import {
   ArrowLeftOutlined,
   DeleteOutlined,
   EditOutlined,
+  FileTextOutlined,
   HistoryOutlined,
   PlusOutlined,
   PrinterOutlined,
@@ -44,7 +47,7 @@ import {
 } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import ClinicalPrintPreviewModal from "../clinicalRecords/initialClinicalHistory/printPreview/ClinicalPrintPreviewModal"
 import { type PrintPatient } from "../clinicalRecords/initialClinicalHistory/printPreview/printDocument.utils"
 import { XrayPrintDocument } from "./XrayPrintDocument"
@@ -120,12 +123,21 @@ const XrayContainer = () => {
     isError: historialError,
   } = useGetEstudiosRayosXByAdmission(admissionId)
 
+  const {
+    data: ordenesPendientes,
+    isLoading: loadingOrdenes,
+    isError: ordenesError,
+  } = useGetOrdenesRayosXPendientes(admissionId)
+
   const createEstudio = useCreateEstudioRayosX()
   const updateEstudio = useUpdateEstudioRayosX()
   const deleteEstudio = useDeleteEstudioRayosX()
   const isSaving = createEstudio.isPending || updateEstudio.isPending
 
   const [editing, setEditing] = useState<EstudioRayosXResponse | null>(null)
+  // Orden de rayos X que se realiza con el estudio nuevo del formulario.
+  const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenRayosXPendiente | null>(null)
+  const formCardRef = useRef<HTMLDivElement>(null)
   // Contenido del último guardado: si el formulario no cambió, imprimir no
   // vuelve a llamar al backend.
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null)
@@ -180,9 +192,24 @@ const XrayContainer = () => {
 
   const resetForm = () => {
     setEditing(null)
+    setOrdenSeleccionada(null)
     setSavedSnapshot(null)
     form.resetFields()
     form.setFieldsValue(emptyFormValues())
+  }
+
+  // Precarga el formulario con lo ordenado; el radiólogo completa el informe.
+  const selectOrden = (orden: OrdenRayosXPendiente) => {
+    setEditing(null)
+    setSavedSnapshot(null)
+    setOrdenSeleccionada(orden)
+    form.resetFields()
+    form.setFieldsValue({
+      ...emptyFormValues(),
+      nombreEstudio: orden.descripcion,
+      datoClinico: orden.indicaciones ?? "",
+    })
+    formCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
   const loadForEdit = (estudio: EstudioRayosXResponse) => {
@@ -196,6 +223,7 @@ const XrayContainer = () => {
       conclusion: estudio.conclusion ?? "",
     }
     setEditing(estudio)
+    setOrdenSeleccionada(null)
     form.resetFields()
     form.setFieldsValue(values)
     setSavedSnapshot(JSON.stringify(toPayload(values)))
@@ -228,16 +256,25 @@ const XrayContainer = () => {
     try {
       const saved = editing
         ? await updateEstudio.mutateAsync({ id: editing.id, data: payload })
-        : await createEstudio.mutateAsync({ admissionId: Number(admissionId), ...payload })
+        : await createEstudio.mutateAsync({
+            admissionId: Number(admissionId),
+            ordenMedicaItemId: ordenSeleccionada?.ordenMedicaItemId ?? null,
+            ...payload,
+          })
 
       if (!saved?.id) throw new Error("El servidor no devolvió el estudio guardado.")
 
       // Se continúa sobre el registro guardado para que imprimir o guardar de
       // nuevo actualice ese mismo estudio en lugar de duplicarlo.
       setEditing(saved)
+      setOrdenSeleccionada(null)
       setSavedSnapshot(snapshot)
       messageApi.success(
-        editing ? "Estudio de rayos X actualizado." : "Estudio de rayos X registrado.",
+        editing
+          ? "Estudio de rayos X actualizado."
+          : saved.ordenMedicaItemId
+            ? "Estudio registrado: la orden de rayos X quedó realizada."
+            : "Estudio de rayos X registrado.",
       )
       return saved
     } catch (err) {
@@ -266,7 +303,11 @@ const XrayContainer = () => {
 
   const handleDelete = async (estudio: EstudioRayosXResponse) => {
     try {
-      await deleteEstudio.mutateAsync({ id: estudio.id, admissionId: estudio.admissionId })
+      await deleteEstudio.mutateAsync({
+        id: estudio.id,
+        admissionId: estudio.admissionId,
+        conOrden: Boolean(estudio.ordenMedicaItemId),
+      })
       if (editing?.id === estudio.id) resetForm()
       messageApi.success("Estudio de rayos X eliminado.")
     } catch (err) {
@@ -287,7 +328,16 @@ const XrayContainer = () => {
     {
       title: "Estudio",
       key: "estudio",
-      render: (_, record) => formatStudyName(record),
+      render: (_, record) => (
+        <>
+          {formatStudyName(record)}
+          {record.ordenMedicaItemId ? (
+            <Tag color="blue" style={{ marginLeft: 8 }}>
+              Orden #{record.ordenMedicaId}
+            </Tag>
+          ) : null}
+        </>
+      ),
     },
     {
       title: "Resultado",
@@ -329,7 +379,11 @@ const XrayContainer = () => {
           </Tooltip>
           <Popconfirm
             title="¿Eliminar este estudio?"
-            description="El estudio dejará de aparecer en el historial del paciente."
+            description={
+              record.ordenMedicaItemId
+                ? "La orden de rayos X volverá a quedar pendiente y su cargo saldrá de la hoja de gastos."
+                : "El estudio dejará de aparecer en el historial del paciente."
+            }
             okText="Eliminar"
             cancelText="Cancelar"
             okButtonProps={{ danger: true }}
@@ -434,8 +488,73 @@ const XrayContainer = () => {
         )}
       </div>
 
-      {/* ════ Registro del estudio ════ */}
+      {/* ════ Órdenes de rayos X pendientes ════ */}
       <div className="xray-card">
+        <div className="xray-card-title">
+          <FileTextOutlined style={{ color: "var(--theme-primary, #0F6F5C)" }} />
+          Órdenes de rayos X pendientes
+          {ordenesPendientes && ordenesPendientes.length > 0 && (
+            <span className="xray-orders-count">{ordenesPendientes.length}</span>
+          )}
+        </div>
+        {ordenesError ? (
+          <Alert
+            type="error"
+            showIcon
+            title="No se pudieron cargar las órdenes de rayos X de esta admisión."
+          />
+        ) : loadingOrdenes ? (
+          <Skeleton active paragraph={{ rows: 1 }} title={false} />
+        ) : !ordenesPendientes?.length ? (
+          <span style={{ color: "var(--dash-text-secondary, #6b7280)", fontSize: 13 }}>
+            No hay órdenes de rayos X pendientes. Las que ordene el médico aparecerán aquí.
+          </span>
+        ) : (
+          <div className="xray-orders-list">
+            {ordenesPendientes.map((orden) => {
+              const selected = ordenSeleccionada?.ordenMedicaItemId === orden.ordenMedicaItemId
+              return (
+                <div
+                  key={orden.ordenMedicaItemId}
+                  className={`xray-order${selected ? " xray-order--selected" : ""}`}
+                >
+                  <div className="xray-order-main">
+                    <span className="xray-order-name">
+                      {orden.descripcion}
+                      <span className="xray-order-code">{orden.codigo}</span>
+                    </span>
+                    <span className="xray-order-meta">
+                      Orden #{orden.ordenMedicaId} · {formatDateTime(orden.fechaOrden, "")} ·{" "}
+                      {orden.asistencialNombre}
+                      {orden.asistencialPerfil ? ` (${orden.asistencialPerfil})` : ""} ·{" "}
+                      {orden.ambito}
+                    </span>
+                    {orden.indicaciones && (
+                      <span className="xray-order-indications">
+                        Indicación: {orden.indicaciones}
+                      </span>
+                    )}
+                  </div>
+                  <div className="xray-order-actions">
+                    {orden.estado === "Vencida" && <Tag color="orange">Vencida</Tag>}
+                    <Button
+                      size="small"
+                      type={selected ? "default" : "primary"}
+                      disabled={selected || isSaving}
+                      onClick={() => selectOrden(orden)}
+                    >
+                      {selected ? "En el formulario" : "Registrar estudio"}
+                    </Button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ════ Registro del estudio ════ */}
+      <div className="xray-card" ref={formCardRef} style={{ scrollMarginTop: 16 }}>
         <div className="xray-card-title" style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
           <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <RadarChartOutlined style={{ color: "#d46b08" }} />
@@ -464,6 +583,30 @@ const XrayContainer = () => {
             showIcon
             style={{ marginBottom: 16 }}
             title="Su usuario no tiene parametrizada la tarjeta profesional y/o la firma. El informe se generará sin esos datos hasta que se registren en el módulo de Usuarios."
+          />
+        )}
+
+        {ordenSeleccionada && !editing && (
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+            title={`Realizando la orden #${ordenSeleccionada.ordenMedicaId} de ${ordenSeleccionada.asistencialNombre}.`}
+            description="Al guardar el estudio, la orden quedará realizada y se cargará a la hoja de gastos."
+            action={
+              <Button size="small" onClick={() => setOrdenSeleccionada(null)}>
+                Registrar sin orden
+              </Button>
+            }
+          />
+        )}
+
+        {editing?.ordenMedicaItemId && (
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+            title={`Este estudio realizó la orden médica #${editing.ordenMedicaId}.`}
           />
         )}
 

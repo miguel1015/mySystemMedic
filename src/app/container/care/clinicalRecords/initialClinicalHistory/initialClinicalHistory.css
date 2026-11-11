@@ -599,13 +599,64 @@
   min-width: 0;
 }
 
-.physical-exam-row {
-  align-items: center;
-  display: grid;
-  gap: 10px;
-  grid-template-columns: minmax(120px, 155px) minmax(0, 1fr);
+/* Examen físico: cada sistema es un bloque con cabecera (nombre + "Normal")
+   y el hallazgo debajo a todo el ancho. */
+.physical-exam-header {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  justify-content: space-between;
+}
+
+.physical-exam-progress {
+  color: var(--dash-text-secondary, #667085);
+  font-size: 12px;
+}
+
+.physical-exam-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
   min-width: 0;
 }
+
+.physical-exam-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 0;
+}
+
+.physical-exam-item + .physical-exam-item {
+  border-top: 1px solid var(--dash-border, #e4eae8);
+}
+
+.physical-exam-item:last-child { padding-bottom: 0; }
+
+.physical-exam-item-head {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.physical-exam-label {
+  color: var(--dash-text-secondary, #344054);
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.physical-exam-normal {
+  flex-shrink: 0;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.physical-exam-item .ant-input { line-height: 1.55; }
 
 .vital-signs-grid {
   display: grid;
@@ -773,11 +824,6 @@
   .evolution-form-footer .ant-btn,
   .evolution-form-footer .ant-btn-group { width: 100%; }
   .evolution-form-footer .ant-btn-group .ant-btn:first-child { flex: 1; }
-
-  .physical-exam-row {
-    align-items: stretch;
-    grid-template-columns: 1fr;
-  }
 
   .plan-row { align-items: flex-start; }
   .plan-row .ant-btn { margin-left: 0; width: 100%; }

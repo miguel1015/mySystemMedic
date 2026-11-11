@@ -77,8 +77,86 @@
   gap: 8px;
 }
 
+/* Órdenes de rayos X pendientes de realizar */
+.xray-orders-count {
+  background: var(--theme-primary, #0F6F5C);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+  min-width: 20px;
+  padding: 0 7px;
+  text-align: center;
+}
+
+.xray-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.xray-order {
+  align-items: center;
+  border: 1px solid var(--dash-border, #e5e7eb);
+  border-radius: 8px;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 10px 14px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.xray-order--selected {
+  background: color-mix(in srgb, var(--theme-primary, #0F6F5C) 8%, transparent);
+  border-color: var(--theme-primary, #0F6F5C);
+}
+
+.xray-order-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.xray-order-name {
+  color: var(--dash-text-primary, #111827);
+  font-weight: 600;
+}
+
+.xray-order-code {
+  color: var(--dash-text-secondary, #6b7280);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.xray-order-meta,
+.xray-order-indications {
+  color: var(--dash-text-secondary, #6b7280);
+  font-size: 12.5px;
+}
+
+.xray-order-indications {
+  overflow-wrap: anywhere;
+}
+
+.xray-order-actions {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
 @media (max-width: 640px) {
   .xray-form-row {
     grid-template-columns: 1fr;
   }
+
+  .xray-order {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .xray-order-actions { justify-content: space-between; }
 }

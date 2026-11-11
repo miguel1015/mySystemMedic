@@ -8,8 +8,16 @@ import {
   formatDateTime,
   type PrintPatient,
 } from "./printDocument.utils";
-import { useAdmissionDischargeDate } from "./useAdmissionDischargeDate";
+import { useAdmissionDischarge } from "./useAdmissionDischargeDate";
 import { formatDate, formatTime } from "@/core/utils/date";
+
+/** Profesional que firma el documento, para el bloque de la epicrisis. */
+export interface HeaderProfessional {
+  name?: string;
+  specialty?: string | null;
+  /** Tarjeta profesional (Rethus). */
+  licenseCard?: string | null;
+}
 
 interface Props {
   provider?: TProvider;
@@ -18,13 +26,21 @@ interface Props {
   admissionDate: string;
   contractName: string;
   documentTitle: string;
+  /** @deprecated La epicrisis rotula siempre "Fecha historia"; se conserva por compatibilidad. */
   attentionLabel?: string;
   attentionDate: string;
   attentionTime: string;
   showSex?: boolean;
-  /** Epicrisis: antes del título, fecha de egreso y fecha/hora del proceso. */
+  /**
+   * Epicrisis: los datos del paciente van en la tabla "Datos del Paciente —
+   * Epicrisis" (ingreso/egreso, servicios, entidad...) y debajo la fecha de la
+   * historia con el profesional que la firma.
+   */
   showProcessDates?: boolean;
+  professional?: HeaderProfessional;
 }
+
+const value = (text?: string | null) => (text && text.trim() ? text : emptyDash);
 
 export const ClinicalDocumentHeader = ({
   provider,
@@ -33,35 +49,108 @@ export const ClinicalDocumentHeader = ({
   admissionDate,
   contractName,
   documentTitle,
-  attentionLabel,
   attentionDate,
   attentionTime,
   showSex = false,
   showProcessDates = false,
+  professional,
 }: Props) => {
-  const dischargeDate = useAdmissionDischargeDate(admissionId);
-  const dischargeLabel = formatDateTime(dischargeDate ?? "") || emptyDash;
+  const discharge = useAdmissionDischarge(admissionId);
+  const dischargeLabel = formatDateTime(discharge.date ?? "") || emptyDash;
+
+  const institution = (
+    <div className="hci-print-header">
+      <InstitutionLogo provider={provider} className="hci-print-logo" />
+      <div className="hci-print-entity">
+        <div className="hci-print-entity-name">
+          {provider?.name || "Institución Prestadora de Salud"}
+        </div>
+        {provider?.nit && <div>NIT: {provider.nit}</div>}
+        {provider?.address && <div>Dirección: {provider.address}</div>}
+        {provider?.phone && <div>Tel: {provider.phone}</div>}
+        {provider?.enableCode && (
+          <div>Código de habilitación: {provider.enableCode}</div>
+        )}
+      </div>
+      <div className="hci-print-hc-number">
+        <div className="hci-print-hc-number-title">Historia Clínica</div>
+        <div>N° {admissionId ?? emptyDash}</div>
+      </div>
+    </div>
+  );
+
+  if (showProcessDates) {
+    // Pares [etiqueta, valor] de cada fila: columna izquierda | columna derecha.
+    const rows: Array<[string, string, string, string]> = [
+      ["Ingreso", value(formatDateTime(admissionDate)), "Egreso", dischargeLabel],
+      ["Servicio ingreso", value(patient.careScope?.toUpperCase()), "Servicio egreso", value(discharge.service?.toUpperCase())],
+      ["Paciente", value(patient.name?.toUpperCase()), "Documento", value([patient.documentType, patient.documentNumber].filter(Boolean).join(" "))],
+      ["Fecha nac.", value(patient.birthDate?.slice(0, 10)), "Edad", value(calculateAge(patient.birthDate))],
+      ["Entidad", value(patient.insurer?.toUpperCase()), "Contrato", value(contractName?.toUpperCase())],
+      ["Dirección", value(patient.address?.toUpperCase()), "Ciudad", value(patient.city?.toUpperCase())],
+    ];
+
+    const historyDate = [
+      formatDate(attentionDate, ""),
+      attentionTime ? formatTime(attentionTime, "") : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return (
+      <div className="hci-print-header-block">
+        {institution}
+
+        <div className="hci-print-title">{documentTitle}</div>
+
+        <table className="epicrisis-patient-table">
+          <thead>
+            <tr>
+              <th colSpan={4}>Datos del Paciente — Epicrisis</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([leftLabel, leftValue, rightLabel, rightValue]) => (
+              <tr key={leftLabel}>
+                <th scope="row">{leftLabel}</th>
+                <td className={leftLabel === "Paciente" ? "epicrisis-patient-name" : undefined}>
+                  {leftValue}
+                </td>
+                <th scope="row">{rightLabel}</th>
+                <td>{rightValue}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="epicrisis-history-info">
+          <div className="epicrisis-history-row">
+            <span>
+              <strong>Fecha historia:</strong>{" "}
+              {historyDate || emptyDash}
+            </span>
+          </div>
+          <div className="epicrisis-history-row epicrisis-history-row--split">
+            <span>
+              <strong>Profesional:</strong> {value(professional?.name?.toUpperCase())}
+            </span>
+            <span>
+              <strong>Especialidad:</strong> {value(professional?.specialty?.toUpperCase())}
+            </span>
+          </div>
+          <div className="epicrisis-history-row">
+            <span>
+              <strong>Rethus:</strong> {value(professional?.licenseCard)}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="hci-print-header-block">
-      <div className="hci-print-header">
-        <InstitutionLogo provider={provider} className="hci-print-logo" />
-        <div className="hci-print-entity">
-          <div className="hci-print-entity-name">
-            {provider?.name || "Institución Prestadora de Salud"}
-          </div>
-          {provider?.nit && <div>NIT: {provider.nit}</div>}
-          {provider?.address && <div>Dirección: {provider.address}</div>}
-          {provider?.phone && <div>Tel: {provider.phone}</div>}
-          {provider?.enableCode && (
-            <div>Código de habilitación: {provider.enableCode}</div>
-          )}
-        </div>
-        <div className="hci-print-hc-number">
-          <div className="hci-print-hc-number-title">Historia Clínica</div>
-          <div>N° {admissionId ?? emptyDash}</div>
-        </div>
-      </div>
+      {institution}
 
       <div className="hci-print-title">{documentTitle}</div>
 
@@ -115,33 +204,11 @@ export const ClinicalDocumentHeader = ({
             {formatDateTime(admissionDate) || emptyDash}
           </span>
         </div>
-        {/* En la epicrisis la fecha de egreso va en la línea de fechas de abajo. */}
-        {!showProcessDates && (
-          <div className="hci-print-row">
-            <span className="hci-print-label">Fecha de egreso:</span>
-            <span className="hci-print-value">{dischargeLabel}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Epicrisis: después de los datos del paciente, egreso y fecha del proceso. */}
-      {showProcessDates && (
-        <div className="hci-print-process-dates">
-          <div className="hci-print-row">
-            <span className="hci-print-label">Fecha de egreso:</span>
-            <span className="hci-print-value">{dischargeLabel}</span>
-          </div>
-          <div className="hci-print-row">
-            <span className="hci-print-label">
-              {attentionLabel || "Fecha y hora:"}
-            </span>
-            <span className="hci-print-value">
-              {formatDate(attentionDate, emptyDash)}{" "}
-              {attentionTime ? formatTime(attentionTime, "") : ""}
-            </span>
-          </div>
+        <div className="hci-print-row">
+          <span className="hci-print-label">Fecha de egreso:</span>
+          <span className="hci-print-value">{dischargeLabel}</span>
         </div>
-      )}
+      </div>
     </div>
   );
 };
