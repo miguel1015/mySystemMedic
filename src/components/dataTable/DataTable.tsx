@@ -12,6 +12,8 @@ export interface QuickFilter<T> {
   getValue: (row: T) => string | null | undefined
   // Cómo mostrar cada opción (p. ej. "NUEVA EPS S.A" -> "Nueva EPS S.A").
   formatLabel?: (value: string) => string
+  // Orden fijo de las opciones (p. ej. rangos de días); sin esto van en orden alfabético.
+  order?: string[]
 }
 
 export interface DataTableProps<T> {
@@ -20,6 +22,8 @@ export interface DataTableProps<T> {
   rowKey: keyof T & string
   // Nombre de lo que lista la tabla, para conteos y mensajes: ["paciente", "pacientes"].
   entity: [string, string]
+  // Género gramatical de la entidad, para "Ninguna admisión…" / "aseguradoras registradas".
+  feminine?: boolean
   loading?: boolean
   error?: boolean
   onRetry?: () => void
@@ -33,10 +37,17 @@ export interface DataTableProps<T> {
   onRowClick?: (row: T) => void
   // Acción del estado vacío: "Registrar el primer paciente".
   emptyAction?: { label: string; onClick: () => void }
+  // Mensaje cuando no hay datos (sin filtros). Por defecto: "Aún no hay pacientes registrados."
+  emptyText?: string
   // Vista en celular (< 768 px): una tarjeta por fila en lugar de la tabla.
   renderCard?: (row: T) => ReactNode
   pageSize?: number
+  // Guarda búsqueda, filtros, página y tamaño en la URL (?q=…&eps=…&page=2): al volver o
+  // compartir el enlace la tabla queda igual.
+  syncUrl?: boolean
 }
+
+const PAGE_SIZES = [10, 20, 50]
 
 // Búsqueda sin tildes ni mayúsculas. Los puntos de miles se ignoran, así "1.952" encuentra
 // el documento 1952654.
@@ -65,6 +76,7 @@ export default function DataTable<T extends object>({
   columns,
   rowKey,
   entity,
+  feminine,
   loading,
   error,
   onRetry,
@@ -74,14 +86,37 @@ export default function DataTable<T extends object>({
   rowNumbers,
   onRowClick,
   emptyAction,
+  emptyText,
   renderCard,
   pageSize: initialPageSize = 10,
+  syncUrl,
 }: DataTableProps<T>) {
   const [query, setQuery] = useState("")
   const [filterValues, setFilterValues] = useState<Record<string, string | undefined>>({})
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(initialPageSize)
   const narrow = useIsNarrow()
+  // Con syncUrl, la URL solo se escribe después de leerla, para no borrarla al montar.
+  const [urlRead, setUrlRead] = useState(!syncUrl)
+
+  useEffect(() => {
+    if (!syncUrl) return
+    const params = new URLSearchParams(window.location.search)
+    setQuery(params.get("q") ?? "")
+    const values: Record<string, string | undefined> = {}
+    for (const f of quickFilters) {
+      const v = params.get(f.key)
+      if (v) values[f.key] = v
+    }
+    setFilterValues(values)
+    const size = Number(params.get("size"))
+    if (PAGE_SIZES.includes(size)) setPageSize(size)
+    const p = Number(params.get("page"))
+    if (Number.isInteger(p) && p > 1) setPage(p)
+    setUrlRead(true)
+    // Solo al montar: después la tabla es la dueña del estado.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncUrl])
 
   // Opciones de cada filtro rápido a partir de los datos, ordenadas.
   const filterOptions = useMemo(
@@ -92,7 +127,13 @@ export default function DataTable<T extends object>({
         )
         return values
           .map((v) => ({ value: v, label: f.formatLabel ? f.formatLabel(v) : v }))
-          .sort((a, b) => a.label.localeCompare(b.label, "es"))
+          .sort((a, b) => {
+            if (f.order) {
+              const rank = (v: string) => (f.order!.indexOf(v) + 1 || f.order!.length + 1)
+              return rank(a.value) - rank(b.value)
+            }
+            return a.label.localeCompare(b.label, "es")
+          })
       }),
     [data, quickFilters],
   )
@@ -111,17 +152,44 @@ export default function DataTable<T extends object>({
     })
   }, [data, query, filterValues, quickFilters, searchText])
 
-  // Cualquier cambio de búsqueda o filtro vuelve a la página 1.
-  useEffect(() => setPage(1), [query, filterValues])
-
   // Si se borra el último registro de la última página, no quedarse en una página vacía.
   const lastPage = Math.max(1, Math.ceil(filtered.length / pageSize))
   const current = Math.min(page, lastPage)
 
+  useEffect(() => {
+    if (!syncUrl || !urlRead) return
+    const params = new URLSearchParams(window.location.search)
+    const put = (key: string, value: string | undefined) =>
+      value ? params.set(key, value) : params.delete(key)
+    put("q", query.trim() || undefined)
+    for (const f of quickFilters) put(f.key, filterValues[f.key])
+    // Mientras cargan los datos aún no se sabe cuántas páginas hay: se respeta la pedida.
+    const shownPage = loading ? page : current
+    put("page", shownPage > 1 ? String(shownPage) : undefined)
+    put("size", pageSize !== initialPageSize ? String(pageSize) : undefined)
+    const qs = params.toString()
+    const url = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`
+    if (url !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+      window.history.replaceState(window.history.state, "", url)
+    }
+    // quickFilters cambia de identidad en cada render; sus claves no.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncUrl, urlRead, query, filterValues, page, current, pageSize, initialPageSize, loading])
+
   const activeFilters = Object.values(filterValues).filter(Boolean).length + (query.trim() ? 1 : 0)
+  // Cualquier cambio de búsqueda o filtro vuelve a la página 1.
+  const changeQuery = (value: string) => {
+    setQuery(value)
+    setPage(1)
+  }
+  const changeFilter = (key: string, value: string | undefined) => {
+    setFilterValues((prev) => ({ ...prev, [key]: value }))
+    setPage(1)
+  }
   const clearAll = () => {
     setQuery("")
     setFilterValues({})
+    setPage(1)
   }
 
   const allColumns: ColumnsType<T> = rowNumbers
@@ -153,6 +221,8 @@ export default function DataTable<T extends object>({
     : undefined
 
   const [singular, plural] = entity
+  const none = feminine ? "Ninguna" : "Ningún"
+  const registered = feminine ? "registradas" : "registrados"
   // El total ya lo muestra el encabezado de la página: aquí solo aparece al filtrar.
   const countLabel =
     activeFilters > 0
@@ -164,7 +234,7 @@ export default function DataTable<T extends object>({
     data.length === 0 ? (
       <div className={styles.empty}>
         <InboxOutlined className={styles.emptyIcon} aria-hidden />
-        <p className={styles.emptyTitle}>Aún no hay {plural} registrados.</p>
+        <p className={styles.emptyTitle}>{emptyText ?? `Aún no hay ${plural} ${registered}.`}</p>
         {emptyAction && (
           <Button type="primary" onClick={emptyAction.onClick}>
             {emptyAction.label}
@@ -176,8 +246,8 @@ export default function DataTable<T extends object>({
         <SearchOutlined className={styles.emptyIcon} aria-hidden />
         <p className={styles.emptyTitle}>
           {query.trim()
-            ? `Ningún ${singular} coincide con “${query.trim()}”.`
-            : `Ningún ${singular} cumple los filtros elegidos.`}
+            ? `${none} ${singular} coincide con “${query.trim()}”.`
+            : `${none} ${singular} cumple los filtros elegidos.`}
         </p>
         <Button onClick={clearAll}>Limpiar búsqueda y filtros</Button>
       </div>
@@ -191,7 +261,7 @@ export default function DataTable<T extends object>({
           placeholder={searchPlaceholder ?? `Buscar ${plural}…`}
           prefix={<SearchOutlined aria-hidden />}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => changeQuery(e.target.value)}
           allowClear
           aria-label={searchPlaceholder ?? `Buscar ${plural}`}
         />
@@ -206,7 +276,7 @@ export default function DataTable<T extends object>({
           showSearch
           optionFilterProp="label"
           value={filterValues[f.key]}
-          onChange={(v) => setFilterValues((prev) => ({ ...prev, [f.key]: v ?? undefined }))}
+          onChange={(v) => changeFilter(f.key, v ?? undefined)}
           options={filterOptions[i]}
           popupMatchSelectWidth={false}
         />
@@ -245,7 +315,6 @@ export default function DataTable<T extends object>({
         <div className={styles.skeleton}>
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className={styles.skeletonRow}>
-              <Skeleton.Avatar active size={34} />
               <Skeleton active title={false} paragraph={{ rows: 2, width: ["45%", "25%"] }} />
             </div>
           ))}
@@ -305,7 +374,7 @@ export default function DataTable<T extends object>({
               pageSize,
               total: filtered.length,
               showSizeChanger: true,
-              pageSizeOptions: ["10", "20", "50"],
+              pageSizeOptions: PAGE_SIZES.map(String),
               locale: { items_per_page: "/ página" },
               showTotal: (total, range) => `${range[0]}–${range[1]} de ${total.toLocaleString("es-CO")}`,
               onChange: (p, size) => {

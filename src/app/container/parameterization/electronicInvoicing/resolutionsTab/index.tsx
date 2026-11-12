@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { useState } from "react"
 import toast from "react-hot-toast"
 import { Alert, Button, Space, Table, Tag, Tooltip } from "antd"
@@ -156,6 +157,7 @@ export default function ResolutionsTab({ resolutions, software }: ResolutionsTab
       </div>
 
       <Table
+        className={tableStyles.table}
         rowKey="resolutionId"
         columns={columns}
         dataSource={resolutions}

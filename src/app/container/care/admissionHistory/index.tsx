@@ -1,12 +1,15 @@
 "use client"
 
 import { Container } from "@/components/container"
-import { formatPersonName, formatInstitutionName } from "@/core/utils/displayText";
-import Title from "@/components/title"
-import { Button, Input, Table, Tag, Tooltip } from "antd"
+import { formatPersonName, formatInstitutionName } from "@/core/utils/displayText"
+import DataTable from "@/components/dataTable/DataTable"
+import PageHeader from "@/components/dataTable/PageHeader"
+import { PersonCell, RowActions, formatDocument } from "@/components/dataTable/cells"
+import cellStyles from "@/components/dataTable/dataTable.module.scss"
+import { Button, Input } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import { HistoryOutlined, SearchOutlined } from "@ant-design/icons"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AdmissionHistoryPatient } from "@/core/interfaces/care/types"
 import { useGetAdmissionHistoryPatients } from "@/core/hooks/care/admissions/useAdmissionHistory"
 import { formatDateTime } from "@/core/utils/date"
@@ -15,81 +18,141 @@ import PatientAdmissionsModal from "./patientAdmissionsModal"
 export default function AdmissionHistoryContainer() {
   const [searchTerm, setSearchTerm] = useState("")
   const [search, setSearch] = useState("")
-  const [selectedPatient, setSelectedPatient] =
-    useState<AdmissionHistoryPatient | null>(null)
-  const { data: patients = [], isFetching } = useGetAdmissionHistoryPatients(search)
+  const [selectedPatient, setSelectedPatient] = useState<AdmissionHistoryPatient | null>(null)
+  const { data: patients = [], isFetching, isError, refetch } = useGetAdmissionHistoryPatients(search)
+
+  // La búsqueda en el servidor queda en la URL (?buscar=…): al volver se repite.
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.search).get("buscar") ?? ""
+    if (value) {
+      setSearchTerm(value)
+      setSearch(value)
+    }
+  }, [])
+
+  const runSearch = (value: string) => {
+    const term = value.trim()
+    setSearch(term)
+    const params = new URLSearchParams(window.location.search)
+    if (term) params.set("buscar", term)
+    else params.delete("buscar")
+    const qs = params.toString()
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`)
+  }
+
+  const historyAction = (r: AdmissionHistoryPatient) => (
+    <RowActions
+      subject={formatPersonName(r.nombrePaciente)}
+      editLabel="Ver admisiones"
+      editIcon={<HistoryOutlined />}
+      onEdit={() => setSelectedPatient(r)}
+    />
+  )
 
   const columns: ColumnsType<AdmissionHistoryPatient> = [
     {
-      title: "Documento",
-      key: "documento",
-      render: (_, r) => `${r.documentTypeCode} ${r.documentoPatiente}`,
+      title: "Paciente",
+      key: "patient",
+      sorter: (a, b) => a.nombrePaciente.localeCompare(b.nombrePaciente, "es"),
+      render: (_, r) => (
+        <PersonCell
+          name={formatPersonName(r.nombrePaciente)}
+          detail={formatDocument(r.documentTypeCode, r.documentoPatiente)}
+        />
+      ),
     },
-    { title: "Paciente", dataIndex: "nombrePaciente", key: "nombrePaciente", render: (v: string) => formatPersonName(v) },
-    { title: "EPS (última admisión cerrada)", dataIndex: "epsNombre", key: "epsNombre", render: (v: string) => formatInstitutionName(v) },
+    {
+      title: "EPS (última admisión cerrada)",
+      key: "insurer",
+      width: 260,
+      render: (_, r) => {
+        const eps = formatInstitutionName(r.epsNombre) || "—"
+        return (
+          <span className={cellStyles.oneLine} title={eps}>
+            {eps}
+          </span>
+        )
+      },
+    },
     {
       title: "Admisiones cerradas",
-      key: "admisiones",
-      align: "center",
-      render: (_, r) => <Tag color="green">{r.totalAdmisiones}</Tag>,
+      dataIndex: "totalAdmisiones",
+      width: 160,
+      align: "right",
+      sorter: (a, b) => a.totalAdmisiones - b.totalAdmisiones,
+      render: (value: number) => <span className={cellStyles.tabular}>{value}</span>,
     },
     {
-      title: "Última admisión cerrada",
+      title: "Última admisión",
       dataIndex: "ultimaAdmision",
-      key: "ultimaAdmision",
-      render: (value: string) => formatDateTime(value),
+      width: 170,
+      defaultSortOrder: "descend",
+      sorter: (a, b) => (a.ultimaAdmision ?? "").localeCompare(b.ultimaAdmision ?? ""),
+      render: (value: string) => <span className={cellStyles.tabular}>{formatDateTime(value)}</span>,
     },
     {
-      title: "Historial",
-      key: "historial",
-      align: "center",
+      title: <span className="visually-hidden">Acciones</span>,
+      key: "actions",
+      width: 72,
+      align: "right",
       fixed: "right",
-      render: (_, r) => (
-        <Tooltip title="Ver admisiones del paciente">
-          <Button
-            type="text"
-            icon={<HistoryOutlined style={{ fontSize: 18 }} />}
-            onClick={() => setSelectedPatient(r)}
-          />
-        </Tooltip>
-      ),
+      render: (_, r) => historyAction(r),
     },
   ]
 
   return (
     <Container>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-        <HistoryOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-        <Title level={3}>Historial de admisiones</Title>
-      </div>
+      <PageHeader
+        icon={<HistoryOutlined />}
+        title="Historial de admisiones"
+        subtitle="Pacientes con admisiones cerradas (con factura electrónica)"
+      />
 
       <Input.Search
         size="large"
         placeholder="Buscar por documento o nombre del paciente"
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
-        onSearch={(value) => setSearch(value.trim())}
+        onSearch={runSearch}
         enterButton={<Button type="primary" icon={<SearchOutlined />}>Buscar</Button>}
         loading={isFetching}
         allowClear
         style={{ maxWidth: 640, marginBottom: 16 }}
       />
 
-      <Table<AdmissionHistoryPatient>
-        size="middle"
+      <DataTable<AdmissionHistoryPatient>
+        data={patients}
         columns={columns}
-        dataSource={patients}
-        loading={isFetching}
         rowKey="patientId"
-        pagination={patients.length > 10 ? { pageSize: 10, showSizeChanger: false } : false}
-        scroll={{ x: "max-content" }}
-        locale={{ emptyText: "No hay pacientes con admisiones cerradas para los criterios de búsqueda" }}
+        entity={["paciente", "pacientes"]}
+        loading={isFetching}
+        error={isError}
+        onRetry={() => refetch()}
+        emptyText={
+          search
+            ? `Ningún paciente con admisiones cerradas coincide con “${search}”.`
+            : "Aún no hay pacientes con admisiones cerradas."
+        }
+        rowNumbers
+        onRowClick={setSelectedPatient}
+        renderCard={(p) => (
+          <div className={cellStyles.rowCard}>
+            <div className={cellStyles.rowCardBody}>
+              <PersonCell
+                name={formatPersonName(p.nombrePaciente)}
+                detail={formatDocument(p.documentTypeCode, p.documentoPatiente)}
+              />
+              <span className={cellStyles.personDetail}>
+                {p.totalAdmisiones} {p.totalAdmisiones === 1 ? "admisión cerrada" : "admisiones cerradas"} · última{" "}
+                {formatDateTime(p.ultimaAdmision)}
+              </span>
+            </div>
+            {historyAction(p)}
+          </div>
+        )}
       />
 
-      <PatientAdmissionsModal
-        patient={selectedPatient}
-        onClose={() => setSelectedPatient(null)}
-      />
+      <PatientAdmissionsModal patient={selectedPatient} onClose={() => setSelectedPatient(null)} />
     </Container>
   )
 }

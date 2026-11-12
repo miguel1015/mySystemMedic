@@ -199,6 +199,7 @@ export default function SuppliersContainer() {
           columns={columns}
           rowKey="id"
           entity={["proveedor", "proveedores"]}
+          syncUrl
           loading={isLoading}
           error={isError}
           onRetry={() => refetch()}

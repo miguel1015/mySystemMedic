@@ -261,6 +261,8 @@ export default function WarehousesContainer() {
           columns={columns}
           rowKey="id"
           entity={["bodega", "bodegas"]}
+          feminine
+          syncUrl
           loading={isLoading}
           error={isError}
           onRetry={() => refetch()}

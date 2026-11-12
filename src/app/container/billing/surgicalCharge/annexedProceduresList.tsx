@@ -1,5 +1,6 @@
 "use client";
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -61,6 +62,7 @@ const AnnexedProceduresList = ({ procedures, onRemove }: AnnexedProceduresListPr
       </div>
 
       <Table<AnnexedProcedure>
+        className={tableStyles.table}
         rowKey="tempId"
         size="small"
         columns={columns}

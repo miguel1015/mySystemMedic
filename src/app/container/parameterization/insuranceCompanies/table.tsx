@@ -1,123 +1,196 @@
 "use client";
 
-import { Container } from "@/components/container";
-import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
-import ModalConfirm from "@/components/modalConfirmation.tsx";
-import { useDeleteInsuranceCompany } from "@/core/hooks/parameterization/insuranceCompany/useDeleteInsuranceCompany";
-import { useInsurers } from "@/core/hooks/utils/useInsurer";
-import { TInsurers } from "@/core/interfaces/user/users";
-import { Button, Input, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { DeleteOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
+import ModalConfirm from "@/components/modalConfirmation.tsx";
+import DataTable from "@/components/dataTable/DataTable";
+import { RowActions } from "@/components/dataTable/cells";
+import cellStyles from "@/components/dataTable/dataTable.module.scss";
+import { useDeleteInsuranceCompany } from "@/core/hooks/parameterization/insuranceCompany/useDeleteInsuranceCompany";
+import { TInsurers } from "@/core/interfaces/user/users";
+import { formatCatalogLabel, formatInstitutionName } from "@/core/utils/displayText";
 
 interface InsuranceTableProps {
+  data: TInsurers[];
+  isLoading: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   onEdit: (id: number) => void;
+  onCreate: () => void;
 }
 
-export default function InsuranceTable({ onEdit }: InsuranceTableProps) {
-  const { data: dataInsurers = [], isLoading } = useInsurers();
+// "900156264" + 2 -> "NIT 900.156.264-2"
+const formatNit = (nit?: string | null, dv?: number | string | null) => {
+  const n = (nit ?? "").trim();
+  if (!n) return "";
+  const pretty = /^\d+$/.test(n) ? Number(n).toLocaleString("es-CO") : n;
+  return `NIT ${pretty}${dv !== null && dv !== undefined && dv !== "" ? `-${dv}` : ""}`;
+};
+
+const placeOf = (i: TInsurers) =>
+  [formatCatalogLabel(i.cityName), formatCatalogLabel(i.stateName)].filter(Boolean).join(", ");
+
+export default function InsuranceTable({
+  data,
+  isLoading,
+  isError,
+  onRetry,
+  onEdit,
+  onCreate,
+}: InsuranceTableProps) {
+  const [toDelete, setToDelete] = useState<TInsurers | null>(null);
   const deleteInsurer = useDeleteInsuranceCompany();
 
-  const [search, setSearch] = useState("");
-  const [openConfirm, setOpenConfirm] = useState(false);
-  const [insurerToDelete, setInsurerToDelete] = useState<number | null>(null);
+  const handleDelete = () => {
+    if (!toDelete) return;
+    deleteInsurer.mutate(toDelete.id, {
+      onSuccess: () => toast.success("Aseguradora eliminada"),
+      onError: () => toast.error("No se pudo eliminar la aseguradora"),
+      onSettled: () => setToDelete(null),
+    });
+  };
 
-  // ---------- FILTRO ----------
-  const filteredInsurers = useMemo<TInsurers[]>(() => {
-    const term = search.toLowerCase();
+  const actionsFor = (record: TInsurers) => (
+    <RowActions
+      subject={formatInstitutionName(record.name)}
+      onEdit={() => onEdit(record.id)}
+      items={[
+        {
+          key: "delete",
+          label: "Eliminar aseguradora",
+          icon: <DeleteOutlined />,
+          danger: true,
+          onClick: () => setToDelete(record),
+        },
+      ]}
+    />
+  );
 
-    return dataInsurers.filter(
-      (insurer) =>
-        insurer.name.toLowerCase().includes(term) ||
-        String(insurer.id).includes(term),
-    );
-  }, [search, dataInsurers]);
-
-  // Numeración continua entre páginas (antd da el índice dentro de la página).
-  const { onTableChange, rowNumber } = useRowNumbering(filteredInsurers.length);
-
-  // ---------- COLUMNAS ----------
   const columns: ColumnsType<TInsurers> = [
     {
-      title: "#",
-      width: 80,
-      render: (_value, _record, index) => rowNumber(index),
-    },
-    {
-      title: "ID",
-      dataIndex: "id",
-      sorter: (a, b) => a.id - b.id,
-    },
-    {
-      title: "Nombre",
-      dataIndex: "name",
-    },
-    {
-      title: "Acciones",
-      render: (_, record) => (
-        <Space>
-          <Button type="primary" onClick={() => onEdit(record.id)}>
-            Editar
-          </Button>
-
-          <Button
-            danger
-            onClick={() => {
-              setInsurerToDelete(record.id);
-              setOpenConfirm(true);
-            }}
-          >
-            Eliminar
-          </Button>
-        </Space>
+      title: "Aseguradora",
+      key: "name",
+      sorter: (a, b) => a.name.localeCompare(b.name, "es"),
+      render: (_, r) => (
+        <span className={cellStyles.stack}>
+          <span className={cellStyles.personName}>{formatInstitutionName(r.name)}</span>
+          <span className={cellStyles.personDetail}>
+            {[formatNit(r.nit, r.verificationDigit), r.code && `Código ${r.code}`]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </span>
       ),
+    },
+    {
+      title: "Tipo",
+      key: "type",
+      width: 200,
+      sorter: (a, b) =>
+        (a.administratorTypeName ?? "").localeCompare(b.administratorTypeName ?? "", "es"),
+      render: (_, r) => (
+        <span className={cellStyles.oneLine} title={r.administratorTypeName}>
+          {formatCatalogLabel(r.administratorTypeName) || "—"}
+        </span>
+      ),
+    },
+    {
+      title: "Ubicación",
+      key: "place",
+      width: 220,
+      render: (_, r) => placeOf(r) || "—",
+    },
+    {
+      title: "Contacto",
+      key: "contact",
+      width: 240,
+      render: (_, r) => (
+        <span className={cellStyles.stack}>
+          {r.phone1 ? (
+            <a href={`tel:${r.phone1.replace(/[^\d+]/g, "")}`} className={cellStyles.phone}>
+              {r.phone1}
+            </a>
+          ) : (
+            <span className={cellStyles.personDetail}>—</span>
+          )}
+          {r.email && (
+            <span className={`${cellStyles.oneLine} ${cellStyles.personDetail}`} title={r.email}>
+              {r.email}
+            </span>
+          )}
+        </span>
+      ),
+    },
+    {
+      title: <span className="visually-hidden">Acciones</span>,
+      key: "actions",
+      width: 96,
+      align: "right",
+      fixed: "right",
+      render: (_, r) => actionsFor(r),
     },
   ];
 
   return (
-    <Container className="py-4">
-      {/* Buscador */}
-      <div className="mb-3">
-        <Input
-          placeholder="Buscar aseguradora..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          allowClear
-          size="large"
-        />
-      </div>
-
-      {/* Tabla */}
-      <Table<TInsurers>
-        onChange={onTableChange}
-        size="small"
+    <>
+      <DataTable<TInsurers>
+        data={data}
         columns={columns}
-        dataSource={filteredInsurers}
         rowKey="id"
-        loading={{ spinning: isLoading, tip: "Cargando aseguradoras..." }}
-        pagination={{ pageSize: 10 }}
-        scroll={{ x: "max-content" }}
+        entity={["aseguradora", "aseguradoras"]}
+        feminine
+        loading={isLoading}
+        error={isError}
+        onRetry={onRetry}
+        rowNumbers
+        syncUrl
+        searchPlaceholder="Buscar por nombre, NIT o código…"
+        searchText={(i) => `${i.name} ${i.nit ?? ""} ${i.code ?? ""} ${i.email ?? ""}`}
+        quickFilters={[
+          {
+            key: "type",
+            placeholder: "Tipo",
+            getValue: (i) => i.administratorTypeName,
+            formatLabel: formatCatalogLabel,
+          },
+          {
+            key: "state",
+            placeholder: "Departamento",
+            getValue: (i) => i.stateName,
+            formatLabel: formatCatalogLabel,
+          },
+        ]}
+        onRowClick={(i) => onEdit(i.id)}
+        emptyAction={{ label: "Registrar la primera aseguradora", onClick: onCreate }}
+        renderCard={(i) => (
+          <div className={cellStyles.rowCard}>
+            <div className={cellStyles.stack}>
+              <span className={cellStyles.personName}>{formatInstitutionName(i.name)}</span>
+              <span className={cellStyles.personDetail}>
+                {[formatNit(i.nit, i.verificationDigit), formatCatalogLabel(i.administratorTypeName)]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+              {placeOf(i) && <span className={cellStyles.personDetail}>{placeOf(i)}</span>}
+            </div>
+            {actionsFor(i)}
+          </div>
+        )}
       />
 
-      {/* Confirmación */}
       <ModalConfirm
-        open={openConfirm}
-        onClose={() => setOpenConfirm(false)}
+        open={!!toDelete}
+        onClose={() => setToDelete(null)}
         title="Eliminar aseguradora"
-        subtitle="¿Estás seguro de eliminar esta aseguradora?"
-        onConfirm={() => {
-          if (!insurerToDelete) return;
-
-          deleteInsurer.mutate(insurerToDelete, {
-            onSuccess: () =>
-              toast.success("Aseguradora eliminada correctamente"),
-            onError: () => toast.error("Error eliminando aseguradora"),
-          });
-
-          setOpenConfirm(false);
-        }}
+        subtitle={
+          toDelete ? `¿Eliminar ${formatInstitutionName(toDelete.name)}? Esta acción no se puede deshacer.` : ""
+        }
+        onConfirm={handleDelete}
+        loading={deleteInsurer.isPending}
+        confirmText="Eliminar"
       />
-    </Container>
+    </>
   );
 }

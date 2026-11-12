@@ -1,5 +1,6 @@
 "use client";
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -175,6 +176,7 @@ export const DiagnosesTab = ({ diagnoses, onDiagnosesChange, disabled }: Props) 
       </div>
       <div className="diagnosis-table-wrap">
         <Table<DiagnosisRow>
+          className={tableStyles.table}
           columns={columns}
           dataSource={diagnoses}
           rowKey="id"

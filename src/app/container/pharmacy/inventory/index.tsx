@@ -24,6 +24,7 @@ import { PopupLayer, ProductCell, StatusTag, WarehouseName, WarehouseSelect, use
 import { PRODUCT_TYPE_OPTIONS, STATUS_META, expiryHint, fmtDate, fmtQty, fmtUnit } from "../shared/format"
 import MovementsTable from "../shared/MovementsTable"
 import styles from "../shared/pharmacy.module.scss"
+import { useUrlState } from "@/core/hooks/utils/useUrlState"
 
 type StatusFilter = InventoryStatus | "ConExistencia" | undefined
 
@@ -34,21 +35,42 @@ const STATUS_OPTIONS = [
 
 export default function InventoryContainer() {
   const can = usePharmacyAccess()
+  // Filtros y página en la URL (?buscar=…&bodega=3&estado=Vencido): al volver quedan igual.
+  // "estado=todos" representa "sin filtro de estado", distinto del valor por defecto.
+  const [url, setUrl] = useUrlState({
+    buscar: "",
+    tipo: "",
+    bodega: "",
+    estado: "ConExistencia",
+    pagina: "1",
+    tamano: "20",
+  })
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounced(search)
-  const [productType, setProductType] = useState<ProductType | undefined>()
-  const [warehouseId, setWarehouseId] = useState<number | undefined>()
-  const [status, setStatus] = useState<StatusFilter>("ConExistencia")
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
+  const productType = (url.tipo || undefined) as ProductType | undefined
+  const warehouseId = url.bodega ? Number(url.bodega) : undefined
+  const status = (url.estado === "todos" ? undefined : url.estado) as StatusFilter
+  const page = Math.max(1, Number(url.pagina) || 1)
+  const pageSize = [10, 20, 50, 100].includes(Number(url.tamano)) ? Number(url.tamano) : 20
   const [historyRow, setHistoryRow] = useState<InventoryRow | null>(null)
 
-  const filters = { search: debouncedSearch.trim() || undefined, productType, warehouseId }
+  // Cada cambio de filtro vuelve a la página 1.
+  const setStatus = (value: StatusFilter) => setUrl({ estado: value ?? "todos", pagina: "1" })
+  const setProductType = (value?: ProductType) => setUrl({ tipo: value ?? "", pagina: "1" })
+  const setWarehouseId = (value?: number) => setUrl({ bodega: value ? String(value) : "", pagina: "1" })
+
+  // El cuadro de búsqueda se llena con la URL; lo escrito pasa a la URL ya sin rebote.
+  useEffect(() => setSearch(url.buscar ?? ""), [url.buscar])
+  useEffect(() => {
+    const term = debouncedSearch.trim()
+    if (term !== (url.buscar ?? "")) setUrl({ buscar: term, pagina: "1" })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch])
+
+  const filters = { search: url.buscar || undefined, productType, warehouseId }
   const query: InventoryQuery = { ...filters, status, page, pageSize }
   const { data, isLoading, isFetching, isError, refetch } = useInventory(query)
   const { data: summary } = useInventorySummary(filters)
-
-  useEffect(() => setPage(1), [debouncedSearch, productType, warehouseId, status])
 
   const columns: ColumnsType<InventoryRow> = [
     {
@@ -270,10 +292,8 @@ export default function InventoryContainer() {
               pageSizeOptions: ["10", "20", "50", "100"],
               locale: { items_per_page: "/ página" },
               showTotal: (total, range) => `${range[0]}–${range[1]} de ${total.toLocaleString("es-CO")}`,
-              onChange: (p, size) => {
-                setPage(size !== pageSize ? 1 : p)
-                setPageSize(size)
-              },
+              onChange: (p, size) =>
+                setUrl({ pagina: String(size !== pageSize ? 1 : p), tamano: String(size) }),
             }}
           />
         )}

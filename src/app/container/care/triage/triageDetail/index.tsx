@@ -1,7 +1,7 @@
 "use client"
 
+import PageHeader from "@/components/dataTable/PageHeader"
 import { Container } from "@/components/container"
-import Title from "@/components/title"
 import { Button, Divider, Spin, Tag } from "antd"
 import {
   ArrowLeftOutlined,
@@ -152,38 +152,27 @@ export default function TriageDetail({ id }: TriageDetailProps) {
 
   return (
     <Container>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <MedicineBoxOutlined
-            style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }}
-          />
-          <Title level={3}>Detalle de Triage</Title>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => router.push("/care/triage")}
-          >
-            Volver
-          </Button>
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => router.push(`/care/triage/${data.id}/edit`)}
-          >
-            Editar
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        icon={<MedicineBoxOutlined />}
+        title="Detalle de Triage"
+        actions={
+          <>
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={() => router.push("/care/triage")}
+            >
+              Volver
+            </Button>
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => router.push(`/care/triage/${data.id}/edit`)}
+            >
+              Editar
+            </Button>
+          </>
+        }
+      />
 
       <div style={sectionCardStyle}>
         <p style={sectionTitleStyle}>

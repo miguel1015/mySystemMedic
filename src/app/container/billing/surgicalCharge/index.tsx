@@ -1,10 +1,10 @@
 "use client"
 
 import { Container } from "@/components/container"
-import Title from "@/components/title"
+import PageHeader from "@/components/dataTable/PageHeader"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
-import { MedicineBoxOutlined } from "@ant-design/icons"
+import { ArrowLeftOutlined, MedicineBoxOutlined } from "@ant-design/icons"
 import { Button, Select } from "antd"
 import { useRouter, useSearchParams } from "next/navigation"
 import CupsRequiredModal from "../admissionIntegral/serviceLoadingTab/cupsRequiredModal"
@@ -26,13 +26,11 @@ const SurgicalChargeContainer = () => {
   if (!admissionId) {
     return (
       <Container fluid padding="md">
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-          <MedicineBoxOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-          <Title level={3}>Cargue de cirugía</Title>
-        </div>
-        <p style={{ color: "var(--dash-text-secondary, #6b7280)", marginBottom: 20, marginTop: -8 }}>
-          Selecciona un paciente admitido para iniciar el cargue de una cirugía
-        </p>
+        <PageHeader
+          icon={<MedicineBoxOutlined />}
+          title="Cargue de cirugía"
+          subtitle="Selecciona un paciente admitido para iniciar el cargue de una cirugía"
+        />
         <PatientPicker />
       </Container>
     )
@@ -53,25 +51,16 @@ const SurgicalChargeFlow = ({ admissionId, onBack }: { admissionId: number; onBa
 
   return (
     <Container fluid padding="md">
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 4,
-          flexWrap: "wrap",
-          gap: 10,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <MedicineBoxOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-          <Title level={3}>Cargue de cirugía</Title>
-        </div>
-        <Button onClick={onBack}>Volver al listado de pacientes</Button>
-      </div>
-      <p style={{ color: "var(--dash-text-secondary, #6b7280)", marginBottom: 20, marginTop: -8 }}>
-        Selecciona el tarifario, el servicio quirúrgico y los datos de la cirugía para preliquidar y cargarla
-      </p>
+      <PageHeader
+        icon={<MedicineBoxOutlined />}
+        title="Cargue de cirugía"
+        subtitle="Selecciona el tarifario, el servicio quirúrgico y los datos de la cirugía para preliquidar y cargarla"
+        actions={
+          <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
+            Volver al listado de pacientes
+          </Button>
+        }
+      />
 
       <PatientInfoCard
         admission={admission}

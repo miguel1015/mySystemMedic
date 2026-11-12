@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { useState } from "react"
 import toast from "react-hot-toast"
 import { Alert, Button, Space, Table, Tag, Tooltip } from "antd"
@@ -126,6 +127,7 @@ export default function ProfilesTab({ role }: { role: TAccessRole }) {
       </div>
 
       <Table<TAccessProfile>
+        className={tableStyles.table}
         rowKey="id"
         columns={columns}
         dataSource={profiles}

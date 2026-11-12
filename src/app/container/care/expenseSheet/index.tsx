@@ -1,7 +1,8 @@
 "use client"
 
+import PageHeader from "@/components/dataTable/PageHeader"
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { Container } from "@/components/container"
-import Title from "@/components/title"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import {
   useActualizarCantidadGasto,
@@ -546,38 +547,38 @@ const ExpenseSheet = ({ tipoHoja }: ExpenseSheetProps) => {
   /* ─────────────── Render ─────────────── */
 
   const header = (
-    <div className="hes-header">
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <FileTextOutlined style={{ fontSize: 24, color: "var(--theme-primary, #0F6F5C)" }} />
-        <Title level={3}>{textos.titulo}</Title>
-      </div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
-          Volver
-        </Button>
-        {admissionId && (
-          <Tooltip title={registros?.length ? undefined : "No hay registros guardados para imprimir."}>
-            <Button
-              icon={<PrinterOutlined />}
-              disabled={!registros?.length}
-              onClick={() => setPrintOpen(true)}
-            >
-              Imprimir
-            </Button>
-          </Tooltip>
-        )}
-        {admissionId && (
-          <Button
-            type="primary"
-            icon={<SaveOutlined />}
-            loading={guardar.isPending}
-            onClick={handleSave}
-          >
-            Guardar
+    <PageHeader
+      icon={<FileTextOutlined />}
+      title={textos.titulo}
+      actions={
+        <>
+          <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
+            Volver
           </Button>
-        )}
-      </div>
-    </div>
+          {admissionId && (
+            <Tooltip title={registros?.length ? undefined : "No hay registros guardados para imprimir."}>
+              <Button
+                icon={<PrinterOutlined />}
+                disabled={!registros?.length}
+                onClick={() => setPrintOpen(true)}
+              >
+                Imprimir
+              </Button>
+            </Tooltip>
+          )}
+          {admissionId && (
+            <Button
+              type="primary"
+              icon={<SaveOutlined />}
+              loading={guardar.isPending}
+              onClick={handleSave}
+            >
+              Guardar
+            </Button>
+          )}
+        </>
+      }
+    />
   )
 
   if (!admissionId) {
@@ -760,6 +761,7 @@ const ExpenseSheet = ({ tipoHoja }: ExpenseSheetProps) => {
           {items.length > 0 && <Tag color="orange">Sin guardar</Tag>}
         </div>
         <Table<PendingItem>
+          className={tableStyles.table}
           rowKey="key"
           columns={pendingColumns}
           dataSource={items}
@@ -812,6 +814,7 @@ const ExpenseSheet = ({ tipoHoja }: ExpenseSheetProps) => {
           />
         ) : (
           <Table<HojaGastoRegistro>
+            className={tableStyles.table}
             rowKey="id"
             columns={savedColumns}
             dataSource={registros ?? []}

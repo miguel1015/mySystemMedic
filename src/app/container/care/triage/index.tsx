@@ -1,39 +1,41 @@
 "use client"
 
 import { Container } from "@/components/container"
-import Title from "@/components/title"
+import PageHeader from "@/components/dataTable/PageHeader"
 import { Button } from "antd"
-import { MedicineBoxOutlined } from "@ant-design/icons"
+import { MedicineBoxOutlined, PlusOutlined } from "@ant-design/icons"
 import { useRouter } from "next/navigation"
 import TriageTable from "./table"
 import { useGetAllTriages } from "@/core/hooks/care/triage/useGetAllTriages"
 
 export default function TriageContainer() {
   const router = useRouter()
-  const { data: triages, isLoading } = useGetAllTriages()
+  const { data: triages, isLoading, isError, refetch } = useGetAllTriages()
+  const total = triages?.length ?? 0
 
   return (
     <Container>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <MedicineBoxOutlined
-            style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }}
-          />
-          <Title level={3}>Triage</Title>
-        </div>
-        <Button type="primary" onClick={() => router.push("/care/triage/new")}>
-          Registrar triaje
-        </Button>
-      </div>
+      <PageHeader
+        icon={<MedicineBoxOutlined />}
+        title="Triage"
+        subtitle={
+          isLoading
+            ? "Cargando triages…"
+            : `${total.toLocaleString("es-CO")} ${total === 1 ? "triage registrado" : "triages registrados"}`
+        }
+        actions={
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push("/care/triage/new")}>
+            Registrar triage
+          </Button>
+        }
+      />
 
-      <TriageTable data={triages ?? []} isLoading={isLoading} />
+      <TriageTable
+        data={triages ?? []}
+        isLoading={isLoading}
+        isError={isError}
+        onRetry={() => refetch()}
+      />
     </Container>
   )
 }

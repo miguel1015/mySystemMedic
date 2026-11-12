@@ -1,7 +1,7 @@
 "use client"
 
 import { Container } from "@/components/container"
-import Title from "@/components/title"
+import PageHeader from "@/components/dataTable/PageHeader"
 import { Alert, Button, Empty, Input, Select, Space, Spin } from "antd"
 import { CarOutlined, SearchOutlined } from "@ant-design/icons"
 import { useState } from "react"
@@ -46,10 +46,11 @@ export default function FuripsContainer() {
 
   return (
     <Container>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-        <CarOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-        <Title level={3}>FURIPS</Title>
-      </div>
+      <PageHeader
+        icon={<CarOutlined />}
+        title="FURIPS"
+        subtitle="Información del accidente de tránsito o evento catastrófico de una admisión o factura"
+      />
 
       <Space.Compact style={{ width: "100%", maxWidth: 640, marginBottom: 16 }}>
         <Select

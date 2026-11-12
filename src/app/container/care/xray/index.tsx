@@ -1,7 +1,8 @@
 "use client"
 
+import PageHeader from "@/components/dataTable/PageHeader"
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { Container } from "@/components/container"
-import Title from "@/components/title"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import { useGetPatientById } from "@/core/hooks/care/patients/useGetByIdPatient"
 import {
@@ -402,25 +403,17 @@ const XrayContainer = () => {
   /* ─────────────── Render ─────────────── */
 
   const header = (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 16,
-        marginBottom: 20,
-        flexWrap: "wrap",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <RadarChartOutlined style={{ fontSize: 22, color: "#d46b08" }} />
-        <Title level={3}>Rayos X</Title>
-      </div>
-
-      <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
-        Volver
-      </Button>
-    </div>
+    <PageHeader
+      icon={<RadarChartOutlined />}
+      title="Rayos X"
+      actions={
+        <>
+          <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
+            Volver
+          </Button>
+        </>
+      }
+    />
   )
 
   if (!admissionId) {
@@ -737,6 +730,7 @@ const XrayContainer = () => {
           />
         ) : (
           <Table<EstudioRayosXResponse>
+            className={tableStyles.table}
             rowKey="id"
             size="middle"
             columns={columns}

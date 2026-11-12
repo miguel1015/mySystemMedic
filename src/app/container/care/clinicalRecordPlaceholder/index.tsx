@@ -1,7 +1,7 @@
 "use client"
 
+import PageHeader from "@/components/dataTable/PageHeader"
 import { Container } from "@/components/container"
-import Title from "@/components/title"
 import { DiagnosticProceduresSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/DiagnosticProceduresSection"
 import { EvolutionSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/EvolutionSection"
 import { MedicalNotesSection } from "@/app/container/care/clinicalRecords/initialClinicalHistory/sections/MedicalNotesSection"
@@ -43,27 +43,17 @@ const ClinicalRecordPlaceholder = ({
 
   return (
     <Container>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-          marginBottom: 24,
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ color: "var(--theme-primary, #0F6F5C)", fontSize: 22 }}>
-            {icon}
-          </span>
-          <Title level={3}>{title}</Title>
-        </div>
-
-        <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
-          Volver
-        </Button>
-      </div>
+      <PageHeader
+        icon={icon}
+        title={title}
+        actions={
+          <>
+            <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
+              Volver
+            </Button>
+          </>
+        }
+      />
 
       <div
         style={{

@@ -1,137 +1,174 @@
-import CustomButton from "@/components/button";
-import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
-import { Container } from "@/components/container";
-import ModalConfirm from "@/components/modalConfirmation.tsx";
-import { useDeleteUser } from "@/core/hooks/users/useDeleteUser";
-import { useGetUsers } from "@/core/hooks/users/useGetUsers";
-import { GetUser } from "@/core/interfaces/user/users";
-import { Input, Space, Table, Tag } from "antd";
+"use client";
+
 import type { ColumnsType } from "antd/es/table";
-import { useMemo, useState } from "react";
+import { Tag } from "antd";
+import { useState } from "react";
+import { DeleteOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
+import ModalConfirm from "@/components/modalConfirmation.tsx";
+import DataTable from "@/components/dataTable/DataTable";
+import { PersonCell, RowActions } from "@/components/dataTable/cells";
+import cellStyles from "@/components/dataTable/dataTable.module.scss";
+import { useDeleteUser } from "@/core/hooks/users/useDeleteUser";
+import { GetUser } from "@/core/interfaces/user/users";
+import { formatCatalogLabel, formatPersonName } from "@/core/utils/displayText";
+
+interface UsersTableProps {
+  data: GetUser[];
+  isLoading: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
+  onEdit: (id: number) => void;
+  onCreate: () => void;
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  activo: "green",
+  inactivo: "default",
+  bloqueado: "red",
+};
+
+const nameOf = (u: GetUser) => formatPersonName(`${u.firstName} ${u.lastName}`);
+
+// Perfil asistencial (Médico, Enfermero…) con la especialidad cuando la tiene.
+const profileOf = (u: GetUser) =>
+  [formatCatalogLabel(u.userProfileName), u.especialidadNombre].filter(Boolean).join(" · ");
+
+const statusTag = (u: GetUser) => (
+  <Tag color={STATUS_COLORS[(u.userStatusName ?? "").toLowerCase()] ?? "blue"}>
+    {u.userStatusName || "—"}
+  </Tag>
+);
 
 export default function UsersTable({
+  data,
+  isLoading,
+  isError,
+  onRetry,
   onEdit,
-}: {
-  onEdit: (id: number) => void;
-}) {
-  const { data: dataUsers = [], isLoading } = useGetUsers();
+  onCreate,
+}: UsersTableProps) {
+  const [toDelete, setToDelete] = useState<GetUser | null>(null);
   const deleteUser = useDeleteUser();
 
-  const [search, setSearch] = useState("");
-  const [openConfirm, setOpenConfirm] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+  const handleDelete = () => {
+    if (!toDelete) return;
+    deleteUser.mutate(toDelete.id, {
+      onSuccess: () => toast.success("Usuario eliminado"),
+      onError: () => toast.error("No se pudo eliminar el usuario"),
+      onSettled: () => setToDelete(null),
+    });
+  };
 
-  const filteredUsers = useMemo<GetUser[]>(() => {
-    return dataUsers.filter((user) =>
-      [
-        `${user.firstName} ${user.lastName}`,
-        user.email,
-        String(user.userRoleId),
-        user.isActive ? "activo" : "inactivo",
-      ].some((field) => field.toLowerCase().includes(search.toLowerCase())),
-    );
-  }, [search, dataUsers]);
-
-  // Numeración continua entre páginas (antd da el índice dentro de la página).
-  const { onTableChange, rowNumber } = useRowNumbering(filteredUsers.length);
+  const actionsFor = (record: GetUser) => (
+    <RowActions
+      subject={nameOf(record)}
+      onEdit={() => onEdit(record.id)}
+      items={[
+        {
+          key: "delete",
+          label: "Eliminar usuario",
+          icon: <DeleteOutlined />,
+          danger: true,
+          onClick: () => setToDelete(record),
+        },
+      ]}
+    />
+  );
 
   const columns: ColumnsType<GetUser> = [
     {
-      title: "#",
-      width: 60,
-      render: (_value, _record, index) => rowNumber(index),
+      title: "Usuario",
+      key: "user",
+      sorter: (a, b) => nameOf(a).localeCompare(nameOf(b), "es"),
+      render: (_, r) => (
+        <PersonCell
+          name={nameOf(r)}
+          detail={[r.username && `@${r.username}`, r.email].filter(Boolean).join(" · ")}
+        />
+      ),
     },
     {
-      title: "Nombre",
-      render: (_, record) => `${record.firstName} ${record.lastName}`,
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
+      title: "Perfil",
+      key: "profile",
+      width: 240,
+      sorter: (a, b) => (a.userProfileName ?? "").localeCompare(b.userProfileName ?? "", "es"),
+      render: (_, r) => profileOf(r) || "—",
     },
     {
       title: "Rol",
       dataIndex: "userRoleName",
+      width: 180,
+      sorter: (a, b) => (a.userRoleName ?? "").localeCompare(b.userRoleName ?? "", "es"),
+      render: (value?: string) => value || "—",
     },
     {
       title: "Estado",
-      dataIndex: "userStatusName",
-      render: (status) => {
-        const colorMap: Record<string, string> = {
-          Activo: "green",
-          Inactivo: "default",
-          Bloqueado: "red",
-        };
-
-        return <Tag color={colorMap[status] ?? "blue"}>{status}</Tag>;
-      },
+      key: "status",
+      width: 120,
+      render: (_, r) => statusTag(r),
     },
     {
-      title: "Acciones",
-      render: (_, record) => (
-        <Space>
-          <CustomButton
-            size="sm"
-            variant="outline"
-            onClick={() => onEdit(record.id)}
-          >
-            Editar
-          </CustomButton>
-
-          <CustomButton
-            size="sm"
-            variant="danger"
-            onClick={() => {
-              setUserToDelete(record.id);
-              setOpenConfirm(true);
-            }}
-          >
-            Eliminar
-          </CustomButton>
-        </Space>
-      ),
+      title: <span className="visually-hidden">Acciones</span>,
+      key: "actions",
+      width: 96,
+      align: "right",
+      fixed: "right",
+      render: (_, r) => actionsFor(r),
     },
   ];
 
   return (
-    <Container className="py-4">
-      <div className="mb-3">
-        <Input
-          placeholder="Buscar usuario..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          allowClear
-          size="large"
-        />
-      </div>
-
-      <Table<GetUser>
-        onChange={onTableChange}
+    <>
+      <DataTable<GetUser>
+        data={data}
         columns={columns}
-        dataSource={filteredUsers}
         rowKey="id"
-        pagination={{ pageSize: 10 }}
-        loading={{ spinning: isLoading, tip: "Cargando usuarios..." }}
-        scroll={{ x: "max-content" }}
+        entity={["usuario", "usuarios"]}
+        loading={isLoading}
+        error={isError}
+        onRetry={onRetry}
+        rowNumbers
+        syncUrl
+        searchPlaceholder="Buscar por nombre, usuario, correo o documento…"
+        searchText={(u) =>
+          `${u.firstName} ${u.lastName} ${u.username ?? ""} ${u.email ?? ""} ${u.documentNumber ?? ""}`
+        }
+        quickFilters={[
+          {
+            key: "profile",
+            placeholder: "Perfil",
+            getValue: (u) => u.userProfileName,
+            formatLabel: formatCatalogLabel,
+          },
+          { key: "role", placeholder: "Rol", getValue: (u) => u.userRoleName },
+          { key: "status", placeholder: "Estado", getValue: (u) => u.userStatusName },
+        ]}
+        onRowClick={(u) => onEdit(u.id)}
+        emptyAction={{ label: "Registrar el primer usuario", onClick: onCreate }}
+        renderCard={(u) => (
+          <div className={cellStyles.rowCard}>
+            <div className={cellStyles.rowCardBody}>
+              <PersonCell name={nameOf(u)} detail={u.email} />
+              <span className={cellStyles.personDetail}>
+                {[profileOf(u), u.userRoleName].filter(Boolean).join(" · ")}
+              </span>
+              <span>{statusTag(u)}</span>
+            </div>
+            {actionsFor(u)}
+          </div>
+        )}
       />
 
       <ModalConfirm
-        open={openConfirm}
-        onClose={() => setOpenConfirm(false)}
+        open={!!toDelete}
+        onClose={() => setToDelete(null)}
         title="Eliminar usuario"
-        subtitle="¿Estás seguro de eliminar este usuario?"
-        onConfirm={() => {
-          if (!userToDelete) return;
-
-          deleteUser.mutate(userToDelete, {
-            onSuccess: () => toast.success("Usuario eliminado"),
-            onError: () => toast.error("Error eliminando usuario"),
-          });
-
-          setOpenConfirm(false);
-        }}
+        subtitle={toDelete ? `¿Eliminar a ${nameOf(toDelete)}? Esta acción no se puede deshacer.` : ""}
+        onConfirm={handleDelete}
+        loading={deleteUser.isPending}
+        confirmText="Eliminar"
       />
-    </Container>
+    </>
   );
 }

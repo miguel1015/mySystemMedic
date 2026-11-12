@@ -1,7 +1,7 @@
 "use client"
 
+import PageHeader from "@/components/dataTable/PageHeader"
 import { Container } from "@/components/container"
-import Title from "@/components/title"
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -36,29 +36,18 @@ const ClinicalActionModule = ({
 
   return (
     <Container>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-          marginBottom: 20,
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <FileTextOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-          <Title level={3}>{title}</Title>
-        </div>
-
-        <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
-          Volver
-        </Button>
-      </div>
-
-      <p style={{ color: "var(--dash-text-secondary, #6b7280)", marginBottom: 24, marginTop: -12 }}>
-        {description}
-      </p>
+      <PageHeader
+        icon={<FileTextOutlined />}
+        title={title}
+        subtitle={description}
+        actions={
+          <>
+            <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
+              Volver
+            </Button>
+          </>
+        }
+      />
 
       {hasPatientContext ? (
         <>

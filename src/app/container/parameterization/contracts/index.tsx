@@ -1,11 +1,13 @@
 "use client";
 
 import { Container } from "@/components/container";
+import PageHeader from "@/components/dataTable/PageHeader";
 import Modal from "@/components/modal";
-import Title from "@/components/title";
 import useDictionary from "@/locales/dictionary-hook";
 import { Button } from "antd";
+import { FileProtectOutlined, PlusOutlined } from "@ant-design/icons";
 import { useState } from "react";
+import { useContracts } from "@/core/hooks/parameterization/contracts/useGetAllContracts";
 import ContractForm from "./contractForm";
 import ContractsTable from "./table";
 
@@ -13,6 +15,8 @@ export default function ContractsContainer() {
   const dict = useDictionary();
   const [open, setOpen] = useState(false);
   const [editUserId, setEditUserId] = useState<number | null>(null);
+  const { data, isLoading, isError, refetch } = useContracts();
+  const total = data?.length ?? 0;
 
   const handleEdit = (id: number) => {
     setEditUserId(id);
@@ -21,12 +25,30 @@ export default function ContractsContainer() {
 
   return (
     <Container>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Title children={dict.contracts.title} level={3} />
-        <Button onClick={() => setOpen(true)} type="primary">
-          {dict.contracts.newContract}
-        </Button>
-      </div>
+      <PageHeader
+        icon={<FileProtectOutlined />}
+        title={dict.contracts.title}
+        subtitle={
+          isLoading
+            ? "Cargando contratos…"
+            : `${total.toLocaleString("es-CO")} ${total === 1 ? "contrato registrado" : "contratos registrados"}`
+        }
+        actions={
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
+            {dict.contracts.newContract}
+          </Button>
+        }
+      />
+
+      <ContractsTable
+        data={data ?? []}
+        isLoading={isLoading}
+        isError={isError}
+        onRetry={() => refetch()}
+        onEdit={handleEdit}
+        onCreate={() => setOpen(true)}
+      />
+
       <Modal
         open={open}
         onClose={() => {
@@ -42,7 +64,6 @@ export default function ContractsContainer() {
           setEditUserId={setEditUserId}
         />
       </Modal>
-      <ContractsTable onEdit={handleEdit} />
     </Container>
   );
 }

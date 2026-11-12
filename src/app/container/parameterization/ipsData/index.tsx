@@ -1,15 +1,18 @@
 "use client"
 
 import { Container } from "../../../../components/container"
-import Title from "../../../../components/title"
+import PageHeader from "@/components/dataTable/PageHeader"
+import { HomeOutlined } from "@ant-design/icons"
 import IpsDataForm from "./ipsDataForm"
 
 export default function IpsDataContainer() {
   return (
     <Container>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Title children="Datos de la IPS" level={3} />
-      </div>
+      <PageHeader
+        icon={<HomeOutlined />}
+        title="Datos de la IPS"
+        subtitle="Información de la institución que aparece en los documentos impresos y en el RIPS"
+      />
       <IpsDataForm />
     </Container>
   )

@@ -1,7 +1,7 @@
 "use client"
 
+import PageHeader from "@/components/dataTable/PageHeader"
 import { Container } from "@/components/container"
-import Title from "@/components/title"
 import { Alert, Badge, Button, Descriptions, Empty, Progress, Spin, Tabs, Tag } from "antd"
 import { ArrowLeftOutlined, FileSearchOutlined, PrinterOutlined } from "@ant-design/icons"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -167,33 +167,26 @@ function AdmissionRecordView({ admissionId }: Props) {
 
   return (
     <Container>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <FileSearchOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-          <Title level={3}>Admisión N° {admission.id}</Title>
+      <PageHeader
+        icon={<FileSearchOutlined />}
+        title={<>Admisión N° {admission.id}</>}
+        badge={
           <Tag color={ADMISSION_STATUS_COLOR[summary.estado]}>
             {summary.estado}
             {summary.numeroFactura ? ` · ${summary.numeroFactura}` : ""}
           </Tag>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <Button type="primary" icon={<PrinterOutlined />} onClick={() => setPrintOpen(true)}>
-            Imprimir / PDF
-          </Button>
-          <Button icon={<ArrowLeftOutlined />} onClick={() => router.push("/care/admissionHistory")}>
-            Volver
-          </Button>
-        </div>
-      </div>
+        }
+        actions={
+          <>
+            <Button type="primary" icon={<PrinterOutlined />} onClick={() => setPrintOpen(true)}>
+              Imprimir / PDF
+            </Button>
+            <Button icon={<ArrowLeftOutlined />} onClick={() => router.push("/care/admissionHistory")}>
+              Volver
+            </Button>
+          </>
+        }
+      />
 
       <Descriptions
         bordered

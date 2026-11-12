@@ -6,7 +6,8 @@ import { Alert, Button, Skeleton } from "antd"
 import { Container } from "@/components/container"
 import Modal from "@/components/modal"
 import ModalConfirm from "@/components/modalConfirmation.tsx"
-import Title from "@/components/title"
+import PageHeader from "@/components/dataTable/PageHeader"
+import { SafetyCertificateOutlined } from "@ant-design/icons"
 import { useAccessRoles } from "@/core/hooks/parameterization/accessControl/useAccessControl"
 import { useSaveAccessRole } from "@/core/hooks/parameterization/accessControl/useAccessControlMutations"
 import { TAccessRole } from "@/core/interfaces/parameterization/accessControl"
@@ -60,12 +61,11 @@ export default function RolesPermissionsContainer() {
   }
 
   const header = (
-    <>
-      <Title children="Roles y permisos" level={3} />
-      <p className="rp-subtitle">
-        Crea roles, define qué vistas puede ver cada uno y organiza sus perfiles y usuarios.
-      </p>
-    </>
+    <PageHeader
+      icon={<SafetyCertificateOutlined />}
+      title="Roles y permisos"
+      subtitle="Crea roles, define qué vistas puede ver cada uno y organiza sus perfiles y usuarios."
+    />
   )
 
   if (isLoading) {

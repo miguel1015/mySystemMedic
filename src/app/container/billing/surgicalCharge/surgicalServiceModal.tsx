@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import Modal from "@/components/modal"
 import { TTariffDetail } from "@/core/interfaces/parameterization/types"
 import { UserProfile } from "@/core/interfaces/user/users"
@@ -123,6 +124,7 @@ const SurgicalServiceModal = ({
       )}
 
       <Table<TTariffDetail>
+        className={tableStyles.table}
         rowKey="id"
         size="small"
         columns={columns}

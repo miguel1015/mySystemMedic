@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import ModalConfirm from "@/components/modalConfirmation.tsx"
 import { useDeleteBillingMovement } from "@/core/hooks/care/billing/useDeleteBillingMovement"
 import {
@@ -155,6 +156,7 @@ const MovementsTable = ({
   return (
     <>
       <Table<BillingMovementResponse>
+        className={tableStyles.table}
         rowKey="id"
         size="middle"
         columns={columns}

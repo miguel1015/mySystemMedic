@@ -2,15 +2,29 @@
 
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
-import { DeleteOutlined } from "@ant-design/icons";
+import { useRouter } from "next/navigation";
+import {
+  HistoryOutlined,
+  MedicineBoxOutlined,
+  SolutionOutlined,
+  UserDeleteOutlined,
+} from "@ant-design/icons";
 import toast from "react-hot-toast";
 import ModalConfirm from "@/components/modalConfirmation.tsx";
 import DataTable from "@/components/dataTable/DataTable";
-import { PersonCell, RowActions, formatDocument } from "@/components/dataTable/cells";
+import { PersonCell, RowActions, RowMenuItem, formatDocument } from "@/components/dataTable/cells";
 import cellStyles from "@/components/dataTable/dataTable.module.scss";
-import { formatInstitutionName, formatPersonName } from "@/core/utils/displayText";
-import { GetPatient } from "@/core/interfaces/care/types";
+import {
+  formatCatalogLabel,
+  formatInstitutionName,
+  formatPersonName,
+} from "@/core/utils/displayText";
+import { formatAge } from "@/core/utils/date";
+import { canAccessRoute } from "@/core/utils/routeAccess";
+import { AdmissionHistoryPatient, GetPatient } from "@/core/interfaces/care/types";
 import { useDeletePatient } from "@/core/hooks/care/patients/useDeletePatient";
+import { useNavigationAccess } from "@/core/hooks/authentication/useNavigationAccess";
+import PatientAdmissionsModal from "../admissionHistory/patientAdmissionsModal";
 
 interface PatientsTableProps {
   data: GetPatient[];
@@ -24,6 +38,26 @@ interface PatientsTableProps {
 const fullNameOf = (p: GetPatient) =>
   [p.firstName, p.middleName, p.lastName, p.secondLastName].filter(Boolean).join(" ");
 
+// Para ordenar por edad: fecha de nacimiento más reciente = más joven. Sin fecha va al final.
+const birthTimeOf = (p: GetPatient) => {
+  const t = p.birthDate ? new Date(p.birthDate).getTime() : NaN;
+  return Number.isNaN(t) ? -Infinity : t;
+};
+
+// "34 años · Masculino"
+const ageAndSexOf = (p: GetPatient) =>
+  [formatAge(p.birthDate, ""), formatCatalogLabel(p.sexName)].filter(Boolean).join(" · ");
+
+const PhoneLink = ({ phone }: { phone?: string | null }) => {
+  const value = phone?.trim();
+  if (!value) return <span className={cellStyles.personDetail}>—</span>;
+  return (
+    <a href={`tel:${value.replace(/[^\d+]/g, "")}`} className={cellStyles.phone}>
+      {value}
+    </a>
+  );
+};
+
 export default function PatientsTable({
   data,
   isLoading,
@@ -32,40 +66,78 @@ export default function PatientsTable({
   onEdit,
   onCreate,
 }: PatientsTableProps) {
-  const [patientToDelete, setPatientToDelete] = useState<GetPatient | null>(null);
+  const router = useRouter();
+  const { data: access } = useNavigationAccess();
+  const [patientToDeactivate, setPatientToDeactivate] = useState<GetPatient | null>(null);
+  const [historyPatient, setHistoryPatient] = useState<AdmissionHistoryPatient | null>(null);
   const deletePatient = useDeletePatient();
 
-  const handleDelete = () => {
-    if (!patientToDelete) return;
-    deletePatient.mutate(patientToDelete.id, {
+  // Solo se ofrecen las acciones de las vistas que el usuario puede abrir.
+  const can = (route: string) => !!access && canAccessRoute(route, access);
+
+  // El backend inactiva al paciente (no lo borra): sus admisiones e historia se conservan.
+  const handleDeactivate = () => {
+    if (!patientToDeactivate) return;
+    deletePatient.mutate(patientToDeactivate.id, {
       onSuccess: () => {
-        toast.success("Paciente eliminado");
-        setPatientToDelete(null);
+        toast.success("Paciente inactivado");
+        setPatientToDeactivate(null);
       },
       onError: (err: Error) => {
         toast.error(err.message);
-        setPatientToDelete(null);
+        setPatientToDeactivate(null);
       },
     });
   };
 
   const actionsFor = (record: GetPatient) => {
     const name = formatPersonName(fullNameOf(record));
-    return (
-      <RowActions
-        subject={name}
-        onEdit={() => onEdit(record.id)}
-        items={[
-          {
-            key: "delete",
-            label: "Eliminar paciente",
-            icon: <DeleteOutlined />,
-            danger: true,
-            onClick: () => setPatientToDelete(record),
-          },
-        ]}
-      />
-    );
+    const document = encodeURIComponent(record.documentNumber ?? "");
+    const items: RowMenuItem[] = [];
+
+    if (can("/care/triage/new")) {
+      items.push({
+        key: "triage",
+        label: "Registrar triage",
+        icon: <MedicineBoxOutlined />,
+        onClick: () => router.push(`/care/triage/new?document=${document}`),
+      });
+    }
+    if (can("/care/admissions/new")) {
+      items.push({
+        key: "admission",
+        label: "Registrar admisión",
+        icon: <SolutionOutlined />,
+        onClick: () => router.push(`/care/admissions/new?document=${document}`),
+      });
+    }
+    if (can("/care/admissionHistory")) {
+      items.push({
+        key: "history",
+        label: "Historial de admisiones",
+        icon: <HistoryOutlined />,
+        onClick: () =>
+          setHistoryPatient({
+            patientId: record.id,
+            nombrePaciente: name,
+            documentTypeCode: record.documentTypeCode,
+            documentoPatiente: record.documentNumber,
+            epsNombre: record.insurerName,
+            totalAdmisiones: 0,
+            ultimaAdmision: "",
+          }),
+      });
+    }
+    items.push({
+      key: "deactivate",
+      label: "Inactivar paciente",
+      icon: <UserDeleteOutlined />,
+      danger: true,
+      dividerBefore: items.length > 0,
+      onClick: () => setPatientToDeactivate(record),
+    });
+
+    return <RowActions subject={name} onEdit={() => onEdit(record.id)} items={items} />;
   };
 
   const columns: ColumnsType<GetPatient> = [
@@ -81,18 +153,46 @@ export default function PatientsTable({
       ),
     },
     {
-      title: "EPS",
-      dataIndex: "insurerName",
+      title: "Edad",
+      key: "age",
+      width: 140,
+      sorter: (a, b) => birthTimeOf(b) - birthTimeOf(a),
+      render: (_, record) => (
+        <span className={cellStyles.stack}>
+          <span className={cellStyles.tabular}>{formatAge(record.birthDate)}</span>
+          {record.sexName && (
+            <span className={cellStyles.personDetail}>{formatCatalogLabel(record.sexName)}</span>
+          )}
+        </span>
+      ),
+    },
+    {
+      title: "EPS y contrato",
+      key: "insurer",
       width: 300,
       sorter: (a, b) => (a.insurerName ?? "").localeCompare(b.insurerName ?? "", "es"),
-      render: (value: string) => {
-        const label = formatInstitutionName(value) || "Sin EPS";
+      render: (_, record) => {
+        const eps = formatInstitutionName(record.insurerName) || "Sin EPS";
+        const contract = record.contractName?.trim();
         return (
-          <span className={cellStyles.oneLine} title={label}>
-            {label}
+          <span className={cellStyles.stack}>
+            <span className={cellStyles.oneLine} title={eps}>
+              {eps}
+            </span>
+            {contract && (
+              <span className={`${cellStyles.oneLine} ${cellStyles.personDetail}`} title={contract}>
+                {contract}
+              </span>
+            )}
           </span>
         );
       },
+    },
+    {
+      title: "Teléfono",
+      key: "phone",
+      width: 150,
+      render: (_, record) => <PhoneLink phone={record.phone} />,
     },
     {
       title: <span className="visually-hidden">Acciones</span>,
@@ -115,8 +215,11 @@ export default function PatientsTable({
         error={isError}
         onRetry={onRetry}
         rowNumbers
-        searchPlaceholder="Buscar por nombre, documento o EPS…"
-        searchText={(p) => `${fullNameOf(p)} ${p.documentNumber ?? ""} ${p.insurerName ?? ""}`}
+        syncUrl
+        searchPlaceholder="Buscar por nombre, documento, EPS o teléfono…"
+        searchText={(p) =>
+          `${fullNameOf(p)} ${p.documentNumber ?? ""} ${p.insurerName ?? ""} ${p.phone ?? ""}`
+        }
         quickFilters={[
           {
             key: "eps",
@@ -133,19 +236,28 @@ export default function PatientsTable({
               return name ? `${code} · ${name}` : code;
             },
           },
+          {
+            key: "sex",
+            placeholder: "Sexo",
+            getValue: (p) => p.sexName,
+            formatLabel: formatCatalogLabel,
+          },
         ]}
         onRowClick={(p) => onEdit(p.id)}
         emptyAction={{ label: "Registrar el primer paciente", onClick: onCreate }}
         renderCard={(p) => (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+          <div className={cellStyles.rowCard}>
+            <div className={cellStyles.rowCardBody}>
               <PersonCell
                 name={formatPersonName(fullNameOf(p))}
                 detail={formatDocument(p.documentTypeCode, p.documentNumber)}
               />
-              <span className={cellStyles.personDetail} style={{ paddingLeft: 46 }}>
-                {formatInstitutionName(p.insurerName) || "Sin EPS"}
+              <span className={cellStyles.personDetail}>
+                {[ageAndSexOf(p), formatInstitutionName(p.insurerName) || "Sin EPS"]
+                  .filter(Boolean)
+                  .join(" · ")}
               </span>
+              {p.phone?.trim() && <PhoneLink phone={p.phone} />}
             </div>
             {actionsFor(p)}
           </div>
@@ -153,18 +265,20 @@ export default function PatientsTable({
       />
 
       <ModalConfirm
-        open={!!patientToDelete}
-        onClose={() => setPatientToDelete(null)}
-        title="Eliminar paciente"
+        open={!!patientToDeactivate}
+        onClose={() => setPatientToDeactivate(null)}
+        title="Inactivar paciente"
         subtitle={
-          patientToDelete
-            ? `¿Eliminar a ${formatPersonName(fullNameOf(patientToDelete))}? Esta acción no se puede deshacer.`
+          patientToDeactivate
+            ? `¿Inactivar a ${formatPersonName(fullNameOf(patientToDeactivate))}? Dejará de aparecer en la lista y en las búsquedas. Sus admisiones e historia clínica se conservan.`
             : ""
         }
-        onConfirm={handleDelete}
+        onConfirm={handleDeactivate}
         loading={deletePatient.isPending}
-        confirmText="Eliminar"
+        confirmText="Inactivar"
       />
+
+      <PatientAdmissionsModal patient={historyPatient} onClose={() => setHistoryPatient(null)} />
     </>
   );
 }

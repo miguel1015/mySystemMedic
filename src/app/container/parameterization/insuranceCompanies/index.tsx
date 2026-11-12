@@ -1,11 +1,13 @@
 "use client";
 
 import { Container } from "@/components/container";
+import PageHeader from "@/components/dataTable/PageHeader";
 import Modal from "@/components/modal";
-import Title from "@/components/title";
 import useDictionary from "@/locales/dictionary-hook";
 import { Button } from "antd";
+import { BankOutlined, PlusOutlined } from "@ant-design/icons";
 import { useState } from "react";
+import { useInsurers } from "@/core/hooks/utils/useInsurer";
 import InsuranceCompaniesForm from "./insuranceCompaniesForm";
 import InsuranceTable from "./table";
 
@@ -13,6 +15,8 @@ export default function InsuranceCompaniesContainer() {
   const dict = useDictionary();
   const [open, setOpen] = useState(false);
   const [editUserId, setEditUserId] = useState<number | null>(null);
+  const { data, isLoading, isError, refetch } = useInsurers();
+  const total = data?.length ?? 0;
 
   const handleEdit = (id: number) => {
     setEditUserId(id);
@@ -21,16 +25,35 @@ export default function InsuranceCompaniesContainer() {
 
   return (
     <Container>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Title children={dict.insuranceCompanies.title} level={3} />
-        <Button onClick={() => setOpen(true)} type="primary">
-          {dict.insuranceCompanies.create}
-        </Button>
-      </div>
+      <PageHeader
+        icon={<BankOutlined />}
+        title={dict.insuranceCompanies.title}
+        subtitle={
+          isLoading
+            ? "Cargando aseguradoras…"
+            : `${total.toLocaleString("es-CO")} ${total === 1 ? "aseguradora registrada" : "aseguradoras registradas"}`
+        }
+        actions={
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
+            {dict.insuranceCompanies.create}
+          </Button>
+        }
+      />
+
+      <InsuranceTable
+        data={data ?? []}
+        isLoading={isLoading}
+        isError={isError}
+        onRetry={() => refetch()}
+        onEdit={handleEdit}
+        onCreate={() => setOpen(true)}
+      />
+
       <Modal
         open={open}
         onClose={() => {
-          setOpen(false), setEditUserId(null);
+          setOpen(false);
+          setEditUserId(null);
         }}
         title={editUserId ? "Editar aseguradora" : "Crear aseguradora"}
         size="xl"
@@ -41,7 +64,6 @@ export default function InsuranceCompaniesContainer() {
           setEditUserId={setEditUserId}
         />
       </Modal>
-      <InsuranceTable onEdit={handleEdit} />
     </Container>
   );
 }

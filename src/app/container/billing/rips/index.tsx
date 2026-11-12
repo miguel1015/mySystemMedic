@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { formatCurrency, formatDate } from "@/app/container/billing/admissionIntegral/utils"
 import { Container } from "@/components/container"
 import Title from "@/components/title"
@@ -533,6 +534,7 @@ const RipsDetail = ({ invoiceId }: RipsDetailProps) => {
               </div>
               <div className={styles.table}>
                 <Table<ServiceRow>
+                  className={tableStyles.table}
                   size="middle"
                   columns={columnsFor(activeGroup)}
                   dataSource={activeRows}

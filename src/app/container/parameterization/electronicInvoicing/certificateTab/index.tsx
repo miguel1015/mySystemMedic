@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -205,6 +206,7 @@ export default function CertificateTab({ certificates, certificateFile, hasCerti
 
       <Card title="Historial" size="small">
         <Table
+          className={tableStyles.table}
           rowKey="certificateId"
           columns={columns}
           dataSource={certificates}

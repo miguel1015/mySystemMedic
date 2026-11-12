@@ -1,7 +1,8 @@
 "use client"
 
+import PageHeader from "@/components/dataTable/PageHeader"
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { Container } from "@/components/container"
-import Title from "@/components/title"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import { useActiveAdmissions } from "@/core/hooks/care/admissions/useGetActiveAdmissions"
 import {
@@ -353,28 +354,28 @@ const MedicationApplicationContainer = () => {
   /* ─────────────── Render ─────────────── */
 
   const header = (
-    <div className="ma-header">
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <MedicineBoxOutlined style={{ fontSize: 22, color: "#389e0d" }} />
-        <Title level={3}>Aplicación de Medicamentos</Title>
-      </div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
-          Volver
-        </Button>
-        {admissionId && (
-          <Tooltip title={hayAplicaciones ? undefined : "No hay aplicaciones registradas para imprimir."}>
-            <Button
-              icon={<PrinterOutlined />}
-              disabled={!hayAplicaciones}
-              onClick={() => setPrintOpen(true)}
-            >
-              Imprimir
-            </Button>
-          </Tooltip>
-        )}
-      </div>
-    </div>
+    <PageHeader
+      icon={<MedicineBoxOutlined />}
+      title="Aplicación de Medicamentos"
+      actions={
+        <>
+          <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
+            Volver
+          </Button>
+          {admissionId && (
+            <Tooltip title={hayAplicaciones ? undefined : "No hay aplicaciones registradas para imprimir."}>
+              <Button
+                icon={<PrinterOutlined />}
+                disabled={!hayAplicaciones}
+                onClick={() => setPrintOpen(true)}
+              >
+                Imprimir
+              </Button>
+            </Tooltip>
+          )}
+        </>
+      }
+    />
   )
 
   const patientSelector = (
@@ -696,6 +697,7 @@ const MedicationApplicationContainer = () => {
                     {selected.aplicaciones?.length ?? 0})
                   </div>
                   <Table<AplicacionOrden>
+                    className={tableStyles.table}
                     rowKey="id"
                     size="small"
                     columns={historyColumns}

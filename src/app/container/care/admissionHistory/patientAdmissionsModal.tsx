@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import Modal from "@/components/modal"
 import { formatInstitutionName, formatCatalogLabel } from "@/core/utils/displayText";
 import { Button, Table, Tag } from "antd"
@@ -81,6 +82,7 @@ export default function PatientAdmissionsModal({
       size="xl"
     >
       <Table<AdmissionHistoryItem>
+        className={tableStyles.table}
         size="middle"
         columns={columns}
         dataSource={admissions}

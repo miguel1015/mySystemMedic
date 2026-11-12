@@ -2,10 +2,10 @@
 
 import { Container } from "@/components/container"
 import Modal from "@/components/modal"
-import Title from "@/components/title"
+import PageHeader from "@/components/dataTable/PageHeader"
 import { Button, Empty, Input, Select, Space } from "antd"
-import { SearchOutlined, SolutionOutlined } from "@ant-design/icons"
-import { useState } from "react"
+import { PlusOutlined, SearchOutlined, SolutionOutlined } from "@ant-design/icons"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import AdmissionsForm from "./admissionsForm"
@@ -43,15 +43,15 @@ export default function AdmissionsContainer() {
   const [searchField, setSearchField] = useState<SearchField>("documento")
   const [searchTerm, setSearchTerm] = useState("")
   const [criteria, setCriteria] = useState<AdmissionSearchCriteria | null>(null)
-  const { data: admissions, isFetching } = useSearchAdmissions(criteria)
+  const { data: admissions, isFetching, isError, refetch } = useSearchAdmissions(criteria)
 
-  const handleSearch = () => {
-    const term = searchTerm.trim()
+  const runSearch = (field: SearchField, rawTerm: string) => {
+    const term = rawTerm.trim()
     if (!term) {
       toast.error("Ingrese el documento o el número de admisión")
       return
     }
-    if (searchField === "numero") {
+    if (field === "numero") {
       if (!/^\d+$/.test(term)) {
         toast.error("El número de admisión debe ser numérico")
         return
@@ -60,7 +60,32 @@ export default function AdmissionsContainer() {
     } else {
       setCriteria({ documento: term, soloActivas: true })
     }
+    // La búsqueda queda en la URL: al volver de otra vista o compartir el enlace se repite.
+    const params = new URLSearchParams(window.location.search)
+    params.delete("documento")
+    params.delete("numero")
+    params.set(field, term)
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}?${params}`)
   }
+
+  const handleSearch = () => runSearch(searchField, searchTerm)
+
+  // Repetir la búsqueda que venga en la URL (?documento=… o ?numero=…).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const field: SearchField | null = params.get("numero")
+      ? "numero"
+      : params.get("documento")
+        ? "documento"
+        : null
+    if (!field) return
+    const term = params.get(field) ?? ""
+    setSearchField(field)
+    setSearchTerm(term)
+    runSearch(field, term)
+    // Solo al montar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleEdit = (admission: AdmissionResponse) => {
     setEditingAdmission(admission)
@@ -74,24 +99,20 @@ export default function AdmissionsContainer() {
 
   return (
     <Container>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <SolutionOutlined
-            style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }}
-          />
-          <Title level={3}>Admisiones</Title>
-        </div>
-        <Button type="primary" onClick={() => router.push("/care/admissions/new")}>
-          Nueva admision
-        </Button>
-      </div>
+      <PageHeader
+        icon={<SolutionOutlined />}
+        title="Admisiones"
+        subtitle="Busque las admisiones activas de un paciente o por número"
+        actions={
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => router.push("/care/admissions/new")}
+          >
+            Nueva admisión
+          </Button>
+        }
+      />
 
       <Space.Compact style={{ width: "100%", maxWidth: 640, marginBottom: 16 }}>
         <Select
@@ -128,6 +149,13 @@ export default function AdmissionsContainer() {
         <AdmissionsTable
           data={admissions ?? []}
           isLoading={isFetching}
+          isError={isError}
+          onRetry={() => refetch()}
+          emptyText={
+            "numero" in criteria
+              ? `No hay una admisión activa con el N° ${criteria.numero}.`
+              : "El paciente no tiene admisiones activas."
+          }
           onEdit={handleEdit}
           onHistory={setHistoryAdmission}
           onFurips={setFuripsAdmission}
@@ -145,7 +173,7 @@ export default function AdmissionsContainer() {
       <Modal
         open={open}
         onClose={handleClose}
-        title={editingAdmission ? "Editar admision" : "Nueva admision"}
+        title={editingAdmission ? "Editar admisión" : "Nueva admisión"}
         size="xl"
       >
         <AdmissionsForm initialAdmission={editingAdmission} onDone={handleClose} />

@@ -1,53 +1,38 @@
 "use client"
 
 import { Container } from "@/components/container"
-import { formatPersonName, formatInstitutionName } from "@/core/utils/displayText";
+import { formatPersonName, formatInstitutionName } from "@/core/utils/displayText"
 import Modal from "@/components/modal"
-import Title from "@/components/title"
+import DataTable from "@/components/dataTable/DataTable"
+import PageHeader from "@/components/dataTable/PageHeader"
+import { PersonCell, RowActions, formatDocument } from "@/components/dataTable/cells"
+import cellStyles from "@/components/dataTable/dataTable.module.scss"
 import {
   useDownloadAttachedDocument,
   useGetElectronicInvoicePdf,
 } from "@/core/hooks/care/billing/useElectronicInvoiceDocuments"
 import { useGetAllElectronicInvoices } from "@/core/hooks/care/billing/useGetAllElectronicInvoices"
 import { ElectronicInvoiceListItem } from "@/core/interfaces/care/billing"
+import { formatDateTime } from "@/core/utils/date"
 import {
   CodeOutlined,
-  DownOutlined,
   FileDoneOutlined,
   FilePdfOutlined,
   LinkOutlined,
   MailOutlined,
-  SearchOutlined,
   SolutionOutlined,
 } from "@ant-design/icons"
-import { Button, Dropdown, Empty, Input, Spin, Table, Tooltip, message } from "antd"
-import type { MenuProps } from "antd"
+import { Empty, Spin, Tooltip, message } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { RipsStatusTag } from "../rips/RipsStatusTag"
 import SendEmailModal from "./sendEmailModal"
 
 const DIAN_SEARCH_URL = "https://catalogo-vpfe-hab.dian.gov.co/User/SearchDocument"
 
-type InvoiceAction = "dian" | "pdf" | "xml" | "email" | "rips"
-
-function formatDateTime(value: string): string {
-  if (!value) return "-"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return "-"
-  return date.toLocaleString("es-CO", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
-
 export default function ElectronicInvoicesContainer() {
-  const { data: invoices, isLoading } = useGetAllElectronicInvoices()
-  const [search, setSearch] = useState("")
+  const { data: invoices, isLoading, isError, refetch } = useGetAllElectronicInvoices()
   const [previewInvoice, setPreviewInvoice] = useState<ElectronicInvoiceListItem | null>(null)
   const [emailInvoice, setEmailInvoice] = useState<ElectronicInvoiceListItem | null>(null)
   const router = useRouter()
@@ -58,6 +43,7 @@ export default function ElectronicInvoicesContainer() {
     isLoading: isLoadingPdf,
     error: pdfError,
   } = useGetElectronicInvoicePdf(previewInvoice?.id ?? null)
+  const total = invoices?.length ?? 0
 
   const handleDownloadXml = (record: ElectronicInvoiceListItem) => {
     downloadXml.mutate(record.id, {
@@ -65,192 +51,178 @@ export default function ElectronicInvoicesContainer() {
     })
   }
 
-  const buildMenu = (
-    record: ElectronicInvoiceListItem,
-    downloadingXml: boolean,
-  ): MenuProps["items"] => [
-    { key: "dian", icon: <LinkOutlined />, label: "Ver en DIAN", disabled: !record.cufe },
-    { key: "pdf", icon: <FilePdfOutlined />, label: "Ver PDF", disabled: !record.hasPdf },
-    {
-      key: "xml",
-      icon: <CodeOutlined />,
-      label: "Descargar XML (AttachedDocument)",
-      disabled: downloadingXml,
-    },
-    { key: "email", icon: <MailOutlined />, label: "Enviar PDF y XML por correo" },
-    { type: "divider" },
-    { key: "rips", icon: <SolutionOutlined />, label: "RIPS" },
-  ]
-
-  const handleAction = (action: InvoiceAction, record: ElectronicInvoiceListItem) => {
-    switch (action) {
-      case "dian":
-        window.open(
-          `${DIAN_SEARCH_URL}?DocumentKey=${record.cufe}`,
-          "_blank",
-          "noopener,noreferrer",
-        )
-        break
-      case "pdf":
-        setPreviewInvoice(record)
-        break
-      case "xml":
-        handleDownloadXml(record)
-        break
-      case "email":
-        setEmailInvoice(record)
-        break
-      case "rips":
-        router.push(`/billing/rips/${record.id}`)
-        break
-    }
+  const openPdf = (record: ElectronicInvoiceListItem) => {
+    if (record.hasPdf) setPreviewInvoice(record)
   }
 
-  const filtered = useMemo(() => {
-    const term = search.toLowerCase().trim()
-    return (invoices ?? []).filter((invoice) => {
-      if (!term) return true
-      return (
-        invoice.patientName?.toLowerCase().includes(term) ||
-        invoice.patientDocument?.toLowerCase().includes(term) ||
-        invoice.invoiceNum?.toLowerCase().includes(term) ||
-        invoice.cufe?.toLowerCase().includes(term) ||
-        invoice.insurerName?.toLowerCase().includes(term)
-      )
-    })
-  }, [invoices, search])
-
+  const actionsFor = (record: ElectronicInvoiceListItem) => {
+    const downloadingXml = downloadXml.isPending && downloadXml.variables === record.id
+    return (
+      <RowActions
+        subject={`la factura ${record.invoiceNum}`}
+        editLabel="Ver PDF"
+        editIcon={<FilePdfOutlined />}
+        onEdit={record.hasPdf ? () => openPdf(record) : undefined}
+        items={[
+          {
+            key: "dian",
+            label: "Ver en DIAN",
+            icon: <LinkOutlined />,
+            disabled: !record.cufe,
+            onClick: () =>
+              window.open(`${DIAN_SEARCH_URL}?DocumentKey=${record.cufe}`, "_blank", "noopener,noreferrer"),
+          },
+          {
+            key: "xml",
+            label: downloadingXml ? "Descargando XML…" : "Descargar XML (AttachedDocument)",
+            icon: <CodeOutlined />,
+            disabled: downloadingXml,
+            onClick: () => handleDownloadXml(record),
+          },
+          {
+            key: "email",
+            label: "Enviar PDF y XML por correo",
+            icon: <MailOutlined />,
+            onClick: () => setEmailInvoice(record),
+          },
+          {
+            key: "rips",
+            label: "RIPS",
+            icon: <SolutionOutlined />,
+            dividerBefore: true,
+            onClick: () => router.push(`/billing/rips/${record.id}`),
+          },
+        ]}
+      />
+    )
+  }
 
   const columns: ColumnsType<ElectronicInvoiceListItem> = [
     {
-      title: "Fecha",
-      dataIndex: "createdAt",
-      width: 170,
-      sorter: (a, b) => (a.createdAt ?? "").localeCompare(b.createdAt ?? ""),
+      title: "Factura",
+      key: "invoice",
+      width: 190,
       defaultSortOrder: "descend",
-      render: (value: string) => (
-        <span style={{ fontFamily: "monospace" }}>{formatDateTime(value)}</span>
+      sorter: (a, b) => (a.createdAt ?? "").localeCompare(b.createdAt ?? ""),
+      render: (_, r) => (
+        <span className={cellStyles.stack}>
+          <span className={`${cellStyles.personName} ${cellStyles.tabular}`}>{r.invoiceNum}</span>
+          <span className={`${cellStyles.personDetail} ${cellStyles.tabular}`}>
+            {formatDateTime(r.createdAt)}
+          </span>
+        </span>
       ),
     },
     {
       title: "Paciente",
-      dataIndex: "patientName",
-      width: 220,
-      render: (value: string) => <span style={{ fontWeight: 500 }}>{formatPersonName(value)}</span>,
-    },
-    {
-      title: "Documento",
-      dataIndex: "patientDocument",
-      width: 130,
-      render: (value: string | null) => (
-        <span style={{ fontFamily: "monospace" }}>{value ?? "-"}</span>
+      key: "patient",
+      sorter: (a, b) => (a.patientName ?? "").localeCompare(b.patientName ?? "", "es"),
+      render: (_, r) => (
+        <PersonCell
+          name={formatPersonName(r.patientName)}
+          detail={formatDocument(null, r.patientDocument) || undefined}
+        />
       ),
     },
     {
       title: "EPS",
-      dataIndex: "insurerName",
-      width: 200,
-      ellipsis: true,
-      render: (value: string | null) => (value ? formatInstitutionName(value) : "-"),
-    },
-    {
-      title: "N° Factura",
-      dataIndex: "invoiceNum",
-      width: 150,
+      key: "insurer",
+      width: 240,
+      render: (_, r) => {
+        const eps = formatInstitutionName(r.insurerName) || "—"
+        return (
+          <span className={cellStyles.oneLine} title={eps}>
+            {eps}
+          </span>
+        )
+      },
     },
     {
       title: "CUFE",
-      dataIndex: "cufe",
-      width: 160,
-      render: (value: string | null) =>
-        value ? (
-          <Tooltip title={value}>
-            <span style={{ fontFamily: "monospace" }}>
-              {value.slice(0, 12)}…
-            </span>
+      key: "cufe",
+      width: 150,
+      render: (_, r) =>
+        r.cufe ? (
+          <Tooltip title={r.cufe}>
+            <span className={`${cellStyles.tabular} ${cellStyles.personDetail}`}>{r.cufe.slice(0, 12)}…</span>
           </Tooltip>
         ) : (
-          "-"
+          <span className={cellStyles.personDetail}>—</span>
         ),
     },
     {
       // Mientras no exista la integración con el MUV, todas las facturas quedan pendientes.
       title: "Estado RIPS",
+      key: "rips",
       width: 150,
       render: () => <RipsStatusTag status="pending" />,
     },
     {
-      title: "Acciones",
-      width: 140,
-      align: "center",
+      title: <span className="visually-hidden">Acciones</span>,
+      key: "actions",
+      width: 96,
+      align: "right",
       fixed: "right",
-      render: (_, record) => {
-        const downloadingXml = downloadXml.isPending && downloadXml.variables === record.id
-        return (
-          <Dropdown
-            trigger={["click"]}
-            menu={{
-              items: buildMenu(record, downloadingXml),
-              onClick: ({ key }) => handleAction(key as InvoiceAction, record),
-            }}
-          >
-            <Button type="primary" loading={downloadingXml}>
-              Acciones <DownOutlined />
-            </Button>
-          </Dropdown>
-        )
-      },
+      render: (_, r) => actionsFor(r),
     },
   ]
 
   return (
     <Container>
       {contextHolder}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <FileDoneOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-          <Title level={3}>Visualización de factura</Title>
-        </div>
-        <Input
-          placeholder="Buscar por paciente, documento, factura, CUFE o EPS..."
-          prefix={<SearchOutlined style={{ color: "var(--theme-primary, #0F6F5C)" }} />}
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          allowClear
-          size="large"
-          style={{ maxWidth: 440, borderRadius: 8 }}
-        />
-      </div>
+      <PageHeader
+        icon={<FileDoneOutlined />}
+        title="Facturas electrónicas"
+        subtitle={
+          isLoading
+            ? "Cargando facturas…"
+            : `${total.toLocaleString("es-CO")} ${total === 1 ? "factura emitida" : "facturas emitidas"}`
+        }
+      />
 
-      {isLoading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
-          <Spin size="large" />
-        </div>
-      ) : (
-        <Table<ElectronicInvoiceListItem>
-          size="middle"
-          columns={columns}
-          dataSource={filtered}
-          rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50"],
-            showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} facturas`,
-          }}
-          scroll={{ x: "max-content" }}
-          locale={{ emptyText: "No hay facturas electrónicas emitidas" }}
-        />
-      )}
+      <DataTable<ElectronicInvoiceListItem>
+        data={invoices ?? []}
+        columns={columns}
+        rowKey="id"
+        entity={["factura", "facturas"]}
+        feminine
+        loading={isLoading}
+        error={isError}
+        onRetry={() => refetch()}
+        emptyText="Aún no hay facturas electrónicas emitidas."
+        rowNumbers
+        syncUrl
+        searchPlaceholder="Buscar por paciente, documento, factura, CUFE o EPS…"
+        searchText={(i) =>
+          `${i.patientName ?? ""} ${i.patientDocument ?? ""} ${i.invoiceNum ?? ""} ${i.cufe ?? ""} ${i.insurerName ?? ""}`
+        }
+        quickFilters={[
+          {
+            key: "eps",
+            placeholder: "EPS",
+            getValue: (i) => i.insurerName,
+            formatLabel: formatInstitutionName,
+          },
+        ]}
+        onRowClick={openPdf}
+        renderCard={(i) => (
+          <div className={cellStyles.rowCard}>
+            <div className={cellStyles.rowCardBody}>
+              <PersonCell
+                name={formatPersonName(i.patientName)}
+                detail={formatDocument(null, i.patientDocument) || undefined}
+              />
+              <span className={cellStyles.personDetail}>
+                {i.invoiceNum} · {formatDateTime(i.createdAt)}
+              </span>
+              <span className={cellStyles.personDetail}>
+                {formatInstitutionName(i.insurerName) || "Sin EPS"}
+              </span>
+            </div>
+            {actionsFor(i)}
+          </div>
+        )}
+      />
 
       <Modal
         open={!!previewInvoice}

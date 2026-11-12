@@ -2,7 +2,8 @@
 
 import { Alert, Button, Space, Spin, Tabs, Tag } from "antd"
 import { Container } from "@/components/container"
-import Title from "@/components/title"
+import PageHeader from "@/components/dataTable/PageHeader"
+import { FileDoneOutlined } from "@ant-design/icons"
 import { useGetElectronicInvoicingSettings } from "@/core/hooks/parameterization/electronicInvoicing/useGetElectronicInvoicingSettings"
 import { ENVIRONMENT_LABELS } from "./catalogs"
 import CertificateTab, { certificateStatus } from "./certificateTab"
@@ -14,7 +15,13 @@ import SoftwareTab, { environmentColor } from "./softwareTab"
 export default function ElectronicInvoicingContainer() {
   const { data, isLoading, error, refetch, isFetching } = useGetElectronicInvoicingSettings()
 
-  const header = <Title children="Facturación electrónica" level={3} />
+  const header = (
+    <PageHeader
+      icon={<FileDoneOutlined />}
+      title="Facturación electrónica"
+      subtitle="Datos de la empresa, software, certificado y resoluciones para emitir facturas ante la DIAN"
+    />
+  )
 
   if (isLoading) {
     return (

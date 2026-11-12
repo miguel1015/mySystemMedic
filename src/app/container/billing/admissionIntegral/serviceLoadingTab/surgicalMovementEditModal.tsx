@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import Modal from "@/components/modal"
 import { useUpdateBillingMovement } from "@/core/hooks/care/billing/useUpdateBillingMovement"
 import { useTariffDetails } from "@/core/hooks/parameterization/tariffDetails/useGetAllTariffDetails"
@@ -287,6 +288,7 @@ const SurgicalMovementEditModal = ({
       <div style={{ marginBottom: 16, fontWeight: 700 }}>{movement.name}</div>
 
       <Table<EditableConcept>
+        className={tableStyles.table}
         rowKey={(_, index) => String(index)}
         size="small"
         columns={columns}

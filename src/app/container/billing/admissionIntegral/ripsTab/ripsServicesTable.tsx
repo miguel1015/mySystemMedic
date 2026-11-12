@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import type { RipsProfessional } from "@/app/container/billing/rips/buildRips"
 import type { BillingMovementResponse } from "@/core/interfaces/care/billing"
 import type { ProfessionalOption } from "@/core/interfaces/user/users"
@@ -364,6 +365,7 @@ export default function RipsServicesTable({
 
   return (
     <Table<BillingMovementResponse>
+      className={tableStyles.table}
       size="small"
       rowKey="id"
       columns={columns}

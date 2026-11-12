@@ -1,7 +1,8 @@
 "use client"
 
+import PageHeader from "@/components/dataTable/PageHeader"
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { Container } from "@/components/container"
-import Title from "@/components/title"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import {
   useActualizarMedicamentoPos,
@@ -629,15 +630,17 @@ const MedicationPosContainer = () => {
   /* ─────────────── Render ─────────────── */
 
   const header = (
-    <div className="mo-header">
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <FormOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-        <Title level={3}>Medicamentos POS</Title>
-      </div>
-      <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
-        Volver
-      </Button>
-    </div>
+    <PageHeader
+      icon={<FormOutlined />}
+      title="Medicamentos POS"
+      actions={
+        <>
+          <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
+            Volver
+          </Button>
+        </>
+      }
+    />
   )
 
   if (!admissionId) {
@@ -802,6 +805,7 @@ const MedicationPosContainer = () => {
         </div>
 
         <Table<PosItem>
+          className={tableStyles.table}
           rowKey="medicineId"
           columns={itemColumns}
           dataSource={items}
@@ -861,6 +865,7 @@ const MedicationPosContainer = () => {
           />
         ) : (
           <Table<MedicamentoPos>
+            className={tableStyles.table}
             rowKey="id"
             columns={formulaColumns}
             dataSource={formulas ?? []}

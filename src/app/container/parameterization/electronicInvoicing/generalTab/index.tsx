@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { Alert, Button, Card, InputNumber, Select as AntdSelect, Space, Table, Tag } from "antd"
@@ -136,6 +137,7 @@ export default function GeneralTab({ local, resolutions }: GeneralTabProps) {
           </div>
         )}
         <Table
+          className={tableStyles.table}
           rowKey="id"
           columns={columns}
           dataSource={local.numberings}

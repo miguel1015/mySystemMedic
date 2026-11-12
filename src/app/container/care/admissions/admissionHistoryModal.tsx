@@ -33,7 +33,7 @@ export default function AdmissionHistoryModal({
         data={data ?? []}
         isLoading={isLoading}
         withActions={false}
-        emptyText="El paciente no tiene admisiones registradas"
+        emptyText="El paciente no tiene admisiones registradas."
       />
     </Modal>
   )

@@ -1,27 +1,30 @@
 "use client";
 
-import { Button, DatePicker, Input, Select, Table, Tag } from "antd";
-import { formatPersonName, formatCatalogLabel, careScopeColor } from "@/core/utils/displayText";
-import { useRowNumbering } from "@/core/hooks/utils/useRowNumbering";
+import { Button, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useMemo, useState } from "react";
-import { DollarOutlined, SearchOutlined } from "@ant-design/icons";
-import { OngoingAttention } from "@/core/interfaces/care/types";
+import { DollarOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import dayjs, { Dayjs } from "dayjs";
-import { formatDate, formatTime } from "@/core/utils/date";
-
-const { RangePicker } = DatePicker;
+import DataTable from "@/components/dataTable/DataTable";
+import { PersonCell, formatDocument } from "@/components/dataTable/cells";
+import cellStyles from "@/components/dataTable/dataTable.module.scss";
+import { OngoingAttention } from "@/core/interfaces/care/types";
+import {
+  careScopeColor,
+  careScopeKey,
+  formatCatalogLabel,
+  formatPersonName,
+} from "@/core/utils/displayText";
+import { STAY_BUCKETS, formatDateTime, formatStay, stayBucket } from "@/core/utils/date";
 
 interface OngoingCareTableProps {
   data: OngoingAttention[];
   loading: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
 }
 
-
-const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
+const OngoingCareTable = ({ data, loading, isError, onRetry }: OngoingCareTableProps) => {
   const router = useRouter();
-  const [search, setSearch] = useState("");
 
   const goToBilling = (record: OngoingAttention) => {
     const params = new URLSearchParams({
@@ -34,204 +37,109 @@ const OngoingCareTable = ({ data, loading }: OngoingCareTableProps) => {
     });
     router.push(`/billing/admissionIntegral?${params.toString()}`);
   };
-  const [careScopeFilter, setCareScopeFilter] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
 
-  const careScopeOptions = useMemo(() => {
-    const unique = Array.from(new Set(data.map((item) => item.careScope)));
-    return unique.map((scope) => ({ label: scope, value: scope }));
-  }, [data]);
-
-  const filteredData = useMemo(() => {
-    const term = search.toLowerCase().trim();
-
-    return data
-      .filter((item) => {
-        const matchesText =
-          !term ||
-          item.patientFullName.toLowerCase().includes(term) ||
-          item.documentNumber.toLowerCase().includes(term);
-
-        const matchesScope =
-          !careScopeFilter || item.careScope === careScopeFilter;
-
-        const matchesDate =
-          !dateRange ||
-          (() => {
-            const admissionDay = dayjs(item.admissionDate);
-            return (
-              admissionDay.isAfter(dateRange[0].startOf("day")) &&
-              admissionDay.isBefore(dateRange[1].endOf("day"))
-            );
-          })();
-
-        return matchesText && matchesScope && matchesDate;
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.admissionDate).getTime() -
-          new Date(a.admissionDate).getTime(),
-      );
-  }, [search, careScopeFilter, dateRange, data]);
-
-  // Numeración continua entre páginas (antd da el índice dentro de la página).
-  const { onTableChange, rowNumber } = useRowNumbering(filteredData.length);
+  const billingButton = (r: OngoingAttention) => (
+    <Button
+      icon={<DollarOutlined />}
+      onClick={() => goToBilling(r)}
+      aria-label={`Admisión integral de ${formatPersonName(r.patientFullName)}`}
+    >
+      Admisión integral
+    </Button>
+  );
 
   const columns: ColumnsType<OngoingAttention> = [
     {
-      title: "#",
-      width: 60,
-      align: "center",
-      render: (_value, _record, index) => (
-        <span
-          style={{
-            fontWeight: 600,
-            color: "var(--dash-text-secondary, #6b7280)",
-          }}
-        >
-          {rowNumber(index)}
-        </span>
+      title: "Paciente",
+      key: "patient",
+      sorter: (a, b) => a.patientFullName.localeCompare(b.patientFullName, "es"),
+      render: (_, r) => (
+        <PersonCell
+          name={formatPersonName(r.patientFullName)}
+          detail={formatDocument(r.documentTypeName, r.documentNumber)}
+        />
       ),
     },
     {
       title: "Admisión",
-      dataIndex: "admissionId",
-      width: 100,
-      render: (value: number) => (
-        <span style={{ fontFamily: "monospace", fontWeight: 500 }}>
-          #{value}
+      key: "admission",
+      width: 190,
+      defaultSortOrder: "descend",
+      sorter: (a, b) => new Date(a.admissionDate).getTime() - new Date(b.admissionDate).getTime(),
+      render: (_, r) => (
+        <span className={cellStyles.stack}>
+          <span className={cellStyles.tabular}>{formatDateTime(r.admissionDate)}</span>
+          <span className={cellStyles.personDetail}>N° {r.admissionId}</span>
         </span>
       ),
     },
     {
-      title: "Fecha y hora de admisión",
-      dataIndex: "admissionDate",
-      width: 200,
-      sorter: (a, b) =>
-        new Date(a.admissionDate).getTime() -
-        new Date(b.admissionDate).getTime(),
-      render: (value: string) => (
-        <div>
-          <div style={{ fontWeight: 500 }}>{formatDate(value)}</div>
-          <div style={{ fontSize: 12 }}>{formatTime(value)}</div>
-        </div>
-      ),
-    },
-    {
-      title: "Nombre del paciente",
-      dataIndex: "patientFullName",
-      width: 260,
-      sorter: (a, b) => a.patientFullName.localeCompare(b.patientFullName),
-      render: (value: string) => (
-        <span style={{ fontWeight: 500 }}>{formatPersonName(value)}</span>
-      ),
-    },
-    {
-      title: "Tipo doc.",
-      dataIndex: "documentTypeName",
+      title: "Estancia",
+      key: "stay",
       width: 110,
+      render: (_, r) => <span className={cellStyles.tabular}>{formatStay(r.admissionDate) || "—"}</span>,
     },
     {
-      title: "Nro. Documento",
-      dataIndex: "documentNumber",
-      width: 160,
-      render: (value: string) => (
-        <span style={{ fontFamily: "monospace", fontWeight: 500 }}>
-          {value}
-        </span>
-      ),
+      title: "Ámbito",
+      key: "scope",
+      width: 170,
+      render: (_, r) => <Tag color={careScopeColor(r.careScope)}>{formatCatalogLabel(r.careScope)}</Tag>,
     },
     {
-      title: "Ámbito de atención",
-      dataIndex: "careScope",
+      title: <span className="visually-hidden">Acciones</span>,
+      key: "actions",
       width: 180,
-      render: (value: string) => (
-        <Tag color={careScopeColor(value)}>{formatCatalogLabel(value)}</Tag>
-      ),
-    },
-    {
-      title: "Estado",
-      width: 120,
-      align: "center",
-      render: () => <Tag color="success">En curso</Tag>,
-    },
-    {
-      title: "Acciones",
-      width: 150,
-      align: "center",
+      align: "right",
       fixed: "right",
-      render: (_, record) => (
-        <Button
-          type="primary"
-          icon={<DollarOutlined />}
-          onClick={() => goToBilling(record)}
-        >
-          Admisión integral
-        </Button>
-      ),
+      render: (_, r) => billingButton(r),
     },
   ];
 
   return (
-    <div>
-      <div
-        style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}
-      >
-        <Input
-          placeholder="Buscar por nombre o documento..."
-          prefix={
-            <SearchOutlined
-              style={{ color: "var(--theme-primary, #0F6F5C)" }}
-            />
-          }
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          allowClear
-          size="large"
-          disabled={loading}
-          style={{ maxWidth: 340, borderRadius: 8 }}
-        />
-        <Select
-          placeholder="Filtrar por ámbito"
-          value={careScopeFilter ?? undefined}
-          onChange={(value) => setCareScopeFilter(value ?? null)}
-          allowClear
-          size="large"
-          disabled={loading}
-          style={{ minWidth: 220 }}
-          options={careScopeOptions}
-        />
-        <RangePicker
-          placeholder={["Fecha desde", "Fecha hasta"]}
-          value={dateRange}
-          onChange={(range) =>
-            setDateRange(
-              range && range[0] && range[1] ? [range[0], range[1]] : null,
-            )
-          }
-          allowClear
-          size="large"
-          disabled={loading}
-        />
-      </div>
-      <Table<OngoingAttention>
-        onChange={onTableChange}
-        size="middle"
-        columns={columns}
-        dataSource={filteredData}
-        rowKey="admissionId"
-        loading={{ spinning: loading, tip: "Cargando atenciones en curso..." }}
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          pageSizeOptions: ["10", "20", "50"],
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} de ${total} atenciones en curso`,
-        }}
-        scroll={{ x: "max-content" }}
-        locale={{ emptyText: "No hay atenciones en curso" }}
-      />
-    </div>
+    <DataTable<OngoingAttention>
+      data={data}
+      columns={columns}
+      rowKey="admissionId"
+      entity={["atención", "atenciones"]}
+      feminine
+      loading={loading}
+      error={isError}
+      onRetry={onRetry}
+      emptyText="No hay atenciones en curso."
+      rowNumbers
+      syncUrl
+      searchPlaceholder="Buscar por nombre, documento o N° de admisión…"
+      searchText={(a) => `${a.patientFullName} ${a.documentNumber} ${a.admissionId}`}
+      quickFilters={[
+        {
+          key: "scope",
+          placeholder: "Ámbito",
+          getValue: (a) => careScopeKey(a.careScope) || undefined,
+          formatLabel: formatCatalogLabel,
+        },
+        {
+          key: "stay",
+          placeholder: "Estancia",
+          getValue: (a) => stayBucket(a.admissionDate),
+          order: STAY_BUCKETS,
+        },
+      ]}
+      onRowClick={goToBilling}
+      renderCard={(a) => (
+        <div className={cellStyles.rowCardBody}>
+          <PersonCell
+            name={formatPersonName(a.patientFullName)}
+            detail={formatDocument(a.documentTypeName, a.documentNumber)}
+          />
+          <span className={cellStyles.personDetail}>
+            N° {a.admissionId} · {formatDateTime(a.admissionDate)} · {formatStay(a.admissionDate)}
+          </span>
+          <span className={cellStyles.tags}>
+            <Tag color={careScopeColor(a.careScope)}>{formatCatalogLabel(a.careScope)}</Tag>
+          </span>
+        </div>
+      )}
+    />
   );
 };
 

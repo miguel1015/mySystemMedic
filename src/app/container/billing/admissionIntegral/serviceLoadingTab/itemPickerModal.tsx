@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import Modal from "@/components/modal"
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons"
 import { Button, Empty, Input, Table } from "antd"
@@ -82,6 +83,7 @@ const ItemPickerModal = ({
         style={{ marginBottom: 14 }}
       />
       <Table<PickerRow>
+        className={tableStyles.table}
         rowKey="id"
         size="small"
         columns={columns}

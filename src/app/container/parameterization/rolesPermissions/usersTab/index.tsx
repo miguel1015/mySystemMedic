@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { useMemo, useState } from "react"
 import { Alert, Button, Input, Table, Tag, Tooltip } from "antd"
 import type { ColumnsType } from "antd/es/table"
@@ -103,6 +104,7 @@ export default function UsersTab({ role }: { role: TAccessRole }) {
       </div>
 
       <Table<TAccessUser>
+        className={tableStyles.table}
         rowKey="id"
         columns={columns}
         dataSource={filteredUsers}

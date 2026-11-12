@@ -2,15 +2,15 @@
 
 import { useState } from "react"
 import { Container } from "@/components/container"
-import Title from "@/components/title"
+import PageHeader from "@/components/dataTable/PageHeader"
 import { useActiveAdmissions } from "@/core/hooks/care/admissions/useGetActiveAdmissions"
 import { ActiveAdmission } from "@/core/interfaces/care/types"
-import AdmissionsTable from "./table"
+import ActiveAdmissionsTable from "../shared/ActiveAdmissionsTable"
 import ActionsModal from "./actionsModal"
 import { FileTextOutlined } from "@ant-design/icons"
 
 const EvolveClinicalHistoryContainer = () => {
-  const { data: admissions = [], isLoading } = useActiveAdmissions()
+  const { data: admissions = [], isLoading, isError, refetch } = useActiveAdmissions()
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedPatient, setSelectedPatient] = useState<ActiveAdmission | null>(null)
 
@@ -26,26 +26,24 @@ const EvolveClinicalHistoryContainer = () => {
 
   return (
     <Container>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 4,
-        }}
-      >
-        <FileTextOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-        <Title level={3}>Evolucionar Historia Clínica</Title>
-      </div>
+      <PageHeader
+        icon={<FileTextOutlined />}
+        title="Evolucionar historia clínica"
+        subtitle={
+          isLoading
+            ? "Cargando pacientes…"
+            : `${admissions.length.toLocaleString("es-CO")} ${admissions.length === 1 ? "paciente con admisión activa" : "pacientes con admisión activa"}`
+        }
+      />
 
-      <p style={{ color: "#666", marginBottom: 24, marginTop: -8 }}>
-        Pacientes con admisión activa
-      </p>
-
-      <AdmissionsTable
+      <ActiveAdmissionsTable
         data={admissions}
         loading={isLoading}
+        isError={isError}
+        onRetry={() => refetch()}
         onAction={handleAction}
+        actionLabel="Evolucionar"
+        actionIcon={<FileTextOutlined />}
       />
 
       <ActionsModal

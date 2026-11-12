@@ -1,165 +1,187 @@
 "use client";
 
-import { Container } from "@/components/container";
-import { useTariffDetailsPaged } from "@/core/hooks/parameterization/tariffDetails/useGetTariffDetailsPaged";
-import { TTariffDetail } from "@/core/interfaces/parameterization/types";
-import { EditOutlined } from "@ant-design/icons";
-import { Button, Empty, Input, Table, Tag, Tooltip } from "antd";
+import { useEffect, useState } from "react";
+import { Alert, Button, Input, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useRef, useState } from "react";
+import { SearchOutlined } from "@ant-design/icons";
+import { RowActions, formatCOP } from "@/components/dataTable/cells";
+import tableStyles from "@/components/dataTable/dataTable.module.scss";
+import { useTariffDetailsPaged } from "@/core/hooks/parameterization/tariffDetails/useGetTariffDetailsPaged";
+import { useUrlState } from "@/core/hooks/utils/useUrlState";
+import { TTariffDetail } from "@/core/interfaces/parameterization/types";
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-  }).format(value);
+const PAGE_SIZES = [10, 20, 50, 100];
 
 const formatFactor = (value: number) =>
-  new Intl.NumberFormat("es-CO", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 4,
-  }).format(value);
+  new Intl.NumberFormat("es-CO", { minimumFractionDigits: 0, maximumFractionDigits: 4 }).format(value);
 
 interface TariffDetailsTableProps {
   onEdit: (record: TTariffDetail) => void;
+  // Total de detalles (para el encabezado de la página).
+  onTotal?: (total: number | undefined) => void;
 }
 
-const TariffDetailsTable = ({ onEdit }: TariffDetailsTableProps) => {
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
-  const [search, setSearch] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+// Detalles de todos los tarifarios: miles de filas, así que pagina y busca en el servidor.
+// Búsqueda, página y tamaño quedan en la URL.
+const TariffDetailsTable = ({ onEdit, onTotal }: TariffDetailsTableProps) => {
+  const [url, setUrl] = useUrlState({ buscar: "", pagina: "1", tamano: "20" });
+  const [searchInput, setSearchInput] = useState("");
+  const page = Math.max(1, Number(url.pagina) || 1);
+  const pageSize = PAGE_SIZES.includes(Number(url.tamano)) ? Number(url.tamano) : 20;
 
-  const { data, isLoading, isFetching } = useTariffDetailsPaged(
+  // El cuadro de búsqueda se llena con lo que traiga la URL.
+  useEffect(() => setSearchInput(url.buscar ?? ""), [url.buscar]);
+
+  // Se busca 350 ms después de dejar de escribir, desde la página 1.
+  useEffect(() => {
+    const term = searchInput.trim();
+    if (term === (url.buscar ?? "")) return;
+    const id = setTimeout(() => setUrl({ buscar: term, pagina: "1" }), 350);
+    return () => clearTimeout(id);
+  }, [searchInput, url.buscar, setUrl]);
+
+  const { data, isLoading, isFetching, isError, refetch } = useTariffDetailsPaged(
     page,
     pageSize,
-    search || undefined,
+    url.buscar || undefined,
   );
 
-  const handleSearch = (text: string) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setPage(1);
-      setSearch(text.trim());
-    }, 400);
-  };
+  // El total del encabezado es el de todo el tarifario, no el de la búsqueda.
+  useEffect(() => {
+    if (!url.buscar && data) onTotal?.(data.totalCount);
+  }, [url.buscar, data, onTotal]);
 
   const columns: ColumnsType<TTariffDetail> = [
     {
-      title: "ID",
-      dataIndex: "id",
-      width: 70,
-    },
-    {
-      title: "Código referencia",
-      dataIndex: "referenceCode",
-      width: 80,
-    },
-    {
-      title: "CUPS",
-      dataIndex: "cupsCode",
-      width: 90,
-      render: (value?: string | null) =>
-        value ? (
-          <span style={{ fontFamily: "monospace" }}>{value}</span>
-        ) : (
-          <Tag color="orange">Sin CUPS</Tag>
-        ),
+      title: "Código",
+      key: "code",
+      width: 150,
+      render: (_, r) => (
+        <span className={tableStyles.stack}>
+          <span className={`${tableStyles.personName} ${tableStyles.tabular}`}>{r.referenceCode}</span>
+          {r.cupsCode ? (
+            <span className={`${tableStyles.personDetail} ${tableStyles.tabular}`}>CUPS {r.cupsCode}</span>
+          ) : (
+            <span className={tableStyles.warningText}>Sin CUPS</span>
+          )}
+        </span>
+      ),
     },
     {
       title: "Descripción",
-      dataIndex: "description",
-      width: 350,
-      render: (value: string, record) =>
-        record.isSurgicalProcedure && record.surgicalGroupQxGroup
-          ? `${value} - ${record.surgicalGroupQxGroup}`
-          : value,
+      key: "description",
+      render: (_, r) => (
+        <span className={tableStyles.stack}>
+          <span className={tableStyles.clamp2} title={r.description}>
+            {r.description}
+          </span>
+          {r.tariffName && <span className={tableStyles.personDetail}>{r.tariffName}</span>}
+        </span>
+      ),
     },
     {
-      title: "Valor",
-      dataIndex: "value",
-      width: 80,
-      render: (value: number) => formatCurrency(value),
-    },
-    {
-      title: "Tarifario",
-      dataIndex: "tariffName",
-      width: 180,
-      render: (value?: string) => value ?? "-",
-    },
-    {
-      title: "Procedimiento quirúrgico",
-      dataIndex: "isSurgicalProcedure",
-      width: 80,
-      render: (value: boolean) =>
-        value ? <Tag color="blue">Sí</Tag> : <Tag>No</Tag>,
+      title: "Grupo quirúrgico",
+      key: "surgical",
+      width: 150,
+      render: (_, r) =>
+        r.isSurgicalProcedure ? (
+          <Tag color="blue">{r.surgicalGroupQxGroup ? `Grupo ${r.surgicalGroupQxGroup}` : "Quirúrgico"}</Tag>
+        ) : (
+          <span className={tableStyles.personDetail}>—</span>
+        ),
     },
     {
       title: "Factor",
       dataIndex: "factors",
-      width: 80,
-      render: (value: number) => formatFactor(value),
-    },
-    {
-      title: "Grupo quirúrgico",
-      dataIndex: "surgicalGroupQxGroup",
-      width: 120,
-      render: (value?: string) => value ?? "-",
-    },
-    {
-      title: "Acciones",
       width: 90,
+      align: "right",
+      render: (value: number) => <span className={tableStyles.tabular}>{formatFactor(value)}</span>,
+    },
+    {
+      title: "Valor",
+      dataIndex: "value",
+      width: 140,
+      align: "right",
+      render: (value: number) => <span className={tableStyles.tabular}>{formatCOP(value)}</span>,
+    },
+    {
+      title: <span className="visually-hidden">Acciones</span>,
+      key: "actions",
+      width: 72,
+      align: "right",
       fixed: "right",
-      render: (_, record) => (
-        <Tooltip title="Editar">
-          <Button
-            type="default"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(record)}
-          />
-        </Tooltip>
+      render: (_, r) => (
+        <RowActions subject={`el código ${r.referenceCode}`} onEdit={() => onEdit(r)} />
       ),
     },
   ];
 
   return (
-    <Container className="py-4">
-      <div className="mb-3">
+    <div className={tableStyles.root}>
+      <div className={tableStyles.toolbar}>
         <Input
-          placeholder="Buscar por código, CUPS o descripción..."
-          onChange={(e) => handleSearch(e.target.value)}
+          className={tableStyles.search}
+          placeholder="Buscar por código, CUPS o descripción…"
+          prefix={<SearchOutlined aria-hidden />}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           allowClear
-          size="large"
+          aria-label="Buscar detalles del tarifario"
         />
+        <span className={tableStyles.count} role="status">
+          {url.buscar && data
+            ? `${data.totalCount.toLocaleString("es-CO")} ${data.totalCount === 1 ? "resultado" : "resultados"}`
+            : ""}
+        </span>
       </div>
 
-      <Table<TTariffDetail>
-        size="small"
-        columns={columns}
-        dataSource={data?.items ?? []}
-        rowKey="id"
-        loading={{
-          spinning: isLoading || isFetching,
-          tip: "Cargando información...",
-        }}
-        pagination={{
-          current: page,
-          pageSize,
-          total: data?.totalCount ?? 0,
-          showSizeChanger: true,
-          pageSizeOptions: ["10", "20", "50", "100"],
-          onChange: (newPage, newPageSize) => {
-            setPage(newPage);
-            setPageSize(newPageSize);
-          },
-        }}
-        scroll={{ x: "max-content" }}
-        locale={{
-          emptyText: <Empty description="No hay tarifas de detalle" />,
-        }}
-      />
-    </Container>
+      {isError ? (
+        <Alert
+          type="warning"
+          showIcon
+          message="No se pudieron cargar los detalles del tarifario"
+          description="Revisa tu conexión e inténtalo de nuevo."
+          action={<Button onClick={() => refetch()}>Reintentar</Button>}
+        />
+      ) : (
+        <Table<TTariffDetail>
+          className={tableStyles.table}
+          size="middle"
+          columns={columns}
+          dataSource={data?.items ?? []}
+          rowKey="id"
+          loading={isLoading || isFetching}
+          rowClassName={() => tableStyles.rowClickable}
+          onRow={(r) => ({
+            onClick: (e) => {
+              if ((e.target as HTMLElement).closest("button, a, .ant-dropdown")) return;
+              onEdit(r);
+            },
+            onKeyDown: (e) => {
+              if (e.key === "Enter" && e.target === e.currentTarget) onEdit(r);
+            },
+            tabIndex: 0,
+          })}
+          scroll={{ x: "max-content" }}
+          locale={{
+            emptyText: url.buscar
+              ? `Ningún detalle coincide con “${url.buscar}”.`
+              : "Aún no hay detalles de tarifario.",
+          }}
+          pagination={{
+            current: page,
+            pageSize,
+            total: data?.totalCount ?? 0,
+            showSizeChanger: true,
+            pageSizeOptions: PAGE_SIZES.map(String),
+            locale: { items_per_page: "/ página" },
+            showTotal: (total, range) => `${range[0]}–${range[1]} de ${total.toLocaleString("es-CO")}`,
+            onChange: (p, size) =>
+              setUrl({ pagina: String(size !== pageSize ? 1 : p), tamano: String(size) }),
+          }}
+        />
+      )}
+    </div>
   );
 };
 

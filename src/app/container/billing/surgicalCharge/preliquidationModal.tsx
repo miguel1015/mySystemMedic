@@ -1,5 +1,6 @@
 "use client"
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import Modal from "@/components/modal"
 import { Button, Table, Tag } from "antd"
 import type { ColumnsType } from "antd/es/table"
@@ -68,6 +69,7 @@ const PreliquidationModal = ({
           </div>
 
           <Table<PreliquidatedConcept>
+            className={tableStyles.table}
             rowKey="id"
             size="small"
             columns={columns}

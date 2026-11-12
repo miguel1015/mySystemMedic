@@ -1,5 +1,6 @@
 "use client";
 
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { TTariffDetail } from "@/core/interfaces/parameterization/types";
 import { Button, Empty, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -75,6 +76,7 @@ const ConceptsTable = ({
       </div>
 
       <Table<TTariffDetail>
+        className={tableStyles.table}
         rowKey="id"
         size="small"
         columns={columns}

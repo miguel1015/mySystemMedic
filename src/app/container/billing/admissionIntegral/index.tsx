@@ -1,13 +1,13 @@
 "use client"
 
 import { Container } from "@/components/container"
-import Title from "@/components/title"
+import PageHeader from "@/components/dataTable/PageHeader"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
 import { useGetBillingMovementsByAdmission } from "@/core/hooks/care/billing/useGetBillingMovementsByAdmission"
 import { useGetElectronicInvoiceByAdmission } from "@/core/hooks/care/billing/useGetElectronicInvoiceByAdmission"
-import { CheckCircleFilled, DollarOutlined, FileTextOutlined, SolutionOutlined } from "@ant-design/icons"
-import { Alert, Tabs } from "antd"
-import { useSearchParams } from "next/navigation"
+import { ArrowLeftOutlined, CheckCircleFilled, DollarOutlined, FileTextOutlined, SolutionOutlined } from "@ant-design/icons"
+import { Alert, Button, Tabs } from "antd"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import AdmissionHeader from "./admissionHeader"
 import AdmissionPicker from "./admissionPicker"
@@ -16,6 +16,7 @@ import RipsTab, { RipsValidationResult } from "./ripsTab"
 import ServiceLoadingTab from "./serviceLoadingTab"
 
 const AdmissionIntegralContainer = () => {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const admissionIdParam = searchParams.get("admissionId")
   const admissionId = admissionIdParam ? Number(admissionIdParam) : null
@@ -39,14 +40,11 @@ const AdmissionIntegralContainer = () => {
   if (!admissionId) {
     return (
       <Container fluid padding="md">
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-          <DollarOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-          <Title level={3}>Admisión integral</Title>
-        </div>
-
-        <p style={{ color: "var(--dash-text-secondary, #6b7280)", marginBottom: 20, marginTop: -8 }}>
-          Selecciona una admisión para cargar sus servicios, validar RIPS y facturar
-        </p>
+        <PageHeader
+          icon={<DollarOutlined />}
+          title="Admisión integral"
+          subtitle="Selecciona una admisión para cargar sus servicios, validar RIPS y facturar"
+        />
 
         <AdmissionPicker />
       </Container>
@@ -109,14 +107,16 @@ const AdmissionIntegralContainer = () => {
 
   return (
     <Container fluid padding="md">
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-        <DollarOutlined style={{ fontSize: 22, color: "var(--theme-primary, #0F6F5C)" }} />
-        <Title level={3}>Admisión integral</Title>
-      </div>
-
-      <p style={{ color: "var(--dash-text-secondary, #6b7280)", marginBottom: 20, marginTop: -8 }}>
-        Cargue de servicios, validación RIPS y facturación de la admisión seleccionada
-      </p>
+      <PageHeader
+        icon={<DollarOutlined />}
+        title="Admisión integral"
+        subtitle="Cargue de servicios, validación RIPS y facturación de la admisión seleccionada"
+        actions={
+          <Button icon={<ArrowLeftOutlined />} onClick={() => router.push("/billing/admissionIntegral")}>
+            Volver al listado
+          </Button>
+        }
+      />
 
       <AdmissionHeader admission={admission} loading={isLoadingAdmission} isInvoiced={isInvoiced} />
 

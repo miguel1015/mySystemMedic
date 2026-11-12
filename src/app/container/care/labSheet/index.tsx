@@ -1,8 +1,9 @@
 "use client"
 
+import PageHeader from "@/components/dataTable/PageHeader"
+import tableStyles from "@/components/dataTable/dataTable.module.scss"
 import { Container } from "@/components/container"
 import Modal from "@/components/modal"
-import Title from "@/components/title"
 import { ENDPOINTS } from "@/core/api/endpoints"
 import { INSTITUTION_PROVIDER_ID } from "@/core/constants/institution"
 import { useGetAdmissionById } from "@/core/hooks/care/admissions/useGetAdmissionById"
@@ -488,38 +489,28 @@ const LabSheetContainer = () => {
   /* ─────────────── Render ─────────────── */
 
   const header = (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 16,
-        marginBottom: 20,
-        flexWrap: "wrap",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <ExperimentOutlined style={{ fontSize: 22, color: "#08979c" }} />
-        <Title level={3}>Laboratorios</Title>
-      </div>
-
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {admissionId && (
-          <Badge count={records.length} size="small" color="#08979c">
-            <Button
-              icon={<HistoryOutlined />}
-              loading={loadingRecords}
-              onClick={() => setHistoryOpen(true)}
-            >
-              Registros anteriores
-            </Button>
-          </Badge>
-        )}
-        <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
-          Volver
-        </Button>
-      </div>
-    </div>
+    <PageHeader
+      icon={<ExperimentOutlined />}
+      title="Laboratorios"
+      actions={
+        <>
+          {admissionId && (
+            <Badge count={records.length} size="small" color="#08979c">
+              <Button
+                icon={<HistoryOutlined />}
+                loading={loadingRecords}
+                onClick={() => setHistoryOpen(true)}
+              >
+                Registros anteriores
+              </Button>
+            </Badge>
+          )}
+          <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>
+            Volver
+          </Button>
+        </>
+      }
+    />
   )
 
   if (!admissionId) {
@@ -847,6 +838,7 @@ const LabSheetContainer = () => {
         size="lg"
       >
         <Table<ResultadoLaboratorioResponse>
+          className={tableStyles.table}
           rowKey="id"
           size="middle"
           columns={columns}
@@ -902,6 +894,7 @@ const LabSheetContainer = () => {
               hasta que pulse Guardar.
             </p>
             <Table
+              className={tableStyles.table}
               rowKey="clave"
               size="small"
               pagination={false}
