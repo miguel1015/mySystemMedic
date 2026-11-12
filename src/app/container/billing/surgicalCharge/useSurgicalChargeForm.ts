@@ -127,8 +127,9 @@ export function useSurgicalChargeForm(admissionId: number, admission: AdmissionR
         ? {
             ...concept,
             referenceCode: materialsCode,
+            // En el tarifario `value` ya es el precio final; factors son las UVB, no un multiplicador.
             value: materialsDetail?.value ?? INCRUENT_MATERIALS_FALLBACK_VALUE,
-            factors: materialsDetail?.factors ?? 1,
+            factors: 1,
           }
         : concept,
     )

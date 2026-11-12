@@ -134,7 +134,13 @@ const SurgicalChargeFlow = ({ admissionId, onBack }: { admissionId: number; onBa
             </Button>
           </div>
 
-          <div>
+          {/* Ocupa dos columnas para que el nombre completo del tipo de vía se lea; en
+              pantallas angostas (una sola columna) vuelve a ocupar una. */}
+          <style>{`
+            .surgical-way-field { grid-column: span 2; }
+            @media (max-width: 600px) { .surgical-way-field { grid-column: auto; } }
+          `}</style>
+          <div className="surgical-way-field">
             <label style={{ display: "block", marginBottom: 4, fontWeight: 500 }}>
               Tipo de vía de la cirugía
             </label>
