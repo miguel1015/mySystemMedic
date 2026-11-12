@@ -84,7 +84,7 @@ const SurgicalMovementEditModal = ({
       .sort((a, b) => a.referenceCode - b.referenceCode)
       .map((d) => ({
         value: d.id,
-        label: `${d.referenceCode} - ${d.description} (${formatCurrency(d.value * d.factors)})`,
+        label: `${d.referenceCode} - ${d.description} (${formatCurrency(d.value)})`,
       }))
 
   const handleValueChange = (index: number, value: number | null) => {
@@ -98,7 +98,9 @@ const SurgicalMovementEditModal = ({
       prev.map((c, i) => {
         if (i !== index) return c
         const percentage = c.percentageApplied ?? DEFAULT_PERCENTAGE
-        const baseValue = roundToNearestHundred(detail.value * detail.factors)
+        // En el tarifario, `value` ya es el precio final del código (factors es la
+        // cantidad de UVB con la que se calculó, no un multiplicador).
+        const baseValue = roundToNearestHundred(detail.value)
         return {
           ...c,
           itemId: detail.id,
@@ -195,7 +197,12 @@ const SurgicalMovementEditModal = ({
             loading={loadingTariffDetails}
             showSearch
             optionFilterProp="label"
-            popupMatchSelectWidth={false}
+            // El modal anima con transform y desubica la lista si se monta dentro de él; y como
+            // el modal usa z-index 1055 y el desplegable de antd 1050, se sube a 1060 para
+            // que no quede detrás.
+            getPopupContainer={() => document.body}
+            styles={{ popup: { root: { zIndex: 1060 } } }}
+            popupMatchSelectWidth={420}
             notFoundContent="No hay códigos compatibles en el tarifario"
             style={{ width: "100%" }}
             onChange={(id: number) => {
