@@ -40,15 +40,11 @@ const FULL_LIQUIDATION: ConceptPercentages = {
   roomFee: DEFAULT_LIQUIDATION_PERCENTAGE,
 }
 
-// Cirugías incruentas: en todos los procedimientos del cargue, incluso el primero, los
-// derechos de sala van al 45% y los materiales se cobran con el código 39305 al 100%.
-// Los honorarios y la ayudantía van al 100% en la primera cirugía y desde la segunda al
-// porcentaje del tipo de vía (75% diferente vía, 50% única vía).
-const incruentRule = (additionalMedicalFees: number): SurgicalWayLiquidationRule => ({
-  first: { medicalFees: 100, materials: 100, roomFee: 45 },
-  additional: { medicalFees: additionalMedicalFees, materials: 100, roomFee: 45 },
-  materialsCode: INCRUENT_MATERIALS_CODE,
-})
+// Cirugías incruentas: la primera cirugía del cargue liquida honorarios y ayudantía al
+// 100%, derechos de sala al 45% y materiales con el código 39305 al 100%. Desde la segunda:
+// - Diferente vía: honorarios y ayudantía al 75%, sala al 45% y materiales 39305 al 100%.
+// - Única vía: honorarios y ayudantía al 50%, sala y materiales en 0.
+const INCRUENT_FIRST: ConceptPercentages = { medicalFees: 100, materials: 100, roomFee: 45 }
 
 // Reglas de liquidación por tipo de vía. Las modalidades que no aparecen aquí
 // conservan la liquidación al 100% en todas las cirugías.
@@ -59,8 +55,16 @@ const SURGICAL_WAY_LIQUIDATION_RULES: Partial<Record<SurgicalWayType, SurgicalWa
   "Misma especialidad - única vía": {
     additional: { medicalFees: 50, materials: 0, roomFee: 0 },
   },
-  "Misma especialidad - única vía - incruento": incruentRule(50),
-  "Misma especialidad - diferente vía - incruento": incruentRule(75),
+  "Misma especialidad - única vía - incruento": {
+    first: INCRUENT_FIRST,
+    additional: { medicalFees: 50, materials: 0, roomFee: 0 },
+    materialsCode: INCRUENT_MATERIALS_CODE,
+  },
+  "Misma especialidad - diferente vía - incruento": {
+    first: INCRUENT_FIRST,
+    additional: { medicalFees: 75, materials: 100, roomFee: 45 },
+    materialsCode: INCRUENT_MATERIALS_CODE,
+  },
 }
 
 export function getSurgicalWayLiquidationPercentage(
