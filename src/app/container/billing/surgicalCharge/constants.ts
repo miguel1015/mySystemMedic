@@ -40,15 +40,15 @@ const FULL_LIQUIDATION: ConceptPercentages = {
   roomFee: DEFAULT_LIQUIDATION_PERCENTAGE,
 }
 
-// Las cirugías incruentas liquidan igual en todos los procedimientos del cargue, incluso
-// el primero: honorarios y ayudantía al 100%, derechos de sala al 45% y materiales con el
-// código 39305 al 100%.
-const INCRUENT_PERCENTAGES: ConceptPercentages = { medicalFees: 100, materials: 100, roomFee: 45 }
-const INCRUENT_RULE: SurgicalWayLiquidationRule = {
-  first: INCRUENT_PERCENTAGES,
-  additional: INCRUENT_PERCENTAGES,
+// Cirugías incruentas: en todos los procedimientos del cargue, incluso el primero, los
+// derechos de sala van al 45% y los materiales se cobran con el código 39305 al 100%.
+// Los honorarios y la ayudantía van al 100% en la primera cirugía y desde la segunda al
+// porcentaje del tipo de vía (75% diferente vía, 50% única vía).
+const incruentRule = (additionalMedicalFees: number): SurgicalWayLiquidationRule => ({
+  first: { medicalFees: 100, materials: 100, roomFee: 45 },
+  additional: { medicalFees: additionalMedicalFees, materials: 100, roomFee: 45 },
   materialsCode: INCRUENT_MATERIALS_CODE,
-}
+})
 
 // Reglas de liquidación por tipo de vía. Las modalidades que no aparecen aquí
 // conservan la liquidación al 100% en todas las cirugías.
@@ -59,8 +59,8 @@ const SURGICAL_WAY_LIQUIDATION_RULES: Partial<Record<SurgicalWayType, SurgicalWa
   "Misma especialidad - única vía": {
     additional: { medicalFees: 50, materials: 0, roomFee: 0 },
   },
-  "Misma especialidad - única vía - incruento": INCRUENT_RULE,
-  "Misma especialidad - diferente vía - incruento": INCRUENT_RULE,
+  "Misma especialidad - única vía - incruento": incruentRule(50),
+  "Misma especialidad - diferente vía - incruento": incruentRule(75),
 }
 
 export function getSurgicalWayLiquidationPercentage(
