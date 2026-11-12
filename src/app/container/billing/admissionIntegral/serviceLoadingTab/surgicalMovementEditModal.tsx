@@ -186,7 +186,7 @@ const SurgicalMovementEditModal = ({
     {
       title: "Código",
       key: "code",
-      width: 320,
+      width: 340,
       render: (_, record, index) => {
         const options = optionsFor(record.conceptType)
         const current = catalog.find((d) => d.referenceCode === record.code)
@@ -294,6 +294,9 @@ const SurgicalMovementEditModal = ({
         columns={columns}
         dataSource={concepts}
         pagination={false}
+        // Layout fijo: cada columna respeta su ancho y el Select recorta el texto largo del
+        // código con "…" en vez de ensanchar la tabla y encoger el campo de valor.
+        tableLayout="fixed"
         scroll={{ x: 900 }}
       />
 
