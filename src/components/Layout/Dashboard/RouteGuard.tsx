@@ -3,7 +3,8 @@
 import { ReactNode } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Button, Result, Spin } from "antd"
+import { Button, Result } from "antd"
+import PageLoading from "@/components/loading/PageLoading"
 import { useNavigationAccess } from "@/core/hooks/authentication/useNavigationAccess"
 import { canAccessRoute } from "@/core/utils/routeAccess"
 
@@ -14,11 +15,7 @@ export default function RouteGuard({ children }: { children: ReactNode }) {
   const { data: access, isLoading, isError, refetch, isFetching } = useNavigationAccess()
 
   if (isLoading) {
-    return (
-      <div className="d-flex justify-content-center py-5">
-        <Spin size="large" />
-      </div>
-    )
+    return <PageLoading label="Verificando tus permisos" />
   }
 
   if (isError || !access) {

@@ -20,9 +20,21 @@ export const styles: Record<string, CSSProperties> = {
     inset: 0,
     backgroundColor: "rgba(0,0,0,0.85)",
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
+    gap: 20,
+    padding: "0 16px",
     zIndex: 9999,
+  },
+
+  message: {
+    margin: 0,
+    maxWidth: 360,
+    textAlign: "center",
+    fontSize: 14,
+    lineHeight: 1.5,
+    color: "rgba(255,255,255,0.8)",
   },
 
   spinnerWrapper: {

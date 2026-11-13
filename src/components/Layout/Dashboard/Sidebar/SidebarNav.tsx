@@ -8,7 +8,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useSidebar, isEditable } from "@/components/Layout/Dashboard/SidebarProvider";
 import { getNavIcon } from "./navIcons";
-import SidebarNavGroup from "./SidebarNavGroup";
+import { ChevronsDownUp } from "lucide-react";
+import SidebarNavGroup, { CollapseAllContext } from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
 import CommandPalette from "./CommandPalette";
 import {
@@ -48,6 +49,13 @@ export default function SidebarNav({ id }: SidebarNavProps) {
   useEffect(() => {
     if (current) setOpenModule(current.moduleId);
   }, [current]);
+
+  // "Contraer": cierra el módulo abierto y todos los submenús desplegados.
+  const [collapseVersion, setCollapseVersion] = useState(0);
+  const collapseAll = () => {
+    setOpenModule(null);
+    setCollapseVersion((v) => v + 1);
+  };
 
   // Recientes: se registran al abrir cualquier vista del menú.
   const [recentRoutes, setRecentRoutes] = useState<string[]>([]);
@@ -153,7 +161,22 @@ export default function SidebarNav({ id }: SidebarNavProps) {
         </nav>
       )}
 
-      <div className="sidebar-section-title">Módulos</div>
+      <div className="sidebar-section-title sidebar-section-row">
+        <span>Módulos</span>
+        {openModule !== null && (
+          <button
+            type="button"
+            className="sidebar-collapse-all"
+            onClick={collapseAll}
+            title="Contraer todos los menús"
+            aria-label="Contraer todos los menús"
+          >
+            <ChevronsDownUp size={13} aria-hidden />
+            <span>Contraer</span>
+          </button>
+        )}
+      </div>
+      <CollapseAllContext.Provider value={collapseVersion}>
       <ul className="list-unstyled">
         {modules.map((module) => (
           <SidebarNavGroup
@@ -168,6 +191,7 @@ export default function SidebarNav({ id }: SidebarNavProps) {
           </SidebarNavGroup>
         ))}
       </ul>
+      </CollapseAllContext.Provider>
 
       <CommandPalette
         open={paletteOpen}

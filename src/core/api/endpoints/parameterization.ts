@@ -62,6 +62,10 @@ export const PARAMETERIZATION_ENDPOINTS = {
     NUMBERING: (id: string | number) =>
       `/api/auth/parameterization/electronic-invoicing/numberings/${id}`,
   },
+  SIGNATURES: {
+    GET_ALL: "/api/auth/parameterization/signatures",
+    ITEM: (id: string | number) => `/api/auth/parameterization/signatures/${id}`,
+  },
   ACCESS_CONTROL: {
     ROLES: "/api/auth/parameterization/access-control/roles",
     ROLE: (id: string | number) => `/api/auth/parameterization/access-control/roles/${id}`,

@@ -107,9 +107,9 @@
       overflow: hidden;
     }
 
-    // Encabezados en tipo oración, legibles (sin mayúsculas ni tracking).
+    // Encabezados sin tracking; heredan las mayúsculas globales de la app.
     .ant-table-thead > tr > th {
-      text-transform: none !important;
+      text-transform: inherit !important;
       letter-spacing: 0 !important;
       font-size: 13px !important;
       font-weight: 600 !important;

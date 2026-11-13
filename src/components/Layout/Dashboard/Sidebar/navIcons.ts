@@ -29,6 +29,7 @@ import {
   faPaperclip,
   faScrewdriverWrench,
   faShieldHeart,
+  faSignature,
   faStethoscope,
   faSyringe,
   faTags,
@@ -88,6 +89,7 @@ const NAV_ICONS: Record<string, IconDefinition> = {
   faFlag: faFlag,
   faCalculator: faCalculator,
   faClockRotateLeft: faClockRotateLeft,
+  faSignature: faSignature,
   // Farmacia
   faHandHoldingMedical: faHandHoldingMedical,
   faTruckRampBox: faTruckRampBox,

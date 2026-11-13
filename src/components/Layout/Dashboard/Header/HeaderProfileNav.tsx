@@ -111,6 +111,7 @@ export default async function HeaderProfileNav() {
               {session?.user?.name ?? "Usuario"}
             </h6>
             <small
+              className="keep-case"
               style={{
                 opacity: 0.75,
                 fontSize: '1rem',

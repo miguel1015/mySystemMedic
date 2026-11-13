@@ -44,7 +44,7 @@ export default function UsersTab({ role }: { role: TAccessRole }) {
         <>
           <strong>{fullName}</strong>
           {user.id === currentUserId && <Tag style={{ marginLeft: 6 }}>Tú</Tag>}
-          <span className="rp-cell-secondary">{user.email}</span>
+          <span className="rp-cell-secondary keep-case">{user.email}</span>
         </>
       ),
     },

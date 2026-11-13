@@ -28,3 +28,47 @@ $enable-negative-margins: true;
     font-size: 13px;
   }
 }
+
+/* ── Toda la aplicación en mayúsculas (solo visual) ──
+   Es únicamente presentación: los datos se guardan y se envían tal como se escriben.
+   Los campos de formulario no heredan text-transform por defecto, por eso se fuerzan.
+   Correos, contraseñas y URLs conservan su forma original; para cualquier otro texto
+   que deba respetarse se usa la clase .keep-case. */
+body {
+  text-transform: uppercase;
+}
+
+input,
+textarea,
+select,
+button,
+optgroup {
+  text-transform: uppercase;
+}
+
+::placeholder {
+  text-transform: uppercase;
+}
+
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[inputmode="email"],
+input[name*="email" i],
+input[id*="email" i],
+input[name*="password" i],
+input[id*="password" i],
+.ant-input-password input,
+.keep-case,
+.keep-case * {
+  text-transform: none !important;
+}
+
+input[type="password"]::placeholder,
+input[type="email"]::placeholder,
+input[type="url"]::placeholder,
+input[inputmode="email"]::placeholder,
+input[name*="email" i]::placeholder,
+input[id*="email" i]::placeholder {
+  text-transform: none;
+}

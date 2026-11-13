@@ -116,7 +116,7 @@ export default function InsuranceTable({
             <span className={cellStyles.personDetail}>—</span>
           )}
           {r.email && (
-            <span className={`${cellStyles.oneLine} ${cellStyles.personDetail}`} title={r.email}>
+            <span className={`${cellStyles.oneLine} ${cellStyles.personDetail} keep-case`} title={r.email}>
               {r.email}
             </span>
           )}

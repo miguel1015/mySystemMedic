@@ -261,6 +261,36 @@ $sidebar-overlay-z-index: 1025;
     color: rgba(226, 240, 236, 0.58);
   }
 
+  .sidebar-section-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 22px;
+  }
+
+  /* Botón discreto para cerrar todos los módulos y submenús abiertos. */
+  .sidebar-collapse-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 11px;
+    opacity: 0.75;
+    cursor: pointer;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+
   .sidebar-recents .sidebar-nav-item .nav-icon {
     width: 26px;
     height: 26px;

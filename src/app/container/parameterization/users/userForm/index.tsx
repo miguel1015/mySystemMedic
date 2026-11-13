@@ -1,9 +1,9 @@
 "use client";
 
 import GridContainer from "@/components/componentLayout";
-import FileInput from "@/components/fileInput";
 import Input from "@/components/input";
 import Select from "@/components/select";
+import SignatureField from "@/components/signatureField";
 import useDictionary from "@/locales/dictionary-hook";
 import { useGetEspecialidades } from "@/core/hooks/care/clinicalHistory/useClinicalHistory";
 import { Button } from "antd";
@@ -143,16 +143,10 @@ const UserForm: React.FC<TCreateUser> = ({
             />
           )}
           <div className="col-12">
-            <FileInput
+            <SignatureField
               name="signature"
               control={control}
               label={dict.users.signature}
-              accept="image/*"
-              initialPreview={
-                typeof watchedValues.signature === "string"
-                  ? watchedValues.signature
-                  : undefined
-              }
             />
           </div>
         </GridContainer>

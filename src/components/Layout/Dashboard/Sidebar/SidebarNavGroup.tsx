@@ -3,8 +3,10 @@
 import { IconDefinition } from "@fortawesome/free-regular-svg-icons";
 import React, {
   PropsWithChildren,
+  createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -17,6 +19,10 @@ import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DownOutlined } from "@ant-design/icons";
 import { usePathname } from "next/navigation";
+
+// Cada vez que cambia este número, los grupos no controlados (submenús) se cierran.
+// Lo usa el botón "Contraer" del menú.
+export const CollapseAllContext = createContext(0);
 
 type SidebarNavGroupToggleProps = {
   eventKey: string;
@@ -89,17 +95,28 @@ export default function SidebarNavGroup(props: SidebarNavGroupProps) {
 
   const [isShow, setIsShow] = useState(false);
 
+  // Sin modo controlado, el grupo guarda su propio estado (abierto si contiene la
+  // vista actual) y se cierra cuando se pide contraer todo.
+  const [localOpen, setLocalOpen] = useState(hasActiveChild);
+  const collapseVersion = useContext(CollapseAllContext);
+  const lastCollapseVersion = useRef(collapseVersion);
+  useEffect(() => {
+    if (lastCollapseVersion.current === collapseVersion) return;
+    lastCollapseVersion.current = collapseVersion;
+    setLocalOpen(false);
+  }, [collapseVersion]);
+
+  const isOpen = controlled ? open : localOpen;
+
   return (
     <Accordion
       as="li"
       bsPrefix="nav-group"
       className={classNames(className, { show: isShow })}
-      {...(controlled
-        ? {
-            activeKey: open ? "0" : null,
-            onSelect: (key: unknown) => onToggle?.(key === "0"),
-          }
-        : { defaultActiveKey: hasActiveChild ? "0" : undefined })}
+      activeKey={isOpen ? "0" : null}
+      onSelect={(key: unknown) =>
+        controlled ? onToggle?.(key === "0") : setLocalOpen(key === "0")
+      }
       style={{ marginLeft: `${level * 8}px` }}
     >
       <SidebarNavGroupToggle

@@ -135,7 +135,7 @@ export default function SuppliersContainer() {
     },
     { title: "Contacto", key: "contact", render: (_, s) => s.contactName ?? "—" },
     { title: "Teléfono", key: "phone", render: (_, s) => s.phone ?? "—" },
-    { title: "Correo", key: "email", render: (_, s) => s.email ?? "—" },
+    { title: "Correo", key: "email", render: (_, s) => (s.email ? <span className="keep-case">{s.email}</span> : "—") },
     {
       title: "Estado",
       key: "status",

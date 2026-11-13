@@ -84,7 +84,7 @@ export default function UsersTable({
       render: (_, r) => (
         <PersonCell
           name={nameOf(r)}
-          detail={[r.username && `@${r.username}`, r.email].filter(Boolean).join(" · ")}
+          detail={<span className="keep-case">{[r.username && `@${r.username}`, r.email].filter(Boolean).join(" · ")}</span>}
         />
       ),
     },
@@ -149,7 +149,7 @@ export default function UsersTable({
         renderCard={(u) => (
           <div className={cellStyles.rowCard}>
             <div className={cellStyles.rowCardBody}>
-              <PersonCell name={nameOf(u)} detail={u.email} />
+              <PersonCell name={nameOf(u)} detail={u.email && <span className="keep-case">{u.email}</span>} />
               <span className={cellStyles.personDetail}>
                 {[profileOf(u), u.userRoleName].filter(Boolean).join(" · ")}
               </span>
