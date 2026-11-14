@@ -1,0 +1,159 @@
+/* ════════════════════════════
+   EPICRISIS — diseño propio
+   Todo va bajo .epicrisis-doc para no alterar los demás documentos que
+   comparten hciPrintPreview.css. La paginación mide dentro de este mismo
+   contenedor, así que los tamaños de aquí cuentan al repartir las hojas.
+════════════════════════════ */
+.epicrisis-doc {
+  --epi-ink: #111;
+  --epi-navy: #1f3a5f;
+  --epi-band: #e3ebf5;
+  --epi-border: #8fa3bd;
+}
+
+.epicrisis-doc .hci-print-page {
+  color: var(--epi-ink);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ── Encabezado de la IPS ── */
+.epicrisis-doc .hci-print-header {
+  border-bottom: 2px solid var(--epi-navy);
+}
+
+.epicrisis-doc .hci-print-entity {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.epicrisis-doc .hci-print-entity-name {
+  color: var(--epi-navy);
+  font-size: 17px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+/* "Historia clínica N°" como sello en la esquina. */
+.epicrisis-doc .hci-print-hc-number {
+  border: 1.5px solid var(--epi-navy);
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+}
+
+.epicrisis-doc .hci-print-hc-number-title {
+  color: var(--epi-navy);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.epicrisis-doc .hci-print-title {
+  color: var(--epi-navy);
+  font-size: 16px;
+  font-weight: 800;
+  margin: 12px 0 14px;
+}
+
+/* ── Tabla de datos del paciente ── */
+.epicrisis-doc .epicrisis-patient-table thead th {
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 6px 10px;
+}
+
+.epicrisis-doc .epicrisis-patient-table tbody th,
+.epicrisis-doc .epicrisis-patient-table tbody td {
+  border-color: var(--epi-border);
+  padding: 5px 10px;
+}
+
+.epicrisis-doc .epicrisis-patient-table tbody th {
+  color: var(--epi-navy);
+  font-weight: 800;
+}
+
+.epicrisis-doc .epicrisis-patient-table tbody td {
+  font-weight: 600;
+}
+
+.epicrisis-doc .epicrisis-patient-table .epicrisis-patient-name {
+  font-weight: 800;
+}
+
+/* ── Fecha de la historia y profesional, en un recuadro ── */
+.epicrisis-doc .epicrisis-history-info {
+  background: #f5f8fc;
+  border: 1px solid var(--epi-border);
+  border-left: 4px solid var(--epi-navy);
+  border-radius: 3px;
+  padding: 8px 12px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.epicrisis-doc .epicrisis-history-row {
+  font-weight: 600;
+}
+
+.epicrisis-doc .epicrisis-history-row strong {
+  color: var(--epi-navy);
+  font-weight: 800;
+}
+
+/* ── Secciones: franja con el mismo estilo de la tabla ── */
+.epicrisis-doc .hci-print-section-title {
+  background: var(--epi-band);
+  border-bottom: none;
+  border-left: 4px solid var(--epi-navy);
+  color: var(--epi-navy);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.epicrisis-doc .hci-print-fieldtable {
+  font-size: 11.5px;
+  grid-template-columns: 185px 1fr;
+  column-gap: 8px;
+  padding: 0 4px;
+}
+
+.epicrisis-doc .hci-print-fieldtable-label {
+  color: var(--epi-navy);
+  font-style: normal;
+  font-weight: 800;
+}
+
+.epicrisis-doc .hci-print-fieldtable-dash {
+  display: none;
+}
+
+.epicrisis-doc .hci-print-fieldtable-value {
+  color: var(--epi-ink);
+  font-weight: 500;
+}
+
+.epicrisis-doc .hci-print-empty-note {
+  color: #333;
+  font-size: 11.5px;
+}
+
+/* ── Firma ── */
+.epicrisis-doc .hci-print-signature-line {
+  border-top-width: 1.5px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.epicrisis-doc .hci-print-signature-meta {
+  color: #222;
+  font-size: 10.5px;
+  font-weight: 600;
+}

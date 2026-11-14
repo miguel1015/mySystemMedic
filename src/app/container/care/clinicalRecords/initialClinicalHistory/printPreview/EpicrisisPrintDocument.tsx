@@ -19,6 +19,7 @@ import type { DiagnosisRow } from "../types";
 import { HciPrintDocument } from "./HciPrintDocument";
 import { GenericClinicalPrintDocument } from "./GenericClinicalPrintDocument";
 import type { PrintPatient } from "./printDocument.utils";
+import "./epicrisisPrint.css";
 
 interface Props {
   provider?: TProvider;
@@ -154,8 +155,9 @@ export const EpicrisisPrintDocument = ({
     }),
   ].sort((a, b) => a.sortKey - b.sortKey);
 
+  // .epicrisis-doc activa el diseño de epicrisisPrint.css solo en este documento.
   return (
-    <>
+    <div className="epicrisis-doc">
       <HciPrintDocument
         provider={provider}
         patient={patient}
@@ -449,6 +451,6 @@ export const EpicrisisPrintDocument = ({
             return null;
         }
       })}
-    </>
+    </div>
   );
 };

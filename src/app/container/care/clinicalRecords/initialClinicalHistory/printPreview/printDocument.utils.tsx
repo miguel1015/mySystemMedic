@@ -86,7 +86,10 @@ export const FieldRow = ({
   value?: string | number | null;
 }) => (
   <>
-    <div className="hci-print-fieldtable-label">- {label}:</div>
+    <div className="hci-print-fieldtable-label">
+      <span className="hci-print-fieldtable-dash">- </span>
+      {label}:
+    </div>
     <div className="hci-print-fieldtable-value">
       {value === "" || value === undefined || value === null
         ? emptyDash
