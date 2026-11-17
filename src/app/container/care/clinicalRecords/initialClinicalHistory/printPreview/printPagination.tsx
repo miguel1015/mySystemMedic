@@ -87,18 +87,26 @@ const PAGE_BUDGET_BUFFER_PX = 24;
  * Whichever units land on a page, that page gets a real, literal copy of
  * the header.
  */
-export const usePaginatedUnits = (units: Unit[], headerBlock: ReactNode) => {
+export const usePaginatedUnits = (
+  units: Unit[],
+  headerBlock: ReactNode,
+  /** Pie opcional que se repite al final de cada hoja; su alto se descuenta del espacio. */
+  footerBlock?: ReactNode,
+) => {
   const [pages, setPages] = useState<Unit[][] | null>(null);
   const headerMeasureRef = useRef<HTMLDivElement>(null);
+  const footerMeasureRef = useRef<HTMLDivElement>(null);
   const unitMeasureRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   useLayoutEffect(() => {
     const headerH =
       headerMeasureRef.current?.getBoundingClientRect().height ?? 0;
+    const footerH =
+      footerMeasureRef.current?.getBoundingClientRect().height ?? 0;
     const pageHeightPx = PAGE_HEIGHT_MM * MM_TO_PX;
     const marginPx = PAGE_MARGIN_MM * MM_TO_PX;
     const budget =
-      pageHeightPx - marginPx * 2 - headerH - PAGE_BUDGET_BUFFER_PX;
+      pageHeightPx - marginPx * 2 - headerH - footerH - PAGE_BUDGET_BUFFER_PX;
 
     const result: Unit[][] = [];
     let current: Unit[] = [];
@@ -142,6 +150,11 @@ export const usePaginatedUnits = (units: Unit[], headerBlock: ReactNode) => {
       <div ref={headerMeasureRef} style={{ overflow: "hidden" }}>
         {headerBlock}
       </div>
+      {footerBlock && (
+        <div ref={footerMeasureRef} style={{ overflow: "hidden" }}>
+          {footerBlock}
+        </div>
+      )}
       {units.map((unit) => (
         <div
           key={unit.id}
@@ -163,16 +176,19 @@ export const PaginatedPages = ({
   pages,
   headerBlock,
   showPageNumbers = false,
+  footerBlock,
 }: {
   pages: Unit[][] | null;
   headerBlock: ReactNode;
   showPageNumbers?: boolean;
+  footerBlock?: ReactNode;
 }) => (
   <>
     {pages?.map((pageUnits, index) => (
       <div className="hci-print-page" key={index}>
         {headerBlock}
         <div className="hci-print-body">{renderPageUnits(pageUnits)}</div>
+        {footerBlock}
         {showPageNumbers && (
           <div className="hci-print-page-number">
             Página {index + 1} de {pages.length}

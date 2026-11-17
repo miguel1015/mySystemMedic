@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import type { GetUser } from "@/core/interfaces/user/users";
 import { buildFullName } from "@/core/utils/user";
@@ -20,6 +21,18 @@ import { HciPrintDocument } from "./HciPrintDocument";
 import { GenericClinicalPrintDocument } from "./GenericClinicalPrintDocument";
 import type { PrintPatient } from "./printDocument.utils";
 import "./epicrisisPrint.css";
+
+/** Pie de cada hoja: el número de página lo pone el CSS (contador de hojas). */
+const pageFooter = (
+  <div className="epicrisis-page-footer">
+    <span className="epicrisis-page-number" />
+    <span className="epicrisis-page-legal">
+      La historia clínica electrónica y medios automatizados que manejen historias
+      clínicas, no llevan firmas o sellos, teniendo en cuenta el Art. 18 de la
+      resolución 1995 de julio de 1999
+    </span>
+  </div>
+);
 
 interface Props {
   provider?: TProvider;
@@ -104,7 +117,25 @@ export const EpicrisisPrintDocument = ({
   datosClinicosEgreso,
   diagnosticosEgreso,
 }: Props) => {
-  const findUser = (userId: number) => users.find((u) => u.id === userId);
+  const docRef = useRef<HTMLDivElement>(null);
+
+  // Cada parte de la epicrisis pagina por su cuenta, así que el total de hojas
+  // se cuenta en el DOM cuando cambian las páginas y se pasa al CSS
+  // (--epi-total), que pinta "Página N/Total" con un contador.
+  useEffect(() => {
+    const doc = docRef.current;
+    if (!doc) return;
+    const updateTotal = () => {
+      const total = doc.querySelectorAll(":scope > .hci-print-page:not([aria-hidden])").length;
+      doc.style.setProperty("--epi-total", `"${total}"`);
+    };
+    updateTotal();
+    const observer = new MutationObserver(updateTotal);
+    observer.observe(doc, { childList: true });
+    return () => observer.disconnect();
+  }, []);
+
+  const findUser =(userId: number) => users.find((u) => u.id === userId);
   const findDiagnostico = (diagnosticoEgresoId: number | null) =>
     diagnosticoEgresoId
       ? diagnosticosEgreso.find((d) => d.id === diagnosticoEgresoId)
@@ -157,7 +188,7 @@ export const EpicrisisPrintDocument = ({
 
   // .epicrisis-doc activa el diseño de epicrisisPrint.css solo en este documento.
   return (
-    <div className="epicrisis-doc">
+    <div className="epicrisis-doc" ref={docRef}>
       <HciPrintDocument
         provider={provider}
         patient={patient}
@@ -167,6 +198,7 @@ export const EpicrisisPrintDocument = ({
         attentionTime={attentionTime}
         contractName={contractName}
         showProcessDates
+        pageFooter={pageFooter}
         doctorName={doctorName}
         doctorUser={doctorUser}
         hcInicial={hcInicial}
@@ -185,6 +217,7 @@ export const EpicrisisPrintDocument = ({
                 admissionDate={admissionDate}
                 contractName={contractName}
                 showProcessDates
+                pageFooter={pageFooter}
                 documentTitle={evo.especialidadNombre ? `Evolución - ${evo.especialidadNombre}` : "Evolución"}
                 attentionLabel="Fecha y hora de evolución:"
                 attentionDate={evo.fechaEvolucion}
@@ -230,6 +263,7 @@ export const EpicrisisPrintDocument = ({
                 admissionDate={admissionDate}
                 contractName={contractName}
                 showProcessDates
+                pageFooter={pageFooter}
                 documentTitle={
                   evo.especialidadNombre
                     ? `Evolución de Especialista - ${evo.especialidadNombre}`
@@ -265,6 +299,7 @@ export const EpicrisisPrintDocument = ({
                 admissionDate={admissionDate}
                 contractName={contractName}
                 showProcessDates
+                pageFooter={pageFooter}
                 documentTitle="Procedimiento Menor"
                 attentionLabel="Fecha y hora del procedimiento:"
                 attentionDate={proc.fechaProcedimiento}
@@ -291,6 +326,7 @@ export const EpicrisisPrintDocument = ({
                 admissionDate={admissionDate}
                 contractName={contractName}
                 showProcessDates
+                pageFooter={pageFooter}
                 documentTitle="Procedimiento Diagnóstico"
                 attentionLabel="Fecha y hora del procedimiento:"
                 attentionDate={proc.fechaProcedimiento}
@@ -321,6 +357,7 @@ export const EpicrisisPrintDocument = ({
                 admissionDate={admissionDate}
                 contractName={contractName}
                 showProcessDates
+                pageFooter={pageFooter}
                 documentTitle="Procedimiento No Quirúrgico"
                 attentionLabel="Fecha y hora del procedimiento:"
                 attentionDate={proc.fechaProcedimiento}
@@ -347,6 +384,7 @@ export const EpicrisisPrintDocument = ({
                 admissionDate={admissionDate}
                 contractName={contractName}
                 showProcessDates
+                pageFooter={pageFooter}
                 documentTitle="Nota de Enfermería"
                 attentionLabel="Fecha y hora de la nota:"
                 attentionDate={nota.fechaNota}
@@ -378,6 +416,7 @@ export const EpicrisisPrintDocument = ({
                 admissionDate={admissionDate}
                 contractName={contractName}
                 showProcessDates
+                pageFooter={pageFooter}
                 documentTitle="Nota de Egreso"
                 attentionLabel="Fecha y hora de egreso:"
                 attentionDate={fechaEgreso?.format("YYYY-MM-DD") ?? ""}

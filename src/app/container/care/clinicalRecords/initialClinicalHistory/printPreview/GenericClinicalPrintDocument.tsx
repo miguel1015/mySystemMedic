@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import type { GetUser } from "@/core/interfaces/user/users";
 import type { TProvider } from "@/core/interfaces/parameterization/types";
 import { ClinicalDocumentHeader } from "./ClinicalDocumentHeader";
@@ -33,6 +33,8 @@ interface Props {
   /** Especialidad registrada en el documento; si no hay, la del usuario. */
   doctorSpecialty?: string | null;
   showProcessDates?: boolean;
+  /** Pie que se repite al final de cada hoja (lo usa la epicrisis). */
+  pageFooter?: ReactNode;
 }
 
 export const GenericClinicalPrintDocument = ({
@@ -50,6 +52,7 @@ export const GenericClinicalPrintDocument = ({
   doctorUser,
   doctorSpecialty,
   showProcessDates,
+  pageFooter,
 }: Props) => {
   const headerBlock = (
     <ClinicalDocumentHeader
@@ -97,12 +100,12 @@ export const GenericClinicalPrintDocument = ({
     return list;
   }, [sections, doctorName, doctorUser]);
 
-  const { pages, measuringPass } = usePaginatedUnits(units, headerBlock);
+  const { pages, measuringPass } = usePaginatedUnits(units, headerBlock, pageFooter);
 
   return (
     <>
       {measuringPass}
-      <PaginatedPages pages={pages} headerBlock={headerBlock} />
+      <PaginatedPages pages={pages} headerBlock={headerBlock} footerBlock={pageFooter} />
     </>
   );
 };

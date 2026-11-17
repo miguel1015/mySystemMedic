@@ -11,10 +11,58 @@
   --epi-border: #8fa3bd;
 }
 
+.epicrisis-doc {
+  counter-reset: epi-page;
+}
+
+/* Columna flexible: el pie queda pegado al final de cada hoja. */
 .epicrisis-doc .hci-print-page {
+  box-sizing: border-box;
   color: var(--epi-ink);
+  display: flex;
+  flex-direction: column;
   font-size: 12px;
   line-height: 1.5;
+}
+
+/* Solo cuentan las hojas reales, no la copia oculta que mide la paginación. */
+.epicrisis-doc > .hci-print-page:not([aria-hidden]) {
+  counter-increment: epi-page;
+}
+
+/* ── Pie de página: "Página N/Total" y la nota legal ── */
+.epicrisis-doc .epicrisis-page-footer {
+  align-items: flex-end;
+  border-top: 1px solid var(--epi-border);
+  color: #333;
+  display: flex;
+  font-size: 9.5px;
+  gap: 24px;
+  line-height: 1.35;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.epicrisis-doc .epicrisis-page-number {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.epicrisis-doc .epicrisis-page-number::before {
+  content: "Página " counter(epi-page) "/" var(--epi-total, "");
+}
+
+.epicrisis-doc .epicrisis-page-legal {
+  flex: 1;
+  text-align: left;
+}
+
+@media print {
+  /* Alto útil de la hoja A4 (297mm menos márgenes de 14mm), con un pequeño
+     margen para que el pie nunca se pase a una hoja en blanco. */
+  .epicrisis-doc .hci-print-page {
+    min-height: 266mm;
+  }
 }
 
 /* ── Encabezado de la IPS ── */
